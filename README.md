@@ -1,36 +1,131 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NTUST Board Game Club Website
 
-## Getting Started
+## Tables
 
-First, run the development server:
+### users
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+| Column Name | Data Type | Description |
+| --- | --- | --- |
+| id | INT | Unique identifier for each user |
+| name | text | Name of the user |
+| email | text | Email address of the user |
+| avatar | text | URL or path to the user's avatar image |
+| created_at | timestamp | Timestamp of when the user was created |
+| updated_at | timestamp | Timestamp of when the user was last updated |
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### memberships
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Column Name | Data Type | Description |
+| --- | --- | --- |
+| id | INT | Unique identifier for each membership |
+| user_id | INT | Foreign key referencing the user table |
+| type | text | Type of membership (e.g., "annual", "lifetime") |
+| academic_year_id | INT | Foreign key referencing the academic_years table |
+| status | text | Status of the membership (e.g.,"pending", "active", "expired", "suspended", "cancelled") |
+| created_at | timestamp | Timestamp of when the membership was created |
+| updated_at | timestamp | Timestamp of when the membership was last updated |
+| joined_at | timestamp | Timestamp of when the user joined the membership |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### academic_years
 
-## Learn More
+| Column Name | Data Type | Description |
+| --- | --- | --- |
+| id | INT | Unique identifier for each academic year |
+| year | text | Academic year (e.g., "113", "114") |
+| start_date | date | Start date of the academic year |
+| end_date | date | End date of the academic year |
+| is_current | boolean | Indicates if this is the current academic year |
 
-To learn more about Next.js, take a look at the following resources:
+### positions
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Column Name | Data Type | Description |
+| --- | --- | --- |
+| id | INT | Unique identifier for each position |
+| name | text | Name of the position (e.g., "社長", "美宣") |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### officer_positions
 
-## Deploy on Vercel
+| Column Name | Data Type | Description |
+| --- | --- | --- |
+| id | INT | Unique identifier for each officer position |
+| user_id | INT | Foreign key referencing the user table |
+| position_id | INT | Foreign key referencing the positions table |
+| academic_year_id | INT | Foreign key referencing the academic_years table |
+| created_at | timestamp | Timestamp of when the officer position was created |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### board_games
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Column Name | Data Type | Description |
+| --- | --- | --- |
+| id | INT | Unique identifier for each board game |
+| name | text | Name of the board game |
+| description | text | Description of the board game |
+| image | text | URL or path to the board game's image |
+| created_at | timestamp | Timestamp of when the board game was created |
+| updated_at | timestamp | Timestamp of when the board game was last updated |
+| category_id | INT | Foreign key referencing the board_game_categories table |
+| location_id | INT | Foreign key referencing the locations table |
+| status | text | Status of the board game (e.g., "available", "borrowed", "maintenance", "lost", 'damaged', 'retired') |
+
+### board_game_categories
+
+| Column Name | Data Type | Description |
+| --- | --- | --- |
+| id | INT | Unique identifier for each board game category |
+| name | text | Name of the board game category |
+| description | text | Description of the board game category |
+
+### locations
+
+| Column Name | Data Type | Description |
+| --- | --- | --- |
+| id | INT | Unique identifier for each location |
+| name | text | Name of the location |
+| description | text | Description of the location |
+
+### board_game_borrowings
+
+| Column Name | Data Type | Description |
+| --- | --- | --- |
+| id | INT | Unique identifier for each board game borrowing record |
+| board_game_id | INT | Foreign key referencing the board_games table |
+| user_id | INT | Foreign key referencing the user table |
+| created_at | timestamp | Timestamp of when the borrowing record was created |
+| borrowed_at | timestamp | Timestamp of when the board game was borrowed |
+| due_at | timestamp | Timestamp of when the board game is due to be returned |
+| returned_at | timestamp | Timestamp of when the board game was returned |
+| status | text | Status of the borrowing record (e.g., "borrowed", "returned") |
+| approved_by_user_id | INT | Foreign key referencing the user table for the approver |
+
+### events
+
+| Column Name | Data Type | Description |
+| --- | --- | --- |
+| id | INT | Unique identifier for each event |
+| name | text | Name of the event |
+| description | text | Description of the event |
+| start_time | timestamp | Start time of the event |
+| end_time | timestamp | End time of the event |
+
+### event_attendance
+
+| Column Name | Data Type | Description |
+| --- | --- | --- |
+| id | INT | Unique identifier for each attendance record |
+| user_id | INT | Foreign key referencing the user table |
+| event_id | INT | Foreign key referencing the events table |
+| attended_at | timestamp | Timestamp of when the user attended the event |
+| status | text | Status of the attendance record (e.g., "present", "absent", "late") |
+
+### announcements
+
+| Column Name | Data Type | Description |
+| --- | --- | --- |
+| id | INT | Unique identifier for each announcement |
+| title | text | Title of the announcement |
+| content | text | Content of the announcement |
+| created_at | timestamp | Timestamp of when the announcement was created |
+| updated_at | timestamp | Timestamp of when the announcement was last updated |
+| author_id | INT | Foreign key referencing the user table for the author of the announcement |
+| is_published | boolean | Indicates if the announcement is published or not |
+| published_at | timestamp | Timestamp of when the announcement was published |
