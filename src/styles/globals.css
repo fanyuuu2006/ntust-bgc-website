@@ -1,49 +1,95 @@
 @import "tailwindcss";
 
-/* ==== Base Layer ==== */
+/* =========================================================
+   🎲 NTUST Board Game Club Design System
+   ========================================================= */
+
 @layer base {
   :root {
-    --foreground: #0f172a;
+    /* =====================================================
+       🎨 Color System
+       ===================================================== */
+
+    /* === 基礎文字 === */
+    --foreground: #172033;
+    --foreground-secondary: #334155;
     --muted: #64748b;
+    --muted-light: #94a3b8;
 
-    --background: #f8fafc;
+    /* === 背景 === */
+    --background: #f5f8fc;
     --primary-background: #ffffff;
-    --secondary-background: #eef2f7;
+    --secondary-background: #eef4fa;
+    --tertiary-background: #e3edf7;
 
-    --primary: #60a5fa;
-    --secondary: #818cf8;
-    --tertiary: #a78bfa;
+    /* === 品牌主色：NTUST 藍 === */
+    --primary: #005bac;
+    --primary-light: #2f80c9;
+    --primary-dark: #00427d;
 
-    --border: rgba(15, 23, 42, 0.1);
+    /* === 品牌輔色 === */
+    --secondary: #20a849;
+    --tertiary: #ffbf00;
 
-    --shadow-base: 0 0 1rem rgba(0, 0, 0, 0.08);
-    --shadow-hover: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12);
-    --shadow-card-hover: 0 var(--move-y) 1.5rem rgba(0, 0, 0, 0.15);
+    /* === 桌遊積木色 === */
+    --game-red: #e52d46;
+    --game-green: #20a849;
+    --game-yellow: #ffbf00;
+    --game-blue: #1683d8;
 
-    /* === 動畫時間與曲線 === */
+    /* === 邊框 === */
+    --border: rgba(0, 91, 172, 0.14);
+    --border-strong: rgba(0, 91, 172, 0.28);
+
+    /* === 陰影 === */
+    --shadow-base: 0 0.25rem 1rem rgba(15, 23, 42, 0.06);
+
+    --shadow-card: 0 0.5rem 1.5rem rgba(15, 23, 42, 0.08);
+
+    --shadow-hover: 0 0.75rem 2rem rgba(0, 91, 172, 0.14);
+
+    --shadow-card-hover: 0 var(--move-y) 1.5rem rgba(0, 91, 172, 0.16);
+
+    /* =====================================================
+       ⏱ Animation
+       ===================================================== */
+
     --transition-fast: 0.15s;
     --transition-normal: 0.3s;
-    --transition-timing: cubic-bezier(
-      0.25,
-      0.46,
-      0.45,
-      0.94
-    ); /* 優化：統一動畫曲線 */
+    --transition-slow: 0.45s;
 
-    /* === 尺寸和間距 === */
-    --border-radius-md: 0.5rem;
+    --transition-timing: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+    --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* =====================================================
+       📐 Layout
+       ===================================================== */
+
+    --border-radius-sm: 0.375rem;
+    --border-radius-md: 0.625rem;
     --border-radius-lg: 1rem;
     --border-radius-xl: 1.5rem;
+    --border-radius-2xl: 2rem;
+
     --container-max-width: 1280px;
     --scroll-margin: 8rem;
-    --move-y: 0.25rem;
+    --move-y: 0.35rem;
+
+    /* =====================================================
+       🧱 Other
+       ===================================================== */
 
     --scrollbar-track: transparent;
+
     --skeleton-bg: rgba(15, 23, 42, 0.08);
-    --skeleton-highlight: rgba(255, 255, 255, 0.8);
+    --skeleton-highlight: rgba(255, 255, 255, 0.75);
   }
 
-  /* === 全域重置 === */
+  /* =====================================================
+     🌐 Global Reset
+     ===================================================== */
+
   *,
   *::before,
   *::after {
@@ -56,8 +102,9 @@
   }
 
   ::selection {
-    background: color-mix(in oklab, var(--primary) 65%, transparent);
-    color: var(--background);
+    background: color-mix(in oklab, var(--primary) 75%, transparent);
+
+    color: white;
   }
 
   html {
@@ -67,50 +114,77 @@
   body {
     display: flex;
     flex-direction: column;
+
     min-height: 100%;
-    background: var(--background);
+
+    background: linear-gradient(180deg, var(--background) 0%, #ffffff 100%);
+
     color: var(--foreground);
+
     font-family:
       system-ui,
       -apple-system,
+      BlinkMacSystemFont,
       "Segoe UI",
       Roboto,
       "Helvetica Neue",
       Arial,
       sans-serif;
-    -webkit-font-mdoothing: antialiased;
-    -moz-osx-font-mdoothing: grayscale;
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
     text-rendering: optimizeLegibility;
+
     transition:
       background var(--transition-normal) var(--transition-timing),
       color var(--transition-normal) var(--transition-timing);
   }
 
-  /* === 按鈕系統 === */
+  /* =====================================================
+     🔗 Links
+     ===================================================== */
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    transition:
+      color var(--transition-normal) var(--transition-timing),
+      opacity var(--transition-normal) var(--transition-timing);
+  }
+
+  /* =====================================================
+     🔘 Button System
+     ===================================================== */
+
   button,
   .btn {
     cursor: pointer;
     border: none;
     text-decoration: none;
-    transition: all var(--transition-normal) var(--transition-timing);
+    transition:
+      transform var(--transition-normal) var(--transition-timing),
+      background var(--transition-normal) var(--transition-timing),
+      border-color var(--transition-normal) var(--transition-timing),
+      box-shadow var(--transition-normal) var(--transition-timing),
+      color var(--transition-normal) var(--transition-timing),
+      filter var(--transition-normal) var(--transition-timing);
+
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* 整合 active 狀態 */
+  /* === Active === */
+
   button:active,
   .btn:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
+
     transition-duration: var(--transition-fast);
-    filter: brightness(0.9);
   }
 
-  button:hover,
-  .btn:hover {
-    text-decoration: none !important;
-    filter: brightness(1.1);
-  }
+  /* === Disabled === */
 
-  /* 禁用狀態 */
   button:disabled,
   .btn:disabled {
     opacity: 0.5;
@@ -120,115 +194,248 @@
     box-shadow: none;
   }
 
+  /* =====================================================
+     🔵 Primary Button
+     ===================================================== */
+
   .btn {
-    background: var(--secondary-background);
+    min-height: 2.75rem;
+
+    padding: 0.625rem 1.125rem;
+
+    border-radius: var(--border-radius-md);
+
+    background: var(--primary-background);
+
     border: 1px solid var(--border);
+
     color: var(--foreground);
+
+    box-shadow: var(--shadow-base);
   }
+
+  .btn:hover:not(:disabled) {
+    transform: translateY(-0.15rem);
+
+    border-color: var(--primary);
+
+    box-shadow: var(--shadow-hover);
+  }
+
+  /* === Primary === */
 
   .btn.primary {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: var(--background);
-    border: none;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+
+    color: #ffffff;
+
+    border-color: transparent;
+
+    box-shadow: 0 0.35rem 1rem rgba(0, 91, 172, 0.22);
   }
+
+  .btn.primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+
+    box-shadow: 0 0.6rem 1.5rem rgba(0, 91, 172, 0.3);
+  }
+
+  /* === Secondary === */
+
   .btn.secondary {
     background: var(--secondary-background);
-    color: var(--secondary);
-    border: 1px solid var(--secondary);
+
+    color: var(--primary);
+
+    border-color: var(--border-strong);
   }
 
-  .btn.secondary:hover {
-    background: var(--secondary);
-    color: var(--secondary-background);
+  .btn.secondary:hover:not(:disabled) {
+    background: var(--primary);
+
+    color: #ffffff;
+
+    border-color: var(--primary);
   }
 
-  /* === 容器系統 === */
+  /* === Outline === */
+
+  .btn.outline {
+    background: transparent;
+
+    color: var(--primary);
+
+    border: 1px solid var(--primary);
+  }
+
+  .btn.outline:hover:not(:disabled) {
+    background: var(--primary);
+
+    color: #ffffff;
+  }
+
+  /* === Green === */
+
+  .btn.green {
+    background: var(--game-green);
+
+    color: #ffffff;
+
+    box-shadow: 0 0.35rem 1rem rgba(32, 168, 73, 0.2);
+  }
+
+  .btn.green:hover:not(:disabled) {
+    background: #188c3c;
+  }
+
+  /* === Yellow === */
+
+  .btn.yellow {
+    background: var(--game-yellow);
+
+    color: #3b2f00;
+
+    box-shadow: 0 0.35rem 1rem rgba(255, 191, 0, 0.22);
+  }
+
+  .btn.yellow:hover:not(:disabled) {
+    background: #e6aa00;
+  }
+
+  /* === Red === */
+
+  .btn.danger {
+    background: var(--game-red);
+
+    color: #ffffff;
+
+    box-shadow: 0 0.35rem 1rem rgba(229, 45, 70, 0.2);
+  }
+
+  .btn.danger:hover:not(:disabled) {
+    background: #c9233a;
+  }
+
+  /* =====================================================
+     📦 Container
+     ===================================================== */
+
   .container {
     position: relative;
+
     z-index: 1;
-    max-width: var(--container-max-width) !important;
-    margin-inline: auto;
-    padding: 1.5rem;
-    gap: 1rem;
+
     width: 100%;
+
+    max-width: var(--container-max-width) !important;
+
+    margin-inline: auto;
+
+    padding: 1.5rem;
   }
+
   @media (max-width: 768px) {
     .container {
       padding: 1rem;
     }
   }
 
-  /* === 卡片系統 === */
+  /* =====================================================
+     🃏 Card System
+     ===================================================== */
+
   .card {
     background: var(--primary-background);
     border: 1px solid var(--border);
-    transition: all var(--transition-normal) var(--transition-timing);
-  }
 
-  .card.primary {
-  }
-  .card.secondary {
+    border-radius: var(--border-radius-lg);
+
+    box-shadow: var(--shadow-base);
+
+    transition:
+      transform var(--transition-normal) var(--transition-timing),
+      border-color var(--transition-normal) var(--transition-timing),
+      box-shadow var(--transition-normal) var(--transition-timing);
   }
 
   .card:hover {
-    border-color: color-mix(in oklab, var(--primary) 30%, transparent);
+    border-color: color-mix(in oklab, var(--primary) 45%, transparent);
+
+    box-shadow: var(--shadow-hover);
+  }
+
+  /* === Card with Top Accent === */
+
+  .card.accent {
+    border-top: 0.25rem solid var(--primary);
+  }
+
+  .card.accent.green {
+    border-top-color: var(--game-green);
+  }
+
+  .card.accent.yellow {
+    border-top-color: var(--game-yellow);
+  }
+
+  .card.accent.red {
+    border-top-color: var(--game-red);
+  }
+
+  /* === Link Card === */
+
+  a.card {
+    display: block;
   }
 
   a.card:hover {
     transform: translateY(calc(-1 * var(--move-y)));
+
     border-color: var(--primary);
+
     text-decoration: none;
   }
 
-  /* === 連結樣式 === */
-  a {
-    color: inherit;
-    text-decoration: none;
-    transition: all var(--transition-normal) var(--transition-timing);
+  /* =====================================================
+     🧩 Game Block Decoration
+     ===================================================== */
+
+  .game-block {
+    border-radius: var(--border-radius-md);
+
+    box-shadow: 0 0.25rem 0 rgba(0, 0, 0, 0.12);
+
+    transition:
+      transform var(--transition-normal) var(--transition-bounce),
+      box-shadow var(--transition-normal) var(--transition-timing);
   }
 
-  /* === 滑動摺疊效果 === */
-  .slide-collapse {
-    transition: height var(--transition-normal) ease-out;
-    overflow: hidden;
-    will-change: height;
+  .game-block:hover {
+    transform: translateY(-0.25rem);
+
+    box-shadow: 0 0.5rem 0 rgba(0, 0, 0, 0.12);
   }
 
-  /* === 自訂滾動條 === */
-  ::-webkit-scrollbar {
-    width: 5px;
-    height: 8px;
+  .game-block.blue {
+    background: var(--game-blue);
   }
 
-  ::-webkit-scrollbar-track {
-    background: var(--scrollbar-track);
-    border-radius: 4px;
+  .game-block.green {
+    background: var(--game-green);
   }
 
-  ::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 4px;
-    transition: background var(--transition-normal) ease;
+  .game-block.yellow {
+    background: var(--game-yellow);
   }
 
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--muted);
+  .game-block.red {
+    background: var(--game-red);
   }
 
-  /* 針對 Firefox 的滾動條樣式 */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) var(--scrollbar-track);
-  }
+  /* =====================================================
+     💬 Tooltip
+     ===================================================== */
 
-  /* 修復 Safari 搜尋框的取消按鈕 */
-  input[type="search"]::-webkit-search-cancel-button {
-    display: none;
-  }
-}
-
-/* ==== Utilities Layer ==== */
-@layer utilities {
   .tooltip,
   .overlay-wrapper {
     position: relative;
@@ -238,15 +445,19 @@
   .overlay-wrapper .overlay-content {
     position: absolute;
     left: 50%;
+    z-index: 9999;
     transform: translateX(-50%);
     bottom: 70%;
     opacity: 0;
     visibility: hidden;
-    transition: all var(--transition-normal);
-    z-index: 9999;
+
+    transition:
+      opacity var(--transition-normal) var(--transition-timing),
+      transform var(--transition-normal) var(--transition-timing),
+      bottom var(--transition-normal) var(--transition-timing);
   }
 
-  .tooltip:hover:before,
+  .tooltip:hover::before,
   .overlay-wrapper:hover .overlay-content {
     bottom: 120%;
     opacity: 1;
@@ -255,50 +466,30 @@
 
   .tooltip::before {
     content: attr(data-tooltip);
-    color: var(--foreground);
+
     width: max-content;
     max-width: 200px;
-    background: var(--secondary-background);
-    border: 1px solid var(--border);
+
     padding: 0.4rem 0.75rem;
+    background: var(--foreground);
+    color: #ffffff;
     border-radius: var(--border-radius-md);
     white-space: nowrap;
+
     font-size: 0.8125rem;
     font-weight: 500;
-    letter-spacing: 0.01em;
+
     box-shadow: var(--shadow-hover);
-    pointer-events: none;
-    transition: all var(--transition-normal);
-  }
 
-  /* 小箭頭，指向觸發元素 */
-  .tooltip::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: 70%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid var(--secondary-background);
-    opacity: 0;
-    visibility: hidden;
-    transition: all var(--transition-normal);
-    z-index: 9999;
     pointer-events: none;
   }
 
-  .tooltip:hover::after {
-    bottom: 108%;
-    opacity: 1;
-    visibility: visible;
-  }
+  /* =====================================================
+     ✨ Animations
+     ===================================================== */
 
-  /* === 動畫效果 === */
   .animate-pop {
-    animation: pop var(--transition-fast) cubic-bezier(0.68, -0.55, 0.68, 1);
+    animation: pop var(--transition-fast) var(--transition-bounce);
   }
 
   .animate-appear {
@@ -309,31 +500,12 @@
     animation: turn var(--transition-normal) var(--transition-timing) forwards;
   }
 
-  /* 減少動畫效果 */
-  @media (prefers-reduced-motion: reduce) {
-    .animate-pop,
-    .animate-turn,
-    .underline-spread::after,
-    .hover\:underline-spread::after {
-      animation: none;
-    }
-
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
-
-  /* === Keyframe 動畫 === */
   @keyframes pop {
     from {
       opacity: 0;
       transform: scale(0.5);
     }
+
     to {
       opacity: 1;
       transform: scale(1);
@@ -344,6 +516,7 @@
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
@@ -353,57 +526,74 @@
     from {
       transform: rotate(0deg);
     }
+
     to {
       transform: rotate(360deg);
     }
   }
 
-  @keyframes underlineSpreadIn {
-    from {
-      width: 0;
+  /* =====================================================
+     📜 Scrollbar
+     ===================================================== */
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--primary) 35%, transparent);
+
+    border-radius: 999px;
+
+    transition: background var(--transition-normal);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+  }
+
+  * {
+    scrollbar-width: thin;
+
+    scrollbar-color: color-mix(in oklab, var(--primary) 35%, transparent)
+      transparent;
+  }
+
+  /* =====================================================
+     🔍 Search Input
+     ===================================================== */
+
+  input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  /* =====================================================
+     ♿ Reduced Motion
+     ===================================================== */
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+
+      transition-duration: 0.01ms !important;
     }
-    to {
-      width: 120%;
-    }
-  }
-
-  /* === 底線擴散效果 === */
-  .underline-spread,
-  .hover\:underline-spread {
-    position: relative;
-    display: inline-block;
-  }
-
-  .hover\:underline-spread:hover {
-    text-decoration: none !important;
-  }
-
-  .underline-spread::after,
-  .hover\:underline-spread::after {
-    content: "";
-    --line-height: 0.25rem;
-    position: absolute;
-    bottom: -0.25em;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: var(--line-height);
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    border-radius: var(--border-radius-md);
-    transition: width var(--transition-normal) var(--transition-timing);
-  }
-
-  .underline-spread::after {
-    animation: underlineSpreadIn var(--transition-normal)
-      var(--transition-timing) forwards;
-  }
-
-  .hover\:underline-spread:hover::after {
-    width: 110%;
   }
 }
 
-/* === Skeleton / Shimmer Utility === */
+/* =========================================================
+   🦴 Skeleton / Shimmer
+   ========================================================= */
+
 @layer utilities {
   @keyframes shimmer {
     0% {
@@ -417,7 +607,12 @@
     position: relative;
     overflow: hidden;
     color: transparent;
-    background: var(--skeleton-bg);
+
+    background: color-mix(
+      in oklab,
+      var(--primary) 8%,
+      var(--secondary-background)
+    );
   }
 
   .skeleton::after {
@@ -427,18 +622,21 @@
     background: linear-gradient(
       90deg,
       transparent,
-      var(--skeleton-highlight),
+      rgba(255, 255, 255, 0.7),
       transparent
     );
     transform: translateX(-100%);
     animation: shimmer 1.2s linear infinite;
   }
-  /* helper for thin lines */
+
   .skeleton-line {
-    background-color: rgba(255, 255, 255, 0.04);
+    background: color-mix(
+      in oklab,
+      var(--primary) 5%,
+      var(--secondary-background)
+    );
   }
 
-  /* reduce shimmer on reduced-motion */
   @media (prefers-reduced-motion: reduce) {
     .skeleton::after {
       animation: none;
