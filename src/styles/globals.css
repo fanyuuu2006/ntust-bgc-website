@@ -1,26 +1,448 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+/* ==== Base Layer ==== */
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --foreground: #0f172a;
+    --muted: #64748b;
+
+    --background: #f8fafc;
+    --primary-background: #ffffff;
+    --secondary-background: #eef2f7;
+
+    --primary: #60a5fa;
+    --secondary: #818cf8;
+    --tertiary: #a78bfa;
+
+    --border: rgba(15, 23, 42, 0.1);
+
+    --shadow-base: 0 0 1rem rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12);
+    --shadow-card-hover: 0 var(--move-y) 1.5rem rgba(0, 0, 0, 0.15);
+
+    /* === 動畫時間與曲線 === */
+    --transition-fast: 0.15s;
+    --transition-normal: 0.3s;
+    --transition-timing: cubic-bezier(
+      0.25,
+      0.46,
+      0.45,
+      0.94
+    ); /* 優化：統一動畫曲線 */
+
+    /* === 尺寸和間距 === */
+    --border-radius-md: 0.5rem;
+    --border-radius-lg: 1rem;
+    --border-radius-xl: 1.5rem;
+    --container-max-width: 1280px;
+    --scroll-margin: 8rem;
+    --move-y: 0.25rem;
+
+    --scrollbar-track: transparent;
+    --skeleton-bg: rgba(15, 23, 42, 0.08);
+    --skeleton-highlight: rgba(255, 255, 255, 0.8);
+  }
+
+  /* === 全域重置 === */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  * {
+    scroll-behavior: smooth;
+    scroll-margin: var(--scroll-margin);
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 65%, transparent);
+    color: var(--background);
+  }
+
+  html {
+    height: 100%;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    background: var(--background);
+    color: var(--foreground);
+    font-family:
+      system-ui,
+      -apple-system,
+      "Segoe UI",
+      Roboto,
+      "Helvetica Neue",
+      Arial,
+      sans-serif;
+    -webkit-font-mdoothing: antialiased;
+    -moz-osx-font-mdoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    transition:
+      background var(--transition-normal) var(--transition-timing),
+      color var(--transition-normal) var(--transition-timing);
+  }
+
+  /* === 按鈕系統 === */
+  button,
+  .btn {
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: all var(--transition-normal) var(--transition-timing);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 整合 active 狀態 */
+  button:active,
+  .btn:active {
+    transform: scale(0.95);
+    transition-duration: var(--transition-fast);
+    filter: brightness(0.9);
+  }
+
+  button:hover,
+  .btn:hover {
+    text-decoration: none !important;
+    filter: brightness(1.1);
+  }
+
+  /* 禁用狀態 */
+  button:disabled,
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.5);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .btn {
+    background: var(--secondary-background);
+    border: 1px solid var(--border);
+    color: var(--foreground);
+  }
+
+  .btn.primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: var(--background);
+    border: none;
+  }
+  .btn.secondary {
+    background: var(--secondary-background);
+    color: var(--secondary);
+    border: 1px solid var(--secondary);
+  }
+
+  .btn.secondary:hover {
+    background: var(--secondary);
+    color: var(--secondary-background);
+  }
+
+  /* === 容器系統 === */
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: var(--container-max-width) !important;
+    margin-inline: auto;
+    padding: 1.5rem;
+    gap: 1rem;
+    width: 100%;
+  }
+  @media (max-width: 768px) {
+    .container {
+      padding: 1rem;
+    }
+  }
+
+  /* === 卡片系統 === */
+  .card {
+    background: var(--primary-background);
+    border: 1px solid var(--border);
+    transition: all var(--transition-normal) var(--transition-timing);
+  }
+
+  .card.primary {
+  }
+  .card.secondary {
+  }
+
+  .card:hover {
+    border-color: color-mix(in oklab, var(--primary) 30%, transparent);
+  }
+
+  a.card:hover {
+    transform: translateY(calc(-1 * var(--move-y)));
+    border-color: var(--primary);
+    text-decoration: none;
+  }
+
+  /* === 連結樣式 === */
+  a {
+    color: inherit;
+    text-decoration: none;
+    transition: all var(--transition-normal) var(--transition-timing);
+  }
+
+  /* === 滑動摺疊效果 === */
+  .slide-collapse {
+    transition: height var(--transition-normal) ease-out;
+    overflow: hidden;
+    will-change: height;
+  }
+
+  /* === 自訂滾動條 === */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+    transition: background var(--transition-normal) ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted);
+  }
+
+  /* 針對 Firefox 的滾動條樣式 */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) var(--scrollbar-track);
+  }
+
+  /* 修復 Safari 搜尋框的取消按鈕 */
+  input[type="search"]::-webkit-search-cancel-button {
+    display: none;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ==== Utilities Layer ==== */
+@layer utilities {
+  .tooltip,
+  .overlay-wrapper {
+    position: relative;
+  }
+
+  .tooltip::before,
+  .overlay-wrapper .overlay-content {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 70%;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-normal);
+    z-index: 9999;
+  }
+
+  .tooltip:hover:before,
+  .overlay-wrapper:hover .overlay-content {
+    bottom: 120%;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .tooltip::before {
+    content: attr(data-tooltip);
+    color: var(--foreground);
+    width: max-content;
+    max-width: 200px;
+    background: var(--secondary-background);
+    border: 1px solid var(--border);
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--border-radius-md);
+    white-space: nowrap;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    box-shadow: var(--shadow-hover);
+    pointer-events: none;
+    transition: all var(--transition-normal);
+  }
+
+  /* 小箭頭，指向觸發元素 */
+  .tooltip::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 70%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--secondary-background);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-normal);
+    z-index: 9999;
+    pointer-events: none;
+  }
+
+  .tooltip:hover::after {
+    bottom: 108%;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* === 動畫效果 === */
+  .animate-pop {
+    animation: pop var(--transition-fast) cubic-bezier(0.68, -0.55, 0.68, 1);
+  }
+
+  .animate-appear {
+    animation: appear var(--transition-normal) var(--transition-timing) forwards;
+  }
+
+  .animate-turn {
+    animation: turn var(--transition-normal) var(--transition-timing) forwards;
+  }
+
+  /* 減少動畫效果 */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-pop,
+    .animate-turn,
+    .underline-spread::after,
+    .hover\:underline-spread::after {
+      animation: none;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* === Keyframe 動畫 === */
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes appear {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes turn {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes underlineSpreadIn {
+    from {
+      width: 0;
+    }
+    to {
+      width: 120%;
+    }
+  }
+
+  /* === 底線擴散效果 === */
+  .underline-spread,
+  .hover\:underline-spread {
+    position: relative;
+    display: inline-block;
+  }
+
+  .hover\:underline-spread:hover {
+    text-decoration: none !important;
+  }
+
+  .underline-spread::after,
+  .hover\:underline-spread::after {
+    content: "";
+    --line-height: 0.25rem;
+    position: absolute;
+    bottom: -0.25em;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: var(--line-height);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: var(--border-radius-md);
+    transition: width var(--transition-normal) var(--transition-timing);
+  }
+
+  .underline-spread::after {
+    animation: underlineSpreadIn var(--transition-normal)
+      var(--transition-timing) forwards;
+  }
+
+  .hover\:underline-spread:hover::after {
+    width: 110%;
+  }
+}
+
+/* === Skeleton / Shimmer Utility === */
+@layer utilities {
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    color: transparent;
+    background: var(--skeleton-bg);
+  }
+
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--skeleton-highlight),
+      transparent
+    );
+    transform: translateX(-100%);
+    animation: shimmer 1.2s linear infinite;
+  }
+  /* helper for thin lines */
+  .skeleton-line {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+
+  /* reduce shimmer on reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton::after {
+      animation: none;
+      opacity: 0.6;
+    }
+  }
 }

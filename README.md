@@ -89,13 +89,13 @@
 | --- | --- | --- |
 | id | INT | Unique identifier for each board game borrowing record |
 | board_game_id | INT | Foreign key referencing the board_games table |
-| user_id | INT | Foreign key referencing the user table |
+| user_id | UUID | Foreign key referencing the user table |
 | created_at | timestamp | Timestamp of when the borrowing record was created |
 | borrowed_at | timestamp | Timestamp of when the board game was borrowed |
 | due_at | timestamp | Timestamp of when the board game is due to be returned |
 | returned_at | timestamp | Timestamp of when the board game was returned |
 | status | text | Status of the borrowing record (e.g., "borrowed", "returned") |
-| approved_by_user_id | INT | Foreign key referencing the user table for the approver |
+| approved_by_user_id | UUID | Foreign key referencing the user table for the approver |
 
 ### events
 
@@ -112,7 +112,7 @@
 | Column Name | Data Type | Description |
 | --- | --- | --- |
 | id | INT | Unique identifier for each attendance record |
-| user_id | INT | Foreign key referencing the user table |
+| user_id | UUID | Foreign key referencing the user table |
 | event_id | INT | Foreign key referencing the events table |
 | attended_at | timestamp | Timestamp of when the user attended the event |
 | status | text | Status of the attendance record (e.g., "present", "absent", "late") |
@@ -126,7 +126,7 @@
 | content | text | Content of the announcement |
 | created_at | timestamp | Timestamp of when the announcement was created |
 | updated_at | timestamp | Timestamp of when the announcement was last updated |
-| author_id | INT | Foreign key referencing the user table for the author of the announcement |
+| author_id | UUID | Foreign key referencing the user table for the author of the announcement |
 | is_published | boolean | Indicates if the announcement is published or not |
 | published_at | timestamp | Timestamp of when the announcement was published |
 
