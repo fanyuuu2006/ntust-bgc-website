@@ -1,6 +1,7 @@
-export { metadata } from "./metadata";
+export { metadata } from "@/libs/metadata";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
+import { Header } from "@/components/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,7 +23,10 @@ export default function RootLayout({
       lang="zh-Hant"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body>{children}</body>
+      <body suppressHydrationWarning={true}>
+        <Header className="fixed top-0 w-full z-99999" />
+        <main className="min-h-screen">{children}</main>
+      </body>
     </html>
   );
 }
