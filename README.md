@@ -6,7 +6,7 @@
 
 | Column Name | Data Type | Description |
 | --- | --- | --- |
-| id | INT | Unique identifier for each user |
+| id | UUID | Unique identifier for each user |
 | name | text | Name of the user |
 | email | text | Email address of the user |
 | avatar | text | URL or path to the user's avatar image |
@@ -18,7 +18,7 @@
 | Column Name | Data Type | Description |
 | --- | --- | --- |
 | id | INT | Unique identifier for each membership |
-| user_id | INT | Foreign key referencing the user table |
+| user_id | UUID | Foreign key referencing the user table |
 | type | text | Type of membership (e.g., "annual", "lifetime") |
 | academic_year_id | INT | Foreign key referencing the academic_years table |
 | status | text | Status of the membership (e.g.,"pending", "active", "expired", "suspended", "cancelled") |
@@ -48,7 +48,7 @@
 | Column Name | Data Type | Description |
 | --- | --- | --- |
 | id | INT | Unique identifier for each officer position |
-| user_id | INT | Foreign key referencing the user table |
+| user_id | UUID | Foreign key referencing the user table |
 | position_id | INT | Foreign key referencing the positions table |
 | academic_year_id | INT | Foreign key referencing the academic_years table |
 | created_at | timestamp | Timestamp of when the officer position was created |
@@ -129,3 +129,17 @@
 | author_id | INT | Foreign key referencing the user table for the author of the announcement |
 | is_published | boolean | Indicates if the announcement is published or not |
 | published_at | timestamp | Timestamp of when the announcement was published |
+
+## Permissions
+
+| 功能 | 未登入 | 已登入非社員 | 社員 | 幹部 |
+| --- | --- | --- | --- | --- |
+| 查看首頁 | ✅ | ✅ | ✅ | ✅ |
+| 查看桌遊 | ✅ | ✅ | ✅ | ✅ |
+| 查看公告 | ✅ | ✅ | ✅ | ✅ |
+| 註冊帳號 | ✅ | - | - | - |
+| 社課簽到 | ❌ | ❌ | ✅ | ✅ |
+| 借用桌遊 | ❌ | ❌ | ✅ | ✅ |
+| 查看個人紀錄 | ❌ | ✅ | ✅ | ✅ |
+| 管理桌遊 | ❌ | ❌ | ❌ | ✅ |
+| 發布公告 | ❌ | ❌ | ❌ | ✅ |
