@@ -63,6 +63,17 @@ export const sessionRepository = {
     return data;
   },
 
+  clearExpiredSessions: async (): Promise<void> => {
+    const { error } = await supabase
+      .from("sessions")
+      .delete()
+      .lt("expires_at", new Date().toISOString());
+
+    if (error) {
+      throwRepositoryError("清除過期 Session 失敗", error);
+    }
+  },
+
   /**
    * 更新 Session
    */
