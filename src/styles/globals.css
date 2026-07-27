@@ -226,10 +226,8 @@
 
   .btn.primary {
     background: linear-gradient(135deg, var(--primary), var(--primary-light));
-
     color: var(--primary-background);
-
-    border-color: transparent;
+    border: 1px solid var(--primary);
   }
 
   /* =====================================================
@@ -256,15 +254,12 @@
 
   .btn.outline {
     background: transparent;
-
     color: var(--primary);
-
     border-color: var(--primary);
   }
 
   .btn.outline:hover {
     background: var(--primary);
-
     color: var(--primary-background);
   }
 
@@ -277,15 +272,13 @@
 
     color: var(--primary-background);
 
-    border-color: transparent;
+    border: 1px solid transparent;
   }
 
   .btn.yellow {
     background: var(--game-yellow);
-
     color: var(--foreground);
-
-    border-color: transparent;
+    border: 1px solid transparent;
   }
 
   .btn.red,
@@ -294,9 +287,9 @@
 
     color: var(--primary-background);
 
-    border-color: transparent;
+    border: 1px solid transparent;
   }
-  
+
   /* =====================================================
      📦 Container
      ===================================================== */

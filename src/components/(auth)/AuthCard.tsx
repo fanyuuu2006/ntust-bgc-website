@@ -15,7 +15,7 @@ export const AuthCard = ({
   return (
     <div
       className={cn(
-        "w-full max-w-md rounded-2xl border border-(--border) bg-(--primary-background) p-6 sm:p-8",
+        "border border-(--border) bg-(--primary-background) p-6 sm:p-8",
         className,
       )}
       {...rest}

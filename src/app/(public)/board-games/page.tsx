@@ -1,4 +1,4 @@
 
-export default function BoardGames() {
+export default function BoardGamesPage() {
   return <></>;
 }

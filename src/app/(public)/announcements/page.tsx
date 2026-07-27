@@ -1,4 +1,4 @@
 
-export default function Announcements() {
+export default function AnnouncementsPage() {
   return <></>;
 }

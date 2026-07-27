@@ -8,7 +8,7 @@ import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import { FieldInput } from "@/components/FieldInput";
 
-type LoginResponse = {
+type RegisterResponse = {
   data: {
     id: string;
     email: string;
@@ -16,26 +16,33 @@ type LoginResponse = {
   };
 };
 
-type LoginFormValues = {
+type RegisterFormValues = {
+  name: string;
   email: string;
   password: string;
+  confirmPassword: string;
 };
 
-const initialValues: LoginFormValues = {
+const initialValues: RegisterFormValues = {
+  name: "",
   email: "",
   password: "",
+  confirmPassword: "",
 };
 
-type LoginFormProps = Omit<
+type FieldErrors = Partial<Record<keyof RegisterFormValues, string>>;
+
+type RegisterFormProps = Omit<
   React.FormHTMLAttributes<HTMLFormElement>,
   "onSubmit"
 >;
 
-export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
+export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
   const router = useRouter();
 
-  const [values, setValues] = useState<LoginFormValues>(initialValues);
-  const [error, setError] = useState<string | null>(null);
+  const [values, setValues] = useState<RegisterFormValues>(initialValues);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -43,21 +50,45 @@ export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
     setValues((prev) => ({ ...prev, [name]: value }));
   }
 
+  function validate(): FieldErrors {
+    const errors: FieldErrors = {};
+
+    if (values.password !== values.confirmPassword) {
+      errors.confirmPassword = "密碼與確認密碼不一致";
+    }
+
+    return errors;
+  }
+
   async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    setError(null);
+    setFormError(null);
+
+    const errors = validate();
+    setFieldErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      await apiClient<LoginResponse>("/api/auth/login", {
+      await apiClient<RegisterResponse>("/api/auth/register", {
         method: "POST",
-        body: values,
+        body: {
+          name: values.name,
+          email: values.email,
+          password: values.password,
+        },
       });
 
-      router.refresh();
+      router.push("/login");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "登入失敗，請稍後再試");
+      setFormError(
+        err instanceof ApiError ? err.message : "註冊失敗，請稍後再試",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -71,6 +102,19 @@ export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
       {...rest}
     >
       <div className="flex flex-col gap-4">
+        <FieldInput
+          field={{
+            id: "name",
+            label: "姓名",
+            type: "text",
+            required: true,
+            autoComplete: "name",
+            placeholder: "請輸入您的姓名",
+          }}
+          value={values.name}
+          onChange={handleChange}
+        />
+
         <FieldInput
           field={{
             id: "email",
@@ -90,17 +134,31 @@ export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
             label: "密碼",
             type: "password",
             required: true,
-            autoComplete: "current-password",
+            autoComplete: "new-password",
             placeholder: "請輸入密碼",
           }}
           value={values.password}
           onChange={handleChange}
         />
+
+        <FieldInput
+          field={{
+            id: "confirmPassword",
+            label: "確認密碼",
+            type: "password",
+            required: true,
+            autoComplete: "new-password",
+            placeholder: "請再次輸入密碼",
+            error: fieldErrors.confirmPassword,
+          }}
+          value={values.confirmPassword}
+          onChange={handleChange}
+        />
       </div>
 
-      {error && (
+      {formError && (
         <p role="alert" className="text-sm text-(--game-red)">
-          {error}
+          {formError}
         </p>
       )}
 
@@ -111,16 +169,13 @@ export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
           aria-busy={isLoading}
           className="btn primary w-full rounded-lg py-2.5 text-sm font-medium sm:text-base"
         >
-          {isLoading ? "登入中..." : "登入"}
+          {isLoading ? "建立中..." : "建立帳號"}
         </button>
 
         <p className="text-center text-sm text-(--muted)">
-          還沒有帳號？
-          <Link
-            href="/register"
-            className="ml-1 text-(--primary) hover:underline"
-          >
-            前往註冊
+          已經有帳號？
+          <Link href="/login" className="ml-1 text-(--primary) hover:underline">
+            前往登入
           </Link>
         </p>
       </div>

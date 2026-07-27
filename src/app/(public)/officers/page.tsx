@@ -1,4 +1,4 @@
 
-export default function Officers() {
+export default function OfficersPage() {
   return <></>;
 }
