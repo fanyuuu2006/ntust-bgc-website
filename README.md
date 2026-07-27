@@ -13,14 +13,35 @@
 │ created_at │ timestamp │ Timestamp of when the user was created │
 │ updated_at │ timestamp │ Timestamp of when the user was last updated │
 
+### auth_credentials
+
+│ Column Name │ Data Type │ Description │
+│ --- │ --- │ --- │
+│ id │ UUID │ Unique identifier for each auth credential │
+│ user_id │ UUID │ Foreign key referencing the user table │
+│ password_hash │ text │ Hashed password for the user │
+│ created_at │ timestamp │ Timestamp of when the auth credential was created │
+│ updated_at │ timestamp │ Timestamp of when the auth credential was last updated │
+
+### sessions
+
+│ Column Name │ Data Type │ Description │
+│ --- │ --- │ --- │
+│ id │ UUID │ Unique identifier for each session │
+│ user_id │ UUID │ Foreign key referencing the user table │
+│ token │ text │ Session token │
+│ expires_at │ timestamp │ Timestamp of when the session expires │
+│ created_at │ timestamp │ Timestamp of when the session was created │
+│ last_accessed_at │ timestamp │ Timestamp of when the session was last accessed │
+
 ### memberships
 
 │ Column Name │ Data Type │ Description │
 │ --- │ --- │ --- │
-│ id │ INT │ Unique identifier for each membership │
+│ id │ UUID │ Unique identifier for each membership │
 │ user_id │ UUID │ Foreign key referencing the user table │
 │ type │ text │ Type of membership (e.g., "annual", "lifetime") │
-│ academic_year_id │ INT │ Foreign key referencing the academic_years table │
+│ academic_year_id │ UUID │ Foreign key referencing the academic_years table │
 │ status │ text │ Status of the membership (e.g.,"pending", "active", "expired", "suspended", "cancelled") │
 │ created_at │ timestamp │ Timestamp of when the membership was created │
 │ updated_at │ timestamp │ Timestamp of when the membership was last updated │
@@ -30,48 +51,42 @@
 
 │ Column Name │ Data Type │ Description │
 │ --- │ --- │ --- │
-│ id │ INT │ Unique identifier for each academic year │
+│ id │ UUID │ Unique identifier for each academic year │
 │ year │ text │ Academic year (e.g., "113", "114") │
-│ start_date │ date │ Start date of the academic year │
-│ end_date │ date │ End date of the academic year │
+│ start_date │ timestamp │ Start date of the academic year │
+│ end_date │ timestamp │ End date of the academic year │
 │ is_current │ boolean │ Indicates if this is the current academic year │
-
-### positions
-
-│ Column Name │ Data Type │ Description │
-│ --- │ --- │ --- │
-│ id │ INT │ Unique identifier for each position │
-│ name │ text │ Name of the position (e.g., "社長", "美宣") │
 
 ### officer_positions
 
 │ Column Name │ Data Type │ Description │
 │ --- │ --- │ --- │
-│ id │ INT │ Unique identifier for each officer position │
+│ id │ UUID │ Unique identifier for each officer position │
 │ user_id │ UUID │ Foreign key referencing the user table │
-│ position_id │ INT │ Foreign key referencing the positions table │
-│ academic_year_id │ INT │ Foreign key referencing the academic_years table │
+│ title │ text │ Title of the officer position │
+│ academic_year_id │ UUID │ Foreign key referencing the academic_years table │
 │ created_at │ timestamp │ Timestamp of when the officer position was created │
 
 ### board_games
 
 │ Column Name │ Data Type │ Description │
 │ --- │ --- │ --- │
-│ id │ INT │ Unique identifier for each board game │
+│ id │ UUID │ Unique identifier for each board game │
+| inventory_number | text | Unique inventory number for the board game |
 │ name │ text │ Name of the board game │
 │ description │ text │ Description of the board game │
 │ image │ text │ URL or path to the board game's image │
 │ created_at │ timestamp │ Timestamp of when the board game was created │
 │ updated_at │ timestamp │ Timestamp of when the board game was last updated │
-│ category_id │ INT │ Foreign key referencing the board_game_categories table │
-│ location_id │ INT │ Foreign key referencing the locations table │
+│ category_id │ UUID │ Foreign key referencing the board_game_categories table │
+│ location_id │ UUID │ Foreign key referencing the locations table │
 │ status │ text │ Status of the board game (e.g., "available", "borrowed", "maintenance", "lost", 'damaged', 'retired') │
 
 ### board_game_categories
 
 │ Column Name │ Data Type │ Description │
 │ --- │ --- │ --- │
-│ id │ INT │ Unique identifier for each board game category │
+│ id │ UUID │ Unique identifier for each board game category │
 │ name │ text │ Name of the board game category │
 │ description │ text │ Description of the board game category │
 
@@ -79,7 +94,7 @@
 
 │ Column Name │ Data Type │ Description │
 │ --- │ --- │ --- │
-│ id │ INT │ Unique identifier for each location │
+│ id │ UUID │ Unique identifier for each location │
 │ name │ text │ Name of the location │
 │ description │ text │ Description of the location │
 
@@ -87,8 +102,8 @@
 
 │ Column Name │ Data Type │ Description │
 │ --- │ --- │ --- │
-│ id │ INT │ Unique identifier for each board game borrowing record │
-│ board_game_id │ INT │ Foreign key referencing the board_games table │
+│ id │ UUID │ Unique identifier for each board game borrowing record │
+│ board_game_id │ UUID │ Foreign key referencing the board_games table │
 │ user_id │ UUID │ Foreign key referencing the user table │
 │ created_at │ timestamp │ Timestamp of when the borrowing record was created │
 │ borrowed_at │ timestamp │ Timestamp of when the board game was borrowed │
@@ -101,19 +116,20 @@
 
 │ Column Name │ Data Type │ Description │
 │ --- │ --- │ --- │
-│ id │ INT │ Unique identifier for each event │
+│ id │ UUID │ Unique identifier for each event │
 │ name │ text │ Name of the event │
+│ created_at │ timestamp │ Timestamp of when the event was created │
 │ description │ text │ Description of the event │
 │ start_time │ timestamp │ Start time of the event │
 │ end_time │ timestamp │ End time of the event │
 
-### event_attendance
+### event_attendances
 
 │ Column Name │ Data Type │ Description │
 │ --- │ --- │ --- │
-│ id │ INT │ Unique identifier for each attendance record │
+│ id │ UUID │ Unique identifier for each attendance record │
 │ user_id │ UUID │ Foreign key referencing the user table │
-│ event_id │ INT │ Foreign key referencing the events table │
+│ event_id │ UUID │ Foreign key referencing the events table │
 │ attended_at │ timestamp │ Timestamp of when the user attended the event │
 │ status │ text │ Status of the attendance record (e.g., "present", "absent", "late") │
 
@@ -121,7 +137,7 @@
 
 │ Column Name │ Data Type │ Description │
 │ --- │ --- │ --- │
-│ id │ INT │ Unique identifier for each announcement │
+│ id │ UUID │ Unique identifier for each announcement │
 │ title │ text │ Title of the announcement │
 │ content │ text │ Content of the announcement │
 │ created_at │ timestamp │ Timestamp of when the announcement was created │

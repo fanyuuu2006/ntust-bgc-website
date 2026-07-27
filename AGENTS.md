@@ -1,81 +1,86 @@
-# AGENTS.md
-
-## NTUST Board Game Club Website
+# NTUST Board Game Club Website
 
 This document defines the architecture, coding conventions, security rules, data model, UI design system, and development workflow for the National Taiwan University of Science and Technology Board Game Club website.
 
-AI coding agents and developers must follow these rules when modifying this repository.
+AI coding agents and developers MUST follow these rules when modifying this repository.
 
 ---
 
 ## 1. Project Overview
 
-This repository is the official website and internal management system for the National Taiwan University of Science and Technology Board Game Club.
+This repository contains the official website and internal management system for the National Taiwan University of Science and Technology Board Game Club.
 
-The application has two major purposes.
+The application has two major responsibilities.
 
-### Public Website
+### 1.1 Public Website
 
 Public users can:
 
-* Learn about the club.
-* Browse board games.
-* View board game details.
-* View events.
-* View announcements.
-* View current officers.
+- Learn about the club.
+- Browse board games.
+- View board game details.
+- View events.
+- View announcements.
+- View current officers.
 
-### Internal Club System
+### 1.2 Internal Club System
 
 Authenticated users may:
 
-* Manage their personal profile.
-* View personal records.
-* View borrowing records.
-* Participate in attendance workflows when eligible.
-* Borrow board games when they are current members.
+- Manage their personal profile.
+- View personal records.
+- View borrowing records.
+- Participate in eligible attendance workflows.
+- Borrow board games when they are current members.
 
 Current officers may additionally:
 
-* Manage board games.
-* Manage members.
-* Manage events.
-* Manage attendance.
-* Manage officer positions.
-* Manage announcements.
+- Manage board games.
+- Manage members.
+- Manage events.
+- Manage attendance.
+- Manage officer positions.
+- Manage announcements.
 
 ---
 
-## 2. Core Permission Model
+## 2. Non-Negotiable Project Rules
 
-The application has four effective permission states:
+The following rules are mandatory.
 
-```text
-Unauthenticated User
-        │
-        ▼
-Authenticated User
-        │
-        ├── Non-member
-        │
-        ├── Current Member
-        │
-        └── Current Officer
-```
+### Never
 
-Officer is not a separate authentication system.
+- Do not use `any` to bypass TypeScript errors.
+- Do not weaken TypeScript strictness.
+- Do not add Framer Motion.
+- Do not add another animation library.
+- Do not add unnecessary state management libraries.
+- Do not trust client-provided authorization information.
+- Do not authorize based on URL paths alone.
+- Do not expose Supabase service-role credentials to the browser.
+- Do not hardcode academic-year IDs in authorization logic.
+- Do not hardcode officer names for authorization.
+- Do not expose unpublished announcements publicly.
+- Do not allow non-members to borrow board games.
+- Do not allow non-officers to perform administrative mutations.
+- Do not expose raw database errors or stack traces to users.
+- Do not introduce a duplicate design system.
+- Do not create duplicate components, hooks, utilities, or types without a clear reason.
+- Do not modify unrelated files for a small feature.
+- Do not introduce dead code.
 
-An officer is still an authenticated user.
+### Always
 
-Authentication and authorization are separate concerns.
-
-A logged-in user does not automatically mean that the user is:
-
-* a member
-* a current member
-* an officer
-
-The database is the source of truth for authorization.
+- Prefer Server Components.
+- Verify authentication and authorization server-side.
+- Treat the database as the source of truth for permissions.
+- Reuse existing components, hooks, utilities, types, services, and design tokens.
+- Preserve responsive behavior.
+- Preserve accessibility.
+- Respect `prefers-reduced-motion`.
+- Follow the installed Next.js version.
+- Inspect local documentation when using unfamiliar Next.js APIs.
+- Make the smallest appropriate change.
 
 ---
 
@@ -83,69 +88,102 @@ The database is the source of truth for authorization.
 
 The project uses:
 
-* Next.js 16 App Router
-* React 19
-* TypeScript
-* Tailwind CSS 4
-* Supabase
-* Supabase Auth
-* PostgreSQL through Supabase
-* Ant Design Icons
-* react-icons
+- Next.js 16 App Router
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Supabase
+- Supabase Auth
+- PostgreSQL through Supabase
+- Ant Design Icons
+- `react-icons`
 
-Do not introduce additional dependencies unless there is a clear requirement.
+Do not introduce additional dependencies unless there is a clear technical requirement.
 
-Do not introduce:
+The project does not use:
 
-* Zustand
-* TanStack Query
-* React Hook Form
-* Zod
-* shadcn/ui
-* Framer Motion
-* another animation library
-* another icon library
+- Zustand
+- TanStack Query
+- React Hook Form
+- Zod
+- shadcn/ui
+- Framer Motion
+- Other animation libraries
 
-unless the project explicitly adopts them in the future.
-
-### Important
-
-This project does **not** use Framer Motion.
-
-Never add Framer Motion.
-
-Never introduce another animation library.
-
-Animations must use the existing CSS animation and transition system.
+Do not add these libraries unless the project explicitly adopts them in the future.
 
 ---
 
-## 4. Next.js Version Rule
+## 4. Next.js Version Policy
 
 This project uses Next.js 16.
 
-Next.js APIs and conventions may differ from older versions.
+The installed version is the source of truth.
 
-Before implementing unfamiliar or potentially changed Next.js behavior, inspect the local documentation:
+Before implementing unfamiliar or potentially changed Next.js behavior, inspect:
 
 ```text
 node_modules/next/dist/docs/
 ```
 
-The installed version is the source of truth.
-
 Do not blindly rely on:
 
-* old tutorials
-* old Stack Overflow answers
-* outdated AI-generated code
-* older Next.js documentation
+- Old tutorials.
+- Outdated Stack Overflow answers.
+- Old Next.js documentation.
+- AI-generated code written for older Next.js versions.
 
 ---
 
-## 5. App Router Structure
+## 5. Architecture
 
-The project uses the Next.js App Router.
+The application follows a Server-First architecture.
+
+Preferred flow:
+
+```text
+Server Component
+    │
+    ├── Load data
+    ├── Verify permissions
+    └── Render UI
+            │
+            └── Client Component
+                └── Interactive behavior
+```
+
+Server Components are the default.
+
+Use Client Components only when required by:
+
+- `useState`
+- `useEffect`
+- Event handlers
+- Browser APIs
+- `localStorage`
+- `sessionStorage`
+- Browser-only Supabase clients
+- `useRouter`
+- `usePathname`
+- `useSearchParams`
+- Interactive form state
+- Dialogs
+- Dropdowns
+- Client-only UI behavior
+
+Do not add:
+
+```tsx
+"use client";
+```
+
+merely because a component renders UI.
+
+Keep Client Components as small and focused as possible.
+
+---
+
+## 6. App Router Structure
 
 The expected structure is:
 
@@ -162,30 +200,14 @@ src/
 │   │
 │   ├── (public)/
 │   │   ├── board-games/
-│   │   │   ├── page.tsx
-│   │   │   └── [id]/
-│   │   │       └── page.tsx
-│   │   │
 │   │   ├── announcements/
-│   │   │   ├── page.tsx
-│   │   │   └── [id]/
-│   │   │       └── page.tsx
-│   │   │
 │   │   ├── events/
-│   │   │   ├── page.tsx
-│   │   │   └── [id]/
-│   │   │       └── page.tsx
-│   │   │
 │   │   └── officers/
-│   │       └── page.tsx
 │   │
 │   ├── (auth)/
 │   │   ├── login/
-│   │   │   └── page.tsx
 │   │   ├── register/
-│   │   │   └── page.tsx
 │   │   └── forgot-password/
-│   │       └── page.tsx
 │   │
 │   ├── auth/
 │   │   └── callback/
@@ -196,71 +218,34 @@ src/
 │   │       ├── layout.tsx
 │   │       ├── page.tsx
 │   │       ├── profile/
-│   │       │   └── page.tsx
 │   │       ├── borrowings/
-│   │       │   └── page.tsx
 │   │       └── attendance/
-│   │           └── page.tsx
 │   │
 │   ├── (admin)/
 │   │   └── admin/
 │   │       ├── layout.tsx
 │   │       ├── page.tsx
 │   │       ├── board-games/
-│   │       │   └── page.tsx
 │   │       ├── members/
-│   │       │   └── page.tsx
 │   │       ├── events/
-│   │       │   └── page.tsx
 │   │       ├── attendance/
-│   │       │   └── page.tsx
 │   │       ├── officers/
-│   │       │   └── page.tsx
 │   │       └── announcements/
-│   │           └── page.tsx
 │   │
 │   └── api/
-│       └── ...
 │
 ├── components/
 ├── hooks/
 ├── libs/
+├── services/
 ├── types/
 ├── utils/
 └── styles/
 ```
 
----
-
-## 6. Route Groups
-
 Route groups are organizational tools only.
 
 For example:
-
-```text
-src/app/(public)/board-games/page.tsx
-```
-
-maps to:
-
-```text
-/board-games
-```
-
-Similarly:
-
-```text
-src/app/(authenticated)/dashboard/page.tsx
-```
-
-maps to:
-
-```text
-/dashboard
-```
-
-and:
 
 ```text
 src/app/(admin)/admin/page.tsx
@@ -274,82 +259,54 @@ maps to:
 
 Route groups do not provide authorization.
 
-This is not authorization:
+This is NOT authorization:
 
 ```text
 (app)/(admin)
 ```
 
-Authorization must be implemented through:
-
-1. Authenticated session verification.
-2. Database queries.
-3. Current membership verification.
-4. Current officer verification.
+Authorization must be explicitly verified.
 
 ---
 
-## 7. Server-First Architecture
+## 7. Authentication and Authorization
 
-Use Server Components by default.
+Authentication and authorization are separate concerns.
 
-Preferred architecture:
+The application has four effective permission states:
 
 ```text
-Server Component
-    │
-    ├── Load data
-    ├── Verify permissions
-    └── Render UI
-            │
-            └── Client Component
-                └── Interactive behavior
+Unauthenticated User
+        │
+        ▼
+Authenticated User
+        │
+        ├── Non-member
+        │
+        ├── Current Member
+        │
+        └── Current Officer
 ```
 
-Use Client Components only when required by:
-
-* `useState`
-* `useEffect`
-* event handlers
-* browser APIs
-* `localStorage`
-* `sessionStorage`
-* browser Supabase client
-* `useRouter`
-* `usePathname`
-* `useSearchParams`
-* interactive form state
-* dialogs
-* dropdowns
-* client-only UI behavior
-
-Do not add:
-
-```tsx
-"use client";
-```
-
-merely because a component renders UI.
-
-Keep Client Components as small as possible.
-
----
-
-## 8. Authentication and Authorization
+An officer is still an authenticated user.
 
 Authentication is handled by Supabase Auth.
 
 Authorization is determined by the database.
 
-The server must verify the authenticated user before sensitive operations.
+The database is the source of truth.
 
-The general authorization flow is:
+---
+
+### 7.1 Authorization Flow
+
+Sensitive operations should follow:
 
 ```text
 Request
     │
     ▼
-Get authenticated user
+Authenticate user
     │
     ▼
 Load current academic year
@@ -358,46 +315,48 @@ Load current academic year
 Check membership or officer status
     │
     ▼
-Validate request data
+Validate input
     │
     ▼
 Perform operation
 ```
 
-Never trust client-provided values such as:
+Every mutation must follow:
 
-```ts
+```text
+Authenticate
+    │
+    ▼
+Authorize
+    │
+    ▼
+Validate
+    │
+    ▼
+Mutate
+```
+
+Never trust client-provided:
+
+```text
 user_id
-```
-
-```ts
 author_id
-```
-
-```ts
 approved_by_user_id
-```
-
-```ts
 isMember
-```
-
-```ts
 isOfficer
-```
-
-```ts
 role
+membership status
+officer status
 ```
 
 The server must derive these values from:
 
-* the authenticated session
-* the database
+- The authenticated Supabase session.
+- The database.
 
 ---
 
-## 9. Current Academic Year
+## 8. Current Academic Year
 
 The current academic year must be determined from:
 
@@ -421,13 +380,19 @@ Do not hardcode:
 
 in authorization logic.
 
-Do not assume the latest row is automatically the current academic year.
+Do not assume the latest database row is automatically the current academic year.
 
 The database is the source of truth.
 
+A shared domain function should be preferred:
+
+```ts
+getCurrentAcademicYear()
+```
+
 ---
 
-## 10. Membership Authorization
+## 9. Membership Authorization
 
 A user is a current member only when their membership is valid for the current academic year.
 
@@ -455,16 +420,22 @@ membership.academic_year_id = currentAcademicYear.id
 
 Do not treat the following as current memberships:
 
-* historical memberships
-* expired memberships
-* cancelled memberships
-* suspended memberships
+- Historical memberships.
+- Expired memberships.
+- Cancelled memberships.
+- Suspended memberships.
+
+Preferred domain function:
+
+```ts
+getCurrentMembership(userId)
+```
 
 ---
 
-## 11. Officer Authorization
+## 10. Officer Authorization
 
-A user is a current officer only when:
+A user is a current officer when:
 
 ```text
 officer_positions.user_id = currentUser.id
@@ -478,7 +449,7 @@ officer_positions.academic_year_id = currentAcademicYear.id
 
 Do not hardcode officer names for authorization.
 
-For example, never authorize only because the position is:
+For example, authorization must not depend on:
 
 ```text
 社長
@@ -487,17 +458,72 @@ For example, never authorize only because the position is:
 攝影
 ```
 
-Any valid current-year officer position should be authorized through the database relationship.
-
 The position name is a display concern.
 
 The existence of a valid current-year officer position is the authorization concern.
 
+Preferred domain function:
+
+```ts
+isCurrentOfficer(userId)
+```
+
 ---
 
-## 12. Database Domain Model
+## 11. Supabase Security
 
-The primary database entities are:
+Supabase access must follow the principle of least privilege.
+
+### Server Client
+
+Use for:
+
+- Server Components.
+- Server Actions.
+- Route Handlers.
+- Server-side authorization.
+- Server-side database access.
+
+### Browser Client
+
+Use only when the browser genuinely needs direct Supabase interaction.
+
+Never expose:
+
+```text
+SUPABASE_SERVICE_ROLE_KEY
+```
+
+to the browser.
+
+Never use service-role credentials in:
+
+- Client Components.
+- Browser code.
+- Public environment variables.
+
+---
+
+### 11.1 Row Level Security
+
+Database-level security is an additional protection layer.
+
+When appropriate, Supabase Row Level Security policies should enforce:
+
+- User-owned data access.
+- Membership-related access.
+- Officer-only administrative access.
+- Public visibility of published content.
+
+Application-level authorization must not be replaced by frontend checks.
+
+Frontend visibility is never a security boundary.
+
+---
+
+## 12. Data Model
+
+Primary entities include:
 
 ```text
 users
@@ -513,6 +539,14 @@ events
 event_attendance
 announcements
 ```
+
+Shared domain types should live in:
+
+```text
+src/types/
+```
+
+Do not duplicate the same domain union type in multiple files.
 
 ---
 
@@ -581,11 +615,12 @@ Officers may approve or reject borrowing requests.
 
 Every borrowing mutation must verify:
 
-* authentication
-* current membership
-* board game availability
-* request validity
-* officer permission when required
+- Authentication.
+- Current membership.
+- Board game existence.
+- Board game availability.
+- Request validity.
+- Officer permission when required.
 
 ---
 
@@ -619,7 +654,7 @@ absent
 late
 ```
 
-Member attendance workflows must verify membership requirements on the server.
+Attendance workflows must verify all required permissions server-side.
 
 ---
 
@@ -629,15 +664,13 @@ Announcements are public content.
 
 Only current officers may:
 
-* create announcements
-* update announcements
-* publish announcements
+- Create announcements.
+- Update announcements.
+- Publish announcements.
 
 Public users may only see published announcements.
 
-Unpublished announcements must not be publicly exposed.
-
-Public queries must explicitly filter unpublished records:
+Public queries must explicitly filter:
 
 ```text
 is_published = true
@@ -645,11 +678,20 @@ is_published = true
 
 Never rely only on frontend hiding.
 
+Unpublished content must not be exposed through:
+
+- Public Server Components.
+- Public Route Handlers.
+- Public APIs.
+- Search results.
+- SEO metadata.
+- Sitemap entries.
+
 ---
 
 ## 17. Data Access Layer
 
-Keep complex database logic outside large UI components.
+Complex domain data access should be kept outside large UI components.
 
 Recommended structure:
 
@@ -671,71 +713,25 @@ src/
 │   └── announcements.ts
 ```
 
-Example domain functions:
+Services may contain:
 
-```ts
-getCurrentAcademicYear()
-```
+- Domain-specific database queries.
+- Authorization-related data lookup.
+- Business rules that are shared across multiple entry points.
 
-```ts
-getCurrentMembership(userId)
-```
+However, do not over-abstract simple one-off queries.
 
-```ts
-isCurrentOfficer(userId)
-```
-
-```ts
-getBoardGames()
-```
-
-```ts
-createBorrowingRequest()
-```
-
-Services should contain domain-level data access and business rules where appropriate.
-
-Do not place complex Supabase queries directly inside large UI components.
+The goal is clear separation of responsibilities, not maximum abstraction.
 
 ---
 
-## 18. Supabase Client Rules
+## 18. Server Actions and Route Handlers
 
-Use the correct Supabase client for the execution environment.
+Use Server Actions for:
 
-### Server Client
-
-Use for:
-
-* Server Components
-* Server Actions
-* Route Handlers
-* server-side authorization
-* server-side database access
-
-### Browser Client
-
-Use only when the browser genuinely needs to interact with Supabase directly.
-
-Never expose:
-
-```text
-SUPABASE_SERVICE_ROLE_KEY
-```
-
-or any privileged secret to the browser.
-
-Never use server-only credentials in Client Components.
-
----
-
-## 19. Server Actions and Route Handlers
-
-Use Server Actions when appropriate for:
-
-* form submissions
-* server-side mutations
-* tightly coupled application actions
+- Form submissions.
+- Server-side mutations.
+- Application actions tightly coupled to the UI.
 
 Use Route Handlers when a real HTTP endpoint is required.
 
@@ -758,7 +754,7 @@ Mutate
 
 ---
 
-## 20. Search Params, Filtering, and Pagination
+## 19. Search Parameters, Filtering, and Pagination
 
 For public list pages such as:
 
@@ -788,17 +784,17 @@ Examples:
 /events?year=115
 ```
 
-Search parameters should be:
+Search parameters must be:
 
-* validated
-* normalized
-* used server-side when possible
+- Validated.
+- Normalized.
+- Used server-side when possible.
 
 Do not store shareable filtering state only in React state.
 
 ---
 
-## 21. Components
+## 20. Components
 
 Recommended structure:
 
@@ -828,16 +824,6 @@ Create reusable components when a real pattern repeats.
 
 Avoid premature abstraction.
 
-Do not create generic components such as:
-
-```text
-UniversalCard
-UniversalButton
-UniversalModal
-```
-
-unless the behavior is genuinely shared.
-
 Prefer meaningful domain components:
 
 ```text
@@ -848,9 +834,19 @@ OfficerCard
 BorrowingStatusBadge
 ```
 
+Avoid vague abstractions such as:
+
+```text
+UniversalCard
+UniversalButton
+UniversalModal
+```
+
+unless the behavior is genuinely shared.
+
 ---
 
-## 22. TypeScript
+## 21. TypeScript
 
 Strict typing must be preserved.
 
@@ -906,19 +902,11 @@ type BoardGameStatus =
   | "retired";
 ```
 
-Shared domain types belong in:
-
-```text
-src/types/
-```
-
-Do not duplicate the same union type in multiple files.
-
 ---
 
-## 23. Design System
+## 22. Design System
 
-The source of truth for the visual design system is:
+The visual source of truth is:
 
 ```text
 src/styles/globals.css
@@ -926,100 +914,63 @@ src/styles/globals.css
 
 Do not create a separate design system.
 
-Reuse the existing CSS variables and utility classes.
+Reuse existing CSS variables and utility classes.
 
 The visual language should be:
 
-* playful
-* friendly
-* clean
-* modern
-* approachable
-* slightly game-inspired
+- Playful.
+- Friendly.
+- Clean.
+- Modern.
+- Approachable.
+- Slightly game-inspired.
 
 Avoid:
 
-* excessive corporate styling
-* childish styling
-* visual noise
-* excessive decoration
+- Excessive corporate styling.
+- Childish styling.
+- Visual noise.
+- Excessive decoration.
 
-Board-game-inspired visual elements may be used sparingly.
-
-Decoration must support the content.
+Decoration should support the content.
 
 ---
 
-## 24. Color System
+### 22.1 Color Tokens
 
-Use existing CSS variables.
-
-Prefer:
+Prefer existing variables:
 
 ```css
 var(--foreground)
-```
-
-```css
 var(--foreground-secondary)
-```
-
-```css
 var(--muted)
-```
+var(--muted-light)
 
-```css
 var(--background)
-```
-
-```css
 var(--primary-background)
-```
-
-```css
 var(--secondary-background)
-```
-
-```css
 var(--tertiary-background)
-```
 
-```css
 var(--primary)
-```
-
-```css
 var(--primary-light)
-```
-
-```css
 var(--primary-dark)
-```
 
-```css
 var(--secondary)
-```
-
-```css
 var(--tertiary)
-```
 
-Game colors:
-
-```css
 var(--game-red)
 var(--game-green)
 var(--game-yellow)
 var(--game-blue)
 ```
 
-Do not introduce unrelated hardcoded colors when an existing token can express the same intent.
+Do not introduce unrelated hardcoded colors when an existing token expresses the same intent.
 
 ---
 
-## 25. Borders, Shadows, and Radius
+### 22.2 Borders, Shadows, and Radius
 
-Reuse the existing design tokens:
+Reuse:
 
 ```css
 var(--border)
@@ -1041,13 +992,13 @@ var(--border-radius-xl)
 var(--border-radius-2xl)
 ```
 
-Do not create duplicate values for existing design tokens.
+Do not duplicate existing design token values.
 
 ---
 
-## 26. Layout
+### 22.3 Layout
 
-Use the existing container system:
+Use:
 
 ```text
 .container
@@ -1059,24 +1010,22 @@ The maximum width is defined by:
 var(--container-max-width)
 ```
 
-Do not duplicate the container width in multiple components.
+Do not duplicate the container width in individual components.
 
-Preserve responsive behavior.
-
-The default mobile container padding is already defined by the global stylesheet.
+Preserve the existing responsive behavior.
 
 ---
 
-## 27. Cards
+## 23. Cards
 
 Cards are appropriate for:
 
-* board games
-* events
-* announcements
-* officers
-* borrowing records
-* dashboard summaries
+- Board games.
+- Events.
+- Announcements.
+- Officers.
+- Borrowing records.
+- Dashboard summaries.
 
 Use:
 
@@ -1084,27 +1033,19 @@ Use:
 .card
 ```
 
-when the existing card behavior is appropriate.
-
-Cards should provide:
-
-* clear hierarchy
-* consistent spacing
-* readable content
-* subtle borders
-* purposeful interaction feedback
+when the existing behavior is appropriate.
 
 Interactive cards may use hover feedback.
 
 Static cards should not appear clickable.
 
-Do not add heavy animations to every card.
+Avoid heavy animations on every card.
 
 ---
 
-## 28. Buttons
+## 24. Buttons
 
-Use the existing button system:
+Use:
 
 ```text
 .btn
@@ -1121,8 +1062,6 @@ yellow
 danger
 ```
 
-Buttons must clearly communicate their action.
-
 Dangerous actions such as:
 
 ```text
@@ -1137,34 +1076,11 @@ Do not rely on color alone to communicate meaning.
 
 ---
 
-## 29. Statuses
+## 25. Statuses
 
-Use consistent status mappings.
+Status labels and presentation should be centralized when reused.
 
-Board game statuses:
-
-```text
-available
-borrowed
-maintenance
-lost
-damaged
-retired
-```
-
-Borrowing statuses:
-
-```text
-pending
-approved
-rejected
-borrowed
-returned
-```
-
-Use shared status metadata where statuses appear in multiple places.
-
-For example:
+Example:
 
 ```ts
 const borrowingStatusMeta = {
@@ -1177,20 +1093,20 @@ const borrowingStatusMeta = {
 } as const;
 ```
 
-Avoid duplicating label and presentation logic.
+Avoid duplicating status labels and presentation logic across components.
 
 ---
 
-## 30. Icons
+## 26. Icons
 
 Use existing icon libraries:
 
-* Ant Design Icons
-* react-icons
+- Ant Design Icons.
+- `react-icons`.
 
 Do not introduce another icon library.
 
-Icon-only buttons must have accessible labels.
+Icon-only buttons must have accessible names.
 
 Example:
 
@@ -1202,22 +1118,20 @@ Example:
 
 ---
 
-## 31. Animation and Motion
+## 27. Animation and Motion
 
 This project does not use Framer Motion.
-
-Do not install or introduce Framer Motion.
 
 Do not introduce another animation library.
 
 Use:
 
-* CSS transitions
-* CSS keyframe animations
-* existing transition variables
-* existing animation classes
+- CSS transitions.
+- CSS keyframes.
+- Existing transition variables.
+- Existing animation classes.
 
-Existing animation tokens include:
+Existing transition tokens:
 
 ```css
 var(--transition-fast)
@@ -1225,14 +1139,14 @@ var(--transition-normal)
 var(--transition-slow)
 ```
 
-Existing timing functions include:
+Existing timing functions:
 
 ```css
 var(--transition-timing)
 var(--transition-bounce)
 ```
 
-Existing animation classes include:
+Existing animation classes:
 
 ```text
 .animate-pop
@@ -1242,23 +1156,23 @@ Existing animation classes include:
 
 Use CSS transitions for:
 
-* button interactions
-* hover states
-* card interactions
-* dropdowns
-* expandable sections
+- Button interactions.
+- Hover states.
+- Card interactions.
+- Dropdowns.
+- Expandable sections.
 
 Use CSS keyframes for:
 
-* loading animations
-* shimmer effects
-* simple visual state transitions
+- Loading animations.
+- Shimmer effects.
+- Simple visual state transitions.
 
 Avoid:
 
-* excessive bouncing
-* unnecessary motion
-* animation on every element
+- Excessive bouncing.
+- Unnecessary motion.
+- Animation on every element.
 
 Always respect:
 
@@ -1266,11 +1180,9 @@ Always respect:
 prefers-reduced-motion
 ```
 
-The existing global stylesheet already provides reduced-motion handling. New animations must not bypass it.
-
 ---
 
-## 32. Accessibility
+## 28. Accessibility
 
 Use semantic HTML.
 
@@ -1301,9 +1213,9 @@ aria-current
 
 Do not communicate important information only through:
 
-* color
-* hover
-* animation
+- Color.
+- Hover.
+- Animation.
 
 Images must have meaningful `alt` text.
 
@@ -1311,7 +1223,7 @@ Icon-only controls must have accessible names.
 
 ---
 
-## 33. Loading States
+## 29. Loading States
 
 Data-heavy routes should consider:
 
@@ -1319,29 +1231,33 @@ Data-heavy routes should consider:
 loading.tsx
 ```
 
-Use the existing skeleton system where appropriate:
+Use:
 
 ```text
 .skeleton
 ```
 
+and:
+
 ```text
 .skeleton-line
 ```
 
+where appropriate.
+
 Loading UI should:
 
-* preserve layout structure
-* avoid unnecessary layout shifts
-* communicate what is loading
+- Preserve layout structure.
+- Avoid unnecessary layout shifts.
+- Communicate what is loading.
 
 Do not use arbitrary spinners everywhere.
 
-The existing shimmer animation should respect reduced-motion preferences.
+The existing shimmer animation must respect reduced-motion preferences.
 
 ---
 
-## 34. Error Handling
+## 30. Error Handling
 
 Use:
 
@@ -1353,22 +1269,22 @@ for route-level errors when appropriate.
 
 User-facing errors should be:
 
-* understandable
-* actionable when possible
-* free from sensitive implementation details
+- Understandable.
+- Actionable when possible.
+- Free from sensitive implementation details.
 
 Do not expose:
 
-* database errors
-* SQL errors
-* stack traces
-* internal server details
+- Database errors.
+- SQL errors.
+- Stack traces.
+- Internal server details.
 
-to users.
+Use server-side logging for debugging.
 
 ---
 
-## 35. Forms
+## 31. Forms
 
 Data-modifying forms must:
 
@@ -1386,58 +1302,7 @@ Never trust only client-side validation.
 
 ---
 
-## 36. Security Rules
-
-Never authorize based on:
-
-```text
-localStorage
-```
-
-```text
-sessionStorage
-```
-
-```text
-useState
-```
-
-```text
-isOfficer === true
-```
-
-Never trust client-provided:
-
-```text
-user_id
-author_id
-approved_by_user_id
-membership status
-officer status
-role
-```
-
-The server must determine these values.
-
-Never expose:
-
-```text
-service role keys
-```
-
-to the browser.
-
-Never expose unpublished announcements through public routes.
-
-Never allow:
-
-* non-members to borrow board games
-* non-members to perform member-only attendance operations
-* non-officers to perform administrative mutations
-
----
-
-## 37. File Naming
+## 32. File Naming
 
 ### Routes
 
@@ -1504,165 +1369,165 @@ misc.ts
 stuff.ts
 ```
 
-unless the file has a clearly defined and narrow purpose.
+unless the file has a clearly defined and narrow responsibility.
 
 ---
 
-## 38. Development Workflow
+## 33. Development Workflow
 
 Before modifying code:
 
-1. Understand the target route.
-2. Check whether the relevant Next.js API has changed.
-3. Inspect local Next.js documentation when necessary.
-4. Search for existing related components.
-5. Search for existing hooks.
-6. Search for existing utilities.
-7. Search for existing types.
-8. Search for existing Supabase queries.
-9. Search for existing CSS variables.
-10. Search for existing design patterns.
-11. Implement the smallest appropriate change.
-
-Do not rewrite unrelated working code.
-
----
-
-## 39. AI Coding Agent Rules
-
-AI coding agents must:
-
-1. Prefer Server Components.
-2. Keep Client Components small.
-3. Preserve the existing architecture.
-4. Reuse existing components.
-5. Reuse existing hooks.
-6. Reuse existing utilities.
-7. Reuse existing types.
-8. Reuse existing CSS variables.
-9. Reuse existing Supabase clients.
-10. Preserve the current academic-year permission model.
-11. Verify authorization server-side.
-12. Follow the installed Next.js version.
-13. Check local Next.js documentation when necessary.
-14. Avoid unnecessary dependencies.
-15. Never add Framer Motion.
-16. Never add another animation library.
-17. Avoid unnecessary abstractions.
-18. Avoid unrelated modifications.
-19. Preserve accessibility.
-20. Preserve responsive behavior.
-21. Preserve reduced-motion support.
-22. Keep public and private route responsibilities clear.
+1. Understand the target route and user flow.
+2. Identify whether the change is public, authenticated, or administrative.
+3. Check the installed Next.js version.
+4. Inspect local Next.js documentation when necessary.
+5. Search for existing related components.
+6. Search for existing hooks.
+7. Search for existing utilities.
+8. Search for existing types.
+9. Search for existing services and Supabase queries.
+10. Search for existing CSS variables and design patterns.
+11. Identify the smallest appropriate change.
+12. Implement the change.
+13. Check TypeScript errors.
+14. Check linting and formatting.
+15. Check responsive behavior.
+16. Check accessibility.
+17. Check authorization for all sensitive operations.
+18. Review the final diff for unrelated changes.
 
 ---
 
-## 40. Forbidden
+## 34. Git and Change Scope
 
-Never:
+Changes should be focused and reviewable.
 
-* use `any` to bypass TypeScript errors
-* weaken TypeScript strictness
-* add Framer Motion
-* add another animation library
-* add an unnecessary state management library
-* add a duplicate component
-* add a duplicate hook
-* add a duplicate utility
-* authorize from client state
-* authorize from hidden UI
-* authorize from URL paths alone
-* trust client-provided role information
-* expose service role keys
-* hardcode academic year IDs
-* hardcode officer names for authorization
-* expose unpublished announcements publicly
-* allow non-members to borrow board games
-* allow non-members to perform member-only attendance operations
-* allow non-officers to perform admin mutations
-* put complex database logic inside large UI components
-* expose raw database errors to users
-* introduce unrelated design systems
-* modify unrelated files for a small feature
-* create unused components
-* create dead code
-* duplicate CSS variables
-* ignore accessibility
-* ignore reduced-motion preferences
+Prefer:
+
+```text
+one feature
+```
+
+or:
+
+```text
+one bug fix
+```
+
+per change.
+
+Do not mix unrelated:
+
+- Refactoring.
+- Formatting changes.
+- Dependency updates.
+- Feature work.
+
+Avoid large rewrites when a smaller change solves the problem.
+
+Before finishing, inspect:
+
+```text
+git diff
+```
+
+and verify that unrelated files were not modified.
 
 ---
 
-## 41. Completion Checklist
+## 35. SEO
+
+For public routes:
+
+- Provide appropriate metadata.
+- Consider Open Graph metadata.
+- Keep sitemap behavior updated when necessary.
+- Keep robots behavior updated when necessary.
+
+Private routes must not be exposed as public SEO pages.
+
+Do not include:
+
+- Dashboard routes.
+- Admin routes.
+- Private user pages.
+
+in public sitemap entries.
+
+---
+
+## 36. Completion Checklist
 
 Before completing an implementation:
 
 ### Architecture
 
-* [ ] Correct App Router route was used.
-* [ ] Existing route conventions were preserved.
-* [ ] Server Components are used by default.
-* [ ] Client Components are only used when necessary.
-* [ ] No unnecessary dependency was introduced.
-* [ ] Framer Motion was not introduced.
-* [ ] No other animation library was introduced.
+- [ ] Correct App Router route was used.
+- [ ] Existing route conventions were preserved.
+- [ ] Server Components are used by default.
+- [ ] Client Components are only used when necessary.
+- [ ] No unnecessary dependency was introduced.
+- [ ] No animation library was introduced.
+- [ ] No unrelated architecture was introduced.
 
-### Authentication
+### Authentication and Authorization
 
-* [ ] Authentication is verified server-side.
-* [ ] Authorization is verified server-side.
-* [ ] Current academic year is not hardcoded.
-* [ ] Membership status is correctly checked.
-* [ ] Officer status is correctly checked.
-* [ ] Client-provided permission information is not trusted.
+- [ ] Authentication is verified server-side.
+- [ ] Authorization is verified server-side.
+- [ ] Current academic year is not hardcoded.
+- [ ] Membership status is correctly checked.
+- [ ] Officer status is correctly checked.
+- [ ] Client-provided permission information is not trusted.
+- [ ] Sensitive mutations follow authenticate → authorize → validate → mutate.
 
 ### Data
 
-* [ ] Existing services and queries were reused where appropriate.
-* [ ] Complex database logic is not inside large UI components.
-* [ ] Sensitive mutations perform server-side authorization.
-* [ ] Public queries do not expose unpublished data.
+- [ ] Existing services and queries were reused where appropriate.
+- [ ] Complex database logic is not inside large UI components.
+- [ ] Public queries do not expose unpublished data.
+- [ ] Sensitive data is not unnecessarily exposed.
+- [ ] Database-level security is considered where appropriate.
 
 ### UI
 
-* [ ] Existing design tokens were reused.
-* [ ] Existing `global.css` design system was preserved.
-* [ ] Existing button and card styles were reused where appropriate.
-* [ ] Status labels are consistent.
-* [ ] Responsive behavior was preserved.
-* [ ] No unrelated design system was introduced.
+- [ ] Existing design tokens were reused.
+- [ ] Existing button and card styles were reused where appropriate.
+- [ ] Status labels are consistent.
+- [ ] Responsive behavior was preserved.
+- [ ] No unrelated design system was introduced.
 
 ### Animation
 
-* [ ] No Framer Motion was introduced.
-* [ ] No animation library was introduced.
-* [ ] Existing CSS transition variables were reused.
-* [ ] Existing CSS animation patterns were reused where appropriate.
-* [ ] Reduced-motion behavior was preserved.
+- [ ] No Framer Motion was introduced.
+- [ ] No other animation library was introduced.
+- [ ] Existing CSS transition variables were reused.
+- [ ] Reduced-motion behavior was preserved.
 
 ### Accessibility
 
-* [ ] Semantic HTML is used.
-* [ ] Interactive elements are keyboard accessible.
-* [ ] Icon-only buttons have accessible labels.
-* [ ] Images have meaningful alt text.
-* [ ] Important information does not rely only on color.
-* [ ] Reduced-motion preferences are respected.
+- [ ] Semantic HTML is used.
+- [ ] Interactive elements are keyboard accessible.
+- [ ] Icon-only buttons have accessible labels.
+- [ ] Images have meaningful alt text.
+- [ ] Important information does not rely only on color.
+- [ ] Reduced-motion preferences are respected.
 
 ### SEO
 
-* [ ] Public metadata was updated when necessary.
-* [ ] Sitemap behavior was considered.
-* [ ] Robots behavior was considered.
-* [ ] Private routes are not exposed as public SEO pages.
+- [ ] Public metadata was updated when necessary.
+- [ ] Sitemap behavior was considered.
+- [ ] Robots behavior was considered.
+- [ ] Private routes are not exposed as public SEO pages.
 
 ### Code Quality
 
-* [ ] No duplicate component was created.
-* [ ] No duplicate hook was created.
-* [ ] No duplicate utility was created.
-* [ ] Existing types were reused.
-* [ ] No unnecessary `any` was introduced.
-* [ ] No unrelated files were modified.
-* [ ] No dead code was introduced.
-
----
+- [ ] No duplicate component was created.
+- [ ] No duplicate hook was created.
+- [ ] No duplicate utility was created.
+- [ ] Existing types were reused.
+- [ ] No unnecessary `any` was introduced.
+- [ ] No unrelated files were modified.
+- [ ] No dead code was introduced.
+- [ ] TypeScript checks pass.
+- [ ] Linting checks pass where applicable.
+- [ ] The final diff was reviewed.
