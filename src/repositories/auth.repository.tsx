@@ -1,5 +1,5 @@
 import "server-only";
-import { User } from "@/types/database";
+import { AuthCredential, User } from "@/types/database";
 import { throwRepositoryError } from "./error";
 import { supabase } from "@/libs/supabase/server";
 
@@ -23,6 +23,21 @@ export const authRepository = {
 
     if (error) {
       throwRepositoryError("註冊使用者失敗", error);
+    }
+
+    return data;
+  },
+  findCredentialByUserId: async (
+    userId: string,
+  ): Promise<AuthCredential | null> => {
+    const { data, error } = await supabase
+      .from("auth_credentials")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error) {
+      throwRepositoryError("取得使用者驗證憑證失敗", error);
     }
 
     return data;

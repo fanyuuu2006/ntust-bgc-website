@@ -25,9 +25,8 @@ export const Header = ({ className, ...rest }: HeaderProps) => {
           {/* Logo */}
           <div
             className={cn(
-              "size-12 shrink-0 overflow-hidden rounded-xl border border-(--border) bg-(--primary-background)",
+              "size-16 shrink-0 overflow-hidden rounded-xl border border-(--border) bg-(--primary-background)",
               "transition-all duration-300 group-hover:border-(--primary)",
-              "sm:size-16",
             )}
           >
             <Image

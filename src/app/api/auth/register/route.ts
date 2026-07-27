@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
+import { z, ZodError } from "zod";
 import { authService } from "@/services/auth/auth.service";
 import { EmailAlreadyExistsError } from "@/services/auth/auth.errors";
 
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           message: "輸入資料格式不正確",
-          errors: error.flatten().fieldErrors,
+          errors: z.treeifyError(error),
         },
         { status: 400 },
       );

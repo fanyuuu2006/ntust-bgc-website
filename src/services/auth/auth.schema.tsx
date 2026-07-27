@@ -56,3 +56,8 @@ export const registerSchema = baseRegisterSchema.superRefine((data, ctx) => {
     });
   }
 });
+
+export const loginSchema = z.object({
+  email: z.email({ error: "Email 格式不正確" }).trim().toLowerCase(),
+  password: z.string().min(1, { error: "請輸入密碼" }),
+});

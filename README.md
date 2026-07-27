@@ -162,6 +162,79 @@
 
 ## Routes
 
+### current routes
+
+```text
+├── app
+│   ├── (admin)
+│   ├── (auth)
+│   │   ├── login
+│   │   │   └── page.tsx
+│   │   └── register
+│   │       └── page.tsx
+│   ├── (authenticated)
+│   │   └── dashboard
+│   │       └── page.tsx
+│   ├── (public)
+│   │   ├── announcements
+│   │   │   └── page.tsx
+│   │   ├── board-games
+│   │   │   └── page.tsx
+│   │   ├── events
+│   │   │   └── page.tsx
+│   │   └── officers
+│   │       └── page.tsx
+│   ├── api
+│   │   └── auth
+│   │       ├── login
+│   │       │   └── route.ts
+│   │       ├── logout
+│   │       │   └── route.ts
+│   │       ├── me
+│   │       │   └── route.ts
+│   │       └── register
+│   │           └── route.ts
+│   ├── layout.tsx
+│   └── page.tsx
+├── components
+│   └── Header
+│       ├── DesktopNavigation.tsx
+│       ├── Header.tsx
+│       ├── HeaderActions.tsx
+│       └── MobileNavigation.tsx
+├── libs
+│   ├── auth.tsx
+│   ├── env.tsx
+│   ├── metadata.tsx
+│   ├── navigation.tsx
+│   ├── siteConfigs.tsx
+│   └── supabase
+│       └── server.tsx
+├── repositories
+│   ├── auth.repository.tsx
+│   ├── error.tsx
+│   ├── session.repository.tsx
+│   └── users.repository.tsx
+├── services
+│   ├── auth
+│   │   ├── auth.errors.tsx
+│   │   ├── auth.schema.tsx
+│   │   ├── auth.service.tsx
+│   │   └── auth.types.tsx
+│   └── users.service.tsx
+├── styles
+│   └── globals.css
+├── types
+│   └── database.tsx
+└── utils
+    ├── auth
+    │   ├── password.tsx
+    │   └── session.tsx
+    └── className.tsx
+```
+
+### expected file structure
+
 ```text
 src/
 ├── app/
