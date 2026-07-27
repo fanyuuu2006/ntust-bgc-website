@@ -12,7 +12,6 @@ export const LogoutButton = ({ onClick, ...rest }: LogoutButtonProps) => {
         method: "POST",
       });
 
-      router.push("/login");
       router.refresh();
     } catch (error) {
       console.error("登出失敗", error);

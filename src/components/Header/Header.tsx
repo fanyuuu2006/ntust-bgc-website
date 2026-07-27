@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { DesktopNavigation } from "./DesktopNavigation";
 import { MobileNavigation } from "./MobileNavigation";
+import { HeaderActions } from "./HeaderActions";
 
 type HeaderProps = React.HTMLAttributes<HTMLElement>;
 
@@ -53,6 +54,7 @@ export const Header = ({ className, ...rest }: HeaderProps) => {
 
         <div className="flex items-center gap-2">
           <DesktopNavigation />
+          <HeaderActions />
           <MobileNavigation />
         </div>
       </div>
