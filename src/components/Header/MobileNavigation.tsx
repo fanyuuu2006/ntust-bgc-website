@@ -42,18 +42,6 @@ export const MobileNavigation = ({
     };
   }, [isOpen]);
 
-  // 開啟選單時鎖定背景捲動
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const original = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = original;
-    };
-  }, [isOpen]);
-
   return (
     <div
       ref={containerRef}
@@ -81,9 +69,7 @@ export const MobileNavigation = ({
         <nav
           id={panelId}
           aria-label="行動裝置主導覽"
-          className={cn(
-            "absolute right-0 top-[calc(100%+0.5rem)] z-50",
-          )}
+          className={cn("absolute right-0 top-[calc(100%+0.5rem)] z-50")}
         >
           <div
             className={cn(

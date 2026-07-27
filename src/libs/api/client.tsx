@@ -1,8 +1,13 @@
 import { ApiError, ApiErrorResponse } from "./errors";
 
+type ApiRequestOptions = Omit<RequestInit, "body"> & {
+  body?: unknown;
+};
+
+
 export async function apiClient<T>(
   url: string,
-  options: RequestInit = {},
+  options: ApiRequestOptions = {},
 ): Promise<T> {
   const { body, headers, ...rest } = options;
   const response = await fetch(url, {

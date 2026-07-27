@@ -30,12 +30,10 @@ export const DesktopNavigation = ({
             aria-current={isActive ? "page" : undefined}
             className={cn(
               // 基礎樣式
-              "relative whitespace-nowrap rounded-md px-3.5 py-2 text-sm font-medium text-(--foreground)/70",
-              "transition-all duration-300",
+              "relative whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-(--foreground)/70",
+              "transition-colors duration-200",
               // hover
-              "hover:bg-(--secondary-background) hover:text-(--primary)",
-              // 鍵盤可及性
-              "outline-none focus-visible:ring-2 focus-visible:ring-(--primary) focus-visible:ring-offset-2",
+              "hover:text-(--primary)",
               // 底線指示條(不只靠顏色表達狀態)
               "after:absolute after:inset-x-3.5 after:-bottom-px after:h-0.5 after:origin-center after:scale-x-0 after:rounded-full after:bg-(--primary) after:transition-transform after:duration-300 after:content-['']",
               "hover:after:scale-x-100",
