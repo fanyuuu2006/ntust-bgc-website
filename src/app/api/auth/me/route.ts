@@ -20,7 +20,7 @@ export async function GET() {
     );
   }
 
-  const user = await authService.getAuthenticatedUser(token);
+  const user = await authService.getUserBySessionToken(token);
 
   if (!user) {
     return NextResponse.json(

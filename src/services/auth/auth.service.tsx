@@ -11,7 +11,10 @@ import { sessionRepository } from "@/repositories/session.repository";
 import { generateSessionToken } from "@/utils/auth/session";
 
 const SESSION_DURATION = 1000 * 60 * 60 * 24 * 7;
-// 7 天
+// Session 有效期：7 天
+
+const SESSION_ACTIVITY_UPDATE_INTERVAL = 1000 * 60 * 15;
+// 每 15 分鐘最多更新一次 last_accessed_at
 
 export const authService = {
   register: async (input: unknown): Promise<User> => {
@@ -77,13 +80,28 @@ export const authService = {
       session,
     };
   },
-  getAuthenticatedUser: async (token: string): Promise<User | null> => {
+  getUserBySessionToken: async (token: string): Promise<User | null> => {
     const session = await sessionRepository.findValidByToken(token);
 
     if (!session) {
       return null;
     }
 
+    const now = Date.now();
+    const lastAccessedAt = new Date(session.last_accessed_at).getTime();
+
+    const shouldUpdateLastAccessedAt =
+      now - lastAccessedAt >= SESSION_ACTIVITY_UPDATE_INTERVAL;
+
+    if (shouldUpdateLastAccessedAt) {
+      await sessionRepository.updateById(session.id, {
+        last_accessed_at: new Date(now).toISOString(),
+      });
+    }
+
     return usersRepository.findById(session.user_id);
+  },
+  logout: async (token: string): Promise<void> => {
+    await sessionRepository.deleteByToken(token);
   },
 };

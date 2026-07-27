@@ -10,5 +10,5 @@ export async function getCurrentUser() {
     return null;
   }
 
-  return authService.getAuthenticatedUser(token);
+  return authService.getUserBySessionToken(token);
 }
