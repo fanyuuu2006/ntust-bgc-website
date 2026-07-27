@@ -4,16 +4,12 @@ export const mainNavigation = [
     href: "/",
   },
   {
-    label: "桌遊",
-    href: "/board-games",
-  },
-  {
-    label: "活動",
-    href: "/events",
-  },
-  {
     label: "公告",
     href: "/announcements",
+  },
+  {
+    label: "桌遊",
+    href: "/board-games",
   },
   {
     label: "幹部",

@@ -153,29 +153,44 @@
   }
 
   /* =====================================================
-     🔘 Button System
-     ===================================================== */
+   🔘 Button System
+   ===================================================== */
 
   button,
   .btn {
     cursor: pointer;
+
     border: none;
+
     text-decoration: none;
+
     transition:
       transform var(--transition-normal) var(--transition-timing),
       background var(--transition-normal) var(--transition-timing),
-      border-color var(--transition-normal) var(--transition-timing),
-      box-shadow var(--transition-normal) var(--transition-timing),
       color var(--transition-normal) var(--transition-timing),
+      border-color var(--transition-normal) var(--transition-timing),
       filter var(--transition-normal) var(--transition-timing);
 
     -webkit-tap-highlight-color: transparent;
   }
+
+  /* === Hover === */
+
+  button:hover,
+  .btn:hover {
+    text-decoration: none !important;
+
+    filter: brightness(1.08);
+  }
+
   /* === Active === */
 
   button:active,
   .btn:active {
     transform: scale(0.95);
+
+    filter: brightness(0.92);
+
     transition-duration: var(--transition-fast);
   }
 
@@ -183,113 +198,104 @@
 
   button:disabled,
   .btn:disabled {
-    opacity: 0.5;
     cursor: not-allowed;
-    filter: grayscale(0.5);
+
+    opacity: 0.5;
+
+    filter: grayscale(0.6);
+
     transform: none;
-    box-shadow: none;
   }
 
   /* =====================================================
-   🔘 Button System
+   Base
    ===================================================== */
 
   .btn {
-    background: var(--primary-background);
+    background: var(--secondary-background);
+
     border: 1px solid var(--border);
+
     color: var(--foreground);
   }
 
-  .btn:hover:not(:disabled) {
-    background: var(--primary-background);
-    border-color: var(--primary);
-    color: var(--primary);
-  }
+  /* =====================================================
+   Primary
+   ===================================================== */
 
-  /* 鍵盤可及性:統一 focus-visible 樣式 */
-  .btn:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-  }
-
-  /* === Primary === */
   .btn.primary {
     background: linear-gradient(135deg, var(--primary), var(--primary-light));
+
     color: var(--primary-background);
+
     border-color: transparent;
-    box-shadow: 0 0.35rem 1rem
-      color-mix(in oklab, var(--primary) 22%, transparent);
   }
 
-  .btn.primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-    box-shadow: 0 0.6rem 1.5rem
-      color-mix(in oklab, var(--primary) 30%, transparent);
-  }
+  /* =====================================================
+   Secondary
+   ===================================================== */
 
-  /* === Secondary === */
   .btn.secondary {
     background: var(--secondary-background);
-    color: var(--primary);
-    border-color: var(--border-strong);
+
+    color: var(--secondary);
+
+    border-color: var(--secondary);
   }
 
-  .btn.secondary:hover:not(:disabled) {
-    background: var(--primary);
+  .btn.secondary:hover {
+    background: var(--secondary);
+
     color: var(--primary-background);
+  }
+
+  /* =====================================================
+   Outline
+   ===================================================== */
+
+  .btn.outline {
+    background: transparent;
+
+    color: var(--primary);
+
     border-color: var(--primary);
   }
 
-  /* === Outline === */
-  .btn.outline {
-    background: transparent;
-    color: var(--primary);
-    border: 1px solid var(--primary);
-  }
-
-  .btn.outline:hover:not(:disabled) {
+  .btn.outline:hover {
     background: var(--primary);
+
     color: var(--primary-background);
   }
 
-  /* === Green === */
+  /* =====================================================
+   Game Colors
+   ===================================================== */
+
   .btn.green {
     background: var(--game-green);
+
     color: var(--primary-background);
-    box-shadow: 0 0.35rem 1rem
-      color-mix(in oklab, var(--game-green) 20%, transparent);
+
+    border-color: transparent;
   }
 
-  .btn.green:hover:not(:disabled) {
-    background: color-mix(in oklab, var(--game-green) 85%, var(--foreground));
-  }
-
-  /* === Yellow === */
   .btn.yellow {
     background: var(--game-yellow);
+
     color: var(--foreground);
-    box-shadow: 0 0.35rem 1rem
-      color-mix(in oklab, var(--game-yellow) 22%, transparent);
+
+    border-color: transparent;
   }
 
-  .btn.yellow:hover:not(:disabled) {
-    background: color-mix(in oklab, var(--game-yellow) 85%, var(--foreground));
-  }
-
-  /* === Danger === */
+  .btn.red,
   .btn.danger {
     background: var(--game-red);
+
     color: var(--primary-background);
-    border: 1px solid
-      color-mix(in oklab, var(--game-red) 60%, var(--foreground));
-    box-shadow: 0 0.35rem 1rem
-      color-mix(in oklab, var(--game-red) 20%, transparent);
-  }
 
-  .btn.danger:hover:not(:disabled) {
-    background: color-mix(in oklab, var(--game-red) 85%, var(--foreground));
+    border-color: transparent;
   }
-
+  
   /* =====================================================
      📦 Container
      ===================================================== */

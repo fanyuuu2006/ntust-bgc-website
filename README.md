@@ -165,6 +165,7 @@
 ### current routes
 
 ```text
+src
 ├── app
 │   ├── (admin)
 │   ├── (auth)
@@ -173,8 +174,9 @@
 │   │   └── register
 │   │       └── page.tsx
 │   ├── (authenticated)
-│   │   └── dashboard
-│   │       └── page.tsx
+│   │   ├── dashboard
+│   │   │   └── page.tsx
+│   │   └── layout.tsx
 │   ├── (public)
 │   │   ├── announcements
 │   │   │   └── page.tsx

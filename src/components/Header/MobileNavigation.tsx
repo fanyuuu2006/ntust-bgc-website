@@ -82,7 +82,7 @@ export const MobileNavigation = ({
           id={panelId}
           aria-label="行動裝置主導覽"
           className={cn(
-            "absolute right-0 top-[calc(100%+0.5rem)] z-50 animate-appear",
+            "absolute right-0 top-[calc(100%+0.5rem)] z-50",
           )}
         >
           <div

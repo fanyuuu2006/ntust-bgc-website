@@ -12,7 +12,7 @@ export const Header = ({ className, ...rest }: HeaderProps) => {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 flex flex-col border-b border-(--border) bg-(--primary-background)/95 backdrop-blur",
+        "flex flex-col border-b border-(--border) bg-(--primary-background) backdrop-blur",
         className,
       )}
       {...rest}
