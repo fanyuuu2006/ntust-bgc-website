@@ -2,6 +2,8 @@ export { metadata } from "@/libs/metadata";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import { Header } from "@/components/Header/Header";
+import { getCurrentUser } from "@/libs/auth";
+import { UserProvider } from "@/contexts/UserContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,19 +15,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getCurrentUser();
   return (
     <html
       lang="zh-Hant"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body suppressHydrationWarning={true}>
-        <Header />
-        <main className="flex-1">{children}</main>
+        <UserProvider user={user}>
+          <Header />
+          <main className="flex-1">{children}</main>
+        </UserProvider>
       </body>
     </html>
   );

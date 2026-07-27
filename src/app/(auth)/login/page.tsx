@@ -1,10 +1,12 @@
 "use client";
 
 import { SubmitEvent, useState } from "react";
+// import { useRouter } from "next/navigation";
 
 export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+//   const router = useRouter();
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,7 +35,7 @@ export default function Login() {
       return;
     }
 
-    window.location.href = "/dashboard";
+    // router.refresh();
   }
 
   return (
