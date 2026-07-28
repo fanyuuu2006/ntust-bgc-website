@@ -11,8 +11,8 @@ export const mainNavigation = [
     label: "桌遊",
     href: "/board-games",
   },
-  {
-    label: "幹部",
-    href: "/officers",
-  },
+  // {
+  //   label: "幹部",
+  //   href: "/officers",
+  // },
 ] as const;

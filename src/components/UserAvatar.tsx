@@ -1,9 +1,8 @@
+import { CSS_VARIABLE_COLORS } from "@/libs/css";
 import { User } from "@/types/database";
 
-const CSS_VARIABLE_COLORS = ["red", "yellow", "green", "blue"] as const;
-
 type UserAvatarProps = React.ImgHTMLAttributes<HTMLImageElement> & {
-  user: User;
+  user: Pick<User, "id" | "name" | "avatar" | "email">;
 };
 
 // 依 user.id 產生穩定 hash，確保同一個使用者每次 render 顏色都一致

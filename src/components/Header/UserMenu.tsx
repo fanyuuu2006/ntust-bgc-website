@@ -24,8 +24,12 @@ const MenuItem = ({ label, href }: MenuItemProps) => {
 
 const MENU_ITEMS: MenuItemProps[] = [
   {
-    label: "個人資料",
+    label: "儀表板",
     href: "/dashboard",
+  },
+  {
+    label: "個人資料",
+    href: "/dashboard/profile",
   },
   {
     label: "設定",
