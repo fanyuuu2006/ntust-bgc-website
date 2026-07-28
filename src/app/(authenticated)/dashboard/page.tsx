@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/libs/auth";
 import { DashboardCard } from "@/components/(authenticated)/dashboard/DashboardCard";
 import { DashboardMenu } from "@/components/(authenticated)/dashboard/DashboardMenu";
@@ -20,10 +19,8 @@ function formatDate(dateString: string) {
 export default async function DashboardPage() {
   const user = await getCurrentUser();
 
-  // (authenticated)/layout.tsx 已經檢查過登入狀態，這裡是額外防呆，
-  // 同時讓 TypeScript 能正確窄化 user 型別（避免使用 `!` 斷言）
   if (!user) {
-    redirect("/login");
+    return null;
   }
 
   return (
@@ -33,22 +30,28 @@ export default async function DashboardPage() {
 
         <DashboardCard title="帳號資訊">
           <dl className="flex flex-col gap-3 text-sm">
-            <div className="flex flex-col gap-1 sm:flex-row sm:gap-2">
-              <dt className="w-20 shrink-0 text-(--muted)">姓名</dt>
-              <dd className="text-(--foreground)">{user.name}</dd>
-            </div>
-
-            <div className="flex flex-col gap-1 sm:flex-row sm:gap-2">
-              <dt className="w-20 shrink-0 text-(--muted)">Email</dt>
-              <dd className="text-(--foreground)">{user.email}</dd>
-            </div>
-
-            <div className="flex flex-col gap-1 sm:flex-row sm:gap-2">
-              <dt className="w-20 shrink-0 text-(--muted)">註冊時間</dt>
-              <dd className="text-(--foreground)">
-                {formatDate(user.created_at)}
-              </dd>
-            </div>
+            {[
+              {
+                label: "姓名",
+                value: user.name,
+              },
+              {
+                label: "Email",
+                value: user.email,
+              },
+              {
+                label: "註冊時間",
+                value: formatDate(user.created_at),
+              },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="flex flex-col gap-1 sm:flex-row sm:gap-2"
+              >
+                <dt className="w-20 shrink-0 text-(--muted)">{item.label}</dt>
+                <dd className="text-(--foreground)">{item.value}</dd>
+              </div>
+            ))}
           </dl>
         </DashboardCard>
 

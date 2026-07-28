@@ -1,9 +1,21 @@
+"use client";
+import { cn } from "@/utils/className";
 import Link from "next/link";
+import {
+  UserOutlined,
+  InboxOutlined,
+  CalendarOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
+import type { ComponentType, CSSProperties } from "react";
 
 type DashboardMenuItem = {
   title: string;
   description: string;
   href: string;
+  icon: ComponentType;
+  /** 對應 globals.css 中既有的桌遊積木色 token 名稱 */
+  color: "blue" | "green" | "yellow" | "red";
 };
 
 /**
@@ -17,34 +29,62 @@ const dashboardMenuItems: DashboardMenuItem[] = [
     title: "個人資料",
     description: "查看與修改您的基本資料",
     href: "/dashboard/profile",
+    icon: UserOutlined,
+    color: "blue",
   },
   {
     title: "借用紀錄",
     description: "查看目前借用中的桌遊與歷史紀錄",
     href: "/dashboard/borrowings",
+    icon: InboxOutlined,
+    color: "green",
   },
   {
     title: "簽到紀錄",
     description: "查看您參與過的社課與活動",
     href: "/dashboard/attendance",
+    icon: CalendarOutlined,
+    color: "yellow",
   },
 ];
 
-export function DashboardMenu() {
+type DashboardMenuProps = React.HTMLAttributes<HTMLDivElement>;
+
+export function DashboardMenu({ className, ...rest }: DashboardMenuProps) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {dashboardMenuItems.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          className="card accent flex flex-col gap-2 p-6"
-        >
-          <h3 className="text-base font-semibold text-(--foreground)">
-            {item.title}
-          </h3>
-          <p className="text-sm text-(--muted)">{item.description}</p>
-        </Link>
-      ))}
+    <div
+      className={cn(
+        "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3",
+        className,
+      )}
+      {...rest}
+    >
+      {dashboardMenuItems.map(
+        ({ title, description, href, icon: Icon, color }) => (
+          <Link
+            key={href}
+            href={href}
+            className={"card group flex items-start gap-4 p-6"}
+            style={{ "--menu-color": `var(--game-${color})`} as CSSProperties}
+          >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-(--border-radius-md) bg-(--menu-color)/10 text-lg text-(--menu-color) transition-colors duration-(--transition-normal) group-hover:bg-(--menu-color) group-hover:text-(--primary-background)">
+              <Icon aria-hidden />
+            </span>
+
+            <div className="flex flex-1 flex-col gap-1">
+              <h3 className="text-base font-semibold text-(--foreground)">
+                {title}
+              </h3>
+              <p className="text-sm text-(--muted)">{description}</p>
+            </div>
+
+            <RightOutlined
+              aria-hidden
+              className="mt-1 shrink-0 text-sm text-(--muted) transition-transform duration-(--transition-normal) group-hover:translate-x-1 group-hover:text-(--foreground)"
+            />
+          </Link>
+        ),
+      )}
     </div>
   );
 }
