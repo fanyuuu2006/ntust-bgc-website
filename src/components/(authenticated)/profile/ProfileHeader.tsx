@@ -6,154 +6,100 @@ type ProfileHeaderProps = React.HTMLAttributes<HTMLDivElement> & {
   data: UserProfileData;
 };
 
-const MEMBERSHIP_STATUS_LABEL: Record<string, string> = {
-  pending: "社員審核中",
-  active: "社員",
-  expired: "社員資格已過期",
-  suspended: "社員已停權",
-  cancelled: "社員資格已取消",
+type BadgeVariant = "primary" | "green" | "yellow" | "red" | "muted";
+
+const MEMBERSHIP_STATUS_CONFIG: Record<
+  string,
+  { label: string; variant: BadgeVariant }
+> = {
+  pending: { label: "社員審核中", variant: "yellow" },
+  active: { label: "社員", variant: "green" },
+  expired: { label: "社員資格已過期", variant: "muted" },
+  suspended: { label: "社員已停權", variant: "red" },
+  cancelled: { label: "社員資格已取消", variant: "muted" },
 };
 
+const BADGE_VARIANT_CLASS: Record<BadgeVariant, string> = {
+  primary: "border-(--primary) text-(--primary)",
+  green: "border-(--game-green) text-(--game-green)",
+  yellow: "border-(--game-yellow) text-(--foreground)",
+  red: "border-(--game-red) text-(--game-red)",
+  muted: "border-(--border) text-(--muted)",
+};
+
+/**
+ * Profile 頁面的身分識別區塊。
+ *
+ * 只負責回答「這個人是誰」：頭像、姓名、身分徽章。
+ * Email、學號、加入日期等細節資料交由 ProfileBasicInfo / MembershipCard /
+ * OfficerPositionsCard 呈現，避免同一筆資料在頁面中重複出現。
+ */
 export function ProfileHeader({
   data: { profile, membership, officerPositions, ...user },
   className,
   ...rest
 }: ProfileHeaderProps) {
-  const statusLabel = membership
-    ? MEMBERSHIP_STATUS_LABEL[membership.status]
-    : "非社員";
+  const membershipConfig = membership
+    ? MEMBERSHIP_STATUS_CONFIG[membership.status]
+    : null;
 
-  const badges = [
+  const badges: { key: string; label: string; variant: BadgeVariant }[] = [
     {
-      label: statusLabel,
-      visible: true,
-    },
-    membership && {
-      label: `${membership.academic_year.year} 學年度`,
-      visible: true,
+      key: "membership",
+      label: membershipConfig?.label ?? "非社員",
+      variant: membershipConfig?.variant ?? "muted",
     },
     ...officerPositions.map((officer) => ({
-      label: officer.title,
-      visible: true,
+      key: officer.id,
+      label: `${officer.academic_year.year} 學年度・${officer.title}`,
+      variant: "primary" as const,
     })),
-  ].filter(Boolean);
+  ];
 
   return (
-    <section
+    <div
       className={cn(
-        "grid grid-cols-1 md:grid-cols-[auto_minmax(0,1fr)] items-start gap-6 md:gap-8 px-2 py-4",
+        "card rounded-2xl flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:gap-6 sm:text-left",
         className,
       )}
+      aria-label="個人身分資訊"
       {...rest}
     >
       {/* Avatar */}
-      <div
-        className="
-          card
-          overflow-hidden
-          rounded-2xl
-          shrink-0
-          mx-auto
-          md:mx-0
-          size-40
-          sm:size-48
-          md:size-56
-          lg:size-60
-          transition-all
-          duration-300
-        "
-      >
+      <div className="size-20 shrink-0 overflow-hidden rounded-2xl border border-(--border) sm:size-24 md:size-28">
         <UserAvatar user={user} className="h-full w-full object-cover" />
       </div>
 
-      {/* Content */}
-      <div className="flex min-w-0 flex-col gap-5 text-center md:text-left">
-        {/* Name */}
+      {/* Identity */}
+      <div className="flex min-w-0 flex-col gap-3">
         <div className="space-y-1">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
+          <h1 className="text-2xl font-bold leading-tight text-(--foreground) sm:text-3xl">
             {user.name}
           </h1>
 
           {profile?.real_name && (
-            <p className="text-lg text-(--muted)">{profile.real_name}</p>
+            <p className="text-sm text-(--muted) sm:text-base">
+              {profile.real_name}
+            </p>
           )}
         </div>
 
-        {/* Badges */}
         {badges.length > 0 && (
-          <div className="flex flex-wrap justify-center md:justify-start gap-2">
-            {badges.map(
-              (badge) =>
-                badge?.visible && (
-                  <span
-                    key={badge.label}
-                    className="
-                      card
-                      primary
-                      rounded-full
-                      px-3
-                      py-1
-                      text-sm
-                      font-medium
-                    "
-                  >
-                    {badge.label}
-                  </span>
-                ),
-            )}
+          <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
+            {badges.map((badge) => (
+              <span
+                key={badge.key}
+                className={cn(
+                  "rounded-full border bg-(--secondary-background) px-2.5 py-1 text-xs font-medium",
+                  BADGE_VARIANT_CLASS[badge.variant],
+                )}
+              >
+                {badge.label}
+              </span>
+            ))}
           </div>
         )}
-
-        {/* Information */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-          <InfoItem label="Email" value={user.email} />
-
-          {profile?.student_id && (
-            <InfoItem label="學號" value={profile.student_id} />
-          )}
-
-          {profile?.real_name && (
-            <InfoItem label="真實姓名" value={profile.real_name} />
-          )}
-
-          {membership && (
-            <InfoItem
-              label="加入社員"
-              value={new Date(membership.joined_at).toLocaleDateString("zh-TW")}
-            />
-          )}
-        </div>
-
-        {/* Action */}
-        {/*
-        <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-1">
-          <button className="btn primary">
-            編輯個人資料
-          </button>
-
-          <button className="btn secondary">
-            社員證
-          </button>
-        </div>
-        */}
       </div>
-    </section>
-  );
-}
-
-type InfoItemProps = {
-  label: string;
-  value: React.ReactNode;
-};
-
-function InfoItem({ label, value }: InfoItemProps) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs uppercase tracking-wide text-(--muted)">
-        {label}
-      </span>
-
-      <span className="text-base font-medium break-all">{value}</span>
     </div>
   );
 }

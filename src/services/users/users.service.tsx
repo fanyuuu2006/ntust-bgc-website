@@ -25,7 +25,7 @@ export const usersService = {
    * 用 Promise.all 平行打，比原本「先等 user 再等其餘三筆」少一次 round trip。
    * user 不存在時再統一丟錯，語意跟原本一致。
    */
-  getProfilePageData: async (userId: string): Promise<UserProfileData> => {
+  getProfileData: async (userId: string): Promise<UserProfileData> => {
     const [user, profile, membership, officerPositions] = await Promise.all([
       usersRepository.findById(userId),
       userProfilesRepository.findByUserId(userId),

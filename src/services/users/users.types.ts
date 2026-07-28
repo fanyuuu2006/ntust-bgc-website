@@ -1,6 +1,14 @@
-import { User, UserProfile } from "@/types/database";
+import {
+  AcademicYear,
+  OfficerPosition,
+  User,
+  UserProfile,
+} from "@/types/database";
 import { MembershipWithAcademicYear } from "../memberships/memberships.types";
-import { OfficerPositionWithAcademicYear } from "@/repositories/officer-positions.repository";
+
+export type OfficerPositionWithAcademicYear = OfficerPosition & {
+  academic_year: AcademicYear;
+};
 
 /**
  * User 所有相關資料

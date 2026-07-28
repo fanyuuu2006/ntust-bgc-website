@@ -4,6 +4,14 @@ type BorrowingCardProps = {
   borrowings: BoardGameBorrowing[];
 };
 
+const BORROWING_STATUS_LABEL: Record<string, string> = {
+  pending: "審核中",
+  approved: "已核准",
+  rejected: "已拒絕",
+  borrowed: "已借出",
+  returned: "已歸還",
+};
+
 /**
  * 借閱資料尚未有 repository/service（規劃中功能）。
  * 目前僅接收空陣列，UI 骨架先到位；
@@ -12,25 +20,25 @@ type BorrowingCardProps = {
  */
 export function BorrowingCard({ borrowings }: BorrowingCardProps) {
   return (
-    <section className="card p-6" aria-labelledby="borrowing-heading">
+    <div className="card rounded-2xl p-6" aria-labelledby="borrowing-heading">
       <h2
         id="borrowing-heading"
         className="mb-4 text-sm font-semibold text-(--muted)"
       >
-        最近借閱
+        桌遊借用紀錄
       </h2>
 
       {borrowings.length > 0 ? (
         <ul className="flex flex-col gap-3">
           {borrowings.map((borrowing) => (
             <li key={borrowing.id} className="text-sm text-(--foreground)">
-              {borrowing.status}
+              {BORROWING_STATUS_LABEL[borrowing.status] ?? borrowing.status}
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-(--muted)">尚無借閱紀錄</p>
+        <p className="text-sm text-(--muted)">尚無借用紀錄</p>
       )}
-    </section>
+    </div>
   );
 }

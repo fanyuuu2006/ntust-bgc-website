@@ -1,17 +1,10 @@
 import type { User, UserProfile } from "@/types/database";
+import { formatDate } from "@/utils/date";
 
 type ProfileBasicInfoProps = {
   user: User;
   profile: UserProfile | null;
 };
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("zh-TW", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(new Date(value));
-}
 
 /**
  * 基本資料以 <dl> 表示（label/value 語意明確），
@@ -22,11 +15,17 @@ export function ProfileBasicInfo({ user, profile }: ProfileBasicInfoProps) {
     { label: "Email", value: user.email },
     { label: "電話", value: profile?.phone },
     { label: "學號", value: profile?.student_id },
+    { label: "學校", value: profile?.school },
+    { label: "系所", value: profile?.department },
+    { label: "年級", value: profile?.grade },
     { label: "加入時間", value: formatDate(user.created_at) },
   ];
 
   return (
-    <section className="card p-6" aria-labelledby="profile-basic-info-heading">
+    <div
+      className="card rounded-2xl p-6"
+      aria-labelledby="profile-basic-info-heading"
+    >
       <h2
         id="profile-basic-info-heading"
         className="mb-4 text-sm font-semibold text-(--muted)"
@@ -38,12 +37,12 @@ export function ProfileBasicInfo({ user, profile }: ProfileBasicInfoProps) {
         {items.map(({ label, value }) => (
           <div key={label} className="flex flex-col gap-1">
             <dt className="text-xs text-(--muted)">{label}</dt>
-            <dd className="text-sm font-medium text-(--foreground)">
+            <dd className="break-all text-sm font-medium text-(--foreground)">
               {value || "尚未填寫"}
             </dd>
           </div>
         ))}
       </dl>
-    </section>
+    </div>
   );
 }

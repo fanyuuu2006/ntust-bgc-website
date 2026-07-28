@@ -2,11 +2,8 @@ import "server-only";
 
 import { supabase } from "@/libs/supabase/server";
 import { throwRepositoryError } from "@/repositories/error";
-import type { AcademicYear, OfficerPosition, UUID } from "@/types/database";
-
-export type OfficerPositionWithAcademicYear = OfficerPosition & {
-  academic_years: AcademicYear;
-};
+import type { OfficerPosition, UUID } from "@/types/database";
+import { OfficerPositionWithAcademicYear } from "@/services/users/users.types";
 
 type CreateOfficerPositionInput = Omit<
   OfficerPosition,
@@ -58,7 +55,7 @@ export const officerPositionsRepository = {
   ): Promise<OfficerPositionWithAcademicYear[]> => {
     const { data, error } = await supabase
       .from("officer_positions")
-      .select("*, academic_years!inner(*)")
+      .select("*, academic_year:academic_years!inner(*)")
       .eq("user_id", userId)
       .eq("academic_years.is_current", true);
 

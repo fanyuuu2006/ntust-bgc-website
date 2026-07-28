@@ -1,4 +1,5 @@
 import { MembershipWithAcademicYear } from "@/services/memberships/memberships.types";
+import { formatDate } from "@/utils/date";
 
 type MembershipCardProps = {
   membership: MembershipWithAcademicYear | null;
@@ -18,9 +19,11 @@ const MEMBERSHIP_STATUS_LABEL: Record<string, string> = {
 };
 
 export function MembershipCard({ membership }: MembershipCardProps) {
-    console.log("membership", membership);
   return (
-    <section className="card accent p-6" aria-labelledby="membership-heading">
+    <div
+      className="card rounded-2xl accent p-6"
+      aria-labelledby="membership-heading"
+    >
       <h2
         id="membership-heading"
         className="mb-4 text-sm font-semibold text-(--muted)"
@@ -29,7 +32,7 @@ export function MembershipCard({ membership }: MembershipCardProps) {
       </h2>
 
       {membership ? (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <p className="text-lg font-bold text-(--foreground)">
             {membership.academic_year.year} 學年度
           </p>
@@ -37,10 +40,13 @@ export function MembershipCard({ membership }: MembershipCardProps) {
             {MEMBERSHIP_TYPE_LABEL[membership.type]} ・{" "}
             {MEMBERSHIP_STATUS_LABEL[membership.status]}
           </p>
+          <p className="text-xs text-(--muted)">
+            加入日期：{formatDate(membership.joined_at)}
+          </p>
         </div>
       ) : (
         <p className="text-sm text-(--muted)">目前非社員</p>
       )}
-    </section>
+    </div>
   );
 }
