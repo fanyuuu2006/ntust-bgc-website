@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/utils/className";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
-import { FieldInput } from "@/components/FieldInput";
+import { FieldInput, type FieldInputField } from "@/components/FieldInput";
 import type { User, UserProfile } from "@/types/database";
 
 type UpdateProfileResponse = {
@@ -29,6 +29,58 @@ type ProfileFormProps = {
   profile: UserProfile | null;
   className?: string;
 };
+
+/**
+ * 可編輯欄位設定。
+ * `id` 使用 `keyof ProfileFormValues`，避免欄位名稱與 `values` 的 key 打錯不一致。
+ */
+const editableFields: Array<
+  Omit<FieldInputField, "id"> & { id: keyof ProfileFormValues }
+> = [
+  {
+    id: "real_name",
+    label: "真實姓名",
+    type: "text",
+    autoComplete: "name",
+    placeholder: "請輸入您的真實姓名",
+    hint: "用於社團確認與辨識社員資料",
+  },
+  {
+    id: "phone",
+    label: "手機號碼",
+    type: "tel",
+    autoComplete: "tel",
+    placeholder: "請輸入您的手機號碼",
+    hint: "例如：0912345678",
+  },
+  {
+    id: "student_id",
+    label: "學號",
+    type: "text",
+    placeholder: "請輸入您的學號",
+  },
+  {
+    id: "school",
+    label: "學校",
+    type: "text",
+    placeholder: "請輸入您的學校",
+    hint: "例如：國立臺灣科技大學",
+  },
+  {
+    id: "department",
+    label: "系所",
+    type: "text",
+    placeholder: "請輸入您的系所",
+    hint: "例如：資訊管理系、企業管理系",
+  },
+  {
+    id: "grade",
+    label: "年級",
+    type: "text",
+    placeholder: "請輸入您的年級",
+    hint: "例如：大一、碩二",
+  },
+];
 
 function toFormValues(profile: UserProfile | null): ProfileFormValues {
   return {
@@ -66,7 +118,7 @@ export const ProfileForm = ({ user, profile, className }: ProfileFormProps) => {
 
     try {
       await apiClient<UpdateProfileResponse>("/api/users/me/profile", {
-        method: "PATCH",
+        method: profile ? "PATCH" : "POST",
         body: values,
       });
 
@@ -100,73 +152,14 @@ export const ProfileForm = ({ user, profile, className }: ProfileFormProps) => {
       />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <FieldInput
-          field={{
-            id: "real_name",
-            label: "真實姓名",
-            type: "text",
-            autoComplete: "name",
-            placeholder: "請輸入真實姓名",
-          }}
-          value={values.real_name}
-          onChange={handleChange}
-        />
-
-        <FieldInput
-          field={{
-            id: "phone",
-            label: "手機號碼",
-            type: "tel",
-            autoComplete: "tel",
-            placeholder: "請輸入手機號碼",
-          }}
-          value={values.phone}
-          onChange={handleChange}
-        />
-
-        <FieldInput
-          field={{
-            id: "student_id",
-            label: "學號",
-            type: "text",
-            placeholder: "請輸入學號",
-          }}
-          value={values.student_id}
-          onChange={handleChange}
-        />
-
-        <FieldInput
-          field={{
-            id: "school",
-            label: "學校",
-            type: "text",
-            placeholder: "請輸入學校",
-          }}
-          value={values.school}
-          onChange={handleChange}
-        />
-
-        <FieldInput
-          field={{
-            id: "department",
-            label: "系所",
-            type: "text",
-            placeholder: "請輸入系所",
-          }}
-          value={values.department}
-          onChange={handleChange}
-        />
-
-        <FieldInput
-          field={{
-            id: "grade",
-            label: "年級",
-            type: "text",
-            placeholder: "請輸入年級",
-          }}
-          value={values.grade}
-          onChange={handleChange}
-        />
+        {editableFields.map((field) => (
+          <FieldInput
+            key={field.id}
+            field={field}
+            value={values[field.id]}
+            onChange={handleChange}
+          />
+        ))}
       </div>
 
       {formError && (
