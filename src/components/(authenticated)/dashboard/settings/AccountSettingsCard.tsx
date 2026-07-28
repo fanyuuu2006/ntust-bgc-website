@@ -24,24 +24,38 @@ const nameField: FieldInputField = {
   type: "text",
   autoComplete: "nickname",
   placeholder: "請輸入顯示名稱",
-  hint: "顯示名稱將會在留言、討論區、個人主頁等地方顯示",
+  hint: "將顯示於留言、討論區與個人頁面",
 };
 
 const avatarField: FieldInputField = {
   id: "avatar",
-  label: "頭像網址",
+  label: "頭像圖片網址",
   type: "url",
   placeholder: "https://example.com/avatar.png",
-  hint: "目前僅支援貼上圖片網址",
+  hint: "目前支援圖片網址，建議使用正方形圖片",
 };
+
+const emailField: FieldInputField = {
+  id: "email",
+  label: "登入 Email",
+  type: "email",
+  disabled: true,
+  hint: "Email 為登入帳號，無法修改",
+};
+
+function toFormValues(user: User): AccountFormValues {
+  return {
+    name: user.name,
+    avatar: user.avatar ?? "",
+  };
+}
 
 export const AccountSettingsCard = ({ user }: AccountSettingsCardProps) => {
   const router = useRouter();
 
-  const [values, setValues] = useState<AccountFormValues>({
-    name: user.name,
-    avatar: user.avatar ?? "",
-  });
+  const [values, setValues] = useState<AccountFormValues>(() =>
+    toFormValues(user),
+  );
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,14 +63,14 @@ export const AccountSettingsCard = ({ user }: AccountSettingsCardProps) => {
   const isDirty =
     values.name !== user.name || values.avatar !== (user.avatar ?? "");
 
-  // UserAvatar 需要完整的 user 物件（id/name/email/avatar），
-  // 這裡用表單目前輸入的值覆蓋 avatar/name，讓預覽即時反映編輯中的內容
+  // UserAvatar 需要完整的 user 物件，這裡用表單目前輸入的值覆蓋
+  // avatar/name，讓左側預覽即時反映編輯中、尚未送出的內容
   const previewUser = useMemo(
     () => ({
       id: user.id,
       email: user.email,
-      name: values.name || user.name,
-      avatar: values.avatar || user.avatar,
+      name: values.name.trim() || user.name,
+      avatar: values.avatar.trim() || user.avatar,
     }),
     [user, values.name, values.avatar],
   );
@@ -64,6 +78,12 @@ export const AccountSettingsCard = ({ user }: AccountSettingsCardProps) => {
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
     setValues((prev) => ({ ...prev, [name]: value }));
+    setSuccessMessage(null);
+  }
+
+  function handleReset() {
+    setValues(toFormValues(user));
+    setFormError(null);
     setSuccessMessage(null);
   }
 
@@ -91,13 +111,22 @@ export const AccountSettingsCard = ({ user }: AccountSettingsCardProps) => {
   }
 
   return (
-    <SettingsCard title="帳號資訊" description="顯示名稱、頭像與登入 Email">
+    <SettingsCard
+      title="帳號資訊"
+      description="修改顯示名稱與頭像，Email 僅供登入使用"
+    >
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
-        <div className="flex items-center gap-4">
-          <UserAvatar user={previewUser} className="size-16 rounded-2xl" />
-          <p className="text-sm text-(--muted)">
-            更新頭像網址後儲存即可套用新頭像
-          </p>
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+          <UserAvatar
+            user={previewUser}
+            className="size-16 shrink-0 rounded-2xl"
+          />
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <p className="text-sm font-medium text-(--foreground)">
+              {values.name.trim() || user.name}
+            </p>
+            <p className="text-sm text-(--muted)">修改後會即時預覽</p>
+          </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -113,30 +142,31 @@ export const AccountSettingsCard = ({ user }: AccountSettingsCardProps) => {
           />
         </div>
 
-        <FieldInput
-          field={{
-            id: "email",
-            label: "Email",
-            type: "email",
-            disabled: true,
-            hint: "登入帳號，無法修改",
-          }}
-          value={user.email}
-          onChange={() => {}}
-        />
+        <FieldInput field={emailField} value={user.email} onChange={() => {}} />
 
-        {formError && (
-          <p role="alert" className="text-sm text-(--game-red)">
-            {formError}
-          </p>
-        )}
-        {successMessage && (
-          <p role="status" className="text-sm text-(--secondary)">
-            {successMessage}
-          </p>
-        )}
+        <div aria-live="polite" className="min-h-5">
+          {formError && (
+            <p role="alert" className="text-sm text-(--game-red)">
+              {formError}
+            </p>
+          )}
+          {successMessage && (
+            <p role="status" className="text-sm text-(--secondary)">
+              {successMessage}
+            </p>
+          )}
+        </div>
 
-        <div className="flex justify-end">
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={isLoading || !isDirty}
+            className="btn outline rounded-lg px-6 py-2.5 text-sm font-medium sm:text-base"
+          >
+            重設
+          </button>
+
           <button
             type="submit"
             disabled={isLoading || !isDirty}
