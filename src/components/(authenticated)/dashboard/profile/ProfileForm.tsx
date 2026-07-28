@@ -69,7 +69,7 @@ const academicFields: EditableField[] = [
     label: "系所",
     type: "text",
     placeholder: "請輸入您的系所",
-    hint: "例如：資訊管理、企業管理 不需要加系",
+    hint: "只需系所名稱，例如：資訊管理、企業管理",
   },
   {
     id: "grade",
@@ -104,6 +104,12 @@ export const ProfileForm = ({ user, profile, className }: ProfileFormProps) => {
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
     setValues((prev) => ({ ...prev, [name]: value }));
+    setSuccessMessage(null);
+  }
+
+  function handleReset() {
+    setValues(toFormValues(profile));
+    setFormError(null);
     setSuccessMessage(null);
   }
 
@@ -189,7 +195,16 @@ export const ProfileForm = ({ user, profile, className }: ProfileFormProps) => {
         </p>
       )}
 
-      <div className="flex justify-end">
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          onClick={handleReset}
+          disabled={isLoading}
+          className="btn outline rounded-lg px-6 py-2.5 text-sm font-medium sm:text-base"
+        >
+          重設
+        </button>
+
         <button
           type="submit"
           disabled={isLoading}
