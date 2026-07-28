@@ -2,8 +2,7 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "儀表板",
-  description:
-    "國立臺灣科技大學桌上遊戲研究社官方網站儀表板，提供登入之會員個人資料、活動報名、桌遊收藏與社團管理功能。",
+  description: "查看您的帳號資訊與功能入口",
 };
 export default function DashboardLayout({
   children,

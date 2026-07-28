@@ -63,7 +63,6 @@
 | Database | PostgreSQL via **Supabase JS SDK**（server-only service role） |
 | Auth | **自訂 Session 認證**（`sessions` + `auth_credentials` + **argon2**），**非 Supabase Auth** |
 | Validation | **Zod 4**（目前用於 auth schema） |
-| Icons | `@ant-design/icons` |
 | Class merge | `clsx` + `tailwind-merge` → `cn()` |
 | Fonts | `next/font/google`（Geist Sans / Geist Mono） |
 | Lint | ESLint 9 + `eslint-config-next` |
@@ -647,11 +646,6 @@ var(--shadow-base) / var(--shadow-card) / var(--shadow-hover)
 - 使用 CSS transitions / keyframes
 - 必須尊重 `prefers-reduced-motion`（已在 `globals.css` 設定）
 
-### Icons
-
-- 使用 `@ant-design/icons`
-- Icon-only button 必須有 `aria-label`
-
 ---
 
 ## Naming Convention
@@ -863,7 +857,7 @@ AI 必須：
 | zod | zustand |
 | argon2 | @tanstack/react-query |
 | clsx, tailwind-merge | react-hook-form |
-| @ant-design/icons | framer-motion |
+| | framer-motion |
 | @supabase/supabase-js | shadcn/ui |
 
 Zod **已安裝且使用中**，新增表單/輸入驗證應優先使用 Zod，而非再引入其他 validation library。
