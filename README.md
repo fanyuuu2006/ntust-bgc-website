@@ -196,6 +196,7 @@ src
 │   │   │   ├── profile
 │   │   │   │   └── page.tsx
 │   │   │   └── settings
+│   │   │       ├── layout.tsx
 │   │   │       └── page.tsx
 │   │   └── layout.tsx
 │   ├── (public)
@@ -217,7 +218,13 @@ src
 │   │   │   │   └── route.ts
 │   │   │   ├── me
 │   │   │   │   └── route.ts
-│   │   │   └── register
+│   │   │   ├── password
+│   │   │   │   └── route.ts
+│   │   │   ├── register
+│   │   │   │   └── route.ts
+│   │   │   └── sessions
+│   │   │       ├── [id]
+│   │   │       │   └── route.ts
 │   │   │       └── route.ts
 │   │   └── users
 │   │       └── me
@@ -242,8 +249,14 @@ src
 │   │       ├── DashboardWelcome.tsx
 │   │       ├── profile
 │   │       └── settings
-│   │           └── ProfileForm.tsx
+│   │           ├── AccountSettingsCard.tsx
+│   │           ├── PasswordSettingsCard.tsx
+│   │           ├── ProfileSettingsCard.tsx
+│   │           ├── SessionList.tsx
+│   │           ├── SessionSettingsCard.tsx
+│   │           └── SettingsCard.tsx
 │   ├── FieldInput.tsx
+│   ├── FormFeedback.tsx
 │   ├── Header
 │   │   ├── DesktopNavigation.tsx
 │   │   ├── Header.tsx
@@ -264,8 +277,10 @@ src
 │   ├── metadata.tsx
 │   ├── navigation.tsx
 │   ├── siteConfigs.tsx
-│   └── supabase
-│       └── server.tsx
+│   ├── supabase
+│   │   └── server.tsx
+│   └── zod
+│       └── helpers.tsx
 ├── repositories
 │   ├── auth.repository.tsx
 │   ├── error.tsx
@@ -285,7 +300,8 @@ src
 ├── styles
 │   └── globals.css
 ├── types
-│   └── database.tsx
+│   ├── database.tsx
+│   └── index.tsx
 └── utils
     ├── auth
     │   ├── password.tsx
