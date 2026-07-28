@@ -7,7 +7,7 @@ import {
   EmailAlreadyExistsError,
   InvalidCredentialsError,
 } from "./auth.errors";
-import { sessionRepository } from "@/repositories/session.repository";
+import { sessionRepository } from "@/repositories/sessions.repository";
 import { generateSessionToken } from "@/utils/auth/session";
 
 /** Session 有效期：7 天 */

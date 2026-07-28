@@ -24,7 +24,7 @@ const MenuItem = ({ label, href }: MenuItemProps) => {
 
 const MENU_ITEMS: MenuItemProps[] = [
   {
-    label: "儀表板",
+    label: "主頁",
     href: "/dashboard",
   },
   {

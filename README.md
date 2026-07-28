@@ -191,14 +191,13 @@ src
 │   │       └── page.tsx
 │   ├── (authenticated)
 │   │   ├── dashboard
+│   │   │   ├── layout.tsx
 │   │   │   └── page.tsx
 │   │   └── layout.tsx
 │   ├── (public)
 │   │   ├── announcements
 │   │   │   └── page.tsx
 │   │   ├── board-games
-│   │   │   └── page.tsx
-│   │   ├── officers
 │   │   │   └── page.tsx
 │   │   ├── privacy
 │   │   │   ├── layout.tsx
@@ -207,15 +206,17 @@ src
 │   │       ├── layout.tsx
 │   │       └── page.tsx
 │   ├── api
-│   │   └── auth
-│   │       ├── login
-│   │       │   └── route.ts
-│   │       ├── logout
-│   │       │   └── route.ts
-│   │       ├── me
-│   │       │   └── route.ts
-│   │       └── register
-│   │           └── route.ts
+│   │   ├── auth
+│   │   │   ├── login
+│   │   │   │   └── route.ts
+│   │   │   ├── logout
+│   │   │   │   └── route.ts
+│   │   │   ├── me
+│   │   │   │   └── route.ts
+│   │   │   └── register
+│   │   │       └── route.ts
+│   │   └── users
+│   │       └── po
 │   ├── layout.tsx
 │   └── page.tsx
 ├── components
@@ -226,6 +227,11 @@ src
 │   │   │   └── LoginForm.tsx
 │   │   └── register
 │   │       └── RegisterForm.tsx
+│   ├── (authenticated)
+│   │   └── dashboard
+│   │       ├── DashboardCard.tsx
+│   │       ├── DashboardMenu.tsx
+│   │       └── DashboardWelcome.tsx
 │   ├── FieldInput.tsx
 │   ├── Header
 │   │   ├── DesktopNavigation.tsx
@@ -242,6 +248,7 @@ src
 │   │   ├── client.tsx
 │   │   └── errors.tsx
 │   ├── auth.tsx
+│   ├── css.tsx
 │   ├── env.tsx
 │   ├── metadata.tsx
 │   ├── navigation.tsx
@@ -251,7 +258,8 @@ src
 ├── repositories
 │   ├── auth.repository.tsx
 │   ├── error.tsx
-│   ├── session.repository.tsx
+│   ├── sessions.repository.tsx
+│   ├── user-profiles.repository.tsx
 │   └── users.repository.tsx
 ├── services
 │   ├── auth
@@ -259,7 +267,9 @@ src
 │   │   ├── auth.schema.tsx
 │   │   ├── auth.service.tsx
 │   │   └── auth.types.tsx
-│   └── users.service.tsx
+│   └── users
+│       ├── users.schema.tsx
+│       └── users.service.tsx
 ├── styles
 │   └── globals.css
 ├── types
@@ -268,7 +278,8 @@ src
     ├── auth
     │   ├── password.tsx
     │   └── session.tsx
-    └── className.tsx
+    ├── className.tsx
+    └── date.tsx
 ```
 
 ### expected file structure
