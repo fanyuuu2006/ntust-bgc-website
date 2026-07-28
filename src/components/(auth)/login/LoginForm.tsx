@@ -45,10 +45,7 @@ type LoginFormProps = Omit<
 
 export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
   const router = useRouter();
-
-  const [values, setValues] = useState<LoginFormValues>(
-    createInitialValues,
-  );
+  const [values, setValues] = useState<LoginFormValues>(createInitialValues);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -63,9 +60,7 @@ export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
     setError(null);
   }
 
-  async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>,
-  ) {
+  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setError(null);
@@ -79,11 +74,7 @@ export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
 
       router.refresh();
     } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : "登入失敗，請稍後再試",
-      );
+      setError(err instanceof ApiError ? err.message : "登入失敗，請稍後再試");
     } finally {
       setIsLoading(false);
     }

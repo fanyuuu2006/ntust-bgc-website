@@ -15,17 +15,22 @@ export const FormFeedback = ({
   success,
   className,
   ...props
-}: FormFeedbackProps) => (
-  <div aria-live="polite" className={cn(`min-h-5`, className)} {...props}>
-    {error && (
-      <p role="alert" className="text-sm text-(--game-red)">
-        {error}
-      </p>
-    )}
-    {success && (
-      <p role="status" className="text-sm text-(--secondary)">
-        {success}
-      </p>
-    )}
-  </div>
-);
+}: FormFeedbackProps) => {
+  if (!error && !success) {
+    return null;
+  }
+  return (
+    <div aria-live="polite" className={cn(`min-h-5`, className)} {...props}>
+      {error && (
+        <p role="alert" className="text-sm text-(--game-red)">
+          {error}
+        </p>
+      )}
+      {success && (
+        <p role="status" className="text-sm text-(--secondary)">
+          {success}
+        </p>
+      )}
+    </div>
+  );
+};
