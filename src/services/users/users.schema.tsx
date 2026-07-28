@@ -1,4 +1,3 @@
-import { emptyStringToUndefined } from "@/libs/zod/helpers";
 import { z } from "zod";
 
 const NAME_MAX_LENGTH = 50;
@@ -23,13 +22,16 @@ export const updateUserProfileSchema = z.object({
 
 export const updateUserAccountSchema = z
   .object({
-    name: emptyStringToUndefined(
-      z.string().trim().min(1, "顯示名稱不可為空").max(NAME_MAX_LENGTH),
-    ),
+    name: z
+      .string()
+      .trim()
+      .min(1, "顯示名稱不可為空")
+      .max(NAME_MAX_LENGTH)
+      .optional(),
 
-    avatar: emptyStringToUndefined(
-      z.url("請輸入有效的圖片網址").max(AVATAR_MAX_LENGTH),
-    ),
+    avatar: z
+      .union([z.url("請輸入有效的圖片網址").max(AVATAR_MAX_LENGTH), z.null()])
+      .optional(),
   })
   .refine((data) => data.name !== undefined || data.avatar !== undefined, {
     message: "沒有可更新的欄位",

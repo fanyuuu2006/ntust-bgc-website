@@ -96,7 +96,7 @@ export const FieldInput = ({
             onClick={togglePasswordVisibility}
             aria-label={isPasswordVisible ? "隱藏密碼" : "顯示密碼"}
             aria-pressed={isPasswordVisible}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-(--muted) z-10"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-(--muted)"
           >
             {isPasswordVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
           </button>

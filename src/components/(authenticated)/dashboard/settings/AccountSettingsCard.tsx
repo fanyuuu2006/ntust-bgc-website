@@ -15,6 +15,10 @@ type AccountFormValues = {
   avatar: string;
 };
 
+type UpdateAccountPayload = {
+  name?: string;
+  avatar?: string | null;
+};
 type AccountSettingsCardProps = React.HTMLAttributes<HTMLDivElement> & {
   user: User;
 };
@@ -66,18 +70,17 @@ export const AccountSettingsCard = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const isDirty =
-    values.name !== user.name || values.avatar !== (user.avatar ?? "");
+    values.name.trim() !== user.name ||
+    values.avatar.trim() !== (user.avatar ?? "");
 
-  // UserAvatar 需要完整的 user 物件，這裡用表單目前輸入的值覆蓋
-  // avatar/name，讓左側預覽即時反映編輯中、尚未送出的內容
   const previewUser = useMemo(
     () => ({
       id: user.id,
       email: user.email,
       name: values.name.trim() || user.name,
-      avatar: values.avatar.trim() || user.avatar,
+      avatar: values.avatar.trim() || null,
     }),
-    [user, values.name, values.avatar],
+    [user.id, user.email, user.name, values.name, values.avatar],
   );
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -91,20 +94,26 @@ export const AccountSettingsCard = ({
     setFormError(null);
     setSuccessMessage(null);
   }
-
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     setFormError(null);
     setSuccessMessage(null);
     setIsLoading(true);
 
     try {
+      const payload: UpdateAccountPayload = {
+        name: values.name.trim(),
+        avatar: values.avatar.trim() || null,
+      };
+
       await apiClient("/api/users/me/account", {
         method: "PATCH",
-        body: values,
+        body: payload,
       });
 
       setSuccessMessage("帳號資訊已更新");
+
       router.refresh();
     } catch (err) {
       setFormError(
