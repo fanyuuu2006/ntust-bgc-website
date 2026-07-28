@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SettingsCard } from "./SettingsCard";
 import { FieldInput, type FieldInputField } from "@/components/FieldInput";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import type { UserProfile } from "@/types/database";
+import { FormFeedback } from "../../../FormFeedback";
 
 type ProfileSettingsCardValues = {
   real_name: string;
@@ -73,17 +74,33 @@ function toFormValues(profile: UserProfile | null): ProfileSettingsCardValues {
   };
 }
 
-type ProfileSettingsCardProps = { profile: UserProfile | null };
+function isValuesDirty(
+  current: ProfileSettingsCardValues,
+  initial: ProfileSettingsCardValues,
+) {
+  return (Object.keys(current) as (keyof ProfileSettingsCardValues)[]).some(
+    (key) => current[key] !== initial[key],
+  );
+}
 
-export const ProfileSettingsCard = ({ profile }: ProfileSettingsCardProps) => {
+type ProfileSettingsCardProps = React.HTMLAttributes<HTMLDivElement> & {
+  profile: UserProfile | null;
+};
+
+export const ProfileSettingsCard = ({
+  profile,
+  ...rest
+}: ProfileSettingsCardProps) => {
   const router = useRouter();
 
-  const [values, setValues] = useState<ProfileSettingsCardValues>(
-    toFormValues(profile),
-  );
+  const initialValues = useMemo(() => toFormValues(profile), [profile]);
+  const [values, setValues] =
+    useState<ProfileSettingsCardValues>(initialValues);
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const isDirty = isValuesDirty(values, initialValues);
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
@@ -92,7 +109,7 @@ export const ProfileSettingsCard = ({ profile }: ProfileSettingsCardProps) => {
   }
 
   function handleReset() {
-    setValues(toFormValues(profile));
+    setValues(initialValues);
     setFormError(null);
     setSuccessMessage(null);
   }
@@ -120,55 +137,56 @@ export const ProfileSettingsCard = ({ profile }: ProfileSettingsCardProps) => {
   }
 
   return (
-    <SettingsCard title="個人資料" description="真實姓名、聯絡方式與學籍資訊">
+    <SettingsCard
+      title="個人資料"
+      description="真實姓名、聯絡方式與學籍資訊"
+      {...rest}
+    >
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
-        <div className="grid gap-4 sm:grid-cols-2">
-          {basicFields.map((field) => (
-            <FieldInput
-              key={field.id}
-              field={field}
-              value={values[field.id]}
-              onChange={handleChange}
-            />
-          ))}
+        <div className="flex flex-col gap-3">
+          <p className="text-sm font-semibold text-(--foreground)">聯絡資訊</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {basicFields.map((field) => (
+              <FieldInput
+                key={field.id}
+                field={field}
+                value={values[field.id]}
+                onChange={handleChange}
+              />
+            ))}
+          </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {academicFields.map((field) => (
-            <FieldInput
-              key={field.id}
-              field={field}
-              value={values[field.id]}
-              onChange={handleChange}
-            />
-          ))}
+        <div className="flex flex-col gap-3">
+          <p className="text-sm font-semibold text-(--foreground)">學籍資訊</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {academicFields.map((field) => (
+              <FieldInput
+                key={field.id}
+                field={field}
+                value={values[field.id]}
+                onChange={handleChange}
+              />
+            ))}
+          </div>
         </div>
 
-        {formError && (
-          <p role="alert" className="text-sm text-(--game-red)">
-            {formError}
-          </p>
-        )}
-        {successMessage && (
-          <p role="status" className="text-sm text-(--secondary)">
-            {successMessage}
-          </p>
-        )}
+        <FormFeedback error={formError} success={successMessage} />
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={handleReset}
-            disabled={isLoading}
-            className="btn outline rounded-lg px-6 py-2.5 text-sm font-medium sm:text-base"
+            disabled={isLoading || !isDirty}
+            className="btn outline w-full rounded-lg px-6 py-2.5 text-sm font-medium sm:w-auto sm:text-base"
           >
             重設
           </button>
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !isDirty}
             aria-busy={isLoading}
-            className="btn primary rounded-lg px-6 py-2.5 text-sm font-medium sm:text-base"
+            className="btn primary w-full rounded-lg px-6 py-2.5 text-sm font-medium sm:w-auto sm:text-base"
           >
             {isLoading ? "儲存中..." : "儲存修改"}
           </button>

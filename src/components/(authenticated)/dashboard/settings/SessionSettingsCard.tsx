@@ -5,16 +5,23 @@ import { SettingsCard } from "./SettingsCard";
 import { SessionList } from "./SessionList";
 import type { UUID } from "@/types/database";
 
-type SessionSettingsCardProps = { userId: UUID };
+type SessionSettingsCardProps = React.HTMLAttributes<HTMLDivElement> & {
+  userId: UUID;
+};
 
 export const SessionSettingsCard = async ({
   userId,
+  ...rest
 }: SessionSettingsCardProps) => {
   const token = (await cookies()).get(SESSION_COOKIE_NAME)?.value ?? "";
   const sessions = await authService.listSessions(userId, token);
 
   return (
-    <SettingsCard title="登入工作階段" description="管理目前登入中的裝置">
+    <SettingsCard
+      title="登入工作階段"
+      description="管理目前登入中的裝置"
+      {...rest}
+    >
       <SessionList sessions={sessions} />
     </SettingsCard>
   );

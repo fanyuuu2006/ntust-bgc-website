@@ -59,13 +59,10 @@ export const FieldInput = ({
 
   return (
     <div className={cn("flex flex-col gap-1.5", className)} {...rest}>
-      <label
-        htmlFor={field.id}
-        className={cn(labelClassName, {
-          [requiredMarkClassName]: field.required,
-        })}
-      >
-        {field.label}
+      <label htmlFor={field.id} className={cn(labelClassName)}>
+        <span className={cn({ [requiredMarkClassName]: field.required })}>
+          {field.label}
+        </span>
         {field.hint && (
           <span id={hintId} className="ml-2 text-xs font-normal text-(--muted)">
             {field.hint}

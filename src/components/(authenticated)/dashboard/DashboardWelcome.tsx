@@ -23,7 +23,7 @@ export function DashboardWelcome({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
         <UserAvatar
           user={user}
-          className="size-14 rounded-lg shrink-0 sm:h-16 sm:w-16"
+          className="size-14 rounded-lg  border border-(--border) shrink-0 sm:size-16"
         />
 
         <div className="flex flex-col gap-1.5">

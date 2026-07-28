@@ -6,25 +6,37 @@ import Link from "next/link";
 import { cn } from "@/utils/className";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
-import { FieldInput } from "@/components/FieldInput";
-
-type LoginResponse = {
-  data: {
-    id: string;
-    email: string;
-    name: string;
-  };
-};
+import { FieldInput, type FieldInputField } from "@/components/FieldInput";
+import { FormFeedback } from "@/components/FormFeedback";
 
 type LoginFormValues = {
   email: string;
   password: string;
 };
 
-const initialValues: LoginFormValues = {
+const createInitialValues = (): LoginFormValues => ({
   email: "",
   password: "",
-};
+});
+
+const fields: FieldInputField[] = [
+  {
+    id: "email",
+    label: "Email",
+    type: "email",
+    required: true,
+    autoComplete: "email",
+    placeholder: "請輸入 Email",
+  },
+  {
+    id: "password",
+    label: "密碼",
+    type: "password",
+    required: true,
+    autoComplete: "current-password",
+    placeholder: "請輸入密碼",
+  },
+];
 
 type LoginFormProps = Omit<
   React.FormHTMLAttributes<HTMLFormElement>,
@@ -34,30 +46,44 @@ type LoginFormProps = Omit<
 export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
   const router = useRouter();
 
-  const [values, setValues] = useState<LoginFormValues>(initialValues);
+  const [values, setValues] = useState<LoginFormValues>(
+    createInitialValues,
+  );
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
-    setValues((prev) => ({ ...prev, [name]: value }));
+
+    setValues((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    setError(null);
   }
 
-  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
     setError(null);
     setIsLoading(true);
 
     try {
-      await apiClient<LoginResponse>("/api/auth/login", {
+      await apiClient("/api/auth/login", {
         method: "POST",
         body: values,
       });
 
       router.refresh();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "登入失敗，請稍後再試");
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "登入失敗，請稍後再試",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -71,38 +97,20 @@ export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
       {...rest}
     >
       <div className="flex flex-col gap-4">
-        <FieldInput
-          field={{
-            id: "email",
-            label: "Email",
-            type: "email",
-            required: true,
-            autoComplete: "email",
-            placeholder: "請輸入 Email",
-          }}
-          value={values.email}
-          onChange={handleChange}
-        />
-
-        <FieldInput
-          field={{
-            id: "password",
-            label: "密碼",
-            type: "password",
-            required: true,
-            autoComplete: "current-password",
-            placeholder: "請輸入密碼",
-          }}
-          value={values.password}
-          onChange={handleChange}
-        />
+        {fields.map((field) => (
+          <FieldInput
+            key={field.id}
+            field={{
+              ...field,
+              disabled: isLoading,
+            }}
+            value={values[field.id as keyof LoginFormValues]}
+            onChange={handleChange}
+          />
+        ))}
       </div>
 
-      {error && (
-        <p role="alert" className="text-sm text-(--game-red)">
-          {error}
-        </p>
-      )}
+      <FormFeedback error={error} />
 
       <div className="flex flex-col gap-4">
         <button

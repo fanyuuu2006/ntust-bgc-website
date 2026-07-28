@@ -8,19 +8,20 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import type { User } from "@/types/database";
+import { FormFeedback } from "../../../FormFeedback";
 
 type AccountFormValues = {
   name: string;
   avatar: string;
 };
 
-type AccountSettingsCardProps = {
+type AccountSettingsCardProps = React.HTMLAttributes<HTMLDivElement> & {
   user: User;
 };
 
 const nameField: FieldInputField = {
   id: "name",
-  label: "顯示名稱",
+  label: "名稱",
   type: "text",
   autoComplete: "nickname",
   placeholder: "請輸入顯示名稱",
@@ -29,7 +30,7 @@ const nameField: FieldInputField = {
 
 const avatarField: FieldInputField = {
   id: "avatar",
-  label: "頭像圖片網址",
+  label: "頭像",
   type: "url",
   placeholder: "https://example.com/avatar.png",
   hint: "目前支援圖片網址，建議使用正方形圖片",
@@ -37,7 +38,7 @@ const avatarField: FieldInputField = {
 
 const emailField: FieldInputField = {
   id: "email",
-  label: "登入 Email",
+  label: "Email",
   type: "email",
   disabled: true,
   hint: "Email 為登入帳號，無法修改",
@@ -50,7 +51,11 @@ function toFormValues(user: User): AccountFormValues {
   };
 }
 
-export const AccountSettingsCard = ({ user }: AccountSettingsCardProps) => {
+export const AccountSettingsCard = ({
+  user,
+  className,
+  ...rest
+}: AccountSettingsCardProps) => {
   const router = useRouter();
 
   const [values, setValues] = useState<AccountFormValues>(() =>
@@ -114,15 +119,17 @@ export const AccountSettingsCard = ({ user }: AccountSettingsCardProps) => {
     <SettingsCard
       title="帳號資訊"
       description="修改顯示名稱與頭像，Email 僅供登入使用"
+      className={className}
+      {...rest}
     >
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
           <UserAvatar
             user={previewUser}
-            className="size-16 shrink-0 rounded-2xl"
+            className="size-16 shrink-0 rounded-2xl border border-(--border)"
           />
           <div className="flex min-w-0 flex-col gap-0.5">
-            <p className="text-sm font-medium text-(--foreground)">
+            <p className="truncate text-sm font-medium text-(--foreground)">
               {values.name.trim() || user.name}
             </p>
             <p className="text-sm text-(--muted)">修改後會即時預覽</p>
@@ -144,25 +151,14 @@ export const AccountSettingsCard = ({ user }: AccountSettingsCardProps) => {
 
         <FieldInput field={emailField} value={user.email} onChange={() => {}} />
 
-        <div aria-live="polite" className="min-h-5">
-          {formError && (
-            <p role="alert" className="text-sm text-(--game-red)">
-              {formError}
-            </p>
-          )}
-          {successMessage && (
-            <p role="status" className="text-sm text-(--secondary)">
-              {successMessage}
-            </p>
-          )}
-        </div>
+        <FormFeedback error={formError} success={successMessage} />
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={handleReset}
             disabled={isLoading || !isDirty}
-            className="btn outline rounded-lg px-6 py-2.5 text-sm font-medium sm:text-base"
+            className="btn outline w-full rounded-lg px-6 py-2.5 text-sm font-medium sm:w-auto sm:text-base"
           >
             重設
           </button>
@@ -171,7 +167,7 @@ export const AccountSettingsCard = ({ user }: AccountSettingsCardProps) => {
             type="submit"
             disabled={isLoading || !isDirty}
             aria-busy={isLoading}
-            className="btn primary rounded-lg px-6 py-2.5 text-sm font-medium sm:text-base"
+            className="btn primary w-full rounded-lg px-6 py-2.5 text-sm font-medium sm:w-auto sm:text-base"
           >
             {isLoading ? "儲存中..." : "儲存"}
           </button>

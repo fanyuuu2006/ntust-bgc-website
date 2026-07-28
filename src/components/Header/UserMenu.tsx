@@ -90,7 +90,7 @@ export const UserMenu = ({ user, className, ...rest }: UserMenuProps) => {
         aria-label={`使用者選單，${user.name}`}
         className="rounded-full p-0.5"
       >
-        <UserAvatar className="size-9 rounded-full" user={user} />
+        <UserAvatar className="size-9 rounded-full border border-(--border)" user={user} />
       </button>
 
       {isOpen && (
