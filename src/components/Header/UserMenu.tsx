@@ -102,7 +102,7 @@ export const UserMenu = ({ user, className, ...rest }: UserMenuProps) => {
           role="menu"
           aria-labelledby={buttonId}
           className={cn(
-            "card animate-appear absolute right-0 top-[calc(100%+0.5rem)] z-50",
+            "card rounded-xl absolute right-0 top-[calc(100%+0.5rem)] z-50",
             "w-60 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto",
             "p-1.5 flex flex-col gap-1",
           )}

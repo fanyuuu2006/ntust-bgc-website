@@ -28,7 +28,7 @@ export default async function RootLayout({
     >
       <body suppressHydrationWarning={true}>
         <UserProvider user={user}>
-          <Header />
+          <Header className="sticky top-0 z-50" />
           <main className="flex-1">{children}</main>
         </UserProvider>
       </body>

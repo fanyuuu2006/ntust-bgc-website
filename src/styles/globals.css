@@ -36,8 +36,7 @@
     --game-blue: #1683d8;
 
     /* === 邊框 === */
-    --border: rgba(0, 91, 172, 0.14);
-    --border-strong: rgba(0, 91, 172, 0.28);
+    --border: rgba(0, 91, 172, 0.28);
 
     /* === 陰影 === */
     --shadow-base: 0 0.25rem 1rem rgba(15, 23, 42, 0.06);
@@ -449,54 +448,6 @@
     box-shadow: var(--shadow-hover);
 
     pointer-events: none;
-  }
-
-  /* =====================================================
-     ✨ Animations
-     ===================================================== */
-
-  .animate-pop {
-    animation: pop var(--transition-fast) var(--transition-bounce);
-  }
-
-  .animate-appear {
-    animation: appear var(--transition-normal) var(--transition-timing) forwards;
-  }
-
-  .animate-turn {
-    animation: turn var(--transition-normal) var(--transition-timing) forwards;
-  }
-
-  @keyframes pop {
-    from {
-      opacity: 0;
-      transform: scale(0.5);
-    }
-
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  @keyframes appear {
-    from {
-      opacity: 0;
-    }
-
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes turn {
-    from {
-      transform: rotate(0deg);
-    }
-
-    to {
-      transform: rotate(360deg);
-    }
   }
 
   /* =====================================================

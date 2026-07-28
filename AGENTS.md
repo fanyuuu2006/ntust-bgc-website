@@ -613,7 +613,6 @@ cn("base-class", condition && "conditional-class", className)
 | `.card` / `.card.accent` | 卡片 |
 | `.game-block` | 裝飾色塊 |
 | `.skeleton` / `.skeleton-line` | 載入占位 |
-| `.animate-pop` / `.animate-appear` / `.animate-turn` | 動畫 |
 
 ### Color tokens
 
