@@ -1,126 +1,86 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
-import { getCurrentUser } from "@/libs/auth";
-import { usersService } from "@/services/users/users.service";
-import {
-  UserProfileAlreadyExistsError,
-  UserProfileNotFoundError,
-} from "@/services/users/user.errors";
-import type { User } from "@/types/database";
-
-/**
- * 驗證是否已登入。
- * 已登入回傳 User，未登入直接回傳可用的 401 NextResponse，
- * 由呼叫端用 `instanceof NextResponse` 判斷是否要提早 return。
- */
-async function requireUser(): Promise<User | NextResponse> {
-  const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.json(
-      { message: "尚未登入或登入已過期" },
-      { status: 401 },
-    );
-  }
-  return user;
-}
-
-export async function GET() {
-  const authResult = await requireUser();
-  if (authResult instanceof NextResponse) {
-    return authResult;
-  }
-  const user = authResult;
-
-  try {
-    const profile = await usersService.getProfile(user.id);
-
-    return NextResponse.json({ data: profile }, { status: 200 });
-  } catch (error) {
-    console.error("[GET /api/users/me/profile]", error);
-
-    return NextResponse.json(
-      { message: "取得個人資料失敗，請稍後再試" },
-      { status: 500 },
-    );
-  }
-}
+import { authService } from "@/services/auth/auth.service";
+import { InvalidCredentialsError } from "@/services/auth/auth.errors";
+import { SESSION_COOKIE_NAME } from "@/libs/auth";
 
 export async function POST(request: Request) {
-  // 先驗證登入，避免對未授權請求做無謂的 body parsing
-  const authResult = await requireUser();
-  if (authResult instanceof NextResponse) {
-    return authResult;
-  }
-  const user = authResult;
-
   let body: unknown;
+
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ message: "請求格式錯誤" }, { status: 400 });
-  }
-
-  try {
-    const profile = await usersService.createProfile(user.id, body);
-
-    return NextResponse.json({ data: profile }, { status: 201 });
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { message: "輸入資料格式不正確", errors: error.issues },
-        { status: 400 },
-      );
-    }
-
-    if (error instanceof UserProfileAlreadyExistsError) {
-      return NextResponse.json({ message: "個人資料已存在" }, { status: 409 });
-    }
-
-    console.error("[POST /api/users/me/profile]", error);
-
     return NextResponse.json(
-      { message: "建立個人資料失敗，請稍後再試" },
-      { status: 500 },
+      {
+        message: "請求格式錯誤",
+      },
+      {
+        status: 400,
+      },
     );
   }
-}
-
-export async function PATCH(request: Request) {
-  const authResult = await requireUser();
-  if (authResult instanceof NextResponse) {
-    return authResult;
-  }
-  const user = authResult;
-
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ message: "請求格式錯誤" }, { status: 400 });
-  }
 
   try {
-    const profile = await usersService.updateProfile(user.id, body);
+    const { user, session } = await authService.login(body);
 
-    return NextResponse.json({ data: profile }, { status: 200 });
+    const response = NextResponse.json(
+      {
+        data: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        },
+      },
+      {
+        status: 200,
+      },
+    );
+
+    response.cookies.set({
+      name: SESSION_COOKIE_NAME,
+      value: session.token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      expires: new Date(session.expires_at),
+    });
+
+    return response;
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { message: "輸入資料格式不正確", errors: error.issues },
-        { status: 400 },
+        {
+          message: "輸入資料格式不正確",
+          errors: error.issues,
+        },
+        {
+          status: 400,
+        },
       );
     }
 
-    if (error instanceof UserProfileNotFoundError) {
-      return NextResponse.json({ message: "找不到個人資料" }, { status: 404 });
+    if (error instanceof InvalidCredentialsError) {
+      return NextResponse.json(
+        {
+          message: "Email 或密碼錯誤",
+        },
+        {
+          status: 401,
+        },
+      );
     }
 
-    console.error("[PATCH /api/users/me/profile]", error);
+    console.error("[POST /api/auth/login]", error);
 
     return NextResponse.json(
-      { message: "更新個人資料失敗，請稍後再試" },
-      { status: 500 },
+      {
+        message: "登入失敗，請稍後再試",
+      },
+      {
+        status: 500,
+      },
     );
   }
 }
