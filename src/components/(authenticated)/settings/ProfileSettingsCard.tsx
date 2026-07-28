@@ -7,7 +7,7 @@ import { FieldInput, type FieldInputField } from "@/components/FieldInput";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import type { UserProfile } from "@/types/database";
-import { FormFeedback } from "../../../FormFeedback";
+import { FormFeedback } from "@/components/FormFeedback";
 
 type ProfileSettingsCardValues = {
   real_name: string;

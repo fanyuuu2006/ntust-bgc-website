@@ -282,8 +282,10 @@ src
 │   └── zod
 │       └── helpers.tsx
 ├── repositories
+│   ├── academic-years.repository.ts
 │   ├── auth.repository.tsx
 │   ├── error.tsx
+│   ├── memberships.repository.ts
 │   ├── sessions.repository.tsx
 │   ├── user-profiles.repository.tsx
 │   └── users.repository.tsx
@@ -293,6 +295,9 @@ src
 │   │   ├── auth.schema.tsx
 │   │   ├── auth.service.tsx
 │   │   └── auth.types.tsx
+│   ├── memberships
+│   │   ├── memberships.errors.ts
+│   │   └── memberships.service.ts
 │   └── users
 │       ├── user.errors.tsx
 │       ├── users.schema.tsx

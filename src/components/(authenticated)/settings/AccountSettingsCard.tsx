@@ -8,7 +8,7 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import type { User } from "@/types/database";
-import { FormFeedback } from "../../../FormFeedback";
+import { FormFeedback } from "@/components/FormFeedback";
 
 type AccountFormValues = {
   name: string;

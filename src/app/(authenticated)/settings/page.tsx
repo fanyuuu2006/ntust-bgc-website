@@ -1,16 +1,14 @@
-import { redirect } from "next/navigation";
+import { AccountSettingsCard } from "@/components/(authenticated)/settings/AccountSettingsCard";
+import { PasswordSettingsCard } from "@/components/(authenticated)/settings/PasswordSettingsCard";
+import { ProfileSettingsCard } from "@/components/(authenticated)/settings/ProfileSettingsCard";
+import { SessionSettingsCard } from "@/components/(authenticated)/settings/SessionSettingsCard";
 import { getCurrentUser } from "@/libs/auth";
 import { usersService } from "@/services/users/users.service";
-import { AccountSettingsCard } from "@/components/(authenticated)/dashboard/settings/AccountSettingsCard";
-import { PasswordSettingsCard } from "@/components/(authenticated)/dashboard/settings/PasswordSettingsCard";
-import { SessionSettingsCard } from "@/components/(authenticated)/dashboard/settings/SessionSettingsCard";
-import { ProfileSettingsCard } from "@/components/(authenticated)/dashboard/settings/ProfileSettingsCard";
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
 
-  // (authenticated)/layout.tsx 已保護此路由，這裡是防禦性寫法
-  if (!user) redirect("/login");
+  if (!user) return null;
 
   const profile = await usersService.getProfile(user.id);
 

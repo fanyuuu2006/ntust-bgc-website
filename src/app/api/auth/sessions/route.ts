@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/libs/auth";
+import { getCurrentUser, getSessionTokenFromCookie } from "@/libs/auth";
 import { authService } from "@/services/auth/auth.service";
-import { SESSION_COOKIE_NAME } from "@/libs/auth";
-import { cookies } from "next/headers";
 
 export async function DELETE() {
   try {
@@ -10,8 +8,7 @@ export async function DELETE() {
     if (!user) {
       return NextResponse.json({ message: "尚未登入" }, { status: 401 });
     }
-    const cookieStore = await cookies();
-    const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+    const token = await getSessionTokenFromCookie();
     if (!token) {
       return NextResponse.json(
         { message: "無法取得當前登入的 session" },

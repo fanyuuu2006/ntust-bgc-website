@@ -57,7 +57,7 @@ const fields: RegisterField[] = [
     required: true,
     autoComplete: "new-password",
     placeholder: "請輸入密碼",
-    hint: "8～128 個字元，需包含大小寫英文字母、數字與特殊符號",
+    hint: "8～128 字元，含大小寫英文、數字與符號",
   },
   {
     id: "confirmPassword",

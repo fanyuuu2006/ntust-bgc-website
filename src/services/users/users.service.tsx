@@ -1,4 +1,4 @@
-import { cache } from "react";
+import "server-only";
 import { userProfilesRepository } from "@/repositories/user-profiles.repository";
 import {
   createUserProfileSchema,
@@ -9,22 +9,41 @@ import type { User, UserProfile } from "@/types/database";
 import {
   UserProfileAlreadyExistsError,
   UserProfileNotFoundError,
-} from "./user.errors";
+} from "./users.errors";
 import { usersRepository } from "@/repositories/users.repository";
-
-/**
- * 依 userId 取得社員個人資料。
- * 使用 React `cache()`：同一次 request 的 render tree 中，
- * 若多個 Server Component 都呼叫 getProfile(userId)，只會實際查一次 DB。
- */
-const getProfile = cache(
-  async (userId: string): Promise<UserProfile | null> => {
-    return userProfilesRepository.getUserProfile(userId);
-  },
-);
+import { membershipsRepository } from "@/repositories/memberships.repository";
+import { officerPositionsRepository } from "@/repositories/officer-positions.repository";
+import { UserProfileData } from "./users.types";
 
 export const usersService = {
-  getProfile,
+  getProfile: async (userId: string): Promise<UserProfile | null> => {
+    return userProfilesRepository.findByUserId(userId);
+  },
+
+  /**
+   * 四筆查詢彼此獨立（都只依賴 userId，不依賴彼此的結果），
+   * 用 Promise.all 平行打，比原本「先等 user 再等其餘三筆」少一次 round trip。
+   * user 不存在時再統一丟錯，語意跟原本一致。
+   */
+  getProfilePageData: async (userId: string): Promise<UserProfileData> => {
+    const [user, profile, membership, officerPositions] = await Promise.all([
+      usersRepository.findById(userId),
+      userProfilesRepository.findByUserId(userId),
+      membershipsRepository.findCurrentByUserId(userId),
+      officerPositionsRepository.findCurrentByUserId(userId),
+    ]);
+
+    if (!user) {
+      throw new UserProfileNotFoundError();
+    }
+
+    return {
+      ...user,
+      profile,
+      membership,
+      officerPositions,
+    };
+  },
 
   /**
    * 建立使用者個人資料。
@@ -39,7 +58,7 @@ export const usersService = {
     const data = createUserProfileSchema.parse(payload);
 
     try {
-      return await userProfilesRepository.createUserProfile(userId, data);
+      return await userProfilesRepository.create(userId, data);
     } catch (error) {
       if (isUniqueViolation(error)) {
         throw new UserProfileAlreadyExistsError();
@@ -58,10 +77,7 @@ export const usersService = {
   ): Promise<UserProfile> => {
     const data = updateUserProfileSchema.parse(payload);
 
-    const updated = await userProfilesRepository.updateUserProfile(
-      userId,
-      data,
-    );
+    const updated = await userProfilesRepository.updateByUserId(userId, data);
 
     if (!updated) {
       throw new UserProfileNotFoundError();
@@ -89,13 +105,27 @@ export const usersService = {
 
 /**
  * 判斷錯誤是否為 Postgres unique constraint violation（error code 23505）。
- * Supabase / PostgREST 的錯誤物件通常帶有 `code` 屬性。
+ *
+ * 注意：repository 層的 throwRepositoryError 可能會把原始 supabase error 包裝過，
+ * 這裡同時檢查頂層 `code` 與 `cause.code`，避免因為包裝方式不同而永遠判斷不到。
+ * 若確認 throwRepositoryError 不會保留原始 error（也不放進 cause），
+ * 建議改成在 repository 層直接偵測 code 並拋出明確的 domain error，
+ * 而不是在 service 層猜測包裝後的錯誤形狀。
  */
 function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error as { code?: string }).code === "23505"
-  );
+  const getCode = (value: unknown): string | undefined =>
+    typeof value === "object" && value !== null && "code" in value
+      ? ((value as { code?: unknown }).code as string | undefined)
+      : undefined;
+
+  if (getCode(error) === "23505") {
+    return true;
+  }
+
+  const cause =
+    typeof error === "object" && error !== null && "cause" in error
+      ? (error as { cause?: unknown }).cause
+      : undefined;
+
+  return getCode(cause) === "23505";
 }

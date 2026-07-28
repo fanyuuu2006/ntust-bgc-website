@@ -29,11 +29,11 @@ const MENU_ITEMS = [
   },
   {
     label: "個人資料",
-    href: "/dashboard/profile",
+    href: "/profile",
   },
   {
     label: "設定",
-    href: "/dashboard/settings",
+    href: "/settings",
   },
 ];
 
@@ -90,7 +90,10 @@ export const UserMenu = ({ user, className, ...rest }: UserMenuProps) => {
         aria-label={`使用者選單，${user.name}`}
         className="rounded-full p-0.5"
       >
-        <UserAvatar className="size-9 rounded-full border border-(--border)" user={user} />
+        <UserAvatar
+          className="size-9 rounded-full border border-(--border)"
+          user={user}
+        />
       </button>
 
       {isOpen && (

@@ -5,7 +5,7 @@ import { SettingsCard } from "./SettingsCard";
 import { FieldInput, type FieldInputField } from "@/components/FieldInput";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
-import { FormFeedback } from "../../../FormFeedback";
+import { FormFeedback } from "@/components/FormFeedback";
 
 type PasswordFormValues = {
   currentPassword: string;
@@ -37,7 +37,7 @@ const baseFields: PasswordField[] = [
     type: "password",
     autoComplete: "new-password",
     placeholder: "請輸入新密碼",
-    hint: "需包含大小寫英文字母、數字與特殊符號（8～128 字元）",
+    hint: "8～128 字元，含大小寫英文、數字與符號",
   },
   {
     id: "confirmPassword",

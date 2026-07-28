@@ -25,16 +25,16 @@ type FieldInputProps = Omit<
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-const labelClassName = "text-sm font-medium text-(--foreground)";
+const labelClassName = "text-sm font-medium text-(--foreground) leading-snug";
 const requiredMarkClassName =
   "after:ml-0.5 after:text-(--game-red) after:content-['*']";
 
 const inputBaseClassName = cn(
   "w-full rounded-lg border border-(--border) bg-(--secondary-background)",
-  "px-3 py-2 text-sm text-(--foreground) outline-none",
+  "px-3 py-2 text-sm text-(--foreground) outline-none transition-colors",
   "placeholder:text-(--muted)",
   "focus:border-(--primary)",
-  "disabled:cursor-not-allowed disabled:bg-(--secondary-background) disabled:text-(--muted)",
+  "disabled:cursor-not-allowed disabled:bg-(--secondary-background) disabled:text-(--muted) disabled:opacity-60",
 );
 
 export const FieldInput = ({
@@ -58,13 +58,23 @@ export const FieldInput = ({
   }
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)} {...rest}>
-      <label htmlFor={field.id} className={cn(labelClassName)}>
-        <span className={cn({ [requiredMarkClassName]: field.required })}>
+    <div className={cn("flex w-full flex-col gap-1.5", className)} {...rest}>
+      <label
+        htmlFor={field.id}
+        className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5"
+      >
+        <span
+          className={cn(labelClassName, "shrink-0", {
+            [requiredMarkClassName]: field.required,
+          })}
+        >
           {field.label}
         </span>
         {field.hint && (
-          <span id={hintId} className="ml-2 text-xs font-normal text-(--muted)">
+          <span
+            id={hintId}
+            className="min-w-0 flex-1 basis-40 text-right text-xs font-normal text-(--muted) sm:text-left"
+          >
             {field.hint}
           </span>
         )}
@@ -86,7 +96,7 @@ export const FieldInput = ({
           aria-describedby={describedBy}
           className={cn(inputBaseClassName, {
             "pr-10": isPasswordField,
-            "border-(--game-red)": field.error,
+            "border-(--game-red) (--game-red)/20": field.error,
           })}
         />
 
@@ -96,7 +106,7 @@ export const FieldInput = ({
             onClick={togglePasswordVisibility}
             aria-label={isPasswordVisible ? "隱藏密碼" : "顯示密碼"}
             aria-pressed={isPasswordVisible}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-(--muted)"
+            className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-2 text-(--muted) transition-colors hover:text-(--foreground)"
           >
             {isPasswordVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
           </button>

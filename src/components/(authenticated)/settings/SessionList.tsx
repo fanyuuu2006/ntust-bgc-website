@@ -5,11 +5,9 @@ import { useRouter } from "next/navigation";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import { formatRelativeTime } from "@/utils/date";
-import { SessionSummary } from "@/types";
-import { FormFeedback } from "../../../FormFeedback";
-
+import { SessionSummary } from "@/services/auth/auth.types";
+import { FormFeedback } from "@/components/FormFeedback";
 type SessionListProps = { sessions: SessionSummary[] };
-
 export const SessionList = ({ sessions }: SessionListProps) => {
   const router = useRouter();
   const [pendingId, setPendingId] = useState<string | null>(null);

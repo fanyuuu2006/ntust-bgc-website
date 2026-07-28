@@ -1,18 +1,24 @@
 import "server-only";
-import { UserProfile } from "@/types/database";
+
 import { supabase } from "@/libs/supabase/server";
+import type { UserProfile } from "@/types/database";
 import { throwRepositoryError } from "./error";
 
-/**
- * 可寫入的 profile 欄位。
- * `id` / `user_id` / `created_at` / `updated_at` 等系統欄位。
- */
-type UserProfileWritableInput = Partial<
+export type CreateUserProfileInput = Partial<
   Omit<UserProfile, "id" | "user_id" | "created_at" | "updated_at">
 >;
 
+export type UpdateUserProfileInput = Partial<CreateUserProfileInput>;
+
+/**
+ * user-profiles repository
+ *
+ * 純粹只做 user_profiles 這張表的 CRUD，一個 user 對應一筆 profile（user_id 為外鍵）。
+ * 「是否已存在 profile」這類唯一性判斷交給 DB 的 unique constraint（user_id）把關，
+ * 這裡不先查再寫，避免 TOCTOU race condition；unique violation 的翻譯交給呼叫端 service 處理。
+ */
 export const userProfilesRepository = {
-  getUserProfile: async (userId: string): Promise<UserProfile | null> => {
+  findByUserId: async (userId: string): Promise<UserProfile | null> => {
     const { data, error } = await supabase
       .from("user_profiles")
       .select("*")
@@ -26,13 +32,13 @@ export const userProfilesRepository = {
     return data;
   },
 
-  createUserProfile: async (
+  create: async (
     userId: string,
-    payload: UserProfileWritableInput,
+    payload: CreateUserProfileInput,
   ): Promise<UserProfile> => {
     const { data, error } = await supabase
       .from("user_profiles")
-      // 明確以 user_id 參數為準，避免 payload 若含有同名欄位而覆蓋掉正確的 userId
+      // 明確以 userId 參數為準，避免 payload 若含有同名欄位而覆蓋掉正確的 user_id
       .insert({ ...payload, user_id: userId })
       .select()
       .single();
@@ -45,15 +51,14 @@ export const userProfilesRepository = {
   },
 
   /**
-   * 更新使用者個人資料。
    * @returns 若該 userId 沒有對應的 profile，回傳 null；空 payload 時直接回傳現有資料，不打 update。
    */
-  updateUserProfile: async (
+  updateByUserId: async (
     userId: string,
-    payload: UserProfileWritableInput,
+    payload: UpdateUserProfileInput,
   ): Promise<UserProfile | null> => {
     if (Object.keys(payload).length === 0) {
-      return userProfilesRepository.getUserProfile(userId);
+      return userProfilesRepository.findByUserId(userId);
     }
 
     const { data, error } = await supabase

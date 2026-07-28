@@ -1,26 +1,9 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
-import { SESSION_COOKIE_NAME } from "@/libs/auth";
-import { authService } from "@/services/auth/auth.service";
+import { getCurrentUser } from "@/libs/auth";
 
 export async function GET() {
-  const cookieStore = await cookies();
-
-  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-
-  if (!token) {
-    return NextResponse.json(
-      {
-        message: "尚未登入",
-      },
-      {
-        status: 401,
-      },
-    );
-  }
-
-  const user = await authService.getUserBySessionToken(token);
+  const user = await getCurrentUser();
 
   if (!user) {
     return NextResponse.json(
