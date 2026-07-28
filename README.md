@@ -13,6 +13,21 @@
 │ created_at │ timestamp │ Timestamp of when the user was created │
 │ updated_at │ timestamp │ Timestamp of when the user was last updated │
 
+### user_profiles
+
+│ Column Name │ Data Type │ Description │
+│ --- │ --- │ --- │
+│ id │ UUID │ Unique identifier for each user profile │
+│ user_id │ UUID │ Foreign key referencing the user table │
+| real_name | text | Real name of the user |
+│ phone │ text │ Phone number of the user │
+| student_id | text | Student ID of the user |
+| school | text | School or department of the user |
+| department | text | Department of the user |
+| grade | text | Grade or year of the user |
+│ created_at │ timestamp │ Timestamp of when the user profile was created │
+│ updated_at │ timestamp │ Timestamp of when the user profile was last updated │
+
 ### auth_credentials
 
 │ Column Name │ Data Type │ Description │
@@ -169,6 +184,7 @@ src
 ├── app
 │   ├── (admin)
 │   ├── (auth)
+│   │   ├── layout.tsx
 │   │   ├── login
 │   │   │   └── page.tsx
 │   │   └── register
@@ -182,9 +198,13 @@ src
 │   │   │   └── page.tsx
 │   │   ├── board-games
 │   │   │   └── page.tsx
-│   │   ├── events
+│   │   ├── officers
 │   │   │   └── page.tsx
-│   │   └── officers
+│   │   ├── privacy
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx
+│   │   └── terms
+│   │       ├── layout.tsx
 │   │       └── page.tsx
 │   ├── api
 │   │   └── auth
@@ -199,12 +219,28 @@ src
 │   ├── layout.tsx
 │   └── page.tsx
 ├── components
-│   └── Header
-│       ├── DesktopNavigation.tsx
-│       ├── Header.tsx
-│       ├── HeaderActions.tsx
-│       └── MobileNavigation.tsx
+│   ├── (auth)
+│   │   ├── AuthCard.tsx
+│   │   ├── AuthNotice.tsx
+│   │   ├── login
+│   │   │   └── LoginForm.tsx
+│   │   └── register
+│   │       └── RegisterForm.tsx
+│   ├── FieldInput.tsx
+│   ├── Header
+│   │   ├── DesktopNavigation.tsx
+│   │   ├── Header.tsx
+│   │   ├── HeaderActions.tsx
+│   │   ├── MobileNavigation.tsx
+│   │   └── UserMenu.tsx
+│   ├── LogoutButton.tsx
+│   └── UserAvatar.tsx
+├── contexts
+│   └── UserContext.tsx
 ├── libs
+│   ├── api
+│   │   ├── client.tsx
+│   │   └── errors.tsx
 │   ├── auth.tsx
 │   ├── env.tsx
 │   ├── metadata.tsx

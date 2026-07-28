@@ -71,6 +71,22 @@ export type User = {
 };
 
 /* =========================================================
+ * User Profiles
+ * ========================================================= */
+export type UserProfile = {
+  id: UUID;
+  user_id: UUID;
+  phone: string | null;
+  student_id: string | null;
+  school: string | null;
+  department: string | null;
+  grade: string | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+  real_name: string | null;
+};
+
+/* =========================================================
  * Auth Credentials
  * ========================================================= */
 
