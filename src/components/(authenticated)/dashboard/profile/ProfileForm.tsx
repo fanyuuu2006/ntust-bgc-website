@@ -12,9 +12,6 @@ type UpdateProfileResponse = {
   data: UserProfile;
 };
 
-/**
- * 可編輯的個人資料欄位。
- */
 type ProfileFormValues = {
   real_name: string;
   phone: string;
@@ -30,13 +27,11 @@ type ProfileFormProps = {
   className?: string;
 };
 
-/**
- * 可編輯欄位設定。
- * `id` 使用 `keyof ProfileFormValues`，避免欄位名稱與 `values` 的 key 打錯不一致。
- */
-const editableFields: Array<
-  Omit<FieldInputField, "id"> & { id: keyof ProfileFormValues }
-> = [
+type EditableField = Omit<FieldInputField, "id"> & {
+  id: keyof ProfileFormValues;
+};
+
+const basicFields: EditableField[] = [
   {
     id: "real_name",
     label: "真實姓名",
@@ -53,6 +48,9 @@ const editableFields: Array<
     placeholder: "請輸入您的手機號碼",
     hint: "例如：0912345678",
   },
+];
+
+const academicFields: EditableField[] = [
   {
     id: "student_id",
     label: "學號",
@@ -71,7 +69,7 @@ const editableFields: Array<
     label: "系所",
     type: "text",
     placeholder: "請輸入您的系所",
-    hint: "例如：資訊管理系、企業管理系",
+    hint: "例如：資訊管理、企業管理 不需要加系",
   },
   {
     id: "grade",
@@ -137,30 +135,47 @@ export const ProfileForm = ({ user, profile, className }: ProfileFormProps) => {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className={cn("card flex flex-col gap-6 p-6", className)}
+      className={cn("card flex flex-col gap-8 p-6", className)}
     >
-      <FieldInput
-        field={{
-          id: "email",
-          label: "Email",
-          type: "email",
-          disabled: true,
-          hint: "無法修改",
-        }}
-        value={user.email}
-        onChange={() => {}}
-      />
+      <FormSection title="帳號資訊">
+        <FieldInput
+          field={{
+            id: "email",
+            label: "Email",
+            type: "email",
+            disabled: true,
+            hint: "無法修改",
+          }}
+          value={user.email}
+          onChange={() => {}}
+        />
+      </FormSection>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {editableFields.map((field) => (
-          <FieldInput
-            key={field.id}
-            field={field}
-            value={values[field.id]}
-            onChange={handleChange}
-          />
-        ))}
-      </div>
+      <FormSection title="基本資料">
+        <div className="grid gap-4 sm:grid-cols-2">
+          {basicFields.map((field) => (
+            <FieldInput
+              key={field.id}
+              field={field}
+              value={values[field.id]}
+              onChange={handleChange}
+            />
+          ))}
+        </div>
+      </FormSection>
+
+      <FormSection title="學籍資料">
+        <div className="grid gap-4 sm:grid-cols-2">
+          {academicFields.map((field) => (
+            <FieldInput
+              key={field.id}
+              field={field}
+              value={values[field.id]}
+              onChange={handleChange}
+            />
+          ))}
+        </div>
+      </FormSection>
 
       {formError && (
         <p role="alert" className="text-sm text-(--game-red)">
@@ -187,3 +202,18 @@ export const ProfileForm = ({ user, profile, className }: ProfileFormProps) => {
     </form>
   );
 };
+
+type FormSectionProps = React.HTMLAttributes<HTMLDivElement> & {
+  title: string;
+};
+const FormSection = ({
+  children,
+  title,
+  className,
+  ...rest
+}: FormSectionProps) => (
+  <div className={cn("flex flex-col gap-4", className)} {...rest}>
+    <h2 className="text-sm font-semibold text-(--foreground)">{title}</h2>
+    {children}
+  </div>
+);
