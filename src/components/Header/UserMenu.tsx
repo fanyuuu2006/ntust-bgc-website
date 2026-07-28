@@ -22,9 +22,9 @@ const MenuItem = ({ label, href }: MenuItemProps) => {
   );
 };
 
-const MENU_ITEMS: MenuItemProps[] = [
+const MENU_ITEMS = [
   {
-    label: "個人主頁",
+    label: "儀表板",
     href: "/dashboard",
   },
   {

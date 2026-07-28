@@ -42,4 +42,17 @@ export const authRepository = {
 
     return data;
   },
+  updateCredentialByUserId: async (
+    userId: string,
+    payload: Partial<Pick<AuthCredential, "password_hash">>,
+  ): Promise<void> => {
+    const { error } = await supabase
+      .from("auth_credentials")
+      .update(payload)
+      .eq("user_id", userId);
+
+    if (error) {
+      throwRepositoryError("更新使用者驗證憑證失敗", error);
+    }
+  },
 };

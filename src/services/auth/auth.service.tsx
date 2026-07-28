@@ -1,15 +1,23 @@
 import { Session, User } from "@/types/database";
-import { loginSchema, registerSchema } from "./auth.schema";
+import {
+  changePasswordSchema,
+  loginSchema,
+  registerSchema,
+} from "./auth.schema";
 import { usersRepository } from "@/repositories/users.repository";
 import { hashPassword, verifyPassword } from "@/utils/auth/password";
 import { authRepository } from "@/repositories/auth.repository";
 import {
+  CannotRevokeCurrentSessionError,
   EmailAlreadyExistsError,
   InvalidCredentialsError,
+  InvalidCurrentPasswordError,
+  SessionNotFoundError,
 } from "./auth.errors";
 import { sessionRepository } from "@/repositories/sessions.repository";
 import { generateSessionToken } from "@/utils/auth/session";
 import { userProfilesRepository } from "@/repositories/user-profiles.repository";
+import { SessionSummary } from "@/types";
 
 /** Session 有效期：7 天 */
 const SESSION_DURATION = 1000 * 60 * 60 * 24 * 7;
@@ -136,5 +144,72 @@ export const authService = {
   /** 登出：刪除對應的 Session token */
   logout: async (token: string): Promise<void> => {
     await sessionRepository.deleteByToken(token);
+  },
+
+  changePassword: async (userId: string, input: unknown): Promise<void> => {
+    const data = changePasswordSchema.parse(input);
+
+    const credential = await authRepository.findCredentialByUserId(userId);
+
+    if (!credential) {
+      throw new InvalidCredentialsError();
+    }
+
+    const isCurrentPasswordValid = await verifyPassword(
+      data.currentPassword,
+      credential.password_hash,
+    );
+
+    if (!isCurrentPasswordValid) {
+      throw new InvalidCurrentPasswordError();
+    }
+
+    const newPasswordHash = await hashPassword(data.newPassword);
+
+    await authRepository.updateCredentialByUserId(userId, {
+      password_hash: newPasswordHash,
+    });
+  },
+
+  listSessions: async (
+    userId: string,
+    currentToken: string,
+  ): Promise<SessionSummary[]> => {
+    const sessions = await sessionRepository.findManyByUserId(userId);
+    return sessions.map((session) => ({
+      id: session.id,
+      created_at: session.created_at,
+      last_accessed_at: session.last_accessed_at,
+      expires_at: session.expires_at,
+      is_current: session.token === currentToken,
+    }));
+  },
+
+  revokeSession: async (
+    userId: string,
+    sessionId: string,
+    currentSessionToken: string,
+  ): Promise<void> => {
+    const session = await sessionRepository.findById(sessionId);
+    if (!session) {
+      throw new SessionNotFoundError();
+    }
+    if (session.user_id !== userId) {
+      throw new SessionNotFoundError();
+    }
+    if (session.token === currentSessionToken) {
+      throw new CannotRevokeCurrentSessionError();
+    }
+    await sessionRepository.deleteById(sessionId);
+  },
+
+  revokeOtherSessions: async (
+    userId: string,
+    currentSessionToken: string,
+  ): Promise<void> => {
+    await sessionRepository.deleteAllByUserIdExceptToken(
+      userId,
+      currentSessionToken,
+    );
   },
 };

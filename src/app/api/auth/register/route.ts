@@ -29,6 +29,7 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error) {
+    console.error("[POST /api/auth/register]", error);
     if (error instanceof ZodError) {
       return NextResponse.json(
         {
@@ -42,8 +43,6 @@ export async function POST(request: Request) {
     if (error instanceof EmailAlreadyExistsError) {
       return NextResponse.json({ message: error.message }, { status: 409 });
     }
-
-    console.error("[POST /api/auth/register]", error);
 
     return NextResponse.json(
       { message: "註冊失敗，請稍後再試" },

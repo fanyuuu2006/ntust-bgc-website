@@ -28,6 +28,18 @@ export const sessionRepository = {
     return data;
   },
 
+  findById: async (id: string): Promise<Session | null> => {
+    const { data, error } = await supabase
+      .from("sessions")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (error) {
+      throwRepositoryError("依 ID 尋找 Session 失敗", error);
+    }
+    return data;
+  },
+
   /**
    * 依 Token 尋找 Session
    */
@@ -60,6 +72,17 @@ export const sessionRepository = {
       throwRepositoryError("尋找有效 Session 失敗", error);
     }
 
+    return data;
+  },
+
+  findManyByUserId: async (userId: string): Promise<Session[]> => {
+    const { data, error } = await supabase
+      .from("sessions")
+      .select("*")
+      .eq("user_id", userId);
+    if (error) {
+      throwRepositoryError("依使用者 ID 尋找 Session 失敗", error);
+    }
     return data;
   },
 
@@ -96,6 +119,14 @@ export const sessionRepository = {
   },
 
   /**
+   * 刪除指定 ID 的 Session
+   */
+  deleteById: async (id: string): Promise<void> => {
+    const { error } = await supabase.from("sessions").delete().eq("id", id);
+    if (error) throwRepositoryError("刪除 指定ID Session 失敗", error);
+  },
+
+  /**
    * 刪除指定 Token 的 Session
    */
   deleteByToken: async (token: string): Promise<void> => {
@@ -105,19 +136,36 @@ export const sessionRepository = {
       .eq("token", token);
 
     if (error) {
-      throwRepositoryError("刪除 Session 失敗", error);
+      throwRepositoryError("刪除 指定Token Session 失敗", error);
     }
   },
 
   /**
    * 刪除使用者所有 Session
    */
-  deleteByUserId: async (userId: string): Promise<void> => {
+  deleteAllByUserId: async (userId: string): Promise<void> => {
     const { error } = await supabase
       .from("sessions")
       .delete()
       .eq("user_id", userId);
 
+    if (error) {
+      throwRepositoryError("刪除使用者所有 Session 失敗", error);
+    }
+  },
+
+  /**
+   * 刪除使用者所有 Session，除了指定的 Token
+   */
+  deleteAllByUserIdExceptToken: async (
+    userId: string,
+    token: string,
+  ): Promise<void> => {
+    const { error } = await supabase
+      .from("sessions")
+      .delete()
+      .eq("user_id", userId)
+      .neq("token", token);
     if (error) {
       throwRepositoryError("刪除使用者所有 Session 失敗", error);
     }

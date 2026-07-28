@@ -15,7 +15,7 @@ export function DashboardWelcome({
   return (
     <div
       className={cn(
-        "card flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-8",
+        "card rounded-xl flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-8",
         className,
       )}
       {...rest}

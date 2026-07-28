@@ -192,7 +192,11 @@ src
 │   ├── (authenticated)
 │   │   ├── dashboard
 │   │   │   ├── layout.tsx
-│   │   │   └── page.tsx
+│   │   │   ├── page.tsx
+│   │   │   ├── profile
+│   │   │   │   └── page.tsx
+│   │   │   └── settings
+│   │   │       └── page.tsx
 │   │   └── layout.tsx
 │   ├── (public)
 │   │   ├── announcements
@@ -216,7 +220,11 @@ src
 │   │   │   └── register
 │   │   │       └── route.ts
 │   │   └── users
-│   │       └── po
+│   │       └── me
+│   │           ├── account
+│   │           │   └── route.ts
+│   │           └── profile
+│   │               └── route.ts
 │   ├── layout.tsx
 │   └── page.tsx
 ├── components
@@ -231,7 +239,10 @@ src
 │   │   └── dashboard
 │   │       ├── DashboardCard.tsx
 │   │       ├── DashboardMenu.tsx
-│   │       └── DashboardWelcome.tsx
+│   │       ├── DashboardWelcome.tsx
+│   │       ├── profile
+│   │       └── settings
+│   │           └── ProfileForm.tsx
 │   ├── FieldInput.tsx
 │   ├── Header
 │   │   ├── DesktopNavigation.tsx
@@ -268,6 +279,7 @@ src
 │   │   ├── auth.service.tsx
 │   │   └── auth.types.tsx
 │   └── users
+│       ├── user.errors.tsx
 │       ├── users.schema.tsx
 │       └── users.service.tsx
 ├── styles
@@ -320,6 +332,8 @@ src/
 │   │       ├── layout.tsx
 │   │       ├── page.tsx
 │   │       ├── profile/
+│   │       │   └── page.tsx
+│   │       ├── settings/
 │   │       │   └── page.tsx
 │   │       ├── borrowings/
 │   │       │   └── page.tsx    

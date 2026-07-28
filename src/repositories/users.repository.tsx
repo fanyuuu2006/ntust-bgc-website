@@ -4,7 +4,7 @@ import { throwRepositoryError } from "./error";
 import { supabase } from "@/libs/supabase/server";
 
 type CreateUserInput = Pick<User, "email" | "name">;
-type UpdateUserInput = Partial<Pick<User, "email" | "name" | "avatar">>;
+type UpdateUserInput = Partial<Pick<User, "name" | "avatar">>;
 
 type UserOrderableField = "created_at" | "updated_at" | "name" | "email";
 

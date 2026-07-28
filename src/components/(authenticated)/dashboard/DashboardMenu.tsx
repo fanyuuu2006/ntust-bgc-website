@@ -27,21 +27,21 @@ type DashboardMenuItem = {
 const dashboardMenuItems: DashboardMenuItem[] = [
   {
     title: "個人資料",
-    description: "查看與修改您的基本資料",
+    description: "查看您的社員資訊、身分與個人資料",
     href: "/dashboard/profile",
     icon: UserOutlined,
     color: "blue",
   },
   {
     title: "借用紀錄",
-    description: "查看目前借用中的桌遊與歷史紀錄",
+    description: "查看桌遊借用狀態、歷史紀錄與歸還資訊",
     href: "/dashboard/borrowings",
     icon: InboxOutlined,
     color: "green",
   },
   {
-    title: "簽到紀錄",
-    description: "查看您參與過的社課與活動",
+    title: "活動紀錄",
+    description: "查看社課、活動出席與簽到紀錄",
     href: "/dashboard/attendance",
     icon: CalendarOutlined,
     color: "yellow",
@@ -64,8 +64,8 @@ export function DashboardMenu({ className, ...rest }: DashboardMenuProps) {
           <Link
             key={href}
             href={href}
-            className={"card group flex items-start gap-4 p-6"}
-            style={{ "--menu-color": `var(--game-${color})`} as CSSProperties}
+            className={"card rounded-xl group flex items-start gap-4 p-6"}
+            style={{ "--menu-color": `var(--game-${color})` } as CSSProperties}
           >
             <span className="flex size-10 shrink-0 items-center justify-center rounded-(--border-radius-md) bg-(--menu-color)/10 text-lg text-(--menu-color) transition-colors duration-(--transition-normal) group-hover:bg-(--menu-color) group-hover:text-(--primary-background)">
               <Icon aria-hidden />

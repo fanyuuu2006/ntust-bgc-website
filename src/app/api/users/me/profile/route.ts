@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
+import { z, ZodError } from "zod";
 
 import { getCurrentUser } from "@/libs/auth";
 import { usersService } from "@/services/users/users.service";
@@ -105,9 +105,10 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ data: profile }, { status: 200 });
   } catch (error) {
+    console.error("[PATCH /api/users/me/profile]", error);
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { message: "輸入資料格式不正確", errors: error.issues },
+        { message: "輸入資料格式不正確", errors: z.treeifyError(error) },
         { status: 400 },
       );
     }
@@ -115,8 +116,6 @@ export async function PATCH(request: Request) {
     if (error instanceof UserProfileNotFoundError) {
       return NextResponse.json({ message: "找不到個人資料" }, { status: 404 });
     }
-
-    console.error("[PATCH /api/users/me/profile]", error);
 
     return NextResponse.json(
       { message: "更新個人資料失敗，請稍後再試" },

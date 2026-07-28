@@ -2,13 +2,15 @@ import { cache } from "react";
 import { userProfilesRepository } from "@/repositories/user-profiles.repository";
 import {
   createUserProfileSchema,
+  updateUserAccountSchema,
   updateUserProfileSchema,
 } from "./users.schema";
-import type { UserProfile } from "@/types/database";
+import type { User, UserProfile } from "@/types/database";
 import {
   UserProfileAlreadyExistsError,
   UserProfileNotFoundError,
 } from "./user.errors";
+import { usersRepository } from "@/repositories/users.repository";
 
 /**
  * 依 userId 取得社員個人資料。
@@ -60,6 +62,22 @@ export const usersService = {
       userId,
       data,
     );
+
+    if (!updated) {
+      throw new UserProfileNotFoundError();
+    }
+
+    return updated;
+  },
+
+  /**
+   * 更新使用者帳號資料（部分欄位）。
+   * @throws {UserProfileNotFoundError} 當該 userId 沒有對應的個人資料時
+   */
+  updateAccount: async (userId: string, payload: unknown): Promise<User> => {
+    const data = updateUserAccountSchema.parse(payload);
+
+    const updated = await usersRepository.updateById(userId, data);
 
     if (!updated) {
       throw new UserProfileNotFoundError();

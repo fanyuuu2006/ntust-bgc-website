@@ -321,9 +321,6 @@
   .card {
     background: var(--primary-background);
     border: 1px solid var(--border);
-
-    border-radius: var(--border-radius-lg);
-
     box-shadow: var(--shadow-base);
 
     transition:
