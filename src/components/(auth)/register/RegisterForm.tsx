@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/utils/className";
@@ -21,6 +21,7 @@ type RegisterFormValues = {
   email: string;
   password: string;
   confirmPassword: string;
+  acceptTerms: boolean;
 };
 
 const initialValues: RegisterFormValues = {
@@ -28,6 +29,7 @@ const initialValues: RegisterFormValues = {
   email: "",
   password: "",
   confirmPassword: "",
+  acceptTerms: false,
 };
 
 type FieldErrors = Partial<Record<keyof RegisterFormValues, string>>;
@@ -39,6 +41,7 @@ type RegisterFormProps = Omit<
 
 export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
   const router = useRouter();
+  const acceptTermsId = useId();
 
   const [values, setValues] = useState<RegisterFormValues>(initialValues);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -50,6 +53,11 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
     setValues((prev) => ({ ...prev, [name]: value }));
   }
 
+  function handleAcceptTermsChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const { checked } = event.target;
+    setValues((prev) => ({ ...prev, acceptTerms: checked }));
+  }
+
   function validate(): FieldErrors {
     const errors: FieldErrors = {};
 
@@ -57,10 +65,14 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
       errors.confirmPassword = "密碼與確認密碼不一致";
     }
 
+    if (!values.acceptTerms) {
+      errors.acceptTerms = "請先閱讀並同意服務條款與隱私權政策";
+    }
+
     return errors;
   }
 
-  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setFormError(null);
@@ -154,6 +166,54 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
           value={values.confirmPassword}
           onChange={handleChange}
         />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label
+          htmlFor={acceptTermsId}
+          className="flex items-start gap-2 text-sm text-(--foreground)"
+        >
+          <input
+            id={acceptTermsId}
+            name="acceptTerms"
+            type="checkbox"
+            checked={values.acceptTerms}
+            onChange={handleAcceptTermsChange}
+            required
+            aria-invalid={!!fieldErrors.acceptTerms}
+            aria-describedby={
+              fieldErrors.acceptTerms ? `${acceptTermsId}-error` : undefined
+            }
+            className="mt-0.5 size-4 shrink-0 rounded border-(--border) accent-(--primary)"
+          />
+
+          <span>
+            我已閱讀並同意
+            <Link
+              href="/terms"
+              className="mx-1 text-(--primary) hover:underline"
+            >
+              服務條款
+            </Link>
+            與
+            <Link
+              href="/privacy"
+              className="ml-1 text-(--primary) hover:underline"
+            >
+              隱私權政策
+            </Link>
+          </span>
+        </label>
+
+        {fieldErrors.acceptTerms && (
+          <p
+            id={`${acceptTermsId}-error`}
+            role="alert"
+            className="text-xs text-(--game-red)"
+          >
+            {fieldErrors.acceptTerms}
+          </p>
+        )}
       </div>
 
       {formError && (
