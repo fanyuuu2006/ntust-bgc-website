@@ -1,5 +1,6 @@
+import Link from "next/link";
+import type { UserProfileData } from "@/services/users/users.types";
 import { cn } from "@/utils/className";
-import { UserProfileData } from "@/services/users/users.types";
 
 type ProfileBasicInfoSectionProps = React.HTMLAttributes<HTMLElement> & {
   data: UserProfileData;
@@ -10,46 +11,44 @@ type InfoFieldData = {
   value: string | null;
 };
 
-type InfoGroup = {
+type InfoGroupData = {
   key: string;
   title: string;
   dotClassName: string;
-  fields: InfoFieldData[];
+  fields: readonly InfoFieldData[];
 };
 
 const EMPTY_VALUE_LABEL = "尚未填寫";
 
-/* ------------------------------------------------------------------ */
-/* Sub components                                                     */
-/* ------------------------------------------------------------------ */
-
-function InfoValue({ value }: { value: string | null }) {
-  if (!value) {
-    return (
-      <span className="inline-flex w-fit items-center rounded-full bg-(--tertiary-background) px-2.5 py-0.5 text-xs text-(--muted)">
-        {EMPTY_VALUE_LABEL}
-      </span>
-    );
-  }
-  return (
-    <span className="truncate text-sm font-semibold text-(--foreground) sm:text-base">
-      {value}
-    </span>
-  );
-}
-
 function InfoRow({ label, value }: InfoFieldData) {
+  const displayValue = value?.trim();
+
   return (
     <div className="flex items-center justify-between gap-4 py-3">
       <dt className="shrink-0 text-sm text-(--muted)">{label}</dt>
-      <dd className="min-w-0" title={value ?? undefined}>
-        <InfoValue value={value} />
+      <dd
+        className="min-w-0 text-right"
+        title={displayValue || undefined}
+      >
+        {displayValue ? (
+          <span className="block truncate text-sm font-semibold text-(--foreground) sm:text-base">
+            {displayValue}
+          </span>
+        ) : (
+          <span className="inline-flex rounded-full bg-(--tertiary-background) px-2.5 py-0.5 text-xs text-(--muted)">
+            {EMPTY_VALUE_LABEL}
+          </span>
+        )}
       </dd>
     </div>
   );
 }
 
-function InfoGroupDiv({ title, dotClassName, fields }: Omit<InfoGroup, "key">) {
+function InfoGroup({
+  title,
+  dotClassName,
+  fields,
+}: Omit<InfoGroupData, "key">) {
   return (
     <div>
       <h3 className="flex items-center gap-2 text-sm font-bold text-(--foreground) sm:text-base">
@@ -65,15 +64,6 @@ function InfoGroupDiv({ title, dotClassName, fields }: Omit<InfoGroup, "key">) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Main component                                                     */
-/* ------------------------------------------------------------------ */
-
-/**
- * 顯示使用者基本資料，依「聯絡資訊」與「學籍資訊」分組，
- * 每組以彩色圓點標示、資料列採左右對齊排版，
- * 提升資訊密度並與正式管理系統的視覺風格保持一致。
- */
 export function ProfileBasicInfoSection({
   data,
   className,
@@ -81,7 +71,7 @@ export function ProfileBasicInfoSection({
 }: ProfileBasicInfoSectionProps) {
   const { profile, email } = data;
 
-  const groups: InfoGroup[] = [
+  const groups: InfoGroupData[] = [
     {
       key: "contact",
       title: "聯絡資訊",
@@ -109,12 +99,20 @@ export function ProfileBasicInfoSection({
     <section className={className} {...rest}>
       <div className="container">
         <div className="card rounded-2xl p-6 sm:p-8" aria-label="基本資料">
-          <h2 className="text-lg font-bold text-(--foreground) sm:text-xl">
-            基本資料
-          </h2>
-          <div className="mt-4 grid grid-cols-1 gap-x-10 gap-y-6 sm:mt-6 sm:grid-cols-2">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-lg font-bold text-(--foreground) sm:text-xl">
+              基本資料
+            </h2>
+            <Link
+              href="/settings"
+              className="btn primary inline-flex w-full justify-center rounded-xl px-4 py-2 text-sm sm:w-auto"
+            >
+              編輯個人資料
+            </Link>
+          </div>
+          <div className="mt-6 grid grid-cols-1 gap-y-7 lg:grid-cols-2 lg:gap-x-12">
             {groups.map(({ key, ...group }) => (
-              <InfoGroupDiv key={key} {...group} />
+              <InfoGroup key={key} {...group} />
             ))}
           </div>
         </div>
