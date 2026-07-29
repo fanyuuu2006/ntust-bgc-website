@@ -192,13 +192,13 @@ src
 │   ├── (authenticated)
 │   │   ├── dashboard
 │   │   │   ├── layout.tsx
-│   │   │   ├── page.tsx
-│   │   │   ├── profile
-│   │   │   │   └── page.tsx
-│   │   │   └── settings
-│   │   │       ├── layout.tsx
-│   │   │       └── page.tsx
-│   │   └── layout.tsx
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── profile
+│   │   │   └── page.tsx
+│   │   └── settings
+│   │       ├── layout.tsx
+│   │       └── page.tsx
 │   ├── (public)
 │   │   ├── announcements
 │   │   │   └── page.tsx
@@ -243,18 +243,20 @@ src
 │   │   └── register
 │   │       └── RegisterForm.tsx
 │   ├── (authenticated)
-│   │   └── dashboard
-│   │       ├── DashboardCard.tsx
-│   │       ├── DashboardMenu.tsx
-│   │       ├── DashboardWelcome.tsx
-│   │       ├── profile
-│   │       └── settings
-│   │           ├── AccountSettingsCard.tsx
-│   │           ├── PasswordSettingsCard.tsx
-│   │           ├── ProfileSettingsCard.tsx
-│   │           ├── SessionList.tsx
-│   │           ├── SessionSettingsCard.tsx
-│   │           └── SettingsCard.tsx
+│   │   ├── dashboard
+│   │   │   ├── DashboardCard.tsx
+│   │   │   ├── DashboardMenu.tsx
+│   │   │   └── DashboardWelcome.tsx
+│   │   ├── profile
+│   │   │   ├── ProfileHeroSection.tsx
+│   │   │   └── QuickStats.tsx
+│   │   └── settings
+│   │       ├── AccountSettingsCard.tsx
+│   │       ├── PasswordSettingsCard.tsx
+│   │       ├── ProfileSettingsCard.tsx
+│   │       ├── SessionList.tsx
+│   │       ├── SessionSettingsCard.tsx
+│   │       └── SettingsCard.tsx
 │   ├── FieldInput.tsx
 │   ├── FormFeedback.tsx
 │   ├── Header
@@ -286,6 +288,7 @@ src
 │   ├── auth.repository.tsx
 │   ├── error.tsx
 │   ├── memberships.repository.ts
+│   ├── officer-positions.repository.ts
 │   ├── sessions.repository.tsx
 │   ├── user-profiles.repository.tsx
 │   └── users.repository.tsx
@@ -296,17 +299,17 @@ src
 │   │   ├── auth.service.tsx
 │   │   └── auth.types.tsx
 │   ├── memberships
-│   │   ├── memberships.errors.ts
-│   │   └── memberships.service.ts
+│   │   ├── memberships.service.ts
+│   │   └── memberships.types.ts
 │   └── users
-│       ├── user.errors.tsx
+│       ├── users.errors.tsx
 │       ├── users.schema.tsx
-│       └── users.service.tsx
+│       ├── users.service.tsx
+│       └── users.types.ts
 ├── styles
 │   └── globals.css
 ├── types
-│   ├── database.tsx
-│   └── index.tsx
+│   └── database.tsx
 └── utils
     ├── auth
     │   ├── password.tsx
@@ -315,7 +318,7 @@ src
     └── date.tsx
 ```
 
-### expected file structure
+### expected file structure (for reference)
 
 ```text
 src/
@@ -349,17 +352,17 @@ src/
 │   │   └── forgot-password/
 │   │       └── page.tsx
 │   ├── (authenticated)
-│   │   └── dashboard/
-│   │       ├── layout.tsx
-│   │       ├── page.tsx
-│   │       ├── profile/
-│   │       │   └── page.tsx
-│   │       ├── settings/
-│   │       │   └── page.tsx
-│   │       ├── borrowings/
-│   │       │   └── page.tsx    
-│   │       └── attendance/
-│   │           └── page.tsx
+│   │   ├── dashboard/
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx
+│   │   ├── profile/
+│   │   │   └── page.tsx
+│   │   ├── settings/
+│   │   │   └── page.tsx
+│   │   ├── borrowings/
+│   │   │   └── page.tsx    
+│   │   └── attendance/
+│   │       └── page.tsx
 │   └── (admin)
 │       └── admin/
 │           ├── layout.tsx

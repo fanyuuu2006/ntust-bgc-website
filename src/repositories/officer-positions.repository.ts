@@ -12,21 +12,51 @@ type CreateOfficerPositionInput = Omit<
 
 type UpdateOfficerPositionInput = Partial<CreateOfficerPositionInput>;
 
+/**
+ * 查詢多筆時的排序 / 筆數限制選項。
+ * 統一以 created_at 排序（officer_positions 沒有 joined_at 這種欄位，
+ * created_at 就是這筆職位紀錄成立的時間點）。
+ */
+type FindManyOfficerPositionsOptions = Partial<{
+  /** 排序方向，預設 "desc"（最新的在前面） */
+  order: "asc" | "desc";
+  /** 限制回傳筆數，不傳則撈全部 */
+  limit: number;
+}>;
+
 export const officerPositionsRepository = {
   /**
-   * 取得使用者所有幹部職位紀錄（含歷屆）
+   * 取得使用者的幹部職位紀錄（附帶學年度資料），依 created_at 排序。
+   *
+   * 用 join 直接帶出 academic_year，避免呼叫端再對每筆
+   * 各自查一次學年度資料（N+1 query）。
+   *
+   * @param options.order 排序方向，預設 "desc"
+   * @param options.limit 限制筆數，不傳則撈全部
    */
-  findManyByUserId: async (userId: UUID): Promise<OfficerPosition[]> => {
-    const { data, error } = await supabase
+  findManyByUserId: async (
+    userId: UUID,
+    options: FindManyOfficerPositionsOptions = {},
+  ): Promise<OfficerPositionWithAcademicYear[]> => {
+    const { order = "desc", limit } = options;
+
+    let query = supabase
       .from("officer_positions")
-      .select("*")
-      .eq("user_id", userId);
+      .select("*, academic_year:academic_years!inner(*)")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: order === "asc" });
+
+    if (limit !== undefined) {
+      query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       throwRepositoryError("取得使用者幹部職位紀錄失敗", error);
     }
 
-    return data ?? [];
+    return (data ?? []) as OfficerPositionWithAcademicYear[];
   },
 
   /**

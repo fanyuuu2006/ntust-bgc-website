@@ -12,9 +12,12 @@ export type OfficerPositionWithAcademicYear = OfficerPosition & {
 
 /**
  * User 所有相關資料
+ *
+ * memberships / officerPositions 為「最近 N 筆」歷史紀錄（依時間新到舊排序），
+ * 筆數上限見 usersService.getProfileData 中的 RECENT_RECORDS_LIMIT。
  */
 export type UserProfileData = User & {
   profile: UserProfile | null;
-  membership: MembershipWithAcademicYear | null;
-  officerPositions: OfficerPositionWithAcademicYear[];
+  recentMemberships: MembershipWithAcademicYear[];
+  recentOfficerPositions: OfficerPositionWithAcademicYear[];
 };

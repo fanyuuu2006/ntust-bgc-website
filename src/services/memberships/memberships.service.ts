@@ -38,37 +38,26 @@ export const membershipService = {
   },
 
   /**
-   * 取得使用者所有社員紀錄（附帶各筆對應的學年度資料）
-   *
-   * 先一次撈出全部學年度做成 map，避免對每筆 membership
-   * 各自打一次 academicYearsRepository.findById（N+1 query）。
+   * 取得使用者所有社員紀錄（依加入時間新到舊排序，附帶各筆對應的學年度資料）
    */
   getAllMembershipsByUserId: async (
     userId: string,
   ): Promise<MembershipWithAcademicYear[]> => {
-    const memberships = await membershipsRepository.findManyByUserId(userId);
+    return membershipsRepository.findManyByUserId(userId, { order: "desc" });
+  },
 
-    if (memberships.length === 0) {
-      return [];
-    }
-
-    const academicYears = await academicYearsRepository.findMany();
-    const academicYearById = new Map(
-      academicYears.map((year) => [year.id, year]),
-    );
-
-    return memberships.flatMap((membership) => {
-      const academicYear = academicYearById.get(membership.academic_year_id);
-
-      // 理論上不該發生（FK 保證存在），但資料異常時寧可濾掉也不要噴錯讓整頁掛掉
-      if (!academicYear) {
-        console.error(
-          `[membershipService] membership ${membership.id} 找不到對應的 academic_year ${membership.academic_year_id}`,
-        );
-        return [];
-      }
-
-      return [{ ...membership, academic_year: academicYear }];
+  /**
+   * 取得使用者最近 N 筆社員紀錄（依加入時間新到舊排序，附帶學年度資料）
+   *
+   * @param limit 要取的筆數（例如個人頁只想顯示最近 3 筆）
+   */
+  getRecentMembershipsByUserId: async (
+    userId: string,
+    limit: number,
+  ): Promise<MembershipWithAcademicYear[]> => {
+    return membershipsRepository.findManyByUserId(userId, {
+      order: "desc",
+      limit,
     });
   },
 
@@ -89,5 +78,18 @@ export const membershipService = {
       );
 
     return membership?.status === "active";
+  },
+
+  /**
+   * 使用者最早一筆社員紀錄對應的學年度（即「入社學年度」）。
+   * null 代表從未有過任何社員紀錄。
+   */
+  getJoinedYear: async (userId: string): Promise<string | null> => {
+    const earliest = await membershipsRepository.findManyByUserId(userId, {
+      order: "asc",
+      limit: 1,
+    });
+
+    return earliest[0]?.academic_year.year ?? null;
   },
 };

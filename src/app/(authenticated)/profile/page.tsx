@@ -1,44 +1,49 @@
-import { notFound } from "next/navigation";
+import { ProfileHeroSection } from "@/components/(authenticated)/profile/ProfileHeroSection";
+import { QuickStatsSection } from "@/components/(authenticated)/profile/QuickStats";
 import { getCurrentUser } from "@/libs/auth";
-import { AttendanceCard } from "@/components/(authenticated)/profile/AttendancesCard";
-import { BorrowingCard } from "@/components/(authenticated)/profile/BorrowingCard";
-import { MembershipCard } from "@/components/(authenticated)/profile/MembershipCard";
-import { OfficerPositionsCard } from "@/components/(authenticated)/profile/OfficerPostionsCard";
-import { ProfileBasicInfo } from "@/components/(authenticated)/profile/ProfileBasicInfo";
-import { ProfileHeader } from "@/components/(authenticated)/profile/ProfileHeader";
+import { boardGameBorrowingsService } from "@/services/board-game-borrowings/board-game-borrowings.service.ts";
+import { eventAttendancesService } from "@/services/event-attendances/event-attendances.service";
+import { membershipService } from "@/services/memberships/memberships.service";
 import { usersService } from "@/services/users/users.service";
 
-// ⚠️ usersService.getProfileData(...) 是示意用的方法名稱，
-// 請替換成專案實際的 service/repository 呼叫方式。
 export default async function ProfilePage() {
   const user = await getCurrentUser();
 
-  if (!user) {
-    notFound();
-  }
+  if (!user) return null;
 
-  const data = await usersService.getProfileData(user.id);
-
-  // 借閱／出席尚未有 repository/service，先以空陣列讓 UI 骨架就位
-  const borrowings: never[] = [];
-  const attendances: never[] = [];
+  const [
+    profileData,
+    totalBorrowings,
+    activeBorrowings,
+    attendances,
+    joinedYear,
+  ] = await Promise.all([
+    usersService.getProfileData(user.id),
+    boardGameBorrowingsService.getTotalBorrowedCount(user.id),
+    boardGameBorrowingsService.getActiveBorrowedCount(user.id),
+    eventAttendancesService.getAttendedCount(user.id),
+    membershipService.getJoinedYear(user.id),
+  ]);
 
   return (
-    <section>
-      <div className="container flex flex-col gap-6 py-8">
-        <ProfileHeader data={data} />
-
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="lg:col-span-2">
-            <ProfileBasicInfo user={data} profile={data.profile} />
-          </div>
-
-          <MembershipCard membership={data.membership} />
-          <OfficerPositionsCard officerPositions={data.officerPositions} />
-          <BorrowingCard borrowings={borrowings} />
-          <AttendanceCard attendances={attendances} />
-        </div>
-      </div>
-    </section>
+    <>
+      <ProfileHeroSection data={profileData} />
+      <QuickStatsSection
+        stats={[
+          { key: "borrowings", label: "累計借用桌遊", value: totalBorrowings },
+          {
+            key: "active-borrowings",
+            label: "目前借用桌遊",
+            value: activeBorrowings,
+          },
+          { key: "attendances", label: "社課簽到次數", value: attendances },
+          {
+            key: "joined-year",
+            label: "入社學年度",
+            value: joinedYear ? joinedYear : "尚未入社",
+          },
+        ]}
+      />
+    </>
   );
 }

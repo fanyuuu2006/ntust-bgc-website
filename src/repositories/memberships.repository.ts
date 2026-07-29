@@ -13,28 +13,58 @@ type CreateMembershipInput = Pick<
 type UpdateMembershipInput = Partial<Pick<Membership, "type" | "status">>;
 
 /**
+ * 查詢多筆時的排序 / 筆數限制選項。
+ * 統一以 joined_at 排序（代表「加入該學年度社員」的時間），
+ * 而非 created_at（那只代表資料列被建立的時間，語意上不是使用者關心的重點）。
+ */
+type FindManyMembershipsOptions = Partial<{
+  /** 排序方向，預設 "desc"（最新的在前面） */
+  order: "asc" | "desc";
+  /** 限制回傳筆數，不傳則撈全部 */
+  limit: number;
+}>;
+
+/**
  * memberships repository
  *
  * 純粹只做 memberships 這張表的 CRUD。
  * 「目前學年度」「目前社員」這類需要跨表判斷的規則，
- * 統一在這裡用 join 處理（比照 officerPositionsRepository.findCurrentByUserId 的寫法），
+ * 統一在這裡用 join 處理（比照 findCurrentByUserId 的寫法），
  * 避免呼叫端各自組合查詢邏輯、或誤用其他方法（例如把 userId 當成 membership id 查）。
  */
 export const membershipsRepository = {
   /**
-   * 取得使用者所有社員紀錄
+   * 取得使用者的社員紀錄（附帶學年度資料），依 joined_at 排序。
+   *
+   * 用 join 直接帶出 academic_year，避免呼叫端再對每筆
+   * 各自查一次學年度資料（N+1 query）。
+   *
+   * @param options.order 排序方向，預設 "desc"
+   * @param options.limit 限制筆數，不傳則撈全部
    */
-  findManyByUserId: async (userId: string): Promise<Membership[]> => {
-    const { data, error } = await supabase
+  findManyByUserId: async (
+    userId: string,
+    options: FindManyMembershipsOptions = {},
+  ): Promise<MembershipWithAcademicYear[]> => {
+    const { order = "desc", limit } = options;
+
+    let query = supabase
       .from("memberships")
-      .select("*")
-      .eq("user_id", userId);
+      .select("*, academic_year:academic_years!inner(*)")
+      .eq("user_id", userId)
+      .order("joined_at", { ascending: order === "asc" });
+
+    if (limit !== undefined) {
+      query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       throwRepositoryError("取得使用者社員紀錄失敗", error);
     }
 
-    return data ?? [];
+    return (data ?? []) as MembershipWithAcademicYear[];
   },
 
   /**
