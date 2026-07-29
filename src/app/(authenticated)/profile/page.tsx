@@ -1,3 +1,4 @@
+import { ProfileBasicInfoSection } from "@/components/(authenticated)/profile/ProfileBasicInfoSection";
 import { ProfileHeroSection } from "@/components/(authenticated)/profile/ProfileHeroSection";
 import { QuickStatsSection } from "@/components/(authenticated)/profile/QuickStats";
 import { getCurrentUser } from "@/libs/auth";
@@ -5,7 +6,6 @@ import { boardGameBorrowingsService } from "@/services/board-game-borrowings/boa
 import { eventAttendancesService } from "@/services/event-attendances/event-attendances.service";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { usersService } from "@/services/users/users.service";
-import { ProfileBasicInfoSection } from "@/components/(authenticated)/profile/ProfileBasicInfoSection";
 
 export default async function ProfilePage() {
   const user = await getCurrentUser();
@@ -27,25 +27,27 @@ export default async function ProfilePage() {
   ]);
 
   return (
-    <>
-      <ProfileHeroSection data={profileData} />
-      <QuickStatsSection
-        stats={[
-          { key: "borrowings", label: "累計借用桌遊", value: totalBorrowings },
-          {
-            key: "active-borrowings",
-            label: "目前借用桌遊",
-            value: activeBorrowings,
-          },
-          { key: "attendances", label: "本學年簽到次數", value: attendances },
-          {
-            key: "joined-year",
-            label: "入社學年",
-            value: joinedYear ? joinedYear : "尚未入社",
-          },
-        ]}
-      />
-      <ProfileBasicInfoSection data={profileData} />
-    </>
+    <main className="pb-8 sm:pb-12">
+      <div className="container flex flex-col gap-5 py-6 sm:gap-6 sm:py-8">
+        <ProfileHeroSection data={profileData} />
+        <QuickStatsSection
+          stats={[
+          { key: "borrowings", label: "累計借用次數", value: totalBorrowings },
+            {
+              key: "active-borrowings",
+              label: "目前借用中",
+              value: activeBorrowings,
+            },
+            { key: "attendances", label: "本學年簽到次數", value: attendances },
+            {
+              key: "joined-year",
+              label: "加入年份",
+              value: joinedYear ?? "尚無紀錄",
+            },
+          ]}
+        />
+        <ProfileBasicInfoSection data={profileData} />
+      </div>
+    </main>
   );
 }
