@@ -17,12 +17,12 @@ export type Timestamp = string;
  * ========================================================= */
 
 /**
- * 會員類型
+ * 社員類型
  */
 export type MembershipType = "annual" | "lifetime";
 
 /**
- * 會員狀態
+ * 社員資格狀態
  */
 export type MembershipStatus =
   | "pending"

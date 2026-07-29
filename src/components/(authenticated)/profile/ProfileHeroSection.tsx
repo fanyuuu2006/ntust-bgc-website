@@ -27,11 +27,11 @@ const MEMBERSHIP_STATUS_CONFIG: Record<
   MembershipStatus,
   Omit<BadgeData, "key">
 > = {
-  pending: { label: "會員資格審核中", variant: "yellow" },
-  active: { label: "有效會員", variant: "green" },
-  expired: { label: "會員資格已到期", variant: "muted" },
-  suspended: { label: "會員資格已停權", variant: "red" },
-  cancelled: { label: "會員資格已取消", variant: "muted" },
+  pending: { label: "社員資格審核中", variant: "yellow" },
+  active: { label: "目前社員", variant: "green" },
+  expired: { label: "社員資格已到期", variant: "muted" },
+  suspended: { label: "社員資格已停權", variant: "red" },
+  cancelled: { label: "社員資格已取消", variant: "muted" },
 };
 
 function Badge({ label, variant }: Omit<BadgeData, "key">) {

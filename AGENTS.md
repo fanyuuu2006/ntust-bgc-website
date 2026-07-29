@@ -2,7 +2,7 @@
 
 ### Project Overview
 
-本專案為國立臺灣科技大學桌上遊戲研究社的官方網站與會員管理系統，使用 Next.js App Router 建置。
+本專案為國立臺灣科技大學桌上遊戲研究社的官方網站與社員管理系統，使用 Next.js App Router 建置。
 
 目前已實作：
 
@@ -11,7 +11,7 @@
 - 自訂 Session Cookie 認證
 - 已登入使用者 Dashboard、個人資料頁與設定頁
 - 帳號、個人資料與登入 Session 管理
-- 會員資格、幹部職位、借用與出席統計的讀取服務
+- 社員資格、幹部職位、借用與簽到統計的讀取服務
 
 仍屬早期開發階段；公告、桌遊等公開頁面目前多為靜態或 placeholder，管理端路由尚未實作。
 
@@ -200,6 +200,7 @@ const user = data.user!;
 - 使用者可見文案須簡潔且直接；避免加入未提供資訊價值的標語或描述，例如「即時統計」、「個人檔案」。
 - 同一頁面只保留一個主要編輯入口，避免重複導向相同設定頁。
 - 桌遊相關功能一律使用「借用／歸還」用語，不使用「借閱」；活動參與紀錄一律使用「簽到」，不使用「出席」。
+- 社團身分相關的使用者可見文案一律使用「社員／社員資格」，不使用「會員／會員資格」；`memberships` 等既有資料庫與程式識別字維持原名。
 
 元件依功能與使用情境分組：
 
@@ -725,7 +726,7 @@ API response contract：
 
 - 將 `SUPABASE_SERVICE_ROLE_KEY` 暴露到 client 或 `NEXT_PUBLIC_*`
 - 在 Client Component import `server-only` repository 或 Supabase server client
-- 信任 client 傳入的 `user_id`、`author_id`、會員資格或幹部資格
+- 信任 client 傳入的 `user_id`、`author_id`、社員資格或幹部資格
 - 只依 route group 或 URL 判斷授權
 - 直接從 component 存取 Supabase
 - 繞過 Service 層 validation
@@ -811,7 +812,7 @@ npm run build
 若未來新增測試，優先測試：
 
 - Service 層的 validation 與商業規則
-- Session、會員資格與授權判斷
+- Session、社員資格與授權判斷
 - Route Handler 的 status code 與 response contract
 
 避免只寫 snapshot 測試取代行為驗證。
