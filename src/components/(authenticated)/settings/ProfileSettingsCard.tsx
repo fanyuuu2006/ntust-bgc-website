@@ -142,10 +142,10 @@ export const ProfileSettingsCard = ({
       description="真實姓名、聯絡方式與學籍資訊"
       {...rest}
     >
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
-        <div className="flex flex-col gap-3">
-          <p className="text-sm font-semibold text-(--foreground)">聯絡資訊</p>
-          <div className="grid gap-4 sm:grid-cols-2">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+        <fieldset className="flex flex-col gap-3">
+          <legend className="text-sm font-semibold text-(--foreground)">聯絡資訊</legend>
+          <div className="grid gap-4 lg:grid-cols-2">
             {basicFields.map((field) => (
               <FieldInput
                 key={field.id}
@@ -155,11 +155,11 @@ export const ProfileSettingsCard = ({
               />
             ))}
           </div>
-        </div>
+        </fieldset>
 
-        <div className="flex flex-col gap-3">
-          <p className="text-sm font-semibold text-(--foreground)">學籍資訊</p>
-          <div className="grid gap-4 sm:grid-cols-2">
+        <fieldset className="flex flex-col gap-3">
+          <legend className="text-sm font-semibold text-(--foreground)">學籍資訊</legend>
+          <div className="grid gap-4 lg:grid-cols-2">
             {academicFields.map((field) => (
               <FieldInput
                 key={field.id}
@@ -169,7 +169,7 @@ export const ProfileSettingsCard = ({
               />
             ))}
           </div>
-        </div>
+        </fieldset>
 
         <FormFeedback error={formError} success={successMessage} />
 

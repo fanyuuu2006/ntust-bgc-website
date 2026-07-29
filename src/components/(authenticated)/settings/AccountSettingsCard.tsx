@@ -131,8 +131,8 @@ export const AccountSettingsCard = ({
       className={className}
       {...rest}
     >
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
-        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+        <div className="flex flex-col items-start gap-4 rounded-xl bg-(--secondary-background) p-4 sm:flex-row sm:items-center">
           <UserAvatar
             user={previewUser}
             className="size-16 shrink-0 rounded-2xl border border-(--border)"
@@ -141,11 +141,11 @@ export const AccountSettingsCard = ({
             <p className="truncate text-sm font-medium text-(--foreground)">
               {values.name.trim() || user.name}
             </p>
-            <p className="text-sm text-(--muted)">修改後會即時預覽</p>
+            <p className="text-sm text-(--muted)">頭像與名稱會在此預覽</p>
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2">
           <FieldInput
             field={nameField}
             value={values.name}

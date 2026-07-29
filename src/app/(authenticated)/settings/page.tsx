@@ -13,20 +13,31 @@ export default async function SettingsPage() {
   const profile = await usersService.getProfile(user.id);
 
   return (
-    <section>
-      <div className="container flex flex-col gap-6 py-8">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold text-(--foreground)">設定</h1>
-          <p className="text-sm text-(--muted)">
-            管理您的帳號、個人資料與安全性設定
-          </p>
-        </div>
+    <main className="pb-8 sm:pb-12">
+      <div className="container py-6 sm:py-8">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 sm:gap-6">
+          <div>
+            <h1 className="text-2xl font-bold text-(--foreground)">設定</h1>
+          </div>
 
-        <AccountSettingsCard id="account" user={user} />
-        <ProfileSettingsCard id="profile" profile={profile} />
-        <PasswordSettingsCard id="password" />
-        <SessionSettingsCard id="sessions" userId={user.id} />
+          <div className="flex flex-col gap-5 sm:gap-6">
+            <AccountSettingsCard
+              key={user.updated_at}
+              id="account"
+              user={user}
+            />
+            <ProfileSettingsCard
+              key={profile?.updated_at ?? "new-profile"}
+              id="profile"
+              profile={profile}
+            />
+          </div>
+          <div className="flex flex-col gap-5 sm:gap-6">
+            <PasswordSettingsCard id="password" />
+            <SessionSettingsCard id="sessions" userId={user.id} />
+          </div>
+        </div>
       </div>
-    </section>
+    </main>
   );
 }

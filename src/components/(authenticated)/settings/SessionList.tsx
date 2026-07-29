@@ -7,6 +7,7 @@ import { ApiError } from "@/libs/api/errors";
 import { formatRelativeTime } from "@/utils/date";
 import { SessionSummary } from "@/services/auth/auth.types";
 import { FormFeedback } from "@/components/FormFeedback";
+import { cn } from "@/utils/className";
 type SessionListProps = { sessions: SessionSummary[] };
 export const SessionList = ({ sessions }: SessionListProps) => {
   const router = useRouter();
@@ -51,7 +52,12 @@ export const SessionList = ({ sessions }: SessionListProps) => {
         {sessions.map((session) => (
           <li
             key={session.id}
-            className="flex flex-col gap-3 rounded-lg border border-(--border) bg-(--primary-background) p-4 transition-colors sm:flex-row sm:items-center sm:justify-between"
+            className={cn(
+              "flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between",
+              session.is_current
+                ? "border-(--primary) bg-(--secondary-background)"
+                : "border-(--border) bg-(--primary-background)",
+            )}
           >
             <div className="flex items-start gap-3">
               <span
@@ -61,7 +67,7 @@ export const SessionList = ({ sessions }: SessionListProps) => {
                 }`}
               />
               <div className="flex min-w-0 flex-col">
-                <span className="text-sm font-medium text-(--foreground)">
+                <span className="text-sm font-semibold text-(--foreground)">
                   {session.is_current ? "目前使用中的裝置" : "其他裝置"}
                 </span>
                 <span className="text-xs text-(--muted)">

@@ -110,8 +110,8 @@ export const PasswordSettingsCard = (props: PasswordSettingsCardProps) => {
       description="定期更換密碼可以降低帳號被盜用的風險"
       {...props}
     >
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
-        <div className="grid gap-4 sm:grid-cols-2">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+        <div className="grid gap-4 xl:grid-cols-2">
           {fields.map((field) => (
             <FieldInput
               key={field.id}
