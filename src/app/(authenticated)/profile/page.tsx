@@ -5,6 +5,7 @@ import { boardGameBorrowingsService } from "@/services/board-game-borrowings/boa
 import { eventAttendancesService } from "@/services/event-attendances/event-attendances.service";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { usersService } from "@/services/users/users.service";
+import { ProfileBasicInfoSection } from "@/components/(authenticated)/profile/ProfileBasicInfoSection";
 
 export default async function ProfilePage() {
   const user = await getCurrentUser();
@@ -21,7 +22,7 @@ export default async function ProfilePage() {
     usersService.getProfileData(user.id),
     boardGameBorrowingsService.getTotalBorrowedCount(user.id),
     boardGameBorrowingsService.getActiveBorrowedCount(user.id),
-    eventAttendancesService.getAttendedCount(user.id),
+    eventAttendancesService.getAttendedCountByCurrentAcademicYear(user.id),
     membershipService.getJoinedYear(user.id),
   ]);
 
@@ -36,14 +37,15 @@ export default async function ProfilePage() {
             label: "目前借用桌遊",
             value: activeBorrowings,
           },
-          { key: "attendances", label: "社課簽到次數", value: attendances },
+          { key: "attendances", label: "本學年簽到次數", value: attendances },
           {
             key: "joined-year",
-            label: "入社學年度",
+            label: "入社學年",
             value: joinedYear ? joinedYear : "尚未入社",
           },
         ]}
       />
+      <ProfileBasicInfoSection data={profileData} />
     </>
   );
 }

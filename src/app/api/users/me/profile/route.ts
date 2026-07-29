@@ -6,7 +6,7 @@ import { usersService } from "@/services/users/users.service";
 import {
   UserProfileAlreadyExistsError,
   UserProfileNotFoundError,
-} from "@/services/users/user.errors";
+} from "@/services/users/users.errors";
 import type { User } from "@/types/database";
 
 /**

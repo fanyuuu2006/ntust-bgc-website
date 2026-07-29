@@ -4,7 +4,7 @@ const NAME_MAX_LENGTH = 50;
 const AVATAR_MAX_LENGTH = 500;
 
 const userProfileFields = {
-  real_name: z.string().min(1, "姓名不能為空").max(NAME_MAX_LENGTH).optional(),
+  real_name: z.string().max(NAME_MAX_LENGTH).optional(),
   phone: z.string().optional(),
   student_id: z.string().optional(),
   school: z.string().optional(),

@@ -64,7 +64,7 @@ export function QuickStatsSection({ stats, ...rest }: QuickStatsSectionProps) {
   return (
     <section {...rest}>
       <div className="container">
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 md:gap-5">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           {stats.map((stat, index) => (
             <StatCard
               key={stat.key}

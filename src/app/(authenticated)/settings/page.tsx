@@ -22,10 +22,10 @@ export default async function SettingsPage() {
           </p>
         </div>
 
-        <AccountSettingsCard user={user} />
-        <ProfileSettingsCard profile={profile} />
-        <PasswordSettingsCard />
-        <SessionSettingsCard userId={user.id} />
+        <AccountSettingsCard id="account" user={user} />
+        <ProfileSettingsCard id="profile" profile={profile} />
+        <PasswordSettingsCard id="password" />
+        <SessionSettingsCard id="sessions" userId={user.id} />
       </div>
     </section>
   );
