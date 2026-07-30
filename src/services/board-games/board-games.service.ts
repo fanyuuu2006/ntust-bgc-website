@@ -9,7 +9,7 @@ import { boardGameBorrowingsRepository } from "@/repositories/board-game-borrowi
  * 屬於這個 domain 的業務規則，由這裡統一定義，
  * 而不是散落在各個呼叫端各自 filter 狀態。
  */
-export const boardGameBorrowingsService = {
+export const boardGamesService = {
   /**
    * 使用者累計借用次數：只算真正成立過的借用（borrowed / returned），
    * 不計入 pending（審核中）、rejected（已拒絕）。

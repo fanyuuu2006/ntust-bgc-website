@@ -32,7 +32,6 @@
 | Auth | 自訂 Session，非 Supabase Auth |
 | Password hashing | `argon2` |
 | Validation | Zod 4 |
-| Icons | `@ant-design/icons` |
 | Class merging | `clsx` + `tailwind-merge`，封裝為 `cn()` |
 | Fonts | `next/font/google` 的 Geist Sans / Geist Mono |
 | Lint | ESLint 9 + `eslint-config-next` |
