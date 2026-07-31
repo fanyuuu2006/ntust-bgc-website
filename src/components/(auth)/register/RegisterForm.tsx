@@ -1,6 +1,6 @@
 "use client";
-
-import { useId, useState } from "react";
+import { Turnstile, TurnstileInstance } from "@marsidev/react-turnstile";
+import { useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/utils/className";
@@ -8,6 +8,7 @@ import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import { FieldInput, type FieldInputField } from "@/components/FieldInput";
 import { FormFeedback } from "@/components/FormFeedback";
+import { NEXT_PUBLIC_TURNSTILE_SITE_KEY } from "@/libs/env";
 
 type RegisterFormValues = {
   name: string;
@@ -82,6 +83,9 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
@@ -129,10 +133,15 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
     return errors;
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setFormError(null);
+
+    if (!turnstileToken) {
+      setFormError("請完成安全驗證");
+      return;
+    }
 
     const errors = validate();
     setFieldErrors(errors);
@@ -150,11 +159,15 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
           name: values.name,
           email: values.email,
           password: values.password,
+          turnstileToken,
         },
       });
-
+      turnstileRef.current?.reset();
+      setTurnstileToken("");
       router.push("/login");
     } catch (err) {
+      turnstileRef.current?.reset();
+      setTurnstileToken(""); // ← 新增：同步清空 state，避免帶著失效 token 再次送出
       setFormError(
         err instanceof ApiError ? err.message : "註冊失敗，請稍後再試",
       );
@@ -233,13 +246,29 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
           </p>
         )}
       </div>
-
+      <div className="flex justify-center">
+        <Turnstile
+          ref={turnstileRef}
+          siteKey={NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+          onSuccess={(token) => {
+            setTurnstileToken(token);
+            setFormError(null);
+          }}
+          onExpire={() => {
+            setTurnstileToken("");
+          }}
+          onError={() => {
+            setTurnstileToken("");
+            setFormError("安全驗證失敗，請重新嘗試");
+          }}
+        />
+      </div>
       <FormFeedback error={formError} />
 
       <div className="flex flex-col gap-4">
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || !turnstileToken}
           aria-busy={isLoading}
           className="btn primary w-full rounded-lg py-2.5 text-sm font-medium sm:text-base"
         >

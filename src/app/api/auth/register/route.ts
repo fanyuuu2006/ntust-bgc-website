@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 import { authService } from "@/services/auth/auth.service";
 import { EmailAlreadyExistsError } from "@/services/auth/auth.errors";
+import { verifyTurnstile } from "@/libs/security/turnstile";
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -16,6 +17,25 @@ export async function POST(request: Request) {
   }
 
   try {
+    // 先驗證 Turnstile
+    if (
+      typeof body !== "object" ||
+      body === null ||
+      !("turnstileToken" in body) ||
+      typeof body.turnstileToken !== "string"
+    ) {
+      return NextResponse.json({ message: "請完成安全驗證" }, { status: 400 });
+    }
+
+    const verified = await verifyTurnstile(body.turnstileToken);
+
+    if (!verified) {
+      return NextResponse.json(
+        { message: "安全驗證失敗，請重新嘗試" },
+        { status: 403 },
+      );
+    }
+
     const user = await authService.register(body);
 
     return NextResponse.json(

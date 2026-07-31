@@ -12,7 +12,6 @@ type InfoFieldData = {
   key: string;
   label: string;
   value: string | null;
-  href?: string;
 };
 
 type GroupAccent = "green" | "primary";
@@ -37,11 +36,7 @@ const ACCENT_CARD_CLASS: Record<GroupAccent, string> = {
   primary: "",
 };
 
-function buildTelHref(phone: string) {
-  return `tel:${phone.replace(/[^\d+]/g, "")}`;
-}
-
-function InfoRow({ label, value, href }: InfoFieldData) {
+function InfoRow({ label, value }: InfoFieldData) {
   const displayValue = value?.trim();
 
   if (!displayValue) {
@@ -60,25 +55,12 @@ function InfoRow({ label, value, href }: InfoFieldData) {
   return (
     <div className="flex items-center justify-between gap-4 py-3">
       <span className="shrink-0 text-sm text-(--muted)">{label}</span>
-      {href ? (
-        <a
-          href={href}
-          title={displayValue}
-          className={cn(
-            valueClassName,
-            "text-(--primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)",
-          )}
-        >
-          {displayValue}
-        </a>
-      ) : (
-        <span
-          title={displayValue}
-          className={cn(valueClassName, "text-(--foreground)")}
-        >
-          {displayValue}
-        </span>
-      )}
+      <span
+        title={displayValue}
+        className={cn(valueClassName, "text-(--foreground)")}
+      >
+        {displayValue}
+      </span>
     </div>
   );
 }
@@ -147,20 +129,18 @@ export function ProfileBasicInfoSection({
           key: "email",
           label: "Email",
           value: user.email,
-          href: user.email ? `mailto:${user.email}` : undefined,
         },
         {
           key: "phone",
           label: "手機號碼",
           value: profile.phone,
-          href: profile.phone ? buildTelHref(profile.phone) : undefined,
         },
       ],
     },
     {
       key: "academic",
       title: "學籍資訊",
-      description: "用於社員資格核對",
+      description: "用於社團社員資料管理",
       accent: "primary",
       fields: [
         { key: "student_id", label: "學號", value: profile.student_id },

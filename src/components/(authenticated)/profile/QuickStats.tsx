@@ -6,11 +6,19 @@ export type QuickStat = {
   key: string;
   label: string;
   value: string | number;
+  /** 僅在數值有明確語意時指定顏色（例如逾期用 red），預設一律使用 primary */
   accent?: QuickStatAccent;
 };
 
 type QuickStatsSectionProps = React.HTMLAttributes<HTMLElement> & {
   stats: QuickStat[];
+};
+
+const ACCENT_CARD_CLASS: Record<QuickStatAccent, string> = {
+  primary: "",
+  green: "green",
+  yellow: "yellow",
+  red: "red",
 };
 
 const DEFAULT_ACCENTS: QuickStatAccent[] = [
@@ -19,35 +27,33 @@ const DEFAULT_ACCENTS: QuickStatAccent[] = [
   "yellow",
   "red",
 ];
-const ACCENT_CLASS: Record<QuickStatAccent, string> = {
-  primary: "",
-  green: "green",
-  yellow: "yellow",
-  red: "red",
-};
 
 function formatStatValue(value: string | number) {
   return typeof value === "number" ? value.toLocaleString("zh-TW") : value;
 }
 
-function StatCard({
-  stat,
-  accent,
-}: {
-  stat: QuickStat;
-  accent: QuickStatAccent;
-}) {
+function StatCard({ stat }: { stat: QuickStat }) {
+  const accent = stat.accent ?? "primary";
+  const displayValue = formatStatValue(stat.value);
+
   return (
     <div
-      className={cn("card accent rounded-2xl p-4 sm:p-5", ACCENT_CLASS[accent])}
-      aria-label={`${stat.label}：${formatStatValue(stat.value)}`}
+      className={cn(
+        "card accent rounded-2xl p-4 sm:p-5",
+        ACCENT_CARD_CLASS[accent],
+      )}
+      aria-label={`${stat.label}：${displayValue}`}
     >
-      <p className="text-xs font-medium text-(--muted)">{stat.label}</p>
+      <p className="truncate text-xs font-medium text-(--muted)">
+        {stat.label}
+      </p>
       <p
-        className="mt-2 truncate text-2xl font-bold text-(--foreground) tabular-nums sm:text-3xl"
+        className={cn(
+          "mt-2 truncate text-2xl font-bold tabular-nums sm:text-3xl",
+        )}
         title={String(stat.value)}
       >
-        {formatStatValue(stat.value)}
+        {displayValue}
       </p>
     </div>
   );
@@ -75,14 +81,16 @@ export function QuickStatsSection({
             統計資訊
           </h2>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           {stats.map((stat, index) => (
             <StatCard
               key={stat.key}
-              stat={stat}
-              accent={
-                stat.accent ?? DEFAULT_ACCENTS[index % DEFAULT_ACCENTS.length]
-              }
+              stat={{
+                accent:
+                  stat.accent ??
+                  DEFAULT_ACCENTS[index % DEFAULT_ACCENTS.length],
+                ...stat,
+              }}
             />
           ))}
         </div>
