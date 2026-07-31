@@ -1,7 +1,7 @@
 import "server-only";
 
 import { Session } from "@/types/database";
-import { throwRepositoryError } from "./error";
+import { throwRepositoryError } from "./shared/errors";
 import { supabase } from "@/libs/supabase/server";
 
 type CreateSessionInput = Pick<Session, "user_id" | "token" | "expires_at">;

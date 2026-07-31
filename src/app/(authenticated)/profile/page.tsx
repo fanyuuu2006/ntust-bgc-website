@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/libs/auth";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { eventAttendancesService } from "@/services/event-attendances/event-attendances.service";
 import { membershipService } from "@/services/memberships/memberships.service";
+import { officerPositionsService } from "@/services/officer-positions/officer-positions.service";
 import { usersService } from "@/services/users/users.service";
 
 export default async function ProfilePage() {
@@ -13,22 +14,33 @@ export default async function ProfilePage() {
   if (!user) return null;
 
   const [
-    profileData,
+    profile,
     totalBorrowings,
-    activeBorrowings,
+    currentlyBorrowings,
     attendances,
     joinedYear,
+    currentMembership,
+    currentOfficerPositions,
   ] = await Promise.all([
-    usersService.getProfileData(user.id),
+    usersService.getProfile(user.id),
     boardGamesService.getTotalBorrowedCount(user.id),
-    boardGamesService.getActiveBorrowedCount(user.id),
+    boardGamesService.getCurrentlyBorrowedCount(user.id),
     eventAttendancesService.getAttendedCountByCurrentAcademicYear(user.id),
     membershipService.getJoinedYear(user.id),
+    membershipService.getCurrentMembershipByUserId(user.id),
+    officerPositionsService.getCurrentPositionsByUserId(user.id),
   ]);
+
+  if (!profile) return null;
 
   return (
     <>
-      <ProfileHeroSection data={profileData} />
+      <ProfileHeroSection
+        user={user}
+        profile={profile}
+        currentMembership={currentMembership}
+        currentOfficerPositions={currentOfficerPositions}
+      />
       <QuickStatsSection
         stats={[
           {
@@ -37,9 +49,9 @@ export default async function ProfilePage() {
             value: totalBorrowings,
           },
           {
-            key: "active-borrowings",
+            key: "currently-borrowings",
             label: "目前借用中桌遊數量",
-            value: activeBorrowings,
+            value: currentlyBorrowings,
           },
           { key: "attendances", label: "本學年簽到次數", value: attendances },
           {
@@ -49,7 +61,7 @@ export default async function ProfilePage() {
           },
         ]}
       />
-      <ProfileBasicInfoSection data={profileData} />
+      <ProfileBasicInfoSection user={user} profile={profile} />
     </>
   );
 }

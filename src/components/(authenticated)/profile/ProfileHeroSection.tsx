@@ -1,10 +1,14 @@
 import { UserAvatar } from "@/components/UserAvatar";
-import type { UserProfileData } from "@/services/users/users.types";
-import type { MembershipStatus } from "@/types/database";
+import { MembershipWithAcademicYear } from "@/services/memberships/memberships.types";
+import { OfficerPositionWithAcademicYear } from "@/services/officer-positions/officer-positions.types";
+import type { MembershipStatus, User, UserProfile } from "@/types/database";
 import { cn } from "@/utils/className";
 
 type ProfileHeroSectionProps = React.HTMLAttributes<HTMLElement> & {
-  data: UserProfileData;
+  user: User;
+  profile: UserProfile;
+  currentMembership: MembershipWithAcademicYear | null;
+  currentOfficerPositions: OfficerPositionWithAcademicYear[];
 };
 
 type BadgeVariant = "primary" | "green" | "yellow" | "red" | "muted";
@@ -50,27 +54,31 @@ function Badge({ label, variant }: Omit<BadgeData, "key">) {
 }
 
 export function ProfileHeroSection({
-  data: { profile, recentMemberships, recentOfficerPositions, ...user },
+  user,
+  profile,
+  currentMembership,
+  currentOfficerPositions,
   className,
   ...rest
 }: ProfileHeroSectionProps) {
-  const currentMembership = recentMemberships.find(
-    (membership) => membership.academic_year.is_current,
-  );
   const membershipBadge = currentMembership
     ? {
-        key: currentMembership.id,
+        key: `membership-${currentMembership.id}`,
         ...MEMBERSHIP_STATUS_CONFIG[currentMembership.status],
       }
     : null;
-  const metaText = [profile?.school, profile?.department, profile?.grade]
+
+  const metaText = [profile.school, profile.department, profile.grade]
     .filter((item): item is string => Boolean(item))
     .join(" · ");
+
   const badges: BadgeData[] = [
     ...(membershipBadge ? [membershipBadge] : []),
-    ...recentOfficerPositions.map((officer) => ({
-      key: officer.id,
-      label: `${officer.academic_year.year} | ${officer.title}`,
+    ...currentOfficerPositions.map((officer) => ({
+      key: `officer-${officer.id}`,
+      label: officer.academic_year
+        ? `${officer.academic_year.year} | ${officer.title}`
+        : officer.title,
       variant: "primary" as const,
     })),
   ];
@@ -98,7 +106,7 @@ export function ProfileHeroSection({
                 >
                   {user.name}
                 </h1>
-                {profile?.real_name && profile.real_name !== user.name && (
+                {profile.real_name && profile.real_name !== user.name && (
                   <p className="mt-1 text-sm text-(--muted)">
                     {profile.real_name}
                   </p>

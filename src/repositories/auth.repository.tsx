@@ -1,6 +1,6 @@
 import "server-only";
 import { AuthCredential, User } from "@/types/database";
-import { throwRepositoryError } from "./error";
+import { throwRepositoryError } from "./shared/errors";
 import { supabase } from "@/libs/supabase/server";
 
 type RegisterUserRepositoryInput = {

@@ -2,7 +2,7 @@ import "server-only";
 
 import { supabase } from "@/libs/supabase/server";
 import type { UserProfile } from "@/types/database";
-import { throwRepositoryError } from "./error";
+import { throwRepositoryError } from "./shared/errors";
 
 export type CreateUserProfileInput = Partial<
   Omit<UserProfile, "id" | "user_id" | "created_at" | "updated_at">
@@ -10,13 +10,6 @@ export type CreateUserProfileInput = Partial<
 
 export type UpdateUserProfileInput = Partial<CreateUserProfileInput>;
 
-/**
- * user-profiles repository
- *
- * 純粹只做 user_profiles 這張表的 CRUD，一個 user 對應一筆 profile（user_id 為外鍵）。
- * 「是否已存在 profile」這類唯一性判斷交給 DB 的 unique constraint（user_id）把關，
- * 這裡不先查再寫，避免 TOCTOU race condition；unique violation 的翻譯交給呼叫端 service 處理。
- */
 export const userProfilesRepository = {
   findByUserId: async (userId: string): Promise<UserProfile | null> => {
     const { data, error } = await supabase

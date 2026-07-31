@@ -2,8 +2,12 @@ import "server-only";
 
 import { supabase } from "@/libs/supabase/server";
 import type { Membership } from "@/types/database";
-import { throwRepositoryError } from "./error";
-import { MembershipWithAcademicYear } from "@/services/memberships/memberships.types";
+import { throwRepositoryError } from "./shared/errors";
+import {
+  buildPaginationResult,
+  normalizePaginationOptions,
+} from "./shared/pagination";
+import { OrderOptions, PaginationQuery } from "./shared/types";
 
 type CreateMembershipInput = Pick<
   Membership,
@@ -12,64 +16,41 @@ type CreateMembershipInput = Pick<
 
 type UpdateMembershipInput = Partial<Pick<Membership, "type" | "status">>;
 
-/**
- * 查詢多筆時的排序 / 筆數限制選項。
- * 統一以 joined_at 排序（代表「加入該學年度社員」的時間），
- * 而非 created_at（那只代表資料列被建立的時間，語意上不是使用者關心的重點）。
- */
-type FindManyMembershipsOptions = Partial<{
-  /** 排序方向，預設 "desc"（最新的在前面） */
-  order: "asc" | "desc";
-  /** 限制回傳筆數，不傳則撈全部 */
-  limit: number;
-}>;
+export type FindManyMembershipsOptions = PaginationQuery &
+  OrderOptions<"joined_at" | "created_at">;
 
-/**
- * memberships repository
- *
- * 純粹只做 memberships 這張表的 CRUD。
- * 「目前學年度」「目前社員」這類需要跨表判斷的規則，
- * 統一在這裡用 join 處理（比照 findCurrentByUserId 的寫法），
- * 避免呼叫端各自組合查詢邏輯、或誤用其他方法（例如把 userId 當成 membership id 查）。
- */
 export const membershipsRepository = {
   /**
-   * 取得使用者的社員紀錄（附帶學年度資料），依 joined_at 排序。
-   *
-   * 用 join 直接帶出 academic_year，避免呼叫端再對每筆
-   * 各自查一次學年度資料（N+1 query）。
-   *
-   * @param options.order 排序方向，預設 "desc"
-   * @param options.limit 限制筆數，不傳則撈全部
+   * 取得使用者的社員紀錄，依 joined_at 排序。
+   * 只回傳 memberships table 本身的資料，不 join 其他 table。
+   * 需要 academic_year 資料請由呼叫端（Service）另外組合。
    */
   findManyByUserId: async (
     userId: string,
     options: FindManyMembershipsOptions = {},
-  ): Promise<MembershipWithAcademicYear[]> => {
-    const { order = "desc", limit } = options;
+  ) => {
+    const { page, pageSize, from, to } = normalizePaginationOptions({
+      page: options.page,
+      pageSize: options.pageSize,
+    });
 
-    let query = supabase
+    const orderBy = options.orderBy ?? "joined_at";
+    const orderDirection = options.orderDirection ?? "desc";
+
+    const { data, error, count } = await supabase
       .from("memberships")
-      .select("*, academic_year:academic_years!inner(*)")
+      .select("*", { count: "exact" })
       .eq("user_id", userId)
-      .order("joined_at", { ascending: order === "asc" });
-
-    if (limit !== undefined) {
-      query = query.limit(limit);
-    }
-
-    const { data, error } = await query;
+      .order(orderBy, { ascending: orderDirection === "asc" })
+      .range(from, to);
 
     if (error) {
       throwRepositoryError("取得使用者社員紀錄失敗", error);
     }
 
-    return (data ?? []) as MembershipWithAcademicYear[];
+    return buildPaginationResult<Membership>(data ?? [], count, page, pageSize);
   },
 
-  /**
-   * 依 ID 查詢社員紀錄
-   */
   findById: async (id: string): Promise<Membership | null> => {
     const { data, error } = await supabase
       .from("memberships")
@@ -84,10 +65,6 @@ export const membershipsRepository = {
     return data;
   },
 
-  /**
-   * 依使用者 + 指定學年度查詢社員資格
-   * （「指定學年度」是哪一年由呼叫端決定，這裡只單純過濾）
-   */
   findByUserIdAndAcademicYearId: async (
     userId: string,
     academicYearId: string,
@@ -106,30 +83,6 @@ export const membershipsRepository = {
     return data;
   },
 
-  /**
-   * 取得使用者「目前學年度」的社員資格，非目前學年度社員則回傳 null。
-   * 依 academic_years.is_current 判斷，不可 hardcode 學年度 ID。
-   */
-  findCurrentByUserId: async (
-    userId: string,
-  ): Promise<MembershipWithAcademicYear | null> => {
-    const { data, error } = await supabase
-      .from("memberships")
-      .select("*, academic_year:academic_years!inner(*)")
-      .eq("user_id", userId)
-      .eq("academic_years.is_current", true)
-      .maybeSingle();
-
-    if (error) {
-      throwRepositoryError("取得使用者目前社員資格失敗", error);
-    }
-
-    return data as MembershipWithAcademicYear | null;
-  },
-
-  /**
-   * 建立社員資格
-   */
   create: async (payload: CreateMembershipInput): Promise<Membership> => {
     const { data, error } = await supabase
       .from("memberships")
@@ -144,9 +97,6 @@ export const membershipsRepository = {
     return data;
   },
 
-  /**
-   * 更新社員資格
-   */
   updateById: async (
     id: string,
     payload: UpdateMembershipInput,

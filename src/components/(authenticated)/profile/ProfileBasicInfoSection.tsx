@@ -1,10 +1,11 @@
 import Link from "next/link";
 import type { HTMLAttributes } from "react";
-import type { UserProfileData } from "@/services/users/users.types";
 import { cn } from "@/utils/className";
+import { User, UserProfile } from "@/types/database";
 
 type ProfileBasicInfoSectionProps = HTMLAttributes<HTMLElement> & {
-  data: UserProfileData;
+  user: User;
+  profile: UserProfile;
 };
 type InfoFieldData = { label: string; value: string | null };
 type InfoGroupData = {
@@ -56,11 +57,11 @@ function InfoGroup({
 }
 
 export function ProfileBasicInfoSection({
-  data,
+  user,
+  profile,
   className,
   ...rest
 }: ProfileBasicInfoSectionProps) {
-  const { profile, email } = data;
   const groups: InfoGroupData[] = [
     {
       key: "contact",
@@ -68,7 +69,7 @@ export function ProfileBasicInfoSection({
       dotClassName: "bg-(--game-green)",
       fields: [
         { label: "姓名", value: profile?.real_name ?? null },
-        { label: "Email", value: email },
+        { label: "Email", value: user.email ?? null },
         { label: "手機號碼", value: profile?.phone ?? null },
       ],
     },

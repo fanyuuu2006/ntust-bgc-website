@@ -2,7 +2,7 @@ import "server-only";
 
 import { supabase } from "@/libs/supabase/server";
 import { AcademicYear } from "@/types/database";
-import { throwRepositoryError } from "./error";
+import { throwRepositoryError } from "./shared/errors";
 
 type CreateAcademicYearInput = Pick<
   AcademicYear,
@@ -13,31 +13,27 @@ type UpdateAcademicYearInput = Partial<
   Pick<AcademicYear, "year" | "start_date" | "end_date">
 >;
 
-/**
- * academic-year repository
- *
- * 只做 academic_years 這張表的存取。
- *
- * 注意：is_current 刻意不開放透過 create / updateById 直接寫入。
- * 「同時只能有一個學年度是目前學年度」是這張表內部的一致性規則，
- * 統一交給 setCurrent() 處理，避免呼叫端各自 update 造成
- * 兩筆 is_current = true 同時存在（會讓 findCurrent() 噴錯）。
- *
- * 建議另外在 DB 加一個 partial unique index 當最後防線：
- *   CREATE UNIQUE INDEX ON academic_years (is_current) WHERE is_current = true;
- */
 export const academicYearsRepository = {
-  /**
-   * 取得所有學年度（依開始日期新到舊排序）
-   */
   findMany: async (): Promise<AcademicYear[]> => {
-    const { data, error } = await supabase
-      .from("academic_years")
-      .select("*")
-      .order("start_date", { ascending: false });
+    const { data, error } = await supabase.from("academic_years").select("*");
 
     if (error) {
       throwRepositoryError("取得學年度列表失敗", error);
+    }
+
+    return data ?? [];
+  },
+
+  findManyByIds: async (ids: string[]): Promise<AcademicYear[]> => {
+    if (ids.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from("academic_years")
+      .select("*")
+      .in("id", ids);
+
+    if (error) {
+      throwRepositoryError("依 ID 批次取得學年度失敗", error);
     }
 
     return data ?? [];
@@ -121,18 +117,6 @@ export const academicYearsRepository = {
     return data;
   },
 
-  /**
-   * 將指定學年度設為目前學年度，並取消其他學年度的目前狀態。
-   *
-   * 注意：這裡是兩個各自獨立的 update，不是同一個 DB transaction，
-   * 理論上有極短暫的時間窗口（兩個 request 幾乎同時呼叫）可能造成不一致。
-   * 如果之後這個操作變頻繁、或一致性要求提高，建議改寫成一個
-   * Postgres function（在同一個 transaction 內做 unset + set），
-   * 用 supabase.rpc(...) 呼叫，也能省成一次 round trip。
-   *
-   * 第二個 update 用 .single()：如果 id 不存在，PostgREST 會回傳
-   * 找不到 row 的錯誤，不需要另外多打一次 findById 去檢查是否存在。
-   */
   setCurrent: async (id: string): Promise<AcademicYear> => {
     const { error: unsetError } = await supabase
       .from("academic_years")

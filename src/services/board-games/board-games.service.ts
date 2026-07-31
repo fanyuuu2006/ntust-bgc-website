@@ -24,7 +24,7 @@ export const boardGamesService = {
   /**
    * 使用者目前借用中（尚未歸還）的桌遊數量。
    */
-  getActiveBorrowedCount: async (userId: string): Promise<number> => {
+  getCurrentlyBorrowedCount: async (userId: string): Promise<number> => {
     return boardGameBorrowingsRepository.countByUserId(userId, ["borrowed"]);
   },
 };

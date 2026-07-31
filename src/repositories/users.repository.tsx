@@ -1,57 +1,37 @@
 import "server-only";
 import { User } from "@/types/database";
-import { throwRepositoryError } from "./error";
+import { throwRepositoryError } from "./shared/errors";
 import { supabase } from "@/libs/supabase/server";
+import {
+  buildPaginationResult,
+  normalizePaginationOptions,
+} from "./shared/pagination";
+import { buildIlikeSearch } from "./shared/search";
+import { OrderOptions, PaginationQuery } from "./shared/types";
 
 type CreateUserInput = Pick<User, "email" | "name">;
 type UpdateUserInput = Partial<Pick<User, "name" | "avatar">>;
 
-type UserOrderableField = "created_at" | "updated_at" | "name" | "email";
-
-type FindManyUsersOptions = {
-  page?: number;
-  pageSize?: number;
-  search?: string;
-  email?: string;
-  orderBy?: UserOrderableField;
-  orderDirection?: "asc" | "desc";
-};
-
-type UserListResult = {
-  data: User[];
-  count: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-};
-
-const DEFAULT_PAGE = 1;
-const DEFAULT_PAGE_SIZE = 20;
-const MAX_PAGE_SIZE = 100;
+type FindManyUsersOptions = PaginationQuery &
+  OrderOptions<"name" | "email" | "created_at"> & {
+    search?: string;
+    email?: string;
+  };
 
 export const usersRepository = {
-  findMany: async (
-    options: FindManyUsersOptions = {},
-  ): Promise<UserListResult> => {
-    const page = Math.max(1, options.page ?? DEFAULT_PAGE);
-    const pageSize = Math.min(
-      MAX_PAGE_SIZE,
-      Math.max(1, options.pageSize ?? DEFAULT_PAGE_SIZE),
-    );
+  findMany: async (options: FindManyUsersOptions = {}) => {
+    const { page, pageSize, from, to } = normalizePaginationOptions({
+      page: options.page,
+      pageSize: options.pageSize,
+    });
     const orderBy = options.orderBy ?? "created_at";
     const orderDirection = options.orderDirection ?? "desc";
-
-    const from = (page - 1) * pageSize;
-    const to = from + pageSize - 1;
 
     let query = supabase.from("users").select("*", { count: "exact" });
 
     const keyword = options.search?.trim();
     if (keyword) {
-      const conditions = ["name", "email"]
-        .map((field) => `${field}.ilike.%${keyword}%`)
-        .join(",");
-      query = query.or(conditions);
+      query = query.or(buildIlikeSearch(["name", "email"], keyword));
     }
 
     if (options.email) {
@@ -65,15 +45,7 @@ export const usersRepository = {
     const { data, error, count } = await query;
     if (error) throwRepositoryError("取得用戶列表失敗", error);
 
-    const total = count ?? 0;
-
-    return {
-      data: data ?? [],
-      count: total,
-      page,
-      pageSize,
-      totalPages: total === 0 ? 0 : Math.ceil(total / pageSize),
-    };
+    return buildPaginationResult<User>(data ?? [], count, page, pageSize);
   },
 
   findById: async (id: string): Promise<User | null> => {
@@ -96,15 +68,29 @@ export const usersRepository = {
     return data;
   },
 
-  existsByEmail: async (email: string): Promise<boolean> => {
+  findManyByIds: async (ids: string[]): Promise<User[]> => {
+    if (ids.length === 0) return [];
     const { data, error } = await supabase
       .from("users")
-      .select("id")
-      .eq("email", email)
-      .limit(1)
-      .maybeSingle();
+      .select("*")
+      .in("id", ids);
+    if (error) throwRepositoryError("依 ID 批次尋找用戶失敗", error);
+    return data ?? [];
+  },
+
+  existsByEmail: async (
+    email: string,
+    excludeId?: string,
+  ): Promise<boolean> => {
+    let query = supabase
+      .from("users")
+      .select("id", { count: "exact", head: true })
+      .eq("email", email);
+    if (excludeId) query = query.neq("id", excludeId);
+
+    const { count, error } = await query;
     if (error) throwRepositoryError("檢查 email 是否存在失敗", error);
-    return data !== null;
+    return (count ?? 0) > 0;
   },
 
   create: async (payload: CreateUserInput): Promise<User> => {
@@ -119,7 +105,6 @@ export const usersRepository = {
 
   createMany: async (payload: CreateUserInput[]): Promise<User[]> => {
     if (payload.length === 0) return [];
-
     const { data, error } = await supabase
       .from("users")
       .insert(payload)

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { supabase } from "@/libs/supabase/server";
-import { throwRepositoryError } from "@/repositories/error";
+import { throwRepositoryError } from "@/repositories/shared/errors";
 import { AttendanceStatus } from "@/types/database";
 
 export const eventAttendancesRepository = {

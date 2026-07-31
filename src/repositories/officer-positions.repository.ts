@@ -1,9 +1,16 @@
 import "server-only";
 
 import { supabase } from "@/libs/supabase/server";
-import { throwRepositoryError } from "@/repositories/error";
+import { throwRepositoryError } from "@/repositories/shared/errors";
+import {
+  buildPaginationResult,
+  normalizePaginationOptions,
+} from "@/repositories/shared/pagination";
+import type {
+  OrderOptions,
+  PaginationQuery,
+} from "@/repositories/shared/types";
 import type { OfficerPosition, UUID } from "@/types/database";
-import { OfficerPositionWithAcademicYear } from "@/services/users/users.types";
 
 type CreateOfficerPositionInput = Omit<
   OfficerPosition,
@@ -12,51 +19,43 @@ type CreateOfficerPositionInput = Omit<
 
 type UpdateOfficerPositionInput = Partial<CreateOfficerPositionInput>;
 
-/**
- * 查詢多筆時的排序 / 筆數限制選項。
- * 統一以 created_at 排序（officer_positions 沒有 joined_at 這種欄位，
- * created_at 就是這筆職位紀錄成立的時間點）。
- */
-type FindManyOfficerPositionsOptions = Partial<{
-  /** 排序方向，預設 "desc"（最新的在前面） */
-  order: "asc" | "desc";
-  /** 限制回傳筆數，不傳則撈全部 */
-  limit: number;
-}>;
+export type FindManyOfficerPositionsOptions = PaginationQuery &
+  OrderOptions<"created_at">;
 
 export const officerPositionsRepository = {
   /**
-   * 取得使用者的幹部職位紀錄（附帶學年度資料），依 created_at 排序。
-   *
-   * 用 join 直接帶出 academic_year，避免呼叫端再對每筆
-   * 各自查一次學年度資料（N+1 query）。
-   *
-   * @param options.order 排序方向，預設 "desc"
-   * @param options.limit 限制筆數，不傳則撈全部
+   * 取得使用者的幹部職位紀錄，依 created_at 排序。
+   * 只回傳 officer_positions table 本身的資料，不 join 其他 table。
+   * 需要 academic_year 資料請由呼叫端（Service）另外組合。
    */
   findManyByUserId: async (
     userId: UUID,
     options: FindManyOfficerPositionsOptions = {},
-  ): Promise<OfficerPositionWithAcademicYear[]> => {
-    const { order = "desc", limit } = options;
+  ) => {
+    const { page, pageSize, from, to } = normalizePaginationOptions({
+      page: options.page,
+      pageSize: options.pageSize,
+    });
 
-    let query = supabase
+    const orderDirection = options.orderDirection ?? "desc";
+
+    const { data, error, count } = await supabase
       .from("officer_positions")
-      .select("*, academic_year:academic_years!inner(*)")
+      .select("*", { count: "exact" })
       .eq("user_id", userId)
-      .order("created_at", { ascending: order === "asc" });
-
-    if (limit !== undefined) {
-      query = query.limit(limit);
-    }
-
-    const { data, error } = await query;
+      .order("created_at", { ascending: orderDirection === "asc" })
+      .range(from, to);
 
     if (error) {
       throwRepositoryError("取得使用者幹部職位紀錄失敗", error);
     }
 
-    return (data ?? []) as OfficerPositionWithAcademicYear[];
+    return buildPaginationResult<OfficerPosition>(
+      data ?? [],
+      count,
+      page,
+      pageSize,
+    );
   },
 
   /**
@@ -77,23 +76,24 @@ export const officerPositionsRepository = {
   },
 
   /**
-   * 取得使用者「目前學年度」的幹部職位，若非現任幹部則回傳 []。
-   * 依 academic_years.is_current 判斷目前學年度，不可 hardcode 學年度 ID。
+   * 取得使用者在指定學年度的幹部職位（可能同時擔任多個職位，故回傳陣列）。
+   * 純粹依 academic_year_id 這個欄位過濾，是否為「目前學年度」由呼叫端決定。
    */
-  findCurrentByUserId: async (
+  findManyByUserIdAndAcademicYearId: async (
     userId: UUID,
-  ): Promise<OfficerPositionWithAcademicYear[]> => {
+    academicYearId: UUID,
+  ): Promise<OfficerPosition[]> => {
     const { data, error } = await supabase
       .from("officer_positions")
-      .select("*, academic_year:academic_years!inner(*)")
+      .select("*")
       .eq("user_id", userId)
-      .eq("academic_years.is_current", true);
+      .eq("academic_year_id", academicYearId);
 
     if (error) {
-      throwRepositoryError("取得使用者目前幹部職位失敗", error);
+      throwRepositoryError("取得指定學年度幹部職位失敗", error);
     }
 
-    return (data ?? []) as OfficerPositionWithAcademicYear[];
+    return data ?? [];
   },
 
   /**
