@@ -15,7 +15,6 @@ type UpdateUserInput = Partial<Pick<User, "name" | "avatar">>;
 type FindManyUsersOptions = PaginationQuery &
   OrderOptions<"name" | "email" | "created_at"> & {
     search?: string;
-    email?: string;
   };
 
 export const usersRepository = {
@@ -33,11 +32,6 @@ export const usersRepository = {
     if (keyword) {
       query = query.or(buildIlikeSearch(["name", "email"], keyword));
     }
-
-    if (options.email) {
-      query = query.eq("email", options.email);
-    }
-
     query = query
       .order(orderBy, { ascending: orderDirection === "asc" })
       .range(from, to);
