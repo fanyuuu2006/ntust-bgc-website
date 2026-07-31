@@ -129,15 +129,10 @@ export type AcademicYear = {
 
 export type Membership = {
   id: UUID;
-
   user_id: UUID;
-
   type: MembershipType;
-
   academic_year_id: UUID;
-
   status: MembershipStatus;
-
   created_at: Timestamp;
   updated_at: Timestamp;
   joined_at: Timestamp;

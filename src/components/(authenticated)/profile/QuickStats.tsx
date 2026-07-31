@@ -40,6 +40,7 @@ function StatCard({
   return (
     <div
       className={cn("card accent rounded-2xl p-4 sm:p-5", ACCENT_CLASS[accent])}
+      aria-label={`${stat.label}：${formatStatValue(stat.value)}`}
     >
       <p className="text-xs font-medium text-(--muted)">{stat.label}</p>
       <p
@@ -62,8 +63,8 @@ export function QuickStatsSection({
   return (
     <section
       className={className}
-      {...rest}
       aria-labelledby="profile-stats-title"
+      {...rest}
     >
       <div className="container">
         <div className="mb-3">

@@ -1,17 +1,26 @@
-import { HistorySection } from "@/components/(authenticated)/profile/HistorySection";
+import {
+  HistoryItem,
+  HistorySection,
+} from "@/components/(authenticated)/profile/HistorySection";
 import { ProfileBasicInfoSection } from "@/components/(authenticated)/profile/ProfileBasicInfoSection";
 import { ProfileHeroSection } from "@/components/(authenticated)/profile/ProfileHeroSection";
 import { QuickStatsSection } from "@/components/(authenticated)/profile/QuickStats";
 import { getCurrentUser } from "@/libs/auth";
 import { boardGamesService } from "@/services/board-games/board-games.service";
-import { eventAttendancesService } from "@/services/event-attendances/event-attendances.service";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { officerPositionsService } from "@/services/officer-positions/officer-positions.service";
 import { usersService } from "@/services/users/users.service";
+import type { MembershipWithAcademicYear } from "@/services/memberships/memberships.types";
+import { eventsService } from "@/services/events/events.service";
+import { BoardGameBorrowingWithBoardGame } from "@/services/board-games/board-games.types";
+import { EventAttendanceWithEvent } from "@/repositories/event-attendances.repository";
+import { formatDate } from "@/utils/date";
+
+type HistoryVariant = HistoryItem["statusVariant"];
 
 const BORROWING_STATUS_MAP: Record<
   string,
-  { label: string; variant: "success" | "warning" | "danger" | "muted" }
+  { label: string; variant: HistoryVariant }
 > = {
   pending: { label: "審核中", variant: "warning" },
   approved: { label: "已核准", variant: "warning" },
@@ -19,6 +28,74 @@ const BORROWING_STATUS_MAP: Record<
   returned: { label: "已歸還", variant: "muted" },
   rejected: { label: "已拒絕", variant: "danger" },
 };
+
+const MEMBERSHIP_STATUS_MAP: Record<
+  string,
+  { label: string; variant: HistoryVariant }
+> = {
+  pending: { label: "審核中", variant: "warning" },
+  active: { label: "生效中", variant: "success" },
+  expired: { label: "已過期", variant: "muted" },
+  suspended: { label: "已停權", variant: "danger" },
+  cancelled: { label: "已取消", variant: "muted" },
+};
+
+const ATTENDANCE_STATUS_MAP: Record<
+  string,
+  { label: string; variant: HistoryVariant }
+> = {
+  present: { label: "已簽到", variant: "success" },
+  late: { label: "遲到", variant: "warning" },
+  absent: { label: "缺席", variant: "danger" },
+};
+
+function toBorrowingHistoryItem(
+  borrowing: BoardGameBorrowingWithBoardGame,
+): HistoryItem {
+  const status = BORROWING_STATUS_MAP[borrowing.status];
+
+  return {
+    key: borrowing.id,
+    title: borrowing.board_game?.name ?? "未知桌遊",
+    subtitle: borrowing.board_game?.inventory_number,
+    statusLabel: status?.label ?? borrowing.status,
+    statusVariant: status?.variant ?? "muted",
+    date: formatDate(borrowing.created_at),
+  };
+}
+
+function toMembershipHistoryItem(
+  membership: MembershipWithAcademicYear,
+): HistoryItem {
+  const status = MEMBERSHIP_STATUS_MAP[membership.status];
+
+  return {
+    key: membership.id,
+    title: membership.type === "lifetime" ? "永久社員" : "一般社員",
+    subtitle: membership.academic_year?.year
+      ? `${membership.academic_year.year} 學年度`
+      : undefined,
+    statusLabel: status?.label ?? membership.status,
+    statusVariant: status?.variant ?? "muted",
+    date: formatDate(membership.joined_at),
+  };
+}
+
+function toAttendanceHistoryItem(
+  attendance: EventAttendanceWithEvent,
+): HistoryItem {
+  const status = ATTENDANCE_STATUS_MAP[attendance.status];
+
+  return {
+    key: attendance.id,
+    title: attendance.event?.name ?? "未知",
+    statusLabel: status?.label ?? attendance.status,
+    statusVariant: status?.variant ?? "muted",
+    date: attendance.attended_at
+      ? formatDate(attendance.attended_at)
+      : undefined,
+  };
+}
 
 export default async function ProfilePage() {
   const user = await getCurrentUser();
@@ -28,17 +105,18 @@ export default async function ProfilePage() {
     profile,
     totalBorrowings,
     currentlyBorrowings,
-    attendances,
+    attendanceCount,
     joinedYear,
     currentMembership,
     currentOfficerPositions,
     boardGameBorrowingHistory,
     membershipHistory,
+    attendanceHistory,
   ] = await Promise.all([
     usersService.getProfile(user.id),
     boardGamesService.getTotalBorrowedCount(user.id),
     boardGamesService.getCurrentlyBorrowedCount(user.id),
-    eventAttendancesService.getAttendedCountByCurrentAcademicYear(user.id),
+    eventsService.getAttendedCountByCurrentAcademicYear(user.id),
     membershipService.getJoinedYear(user.id),
     membershipService.getCurrentMembershipByUserId(user.id),
     officerPositionsService.getCurrentPositionsByUserId(user.id),
@@ -47,6 +125,10 @@ export default async function ProfilePage() {
       pageSize: 5,
     }),
     membershipService.getMembershipsByUserId(user.id, { pageSize: 5 }),
+    eventsService.getAttendancesByUserId(user.id, {
+      page: 1,
+      pageSize: 5,
+    }),
   ]);
 
   if (!profile) return null;
@@ -71,10 +153,14 @@ export default async function ProfilePage() {
             label: "目前借用中桌遊數量",
             value: currentlyBorrowings,
           },
-          { key: "attendances", label: "本學年簽到次數", value: attendances },
+          {
+            key: "attendances",
+            label: "本學年簽到次數",
+            value: attendanceCount,
+          },
           {
             key: "joined-year",
-            label: "入社年份",
+            label: "入社學年",
             value: joinedYear ?? "尚無紀錄",
           },
         ]}
@@ -86,57 +172,21 @@ export default async function ProfilePage() {
             title: "桌遊借用紀錄",
             viewAllHref: "/borrowings",
             emptyText: "尚無借用紀錄",
-            items: boardGameBorrowingHistory.data.map((borrowing) => ({
-              key: borrowing.id,
-              title: borrowing.board_game?.name ?? "未知桌遊",
-              subtitle: borrowing.board_game?.inventory_number,
-              statusLabel:
-                BORROWING_STATUS_MAP[borrowing.status]?.label ??
-                borrowing.status,
-              statusVariant:
-                BORROWING_STATUS_MAP[borrowing.status]?.variant ?? "muted",
-              date: new Date(borrowing.created_at).toLocaleDateString("zh-TW"),
-            })),
+            items: boardGameBorrowingHistory.data.map(toBorrowingHistoryItem),
           },
           {
             key: "memberships",
             title: "社員資格紀錄",
             viewAllHref: "/memberships",
             emptyText: "尚無社員資格紀錄",
-            items: membershipHistory.data.map((membership) => ({
-              key: membership.id,
-              title: membership.type === "lifetime" ? "永久社員" : "年度社員",
-              subtitle: membership.academic_year?.year
-                ? `${membership.academic_year.year} 學年度`
-                : undefined,
-              statusLabel:
-                membership.status === "active"
-                  ? "生效中"
-                  : membership.status === "expired"
-                    ? "已過期"
-                    : membership.status === "pending"
-                      ? "審核中"
-                      : membership.status === "suspended"
-                        ? "已停權"
-                        : "已取消",
-              statusVariant:
-                membership.status === "active"
-                  ? "success"
-                  : membership.status === "expired" ||
-                      membership.status === "cancelled"
-                    ? "muted"
-                    : membership.status === "suspended"
-                      ? "danger"
-                      : "warning",
-              date: new Date(membership.joined_at).toLocaleDateString("zh-TW"),
-            })),
+            items: membershipHistory.data.map(toMembershipHistoryItem),
           },
           {
             key: "attendances",
             title: "簽到紀錄",
             viewAllHref: "/attendance",
             emptyText: "尚無簽到紀錄",
-            items: [],
+            items: attendanceHistory.data.map(toAttendanceHistoryItem),
           },
         ]}
       />

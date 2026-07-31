@@ -13,7 +13,7 @@ export type HistoryItem = {
   statusLabel: string;
   statusVariant: HistoryStatusVariant;
   /** 已格式化好的日期字串 */
-  date: string;
+  date?: string;
 };
 
 export type HistoryGroup = {
@@ -39,16 +39,22 @@ function HistoryItemRow({ item }: { item: HistoryItem }) {
   return (
     <li className="flex items-center justify-between gap-3 rounded-xl bg-(--secondary-background) px-3 py-2">
       <div className="min-w-0">
-        <p className="truncate text-sm font-medium text-(--foreground)">
+        <p
+          className="truncate text-sm font-medium text-(--foreground)"
+          title={item.title}
+        >
           {item.title}
         </p>
         {item.subtitle && (
-          <p className="truncate text-xs text-(--muted)">{item.subtitle}</p>
+          <p className="truncate text-xs text-(--muted)" title={item.subtitle}>
+            {item.subtitle}
+          </p>
         )}
       </div>
       <div className="flex shrink-0 flex-col items-end gap-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-(--foreground)">
           <span
+            aria-hidden
             className={cn(
               "h-1.5 w-1.5 rounded-full",
               STATUS_DOT_CLASS[item.statusVariant],
@@ -56,39 +62,48 @@ function HistoryItemRow({ item }: { item: HistoryItem }) {
           />
           {item.statusLabel}
         </span>
-        <span className="text-[0.6875rem] text-(--muted)">{item.date}</span>
+        {item.date && (
+          <span className="text-[0.6875rem] text-(--muted)">{item.date}</span>
+        )}
       </div>
     </li>
   );
 }
 
 function HistoryGroupCard({ group }: { group: HistoryGroup }) {
+  const hasItems = group.items.length > 0;
+
   return (
     <div className="card rounded-xl p-4 sm:p-5">
       <div className="mb-3 flex items-center justify-between gap-2">
         <h3 className="text-sm font-bold text-(--foreground) sm:text-base">
           {group.title}
         </h3>
-        {group.viewAllHref && group.items.length > 0 && (
-          <Link
-            href={group.viewAllHref}
-            className="shrink-0 text-xs font-medium text-(--primary) hover:underline"
-          >
-            查看全部
-          </Link>
-        )}
+        {hasItems &&
+          (group.viewAllHref ? (
+            <Link
+              href={group.viewAllHref}
+              className="shrink-0 rounded-sm text-xs font-medium text-(--primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+            >
+              查看全部
+            </Link>
+          ) : (
+            <span className="shrink-0 text-xs text-(--muted)">
+              共 {group.items.length} 筆
+            </span>
+          ))}
       </div>
 
-      {group.items.length === 0 ? (
-        <p className="text-sm text-(--muted)">
-          {group.emptyText ?? "尚無紀錄"}
-        </p>
-      ) : (
+      {hasItems ? (
         <ul className="flex flex-col gap-2">
           {group.items.map((item) => (
             <HistoryItemRow key={item.key} item={item} />
           ))}
         </ul>
+      ) : (
+        <p className="rounded-xl border border-dashed border-(--border) px-3 py-6 text-center text-sm text-(--muted)">
+          {group.emptyText ?? "尚無紀錄"}
+        </p>
       )}
     </div>
   );
@@ -116,7 +131,7 @@ export function HistorySection({
             歷史紀錄
           </h2>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {groups.map((group) => (
             <HistoryGroupCard key={group.key} group={group} />
           ))}

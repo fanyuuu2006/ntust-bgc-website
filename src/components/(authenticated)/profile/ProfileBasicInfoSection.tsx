@@ -1,57 +1,130 @@
 import Link from "next/link";
 import type { HTMLAttributes } from "react";
 import { cn } from "@/utils/className";
-import { User, UserProfile } from "@/types/database";
+import type { User, UserProfile } from "@/types/database";
 
 type ProfileBasicInfoSectionProps = HTMLAttributes<HTMLElement> & {
   user: User;
   profile: UserProfile;
 };
-type InfoFieldData = { label: string; value: string | null };
+
+type InfoFieldData = {
+  key: string;
+  label: string;
+  value: string | null;
+  href?: string;
+};
+
+type GroupAccent = "green" | "primary";
+
 type InfoGroupData = {
   key: string;
   title: string;
-  dotClassName: string;
+  description: string;
+  accent: GroupAccent;
   fields: readonly InfoFieldData[];
 };
+
 const EMPTY_VALUE_LABEL = "尚未填寫";
 
-function InfoRow({ label, value }: InfoFieldData) {
+const ACCENT_BAR_CLASS: Record<GroupAccent, string> = {
+  green: "bg-(--game-green)",
+  primary: "bg-(--primary)",
+};
+
+const ACCENT_CARD_CLASS: Record<GroupAccent, string> = {
+  green: "green",
+  primary: "",
+};
+
+function buildTelHref(phone: string) {
+  return `tel:${phone.replace(/[^\d+]/g, "")}`;
+}
+
+function InfoRow({ label, value, href }: InfoFieldData) {
   const displayValue = value?.trim();
+
+  if (!displayValue) {
+    return (
+      <div className="flex items-center justify-between gap-4 py-3">
+        <span className="text-sm text-(--muted)">{label}</span>
+        <span className="rounded-full bg-(--tertiary-background) px-2 py-0.5 text-xs text-(--muted)">
+          {EMPTY_VALUE_LABEL}
+        </span>
+      </div>
+    );
+  }
+
+  const valueClassName = "truncate text-sm font-semibold sm:text-base";
+
   return (
-    <div className="flex items-center justify-between gap-4 py-3.5 sm:gap-5">
-      <dt className="shrink-0 text-sm text-(--muted)">{label}</dt>
-      <dd className="min-w-0 text-right" title={displayValue || undefined}>
-        {displayValue ? (
-          <span className="block truncate text-sm font-semibold text-(--foreground) sm:text-base">
-            {displayValue}
-          </span>
-        ) : (
-          <span className="inline-flex rounded-full bg-(--tertiary-background) px-2.5 py-1 text-xs text-(--muted)">
-            {EMPTY_VALUE_LABEL}
-          </span>
-        )}
-      </dd>
+    <div className="flex items-center justify-between gap-4 py-3">
+      <span className="shrink-0 text-sm text-(--muted)">{label}</span>
+      {href ? (
+        <a
+          href={href}
+          title={displayValue}
+          className={cn(
+            valueClassName,
+            "text-(--primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)",
+          )}
+        >
+          {displayValue}
+        </a>
+      ) : (
+        <span
+          title={displayValue}
+          className={cn(valueClassName, "text-(--foreground)")}
+        >
+          {displayValue}
+        </span>
+      )}
     </div>
   );
 }
 
-function InfoGroup({
-  title,
-  dotClassName,
-  fields,
-}: Omit<InfoGroupData, "key">) {
+function InfoGroupCard({ title, description, accent, fields }: InfoGroupData) {
+  const filledCount = fields.filter((field) => field.value?.trim()).length;
+  const completion = Math.round((filledCount / fields.length) * 100);
+
   return (
-    <div>
-      <h3 className="flex items-center gap-2 text-sm font-bold text-(--foreground) sm:text-base">
-        <span aria-hidden className={cn("size-2 rounded-full", dotClassName)} />
-        {title}
-      </h3>
-      <dl className="mt-2 divide-y divide-(--border)">
-        {fields.map((field) => (
-          <InfoRow key={field.label} {...field} />
+    <div
+      className={cn(
+        "card accent rounded-2xl p-5 sm:p-6",
+        ACCENT_CARD_CLASS[accent],
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="text-sm font-bold text-(--foreground) sm:text-base">
+            {title}
+          </h3>
+          <p className="mt-0.5 text-xs text-(--muted)">{description}</p>
+        </div>
+        <span className="shrink-0 text-xs font-medium text-(--muted)">
+          {filledCount}/{fields.length}
+        </span>
+      </div>
+
+      <div
+        role="progressbar"
+        aria-valuenow={completion}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`${title}填寫進度`}
+        className="mt-3 h-1 overflow-hidden rounded-full bg-(--tertiary-background)"
+      >
+        <div
+          className={cn("h-full rounded-full", ACCENT_BAR_CLASS[accent])}
+          style={{ width: `${completion}%` }}
+        />
+      </div>
+
+      <div className="mt-1 divide-y divide-(--border)">
+        {fields.map(({ key, ...field }) => (
+          <InfoRow key={key} {...field} />
         ))}
-      </dl>
+      </div>
     </div>
   );
 }
@@ -66,25 +139,38 @@ export function ProfileBasicInfoSection({
     {
       key: "contact",
       title: "聯絡資訊",
-      dotClassName: "bg-(--game-green)",
+      description: "用於借用桌遊與活動聯繫",
+      accent: "green",
       fields: [
-        { label: "姓名", value: profile?.real_name ?? null },
-        { label: "Email", value: user.email ?? null },
-        { label: "手機號碼", value: profile?.phone ?? null },
+        { key: "real_name", label: "姓名", value: profile.real_name },
+        {
+          key: "email",
+          label: "Email",
+          value: user.email,
+          href: user.email ? `mailto:${user.email}` : undefined,
+        },
+        {
+          key: "phone",
+          label: "手機號碼",
+          value: profile.phone,
+          href: profile.phone ? buildTelHref(profile.phone) : undefined,
+        },
       ],
     },
     {
       key: "academic",
       title: "學籍資訊",
-      dotClassName: "bg-(--game-yellow)",
+      description: "用於社員資格核對",
+      accent: "primary",
       fields: [
-        { label: "學號", value: profile?.student_id ?? null },
-        { label: "學校", value: profile?.school ?? null },
-        { label: "系所", value: profile?.department ?? null },
-        { label: "年級", value: profile?.grade ?? null },
+        { key: "student_id", label: "學號", value: profile.student_id },
+        { key: "school", label: "學校", value: profile.school },
+        { key: "department", label: "系所", value: profile.department },
+        { key: "grade", label: "年級", value: profile.grade },
       ],
     },
   ];
+
   return (
     <section
       className={className}
@@ -92,26 +178,24 @@ export function ProfileBasicInfoSection({
       aria-labelledby="profile-info-title"
     >
       <div className="container">
-        <div className="card rounded-2xl p-5 sm:p-7 lg:p-8">
-          <div className="flex flex-col gap-3 border-b border-(--border) pb-5 sm:flex-row sm:items-center sm:justify-between">
-            <h2
-              id="profile-info-title"
-              className="text-lg font-bold text-(--foreground) sm:text-xl"
-            >
-              基本資料
-            </h2>
-            <Link
-              href="/settings"
-              className="btn primary inline-flex w-full justify-center rounded-xl px-4 py-2.5 text-sm font-semibold sm:w-auto"
-            >
-              編輯資料
-            </Link>
-          </div>
-          <div className="mt-6 grid grid-cols-1 gap-y-7 md:grid-cols-2 md:gap-x-12">
-            {groups.map(({ key, ...group }) => (
-              <InfoGroup key={key} {...group} />
-            ))}
-          </div>
+        <div className="flex flex-col gap-3 pb-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2
+            id="profile-info-title"
+            className="text-lg font-bold text-(--foreground) sm:text-xl"
+          >
+            基本資料
+          </h2>
+          <Link
+            href="/settings"
+            className="btn primary inline-flex w-full shrink-0 justify-center rounded-xl px-4 py-2.5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary) sm:w-auto"
+          >
+            編輯資料
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
+          {groups.map(({ key, ...group }) => (
+            <InfoGroupCard key={key} {...group} />
+          ))}
         </div>
       </div>
     </section>
