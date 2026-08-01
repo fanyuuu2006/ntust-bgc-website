@@ -56,6 +56,7 @@
 | created_at | timestamp | Timestamp of when the membership was created |
 | updated_at | timestamp | Timestamp of when the membership was last updated |
 | joined_at | timestamp | Timestamp of when the user joined the membership |
+| register_key | text | Registration key used for membership registration |
 
 ### academic_years
 
@@ -244,9 +245,6 @@ src
 │   │       └── RegisterForm.tsx
 │   ├── (authenticated)
 │   │   ├── dashboard
-│   │   │   ├── DashboardCard.tsx
-│   │   │   ├── DashboardMenu.tsx
-│   │   │   └── DashboardWelcome.tsx
 │   │   ├── profile
 │   │   │   ├── HistorySection.tsx
 │   │   │   ├── ProfileBasicInfoSection.tsx

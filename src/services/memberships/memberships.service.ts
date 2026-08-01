@@ -75,9 +75,21 @@ export const membershipService = {
    * 判斷使用者是否為目前學年度的 active 社員
    */
   isCurrentActiveMember: async (userId: string): Promise<boolean> => {
+    const currYear = await academicYearsRepository.findCurrent();
+    if (!currYear) {
+      return false;
+    }
     const membership =
-      await membershipService.getCurrentMembershipByUserId(userId);
-    return membership?.status === "active";
+      await membershipsRepository.findByUserIdAndAcademicYearId(
+        userId,
+        currYear.id,
+      );
+
+    if (!membership) {
+      return false;
+    }
+
+    return membership.status === "active";
   },
 
   /**
@@ -85,11 +97,20 @@ export const membershipService = {
    * null 代表從未有過任何社員紀錄
    */
   getJoinedYear: async (userId: string): Promise<string | null> => {
-    const result = await membershipService.getMembershipsByUserId(userId, {
+    const memberships = await membershipsRepository.findManyByUserId(userId, {
       orderDirection: "asc",
       pageSize: 1,
     });
 
-    return result.data[0]?.academic_year?.year ?? null;
+    if (memberships.data.length === 0) {
+      return null;
+    }
+
+    const joinedMembership = memberships.data[0];
+    const academicYear = await academicYearsRepository.findById(
+      joinedMembership.academic_year_id,
+    );
+
+    return academicYear?.year ?? null;
   },
 };

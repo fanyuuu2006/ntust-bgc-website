@@ -136,6 +136,7 @@ export type Membership = {
   created_at: Timestamp;
   updated_at: Timestamp;
   joined_at: Timestamp;
+  register_key: string;
 };
 
 /* =========================================================

@@ -1,3 +1,4 @@
+import { WebsiteShell } from "@/components/layouts/WebsiteShell";
 import { getCurrentUser } from "@/libs/auth";
 import { redirect } from "next/navigation";
 
@@ -12,5 +13,9 @@ export default async function AuthLayout({
     redirect("/dashboard");
   }
 
-  return <>{children}</>;
+  return (
+    <WebsiteShell user={user} isAdmin={false}>
+      {children}
+    </WebsiteShell>
+  );
 }
