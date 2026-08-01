@@ -37,7 +37,7 @@ export const adminNavigation = [
 
 export const adminSidebarNavigation = [
   {
-    label: "管理後臺",
+    label: "總覽",
     href: "/admin",
   },
   {

@@ -205,6 +205,8 @@ src
 │   │   │   └── page.tsx
 │   │   ├── board-games
 │   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
 │   │   ├── privacy
 │   │   │   ├── layout.tsx
 │   │   │   └── page.tsx
@@ -233,9 +235,12 @@ src
 │   │           │   └── route.ts
 │   │           └── profile
 │   │               └── route.ts
-│   ├── layout.tsx
-│   └── page.tsx
+│   └── layout.tsx
 ├── components
+│   ├── (admin)
+│   │   ├── AdminHeader.tsx
+│   │   ├── AdminSidebar.tsx
+│   │   └── AdminSidebarNav.tsx
 │   ├── (auth)
 │   │   ├── AuthCard.tsx
 │   │   ├── AuthNotice.tsx
@@ -266,7 +271,10 @@ src
 │   │   ├── MobileNavigation.tsx
 │   │   └── UserMenu.tsx
 │   ├── LogoutButton.tsx
-│   └── UserAvatar.tsx
+│   ├── UserAvatar.tsx
+│   └── layouts
+│       ├── AdminShell.tsx
+│       └── WebsiteShell.tsx
 ├── contexts
 │   └── UserContext.tsx
 ├── libs
@@ -336,7 +344,8 @@ src
     │   ├── password.tsx
     │   └── session.tsx
     ├── className.tsx
-    └── date.tsx
+    ├── date.tsx
+    └── navigation.tsx
 ```
 
 ### expected file structure (for reference)

@@ -1,7 +1,6 @@
 "use client";
 import { mainNavigation } from "@/libs/navigation";
 import { cn } from "@/utils/className";
-import { CloseOutlined, MenuOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
@@ -58,11 +57,7 @@ export const MobileNavigation = ({
           "btn rounded-xl size-10 flex items-center justify-center",
         )}
       >
-        {isOpen ? (
-          <CloseOutlined aria-hidden="true" />
-        ) : (
-          <MenuOutlined aria-hidden="true" />
-        )}
+        <span>{isOpen ? "✕" : "☰"}</span>
       </button>
 
       {isOpen && (

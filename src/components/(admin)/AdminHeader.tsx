@@ -1,63 +1,68 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { UserMenu } from "@/components/Header/UserMenu";
-import { adminSidebarNavigation } from "@/libs/navigation";
 import type { User } from "@/types/database";
 import { cn } from "@/utils/className";
-import { isAdminActivePath } from "@/utils/navigation";
+
+const DEFAULT_SECTION_LABEL = "總覽";
 
 type AdminHeaderProps = React.HTMLAttributes<HTMLElement> & {
   user: User;
+  currentSectionLabel?: string;
+  isSidebarOpen: boolean;
+  sidebarId: string;
   onOpenMenu: () => void;
 };
 
-const DEFAULT_SECTION_LABEL = "管理後臺";
-
 export function AdminHeader({
   user,
+  currentSectionLabel,
+  isSidebarOpen,
+  sidebarId,
   onOpenMenu,
   className,
   ...rest
 }: AdminHeaderProps) {
-  const pathname = usePathname();
-  const currentSection = adminSidebarNavigation.find((item) =>
-    isAdminActivePath(pathname, item.href),
-  );
-
   return (
     <header
       className={cn(
-        "flex h-14 items-center justify-between gap-3 border-b border-(--border) bg-(--primary-background) px-4 lg:px-6",
+        "flex h-16 items-center justify-between gap-4",
+        "border-b border-(--border) bg-(--primary-background) px-4 shadow-(--shadow-base) lg:px-6",
         className,
       )}
       {...rest}
     >
-      <div className="flex min-w-0 items-center gap-3">
+      {/* 左側：選單按鈕 + 目前頁面標題 */}
+      <div className="flex min-w-0 items-center gap-4">
         <button
           type="button"
           onClick={onOpenMenu}
-          aria-label="開啟管理選單"
-          className="btn shrink-0 rounded-lg px-3 py-1.5 text-sm lg:hidden"
+          aria-expanded={isSidebarOpen}
+          aria-controls={sidebarId}
+          className="btn shrink-0 rounded-lg px-3 py-2 text-lg leading-none font-semibold lg:hidden"
         >
-          選單
+          <span aria-hidden="true">☰</span>
+          <span className="sr-only">開啟管理選單</span>
         </button>
-        <div className="min-w-0">
-          <p className="truncate text-xs text-(--muted)">管理後臺</p>
-          <p className="truncate text-sm font-bold text-(--foreground) sm:text-base">
-            {currentSection?.label ?? DEFAULT_SECTION_LABEL}
-          </p>
-        </div>
+
+        <h1 className="truncate text-lg font-bold text-(--foreground)">
+          {currentSectionLabel ?? DEFAULT_SECTION_LABEL}
+        </h1>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
+      {/* 右側：回網站（僅 sm 以上顯示，手機版由 Sidebar Footer 提供） + 分隔線 + 使用者選單 */}
+      <div className="flex shrink-0 items-center gap-3">
         <Link
           href="/"
-          className="hidden rounded-lg px-3 py-1.5 text-sm text-(--muted) hover:bg-(--secondary-background) hover:text-(--foreground) sm:block"
+          className="btn outline hidden rounded-lg px-3 py-1.5 text-sm sm:inline-flex"
         >
           回網站
         </Link>
+
+        <div
+          aria-hidden="true"
+          className="hidden h-6 w-px bg-(--border) sm:block"
+        />
+
         <UserMenu user={user} isAdmin />
       </div>
     </header>
