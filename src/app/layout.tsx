@@ -2,7 +2,7 @@ export { metadata } from "@/libs/metadata";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import { Header } from "@/components/Header/Header";
-import { getCurrentUser } from "@/libs/auth";
+import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
 import { UserProvider } from "@/contexts/UserContext";
 
 const geistSans = Geist({
@@ -21,6 +21,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getCurrentUser();
+  const isAdmin = user ? await isAdminByUserId(user.id) : false;
+
   return (
     <html
       lang="zh-Hant"
@@ -28,7 +30,7 @@ export default async function RootLayout({
     >
       <body suppressHydrationWarning={true}>
         <UserProvider user={user}>
-          <Header className="sticky top-0 z-50" />
+          <Header className="sticky top-0 z-50" user={user} isAdmin={isAdmin} />
           <main className="flex-1">{children}</main>
         </UserProvider>
       </body>

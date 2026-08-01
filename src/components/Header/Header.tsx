@@ -5,10 +5,14 @@ import Link from "next/link";
 import { DesktopNavigation } from "./DesktopNavigation";
 import { MobileNavigation } from "./MobileNavigation";
 import { HeaderActions } from "./HeaderActions";
+import { User } from "@/types/database";
 
-type HeaderProps = React.HTMLAttributes<HTMLElement>;
+type HeaderProps = React.HTMLAttributes<HTMLElement> & {
+  user: User | null;
+  isAdmin: boolean;
+};
 
-export const Header = ({ className, ...rest }: HeaderProps) => {
+export const Header = ({ className, user, isAdmin, ...rest }: HeaderProps) => {
   return (
     <header
       className={cn(
@@ -18,44 +22,46 @@ export const Header = ({ className, ...rest }: HeaderProps) => {
       {...rest}
     >
       <div className="container flex items-center justify-between gap-4 py-2">
-        <Link
-          href="/"
-          className="group flex min-w-0 items-center gap-2"
-          aria-label={`返回${siteConfigs.name}首頁`}
-        >
-          {/* Logo */}
-          <div
-            className={cn(
-              "size-16 shrink-0 overflow-hidden rounded-full",
-              "transition-all duration-300 group-hover:border-(--primary)",
-            )}
+        <MobileNavigation />
+        <div>
+          <Link
+            href="/"
+            className="group flex min-w-0 items-center gap-2"
+            aria-label={`返回${siteConfigs.name}首頁`}
           >
-            <Image
-              src={siteConfigs.logo}
-              alt={`${siteConfigs.fullName} Logo`}
-              width={320}
-              height={320}
-              priority
-              className="size-full object-contain"
-            />
-          </div>
+            {/* Logo */}
+            <div
+              className={cn(
+                "size-16 shrink-0 overflow-hidden rounded-full",
+                "transition-all duration-300 group-hover:border-(--primary)",
+              )}
+            >
+              <Image
+                src={siteConfigs.logo}
+                alt={`${siteConfigs.fullName} Logo`}
+                width={320}
+                height={320}
+                priority
+                className="size-full object-contain"
+              />
+            </div>
 
-          {/* Site Name */}
-          <div className="min-w-0">
-            <p className="truncate text-base font-bold leading-tight text-(--foreground) sm:text-xl">
-              {siteConfigs.name}
-            </p>
+            {/* Site Name */}
+            <div className="min-w-0">
+              <p className="truncate text-base font-bold leading-tight text-(--foreground) sm:text-xl">
+                {siteConfigs.name}
+              </p>
 
-            <p className="hidden text-xs text-(--muted) sm:block">
-              {siteConfigs.shortDescription}
-            </p>
-          </div>
-        </Link>
+              <p className="hidden text-xs text-(--muted) sm:block">
+                {siteConfigs.shortDescription}
+              </p>
+            </div>
+          </Link>
+        </div>
 
         <div className="flex items-center gap-2">
           <DesktopNavigation />
-          <HeaderActions />
-          <MobileNavigation />
+          <HeaderActions user={user} isAdmin={isAdmin} />
         </div>
       </div>
     </header>

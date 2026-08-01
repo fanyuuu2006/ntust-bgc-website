@@ -1,4 +1,5 @@
 import { authService } from "@/services/auth/auth.service";
+import { officerPositionsService } from "@/services/officer-positions/officer-positions.service";
 import { cookies } from "next/headers";
 
 export const SESSION_COOKIE_NAME = "bgc_st";
@@ -15,4 +16,8 @@ export async function getCurrentUser() {
   }
 
   return authService.getUserBySessionToken(token);
+}
+
+export function isAdminByUserId(userId: string) {
+  return officerPositionsService.isCurrentOfficer(userId);
 }

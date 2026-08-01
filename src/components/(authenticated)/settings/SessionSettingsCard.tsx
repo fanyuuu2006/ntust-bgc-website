@@ -1,5 +1,4 @@
-import { cookies } from "next/headers";
-import { SESSION_COOKIE_NAME } from "@/libs/auth";
+import { getSessionTokenFromCookie } from "@/libs/auth";
 import { authService } from "@/services/auth/auth.service";
 import { SettingsCard } from "./SettingsCard";
 import { SessionList } from "./SessionList";
@@ -13,7 +12,10 @@ export const SessionSettingsCard = async ({
   userId,
   ...rest
 }: SessionSettingsCardProps) => {
-  const token = (await cookies()).get(SESSION_COOKIE_NAME)?.value ?? "";
+  const token = await getSessionTokenFromCookie();
+  if (!token) {
+    return null;
+  }
   const sessions = await authService.listSessions(userId, token);
 
   return (

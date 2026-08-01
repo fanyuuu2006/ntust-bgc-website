@@ -70,9 +70,12 @@ export const SessionList = ({ sessions }: SessionListProps) => {
                 <span className="text-sm font-semibold text-(--foreground)">
                   {session.is_current ? "目前使用中的裝置" : "其他裝置"}
                 </span>
-                <span className="text-xs text-(--muted)">
+                <time
+                  className="text-xs text-(--muted)"
+                  dateTime={session.last_accessed_at}
+                >
                   最後活動：{formatRelativeTime(session.last_accessed_at)}
-                </span>
+                </time>
               </div>
             </div>
 

@@ -74,8 +74,8 @@ function HistoryGroupCard({ group }: { group: HistoryGroup }) {
   const hasItems = group.items.length > 0;
 
   return (
-    <div className="card rounded-xl p-4 sm:p-5">
-      <div className="mb-3 flex items-center justify-between gap-2">
+    <div className="card flex flex-col items-center rounded-xl p-4 sm:p-5">
+      <div className="w-full mb-3 flex items-center justify-between gap-2">
         <h3 className="text-sm font-bold text-(--foreground) sm:text-base">
           {group.title}
         </h3>
@@ -95,13 +95,13 @@ function HistoryGroupCard({ group }: { group: HistoryGroup }) {
       </div>
 
       {hasItems ? (
-        <ul className="flex flex-col gap-2">
+        <ul className="w-full flex flex-col gap-2">
           {group.items.map((item) => (
             <HistoryItemRow key={item.key} item={item} />
           ))}
         </ul>
       ) : (
-        <p className="rounded-xl border border-dashed border-(--border) px-3 py-6 text-center text-sm text-(--muted)">
+        <p className="w-full h-full flex items-center justify-center rounded-xl border border-dashed border-(--border) px-3 py-6 text-center text-sm text-(--muted)">
           {group.emptyText ?? "尚無紀錄"}
         </p>
       )}

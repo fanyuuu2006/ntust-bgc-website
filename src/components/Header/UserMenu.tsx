@@ -1,64 +1,84 @@
 "use client";
-import { User } from "@/types/database";
-import { UserAvatar } from "../UserAvatar";
-import { LogoutButton } from "../LogoutButton";
-import { useEffect, useId, useRef, useState } from "react";
-import { cn } from "@/utils/className";
-import Link from "next/link";
 
-type MenuItemProps = {
+import Link from "next/link";
+import { useEffect, useId, useRef, useState } from "react";
+import { adminNavigation, userNavigation } from "@/libs/navigation";
+import type { User } from "@/types/database";
+import { cn } from "@/utils/className";
+import { LogoutButton } from "../LogoutButton";
+import { UserAvatar } from "../UserAvatar";
+
+type NavLinkItem = {
   label: string;
   href: string;
 };
 
-const MenuItem = ({ label, href }: MenuItemProps) => {
+type MenuItemProps = NavLinkItem & {
+  onNavigate: () => void;
+};
+
+function MenuItem({ label, href, onNavigate }: MenuItemProps) {
   return (
     <Link
       href={href}
-      className="text-sm flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-(--secondary-background) text-(--foreground)/70 truncate"
+      role="menuitem"
+      onClick={onNavigate}
+      className="truncate rounded-lg px-3 py-2 text-sm text-(--foreground)/70 hover:bg-(--secondary-background) hover:text-(--foreground)"
     >
-      <span className="truncate">{label}</span>
+      {label}
     </Link>
   );
+}
+
+type MenuGroupProps = {
+  label: string;
+  items: Readonly<NavLinkItem[]>;
+  onNavigate: () => void;
 };
 
-const MENU_ITEMS = [
-  {
-    label: "儀表板",
-    href: "/dashboard",
-  },
-  {
-    label: "個人資料",
-    href: "/profile",
-  },
-  {
-    label: "設定",
-    href: "/settings",
-  },
-];
+function MenuGroup({ label, items, onNavigate }: MenuGroupProps) {
+  if (items.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-0.5">
+      <p className="px-3 pb-1 pt-2 text-[0.6875rem] font-semibold tracking-wide text-(--muted) uppercase">
+        {label}
+      </p>
+      {items.map((item) => (
+        <MenuItem key={item.href} {...item} onNavigate={onNavigate} />
+      ))}
+    </div>
+  );
+}
 
 type UserMenuProps = React.HTMLAttributes<HTMLDivElement> & {
   user: User;
+  isAdmin: boolean;
 };
 
-export const UserMenu = ({ user, className, ...rest }: UserMenuProps) => {
+export const UserMenu = ({
+  user,
+  isAdmin,
+  className,
+  ...rest
+}: UserMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const panelId = useId();
   const buttonId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
-  // Esc 關閉 + 點擊外部關閉
+  // Esc 關閉並將焦點還給觸發按鈕 + 點擊外部關閉
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setIsOpen(false);
+      triggerRef.current?.focus();
     };
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -76,23 +96,24 @@ export const UserMenu = ({ user, className, ...rest }: UserMenuProps) => {
 
   return (
     <div
-      className={cn("relative flex items-center justify-center", className)}
       ref={containerRef}
+      className={cn("relative flex items-center justify-center", className)}
       {...rest}
     >
       <button
         id={buttonId}
+        ref={triggerRef}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-controls={panelId}
         aria-label={`使用者選單，${user.name}`}
-        className="rounded-full p-0.5"
+        className="rounded-full p-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
       >
         <UserAvatar
-          className="size-9 rounded-full border border-(--border)"
           user={user}
+          className="size-9 rounded-full border border-(--border)"
         />
       </button>
 
@@ -102,15 +123,18 @@ export const UserMenu = ({ user, className, ...rest }: UserMenuProps) => {
           role="menu"
           aria-labelledby={buttonId}
           className={cn(
-            "card rounded-xl absolute right-0 top-[calc(100%+0.5rem)] z-50",
-            "w-60 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto",
-            "p-1.5 flex flex-col gap-1",
+            "card absolute top-[calc(100%+0.5rem)] right-0 z-50",
+            "flex max-h-[70vh] w-64 max-w-[calc(100vw-2rem)] flex-col gap-1",
+            "overflow-y-auto rounded-xl p-1.5",
           )}
         >
-          {/* 使用者資訊 */}
-          <div className="flex items-center gap-2.5 px-2 py-1.5">
-            <UserAvatar className="size-8 rounded-full shrink-0" user={user} />
-            <div className="min-w-0 flex flex-col leading-tight">
+          <Link
+            href="/profile"
+            onClick={closeMenu}
+            className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-(--secondary-background)"
+          >
+            <UserAvatar user={user} className="size-8 shrink-0 rounded-full" />
+            <div className="flex min-w-0 flex-col leading-tight">
               <span className="truncate font-medium text-(--foreground)">
                 {user.name}
               </span>
@@ -118,20 +142,31 @@ export const UserMenu = ({ user, className, ...rest }: UserMenuProps) => {
                 {user.email}
               </span>
             </div>
-          </div>
+          </Link>
 
-          <hr className="border-(--border) my-0.5" />
+          <hr role="separator" className="my-0.5 border-(--border)" />
 
-          <div className="flex flex-col gap-0.5">
-            {MENU_ITEMS.map((item) => (
-              <MenuItem key={item.href} {...item} />
-            ))}
-          </div>
+          <MenuGroup
+            label="使用者"
+            items={userNavigation}
+            onNavigate={closeMenu}
+          />
 
-          <hr className="border-(--border) my-0.5" />
+          {isAdmin && (
+            <>
+              <hr role="separator" className="my-0.5 border-(--border)" />
+              <MenuGroup
+                label="幹部"
+                items={adminNavigation}
+                onNavigate={closeMenu}
+              />
+            </>
+          )}
+
+          <hr role="separator" className="my-0.5 border-(--border)" />
 
           <LogoutButton
-            className="btn danger py-2 w-full rounded-lg text-sm"
+            className="btn danger w-full rounded-lg py-2 text-sm"
             onClick={closeMenu}
           >
             登出
