@@ -56,8 +56,8 @@ function toBorrowingHistoryItem(
 
   return {
     key: borrowing.id,
-    title: borrowing.board_game?.name ?? "未知桌遊",
-    subtitle: borrowing.board_game?.inventory_number,
+    title: borrowing.board_game.name ?? "未知桌遊",
+    subtitle: borrowing.board_game.inventory_number,
     statusLabel: status?.label ?? borrowing.status,
     statusVariant: status?.variant ?? "muted",
     date: formatDate(borrowing.created_at),

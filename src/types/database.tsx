@@ -162,10 +162,10 @@ export type BoardGameCategory = {
 };
 
 /* =========================================================
- * Locations
+ * Board Game Locations
  * ========================================================= */
 
-export type Location = {
+export type BoardGameLocation = {
   id: UUID;
   name: string;
   description: string | null;

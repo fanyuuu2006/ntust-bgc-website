@@ -12,14 +12,14 @@ type AdminSidebarProps = React.HTMLAttributes<HTMLElement> & {
 
 function AdminSidebarHeader({ onClose }: { onClose: () => void }) {
   return (
-    <div className="flex items-center justify-between gap-2 border-b border-(--border) px-4 py-3">
+    <div className="flex items-center justify-between gap-2 border-b border-(--border) px-4 py-2">
       <Link
         href="/admin"
         onClick={onClose}
         className="flex min-w-0 items-center gap-2.5"
         aria-label={`前往${siteConfigs.name}管理後臺首頁`}
       >
-        <div className="size-8 shrink-0 overflow-hidden rounded-full">
+        <div className="size-10 shrink-0 overflow-hidden rounded-full">
           <Image
             src={siteConfigs.logo}
             alt={`${siteConfigs.fullName} Logo`}
@@ -28,7 +28,7 @@ function AdminSidebarHeader({ onClose }: { onClose: () => void }) {
             className="size-full object-contain"
           />
         </div>
-        <p className="truncate text-sm font-bold text-(--foreground)">
+        <p className="truncate text-sm font-bold">
           {siteConfigs.name}
         </p>
       </Link>

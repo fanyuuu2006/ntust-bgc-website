@@ -182,4 +182,22 @@ export const boardGamesRepository = {
     const { error } = await supabase.from("board_games").delete().eq("id", id);
     if (error) throwRepositoryError("刪除桌遊失敗", error);
   },
+
+  existsByCategoryId: async (categoryId: string): Promise<boolean> => {
+    const { count, error } = await supabase
+      .from("board_games")
+      .select("id", { count: "exact", head: true })
+      .eq("category_id", categoryId);
+    if (error) throwRepositoryError("檢查分類是否仍有桌遊使用失敗", error);
+    return (count ?? 0) > 0;
+  },
+
+  existsByLocationId: async (locationId: string): Promise<boolean> => {
+    const { count, error } = await supabase
+      .from("board_games")
+      .select("id", { count: "exact", head: true })
+      .eq("location_id", locationId);
+    if (error) throwRepositoryError("檢查位置是否仍有桌遊使用失敗", error);
+    return (count ?? 0) > 0;
+  },
 };

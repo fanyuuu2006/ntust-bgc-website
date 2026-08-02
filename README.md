@@ -101,7 +101,7 @@
 | name | text | Name of the board game category |
 | description | text | Description of the board game category |
 
-### locations
+### board_game_locations
 
 | Column Name | Data Type | Description |
 | --- | --- | --- |
