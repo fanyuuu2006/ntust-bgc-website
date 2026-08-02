@@ -15,6 +15,46 @@ const STATUS_OPTIONS: { value: BoardGameStatus; label: string }[] = [
   { value: "retired", label: "已除役" },
 ];
 
+const fieldClassName =
+  "w-full rounded-lg border border-(--border) bg-(--background) px-3 py-2 text-sm outline-none transition-colors focus:border-(--primary)";
+
+type FilterSelectProps = {
+  id: string;
+  name: string;
+  label: string;
+  placeholder: string;
+  defaultValue: string;
+  options: { id: string; name: string }[];
+};
+
+const FilterSelect = ({
+  id,
+  name,
+  label,
+  placeholder,
+  defaultValue,
+  options,
+}: FilterSelectProps) => (
+  <div className="flex flex-col gap-1.5">
+    <label htmlFor={id} className="text-sm font-medium text-(--foreground)">
+      {label}
+    </label>
+    <select
+      id={id}
+      name={name}
+      defaultValue={defaultValue}
+      className={fieldClassName}
+    >
+      <option value="">{placeholder}</option>
+      {options.map((option) => (
+        <option key={option.id} value={option.id}>
+          {option.name}
+        </option>
+      ))}
+    </select>
+  </div>
+);
+
 type SearchFormSectionProps = React.HTMLAttributes<HTMLElement> & {
   categories: BoardGameCategory[];
   locations: BoardGameLocation[];
@@ -34,22 +74,31 @@ export const SearchFormSection = ({
   className,
   ...rest
 }: SearchFormSectionProps) => {
-  const hasActiveFilters =
-    Boolean(defaultSearch) ||
-    Boolean(defaultCategoryId) ||
-    Boolean(defaultLocationId) ||
-    defaultStatuses.length > 0;
+  const activeFilterGroupCount =
+    (defaultCategoryId ? 1 : 0) +
+    (defaultLocationId ? 1 : 0) +
+    (defaultStatuses.length > 0 ? 1 : 0);
+
+  const hasActiveFilters = Boolean(defaultSearch) || activeFilterGroupCount > 0;
+
+  const formKey = [
+    defaultSearch ?? "",
+    defaultCategoryId ?? "",
+    defaultLocationId ?? "",
+    [...defaultStatuses].sort().join(","),
+  ].join("|");
 
   return (
-    <section className={cn("p-4", className)} {...rest}>
+    <section className={cn("px-4", className)} {...rest}>
       <form
+        key={formKey}
         method="GET"
         role="search"
         aria-label="搜尋與篩選桌遊"
         className="card rounded-2xl flex flex-col gap-3 p-3 sm:p-4"
       >
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
-          <div className="col-span-2 sm:max-w-sm sm:flex-1">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="sm:max-w-sm sm:flex-1">
             <label htmlFor="search" className="sr-only">
               關鍵字
             </label>
@@ -59,94 +108,90 @@ export const SearchFormSection = ({
               type="search"
               defaultValue={defaultSearch}
               autoComplete="off"
-              placeholder="搜尋桌遊名稱或財產編號"
-              className="w-full rounded-lg border border-(--border) bg-(--background) px-3 py-2 text-sm outline-none transition-colors focus:border-(--primary)"
+              placeholder="搜尋桌遊名稱或社產編號"
+              className={fieldClassName}
             />
           </div>
 
-          <div>
-            <label htmlFor="category" className="sr-only">
-              分類
-            </label>
-            <select
-              id="category"
-              name="category"
-              defaultValue={defaultCategoryId ?? ""}
-              className="w-full rounded-lg border border-(--border) bg-(--background) px-3 py-2 text-sm outline-none transition-colors focus:border-(--primary) sm:w-36"
+          <div className="flex gap-2">
+            <details
+              className="relative flex-1 sm:flex-none"
+              open={activeFilterGroupCount > 0}
             >
-              <option value="">全部分類</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+              <summary className="btn outline flex items-center justify-center rounded-lg px-4 py-2 text-sm">
+                篩選
+                {activeFilterGroupCount > 0
+                  ? `（${activeFilterGroupCount}）`
+                  : ""}
+              </summary>
+
+              <div
+                className={cn(
+                  "absolute left-0 top-[calc(100%+0.5rem)] z-50 w-full min-w-64 max-w-[calc(100vw-2rem)]",
+                  "card rounded-xl p-3 shadow-(--shadow-hover)",
+                  "flex flex-col gap-3",
+                )}
+              >
+                <FilterSelect
+                  id="category"
+                  name="category"
+                  label="分類"
+                  placeholder="全部分類"
+                  defaultValue={defaultCategoryId ?? ""}
+                  options={categories}
+                />
+
+                <FilterSelect
+                  id="location"
+                  name="location"
+                  label="存放位置"
+                  placeholder="全部位置"
+                  defaultValue={defaultLocationId ?? ""}
+                  options={locations}
+                />
+
+                <fieldset className="flex flex-col gap-2">
+                  <legend className="text-sm font-medium text-(--foreground)">
+                    狀態
+                  </legend>
+                  <div className="flex flex-wrap gap-2">
+                    {STATUS_OPTIONS.map((option) => (
+                      <label key={option.value} className="cursor-pointer">
+                        <input
+                          type="checkbox"
+                          name="status"
+                          value={option.value}
+                          defaultChecked={defaultStatuses.includes(
+                            option.value,
+                          )}
+                          className="peer sr-only"
+                        />
+                        <span className="flex rounded-full border border-(--border) bg-(--background) px-3 py-1 text-sm text-(--foreground) transition-colors peer-checked:border-(--primary) peer-checked:bg-(--primary) peer-checked:text-(--primary-background) peer-focus-visible:ring-2 peer-focus-visible:ring-(--primary)">
+                          {option.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
+                {hasActiveFilters && (
+                  <Link
+                    href="/admin/board-games"
+                    className="border-t border-(--border) pt-2 text-sm text-(--primary) hover:underline"
+                  >
+                    清除篩選
+                  </Link>
+                )}
+              </div>
+            </details>
+
+            <button
+              type="submit"
+              className="btn primary flex-1 shrink-0 rounded-lg px-4 py-2 text-sm sm:flex-none"
+            >
+              搜尋
+            </button>
           </div>
-
-          <div>
-            <label htmlFor="location" className="sr-only">
-              存放位置
-            </label>
-            <select
-              id="location"
-              name="location"
-              defaultValue={defaultLocationId ?? ""}
-              className="w-full rounded-lg border border-(--border) bg-(--background) px-3 py-2 text-sm outline-none transition-colors focus:border-(--primary) sm:w-36"
-            >
-              <option value="">全部位置</option>
-              {locations.map((location) => (
-                <option key={location.id} value={location.id}>
-                  {location.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            className="btn primary rounded-lg px-4 py-2 text-center text-sm"
-          >
-            搜尋
-          </button>
-
-          <Link
-            href="/admin/board-games/new"
-            className="btn green rounded-lg px-4 py-2 text-center text-sm"
-          >
-            ＋ 新增桌遊
-          </Link>
-        </div>
-
-        <div
-          role="group"
-          aria-label="依狀態篩選"
-          className="flex flex-wrap items-center gap-2 border-t border-(--border) pt-3"
-        >
-          <span className="text-sm font-medium text-(--muted)">狀態</span>
-
-          {STATUS_OPTIONS.map((option) => (
-            <label key={option.value} className="cursor-pointer">
-              <input
-                type="checkbox"
-                name="status"
-                value={option.value}
-                defaultChecked={defaultStatuses.includes(option.value)}
-                className="peer sr-only"
-              />
-              <span className="inline-flex rounded-full border border-(--border) bg-(--background) px-3 py-1.5 text-sm text-(--foreground) transition-colors peer-checked:border-(--primary) peer-checked:bg-(--primary) peer-checked:text-(--primary-background) peer-focus-visible:ring-2 peer-focus-visible:ring-(--primary)">
-                {option.label}
-              </span>
-            </label>
-          ))}
-
-          {hasActiveFilters && (
-            <Link
-              href="/admin/board-games"
-              className="ml-auto text-sm text-(--primary) hover:underline"
-            >
-              清除篩選
-            </Link>
-          )}
         </div>
       </form>
     </section>

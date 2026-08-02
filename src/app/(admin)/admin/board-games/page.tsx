@@ -48,7 +48,7 @@ export default async function BoardGamesAdminPage({
     <>
       <HeadingSection
         title="桌遊管理"
-        description="管理社團桌遊的基本資料、分類、位置與借用狀態。"
+        description="在這裡可以管理桌遊的資料，包含新增、編輯、刪除桌遊，以及搜尋與篩選桌遊。"
       />
 
       <SearchFormSection
