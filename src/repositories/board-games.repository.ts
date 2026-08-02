@@ -30,7 +30,7 @@ export type UpdateBoardGameInput = Partial<
 >;
 
 export type FindManyBoardGamesOptions = PaginationQuery &
-  OrderOptions<"name" | "created_at" | "status"> & {
+  OrderOptions<"name" | "created_at" | "updated_at" | "status"> & {
     search?: string;
     status?: BoardGameStatus | BoardGameStatus[];
     category_id?: string;

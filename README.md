@@ -297,6 +297,8 @@ src
 │   ├── academic-years.repository.ts
 │   ├── auth.repository.tsx
 │   ├── board-game-borrowings.repository.ts
+│   ├── board-game-categories.repository.ts
+│   ├── board-game-locations.repository.ts
 │   ├── board-games.repository.ts
 │   ├── event-attendances.repository.ts
 │   ├── events.repository.ts
@@ -317,6 +319,7 @@ src
 │   │   ├── auth.service.tsx
 │   │   └── auth.types.tsx
 │   ├── board-games
+│   │   ├── board-games.errors.tsx
 │   │   ├── board-games.service.ts
 │   │   └── board-games.types.ts
 │   ├── events

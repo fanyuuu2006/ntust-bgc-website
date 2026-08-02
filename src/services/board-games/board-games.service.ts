@@ -38,7 +38,12 @@ import {
   BoardGameLocationNotFoundError,
   DuplicateBoardGameLocationNameError,
   BoardGameLocationInUseError,
+  BoardGameHasOpenBorrowingError,
 } from "./board-games.errors";
+import {
+  createBoardGameSchema,
+  updateBoardGameSchema,
+} from "./board-games.schema";
 
 export const boardGamesService = {
   /* ============================================================ *
@@ -221,45 +226,43 @@ export const boardGamesService = {
    * 桌遊（Board Games）管理（幹部用）
    * ============================================================ */
 
-  createBoardGame: async (
-    input: Parameters<typeof boardGamesRepository.create>[0],
-  ): Promise<BoardGame> => {
-    const isDuplicate = await boardGamesRepository.existsByInventoryNumber(
-      input.inventory_number,
-    );
+  createBoardGame: async (input: unknown): Promise<BoardGame> => {
+    const data = createBoardGameSchema.parse(input);
+
+    const [isDuplicate] = await Promise.all([
+      boardGamesRepository.existsByInventoryNumber(data.inventory_number),
+      boardGamesService.getCategoryById(data.category_id),
+      boardGamesService.getLocationById(data.location_id),
+    ]);
     if (isDuplicate) throw new DuplicateInventoryNumberError();
 
-    // 確保外鍵存在，提前給出明確錯誤訊息而非讓資料庫丟出 FK 錯誤
-    await Promise.all([
-      boardGamesService.getCategoryById(input.category_id),
-      boardGamesService.getLocationById(input.location_id),
-    ]);
-
-    return boardGamesRepository.create(input);
+    return boardGamesRepository.create(data);
   },
 
-  updateBoardGame: async (
-    id: string,
-    input: Parameters<typeof boardGamesRepository.updateById>[1],
-  ): Promise<BoardGame> => {
+  updateBoardGame: async (id: string, input: unknown): Promise<BoardGame> => {
     await boardGamesService.getBoardGameById(id);
+    const data = updateBoardGameSchema.parse(input);
 
-    if (input.inventory_number) {
-      const isDuplicate = await boardGamesRepository.existsByInventoryNumber(
-        input.inventory_number,
-        id,
+    const checks: Promise<unknown>[] = [];
+
+    if (data.inventory_number) {
+      checks.push(
+        boardGamesRepository
+          .existsByInventoryNumber(data.inventory_number, id)
+          .then((isDuplicate) => {
+            if (isDuplicate) throw new DuplicateInventoryNumberError();
+          }),
       );
-      if (isDuplicate) throw new DuplicateInventoryNumberError();
     }
+    if (data.category_id) {
+      checks.push(boardGamesService.getCategoryById(data.category_id));
+    }
+    if (data.location_id) {
+      checks.push(boardGamesService.getLocationById(data.location_id));
+    }
+    await Promise.all(checks);
 
-    if (input.category_id) {
-      await boardGamesService.getCategoryById(input.category_id);
-    }
-    if (input.location_id) {
-      await boardGamesService.getLocationById(input.location_id);
-    }
-
-    const updated = await boardGamesRepository.updateById(id, input);
+    const updated = await boardGamesRepository.updateById(id, data);
     if (!updated) throw new BoardNotFoundError();
     return updated;
   },
@@ -267,14 +270,14 @@ export const boardGamesService = {
   deleteBoardGame: async (id: string): Promise<void> => {
     await boardGamesService.getBoardGameById(id);
 
-    const hasOpenBorrowing =
+    const openBorrowings =
       await boardGameBorrowingsRepository.findManyByBoardGameId(id, [
         "pending",
         "approved",
         "borrowed",
       ]);
-    if (hasOpenBorrowing.length > 0) {
-      throw new Error("此桌遊尚有進行中的借閱紀錄，無法刪除");
+    if (openBorrowings.length > 0) {
+      throw new BoardGameHasOpenBorrowingError();
     }
 
     await boardGamesRepository.deleteById(id);

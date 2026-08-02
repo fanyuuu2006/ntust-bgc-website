@@ -102,8 +102,6 @@
 
   ::selection {
     background: color-mix(in oklab, var(--primary) 75%, transparent);
-
-    color: white;
   }
 
   html {

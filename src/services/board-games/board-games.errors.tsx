@@ -60,3 +60,10 @@ export class BoardGameLocationInUseError extends Error {
     this.name = "BoardGameLocationInUseError";
   }
 }
+
+export class BoardGameHasOpenBorrowingError extends Error {
+  constructor() {
+    super("此桌遊尚有進行中的借用紀錄，無法刪除");
+    this.name = "BoardGameHasOpenBorrowingError";
+  }
+}

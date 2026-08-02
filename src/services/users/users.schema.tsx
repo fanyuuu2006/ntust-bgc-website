@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 const NAME_MAX_LENGTH = 50;
-const AVATAR_MAX_LENGTH = 500;
 
 const userProfileFields = {
   real_name: z.string().max(NAME_MAX_LENGTH).optional(),
@@ -29,9 +28,7 @@ export const updateUserAccountSchema = z
       .max(NAME_MAX_LENGTH)
       .optional(),
 
-    avatar: z
-      .union([z.url("請輸入有效的圖片網址").max(AVATAR_MAX_LENGTH), z.null()])
-      .optional(),
+    avatar: z.union([z.url("請輸入有效的圖片網址"), z.null()]).optional(),
   })
   .refine((data) => data.name !== undefined || data.avatar !== undefined, {
     message: "沒有可更新的欄位",
