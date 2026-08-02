@@ -34,13 +34,13 @@ export function AdminShell({ user, children }: AdminShellProps) {
         sidebarId={sidebarId}
         onOpenMenu={() => setIsSidebarOpen(true)}
       />
-      <div className="flex">
+      <div className="flex flex-1 overflow-hidden">
         <AdminSidebar
           id={sidebarId}
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
         />
-        <main className="min-w-0 flex-1 p-4 lg:p-6">{children}</main>
+        <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </>
   );

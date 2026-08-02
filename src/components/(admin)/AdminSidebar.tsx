@@ -89,7 +89,7 @@ export function AdminSidebar({
           "border-r border-(--border) bg-(--primary-background)",
           "transition-transform duration-300",
           isOpen ? "translate-x-0" : "-translate-x-full",
-          "lg:sticky lg:top-16 lg:z-30 lg:h-[calc(100vh-4rem)] lg:w-64",
+          "lg:sticky lg:top-0 lg:z-30 lg:w-64",
           "lg:translate-x-0",
           className,
         )}

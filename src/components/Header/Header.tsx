@@ -16,7 +16,7 @@ export const Header = ({ className, user, isAdmin, ...rest }: HeaderProps) => {
   return (
     <header
       className={cn(
-        "flex flex-col border-b border-(--border) bg-(--primary-background) backdrop-blur",
+        "flex flex-col border-b border-(--border) bg-(--primary-background)",
         className,
       )}
       {...rest}

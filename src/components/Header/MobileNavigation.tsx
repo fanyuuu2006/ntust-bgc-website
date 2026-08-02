@@ -54,7 +54,7 @@ export const MobileNavigation = ({
         aria-controls={panelId}
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          "btn rounded-xl size-10 flex items-center justify-center",
+          "shrink-0 btn rounded-xl size-10 flex items-center justify-center",
         )}
       >
         <span>{isOpen ? "✕" : "☰"}</span>
