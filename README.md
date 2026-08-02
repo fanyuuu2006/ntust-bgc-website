@@ -180,6 +180,8 @@ src
 ├── app
 │   ├── (admin)
 │   │   ├── admin
+│   │   │   ├── board-games
+│   │   │   │   └── page.tsx
 │   │   │   ├── layout.tsx
 │   │   │   └── page.tsx
 │   │   └── layout.tsx
@@ -214,6 +216,11 @@ src
 │   │       ├── layout.tsx
 │   │       └── page.tsx
 │   ├── api
+│   │   ├── admin
+│   │   │   └── board-games
+│   │   │       ├── [id]
+│   │   │       │   └── route.ts
+│   │   │       └── route.ts
 │   │   ├── auth
 │   │   │   ├── login
 │   │   │   │   └── route.ts
@@ -240,7 +247,11 @@ src
 │   ├── (admin)
 │   │   ├── AdminHeader.tsx
 │   │   ├── AdminSidebar.tsx
-│   │   └── AdminSidebarNav.tsx
+│   │   ├── AdminSidebarNav.tsx
+│   │   └── admin
+│   │       ├── HeadingSection.tsx
+│   │       └── board-games
+│   │           └── SearchFormSection.tsx
 │   ├── (auth)
 │   │   ├── AuthCard.tsx
 │   │   ├── AuthNotice.tsx
@@ -320,6 +331,7 @@ src
 │   │   └── auth.types.tsx
 │   ├── board-games
 │   │   ├── board-games.errors.tsx
+│   │   ├── board-games.schema.ts
 │   │   ├── board-games.service.ts
 │   │   └── board-games.types.ts
 │   ├── events

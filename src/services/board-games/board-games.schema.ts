@@ -37,6 +37,8 @@ export const listBoardGamesQuerySchema = z.object({
   status: boardGameStatusSchema.optional(),
   category_id: z.uuid().optional(),
   location_id: z.uuid().optional(),
-  orderBy: z.enum(["name", "created_at", "updated_at", "status"]).optional(),
+  orderBy: z
+    .enum(["name", "created_at", "updated_at", "inventory_number"])
+    .optional(),
   orderDirection: z.enum(["asc", "desc"]).optional(),
 });

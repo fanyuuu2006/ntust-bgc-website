@@ -6,6 +6,7 @@ import {
   type FindManyMembershipsOptions,
 } from "@/repositories/memberships.repository";
 import type { MembershipWithAcademicYear } from "./memberships.types";
+import { buildPaginationResult } from "@/repositories/shared/pagination";
 
 export const membershipService = {
   /**
@@ -42,13 +43,9 @@ export const membershipService = {
   getMembershipsByUserId: async (
     userId: string,
     options: FindManyMembershipsOptions = {},
-  ): Promise<{
-    data: MembershipWithAcademicYear[];
-    count: number;
-    page: number;
-    pageSize: number;
-    totalPages: number;
-  }> => {
+  ): Promise<
+    ReturnType<typeof buildPaginationResult<MembershipWithAcademicYear>>
+  > => {
     const result = await membershipsRepository.findManyByUserId(userId, {
       orderBy: "joined_at",
       orderDirection: "desc",

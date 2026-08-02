@@ -30,7 +30,7 @@ export type UpdateBoardGameInput = Partial<
 >;
 
 export type FindManyBoardGamesOptions = PaginationQuery &
-  OrderOptions<"name" | "created_at" | "updated_at" | "status"> & {
+  OrderOptions<"name" | "created_at" | "updated_at" | "inventory_number"> & {
     search?: string;
     status?: BoardGameStatus | BoardGameStatus[];
     category_id?: string;
@@ -43,14 +43,16 @@ export const boardGamesRepository = {
       page: options.page,
       pageSize: options.pageSize,
     });
-    const orderBy = options.orderBy ?? "created_at";
+    const orderBy = options.orderBy ?? "inventory_number";
     const orderDirection = options.orderDirection ?? "desc";
 
     let query = supabase.from("board_games").select("*", { count: "exact" });
 
     const keyword = options.search?.trim();
     if (keyword) {
-      query = query.or(buildIlikeSearch(["name", "inventory_number"], keyword));
+      query = query.or(
+        buildIlikeSearch(["name", "inventory_number", "description"], keyword),
+      );
     }
 
     if (options.status) {

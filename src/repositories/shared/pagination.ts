@@ -35,7 +35,7 @@ export const buildPaginationResult = <T>(
   const total = count ?? 0;
   return {
     data: data ?? [],
-    count: total,
+    total,
     page,
     pageSize,
     totalPages: total === 0 ? 0 : Math.ceil(total / pageSize),

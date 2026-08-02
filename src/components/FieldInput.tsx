@@ -58,7 +58,7 @@ export const FieldInput = ({
   }
 
   return (
-    <div className={cn("flex w-full flex-col gap-1.5", className)} {...rest}>
+    <div className={cn("flex flex-col gap-1.5", className)} {...rest}>
       <label
         htmlFor={field.id}
         className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5"
