@@ -1,14 +1,17 @@
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
-import { SearchFormSection } from "@/components/(admin)/admin/board-games/SearchFormSection";
+import { SearchForm } from "@/components/(admin)/admin/board-games/SearchForm";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import type { BoardGameStatus } from "@/types/database";
 
 type BoardGamesSearchParams = {
   page?: string;
+  pageSize?: string;
+  orderBy?: string;
+  orderDirection?: "asc" | "desc";
   search?: string;
   status?: string | string[];
-  category?: string;
-  location?: string;
+  category?: string | string[];
+  location?: string | string[];
 };
 
 type BoardGamesAdminPageProps = {
@@ -30,15 +33,26 @@ export default async function BoardGamesAdminPage({
         ? [params.status]
         : []
   ) as BoardGameStatus[];
+  const categorie_ids = Array.isArray(params.category)
+    ? params.category
+    : params.category
+      ? [params.category]
+      : [];
 
-  const [boardGames, categories, locations] = await Promise.all([
+  const location_ids = Array.isArray(params.location)
+    ? params.location
+    : params.location
+      ? [params.location]
+      : [];
+
+  const [boardGames, category, location] = await Promise.all([
     boardGamesService.listBoardGamesWithCategoryAndLocation({
       page,
       pageSize: PAGE_SIZE,
       search: params.search,
       status: statuses.length > 0 ? statuses : undefined,
-      category_id: params.category || undefined,
-      location_id: params.location || undefined,
+      category_ids: categorie_ids,
+      location_ids: location_ids,
     }),
     boardGamesService.listCategories(),
     boardGamesService.listLocations(),
@@ -46,19 +60,19 @@ export default async function BoardGamesAdminPage({
 
   return (
     <>
-      <HeadingSection
-        title="桌遊管理"
-        description="在這裡可以管理桌遊的資料，包含新增、編輯、刪除桌遊，以及搜尋與篩選桌遊。"
-      />
-
-      <SearchFormSection
-        categories={categories}
-        locations={locations}
-        defaultSearch={params.search}
-        defaultStatuses={statuses}
-        defaultCategoryId={params.category}
-        defaultLocationId={params.location}
-      />
+      <HeadingSection title="桌遊管理" />
+      <section className="px-4">
+        <SearchForm
+          categories={category}
+          locations={location}
+          query={{
+            search: params.search,
+            status: statuses.length > 0 ? statuses : undefined,
+            category: categorie_ids.length > 0 ? categorie_ids : undefined,
+            location: location_ids.length > 0 ? location_ids : undefined,
+          }}
+        />
+      </section>
     </>
   );
 }

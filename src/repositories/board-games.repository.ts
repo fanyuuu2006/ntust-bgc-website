@@ -33,8 +33,8 @@ export type FindManyBoardGamesOptions = PaginationQuery &
   OrderOptions<"name" | "created_at" | "updated_at" | "inventory_number"> & {
     search?: string;
     status?: BoardGameStatus | BoardGameStatus[];
-    category_id?: string;
-    location_id?: string;
+    category_ids?: string[];
+    location_ids?: string[];
   };
 
 export const boardGamesRepository = {
@@ -61,12 +61,12 @@ export const boardGamesRepository = {
         : query.eq("status", options.status);
     }
 
-    if (options.category_id) {
-      query = query.eq("category_id", options.category_id);
+    if (options.category_ids?.length) {
+      query = query.in("category_id", options.category_ids);
     }
 
-    if (options.location_id) {
-      query = query.eq("location_id", options.location_id);
+    if (options.location_ids?.length) {
+      query = query.in("location_id", options.location_ids);
     }
 
     query = query

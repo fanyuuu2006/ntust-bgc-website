@@ -177,96 +177,96 @@
 
 ```text
 src
-├── app
-│   ├── (admin)
-│   │   ├── admin
-│   │   │   ├── board-games
+├── app/
+│   ├── (admin)/
+│   │   ├── admin/
+│   │   │   ├── board-games/
 │   │   │   │   └── page.tsx
 │   │   │   ├── layout.tsx
 │   │   │   └── page.tsx
 │   │   └── layout.tsx
-│   ├── (auth)
+│   ├── (auth)/
 │   │   ├── layout.tsx
-│   │   ├── login
+│   │   ├── login/
 │   │   │   └── page.tsx
-│   │   └── register
+│   │   └── register/
 │   │       └── page.tsx
-│   ├── (authenticated)
-│   │   ├── dashboard
+│   ├── (authenticated)/
+│   │   ├── dashboard/
 │   │   │   ├── layout.tsx
 │   │   │   └── page.tsx
 │   │   ├── layout.tsx
-│   │   ├── profile
+│   │   ├── profile/
 │   │   │   ├── layout.tsx
 │   │   │   └── page.tsx
-│   │   └── settings
+│   │   └── settings/
 │   │       ├── layout.tsx
 │   │       └── page.tsx
-│   ├── (public)
-│   │   ├── announcements
+│   ├── (public)/
+│   │   ├── announcements/
 │   │   │   └── page.tsx
-│   │   ├── board-games
+│   │   ├── board-games/
 │   │   │   └── page.tsx
 │   │   ├── layout.tsx
 │   │   ├── page.tsx
-│   │   ├── privacy
+│   │   ├── privacy/
 │   │   │   ├── layout.tsx
 │   │   │   └── page.tsx
-│   │   └── terms
+│   │   └── terms/
 │   │       ├── layout.tsx
 │   │       └── page.tsx
-│   ├── api
-│   │   ├── admin
-│   │   │   └── board-games
-│   │   │       ├── [id]
+│   ├── api/
+│   │   ├── admin/
+│   │   │   └── board-games/
+│   │   │       ├── [id]/
 │   │   │       │   └── route.ts
 │   │   │       └── route.ts
-│   │   ├── auth
-│   │   │   ├── login
+│   │   ├── auth/
+│   │   │   ├── login/
 │   │   │   │   └── route.ts
-│   │   │   ├── logout
+│   │   │   ├── logout/
 │   │   │   │   └── route.ts
-│   │   │   ├── me
+│   │   │   ├── me/
 │   │   │   │   └── route.ts
-│   │   │   ├── password
+│   │   │   ├── password/
 │   │   │   │   └── route.ts
-│   │   │   ├── register
+│   │   │   ├── register/
 │   │   │   │   └── route.ts
-│   │   │   └── sessions
-│   │   │       ├── [id]
+│   │   │   └── sessions/
+│   │   │       ├── [id]/
 │   │   │       │   └── route.ts
 │   │   │       └── route.ts
-│   │   └── users
-│   │       └── me
-│   │           ├── account
+│   │   └── users/
+│   │       └── me/
+│   │           ├── account/
 │   │           │   └── route.ts
-│   │           └── profile
+│   │           └── profile/
 │   │               └── route.ts
 │   └── layout.tsx
-├── components
-│   ├── (admin)
+├── components/
+│   ├── (admin)/
 │   │   ├── AdminHeader.tsx
 │   │   ├── AdminSidebar.tsx
 │   │   ├── AdminSidebarNav.tsx
-│   │   └── admin
+│   │   └── admin/
 │   │       ├── HeadingSection.tsx
-│   │       └── board-games
-│   │           └── SearchFormSection.tsx
-│   ├── (auth)
+│   │       └── board-games/
+│   │           └── SearchForm.tsx
+│   ├── (auth)/
 │   │   ├── AuthCard.tsx
 │   │   ├── AuthNotice.tsx
-│   │   ├── login
+│   │   ├── login/
 │   │   │   └── LoginForm.tsx
-│   │   └── register
+│   │   └── register/
 │   │       └── RegisterForm.tsx
-│   ├── (authenticated)
-│   │   ├── dashboard
-│   │   ├── profile
+│   ├── (authenticated)/
+│   │   ├── dashboard/
+│   │   ├── profile/
 │   │   │   ├── HistorySection.tsx
 │   │   │   ├── ProfileBasicInfoSection.tsx
 │   │   │   ├── ProfileHeroSection.tsx
 │   │   │   └── QuickStats.tsx
-│   │   └── settings
+│   │   └── settings/
 │   │       ├── AccountSettingsCard.tsx
 │   │       ├── PasswordSettingsCard.tsx
 │   │       ├── ProfileSettingsCard.tsx
@@ -275,7 +275,7 @@ src
 │   │       └── SettingsCard.tsx
 │   ├── FieldInput.tsx
 │   ├── FormFeedback.tsx
-│   ├── Header
+│   ├── Header/
 │   │   ├── DesktopNavigation.tsx
 │   │   ├── Header.tsx
 │   │   ├── HeaderActions.tsx
@@ -283,13 +283,13 @@ src
 │   │   └── UserMenu.tsx
 │   ├── LogoutButton.tsx
 │   ├── UserAvatar.tsx
-│   └── layouts
+│   └── layouts/
 │       ├── AdminShell.tsx
 │       └── WebsiteShell.tsx
-├── contexts
+├── contexts/
 │   └── UserContext.tsx
-├── libs
-│   ├── api
+├── libs/
+│   ├── api/
 │   │   ├── client.tsx
 │   │   └── errors.tsx
 │   ├── auth.tsx
@@ -297,14 +297,14 @@ src
 │   ├── env.tsx
 │   ├── metadata.tsx
 │   ├── navigation.tsx
-│   ├── security
+│   ├── security/
 │   │   └── turnstile.ts
 │   ├── siteConfigs.tsx
-│   ├── supabase
+│   ├── supabase/
 │   │   └── server.tsx
-│   └── zod
+│   └── zod/
 │       └── helpers.tsx
-├── repositories
+├── repositories/
 │   ├── academic-years.repository.ts
 │   ├── auth.repository.tsx
 │   ├── board-game-borrowings.repository.ts
@@ -316,46 +316,46 @@ src
 │   ├── memberships.repository.ts
 │   ├── officer-positions.repository.ts
 │   ├── sessions.repository.tsx
-│   ├── shared
+│   ├── shared/
 │   │   ├── errors.ts
 │   │   ├── pagination.ts
 │   │   ├── search.ts
 │   │   └── types.ts
 │   ├── user-profiles.repository.tsx
 │   └── users.repository.ts
-├── services
-│   ├── auth
+├── services/
+│   ├── auth/
 │   │   ├── auth.errors.tsx
 │   │   ├── auth.schema.tsx
 │   │   ├── auth.service.tsx
 │   │   └── auth.types.tsx
-│   ├── board-games
+│   ├── board-games/
 │   │   ├── board-games.errors.tsx
 │   │   ├── board-games.schema.ts
 │   │   ├── board-games.service.ts
 │   │   └── board-games.types.ts
-│   ├── events
+│   ├── events/
 │   │   ├── events.errors.ts
 │   │   ├── events.schema.ts
 │   │   ├── events.service.ts
 │   │   └── events.types.ts
-│   ├── memberships
+│   ├── memberships/
 │   │   ├── memberships.service.ts
 │   │   └── memberships.types.ts
-│   ├── officer-positions
+│   ├── officer-positions/
 │   │   ├── officer-positions.service.ts
 │   │   └── officer-positions.types.ts
-│   └── users
+│   └── users/
 │       ├── users.errors.tsx
 │       ├── users.schema.tsx
 │       ├── users.service.tsx
 │       └── users.types.ts
-├── styles
+├── styles/
 │   └── globals.css
-├── types
+├── types/
 │   └── database.tsx
-└── utils
-    ├── auth
+└── utils/
+    ├── auth/
     │   ├── password.tsx
     │   └── session.tsx
     ├── className.tsx

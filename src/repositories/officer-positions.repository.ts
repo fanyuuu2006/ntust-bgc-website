@@ -150,4 +150,17 @@ export const officerPositionsRepository = {
       throwRepositoryError("刪除幹部職位失敗", error);
     }
   },
+
+  existsByUserId: async (userId: UUID): Promise<boolean> => {
+    const { count, error } = await supabase
+      .from("officer_positions")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId);
+
+    if (error) {
+      throwRepositoryError("檢查使用者是否曾任幹部失敗", error);
+    }
+
+    return (count ?? 0) > 0;
+  },
 };

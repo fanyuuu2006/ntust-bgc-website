@@ -19,5 +19,5 @@ export async function getCurrentUser() {
 }
 
 export function isAdminByUserId(userId: string) {
-  return officerPositionsService.isCurrentOfficer(userId);
+  return officerPositionsService.hasEverBeenOfficer(userId);
 }

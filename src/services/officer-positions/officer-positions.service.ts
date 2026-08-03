@@ -27,7 +27,9 @@ export const officerPositionsService = {
       ...new Set(result.data.map((p) => p.academic_year_id)),
     ];
     const academicYears =
-      await academicYearsRepository.findManyByIds(academicYearIds);
+      academicYearIds.length < 1
+        ? []
+        : await academicYearsRepository.findManyByIds(academicYearIds);
 
     const data = result.data.map((position) => ({
       ...position,
@@ -73,5 +75,9 @@ export const officerPositionsService = {
     const positions =
       await officerPositionsService.getCurrentPositionsByUserId(userId);
     return positions.length > 0;
+  },
+
+  hasEverBeenOfficer: async (userId: UUID): Promise<boolean> => {
+    return await officerPositionsRepository.existsByUserId(userId);
   },
 };
