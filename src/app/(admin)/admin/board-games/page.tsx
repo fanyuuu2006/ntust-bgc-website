@@ -1,12 +1,14 @@
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { BoardGameTable } from "@/components/(admin)/admin/board-games/BoardGameTable";
 import { SearchForm } from "@/components/(admin)/admin/board-games/SearchForm";
+import { FindManyBoardGamesOptions } from "@/repositories/board-games.repository";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import type { BoardGameStatus } from "@/types/database";
 
 type BoardGamesSearchParams = {
   page?: string;
   pageSize?: string;
-  orderBy?: string;
+  orderBy?: FindManyBoardGamesOptions["orderBy"];
   orderDirection?: "asc" | "desc";
   search?: string;
   status?: string | string[];
@@ -18,14 +20,22 @@ type BoardGamesAdminPageProps = {
   searchParams: Promise<BoardGamesSearchParams>;
 };
 
-const PAGE_SIZE = 50;
-
 export default async function BoardGamesAdminPage({
   searchParams,
 }: BoardGamesAdminPageProps) {
   const params = await searchParams;
 
   const page = Math.max(1, Number(params.page ?? 1) || 1);
+  const pageSize = Math.max(
+    1,
+    Math.min(100, Number(params.pageSize ?? 20) || 20),
+  );
+  const orderBy = params.orderBy ?? "inventory_number";
+  const orderDirection = params.orderDirection
+    ? params.orderDirection.toLowerCase() === "asc"
+      ? "asc"
+      : "desc"
+    : "asc";
   const statuses = (
     Array.isArray(params.status)
       ? params.status
@@ -48,7 +58,9 @@ export default async function BoardGamesAdminPage({
   const [boardGames, category, location] = await Promise.all([
     boardGamesService.listBoardGamesWithCategoryAndLocation({
       page,
-      pageSize: PAGE_SIZE,
+      pageSize,
+      orderBy,
+      orderDirection,
       search: params.search,
       status: statuses.length > 0 ? statuses : undefined,
       category_ids: categorie_ids,
@@ -61,7 +73,7 @@ export default async function BoardGamesAdminPage({
   return (
     <>
       <HeadingSection title="桌遊管理" />
-      <section className="px-4">
+      <section className="px-4 space-y-4">
         <SearchForm
           categories={category}
           locations={location}
@@ -72,6 +84,7 @@ export default async function BoardGamesAdminPage({
             location: location_ids.length > 0 ? location_ids : undefined,
           }}
         />
+        <BoardGameTable boardGames={boardGames.data} />
       </section>
     </>
   );

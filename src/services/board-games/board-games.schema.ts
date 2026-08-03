@@ -16,11 +16,7 @@ const optionalText = (max: number) =>
 
 export const createBoardGameSchema = z.object({
   name: z.string().trim().min(1, "請輸入名稱").max(100, "名稱不可超過 100 字"),
-  inventory_number: z
-    .string()
-    .trim()
-    .min(1, "請輸入館藏編號")
-    .max(50, "館藏編號不可超過 50 字"),
+  inventory_number: z.number().int().min(1, "請輸入有效的社產編號"),
   category_id: z.uuid("請選擇分類"),
   location_id: z.uuid("請選擇位置"),
   description: optionalText(2000),

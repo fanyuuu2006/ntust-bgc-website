@@ -61,14 +61,14 @@ export function SearchForm({
       key={formKey}
       method="GET"
       className={cn(
-        "card flex flex-col gap-2 rounded-2xl p-4 sm:flex-row sm:items-center",
+        "card flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center",
         className,
       )}
       {...rest}
     >
-      <div className="relative shrink-0 sm:w-64">
+      <div className="relative shrink-0 flex-1">
         <label className="sr-only" htmlFor="board-game-search">
-          搜尋桌遊名稱或編號
+          搜尋桌遊名稱、編號或相關描述
         </label>
         <input
           id="board-game-search"
@@ -76,7 +76,7 @@ export function SearchForm({
           name="search"
           autoComplete="off"
           defaultValue={query.search}
-          placeholder="搜尋桌遊名稱或編號"
+          placeholder="搜尋桌遊名稱、編號或相關描述"
           className="w-full rounded-lg border border-(--border) bg-(--secondary-background) py-2 pr-16 pl-3 text-sm text-(--foreground) outline-none transition focus:border-(--primary)"
         />
         <button

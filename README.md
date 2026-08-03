@@ -83,7 +83,7 @@
 | Column Name | Data Type | Description |
 | --- | --- | --- |
 | id | UUID | Unique identifier for each board game |
-| inventory_number | text | Unique inventory number for the board game |
+| inventory_number | int8 | Unique inventory number for the board game |
 | name | text | Name of the board game |
 | description | text | Description of the board game |
 | image | text | URL or path to the board game's image |

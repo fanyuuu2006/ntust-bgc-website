@@ -6,7 +6,10 @@ import {
   buildPaginationResult,
   normalizePaginationOptions,
 } from "@/repositories/shared/pagination";
-import { buildIlikeSearch } from "@/repositories/shared/search";
+import {
+  buildIlikeSearch,
+  buildNumericSearch,
+} from "@/repositories/shared/search";
 import { OrderOptions, PaginationQuery } from "@/repositories/shared/types";
 import { BoardGame, BoardGameStatus } from "@/types/database";
 
@@ -49,10 +52,15 @@ export const boardGamesRepository = {
     let query = supabase.from("board_games").select("*", { count: "exact" });
 
     const keyword = options.search?.trim();
+
     if (keyword) {
-      query = query.or(
-        buildIlikeSearch(["name", "inventory_number", "description"], keyword),
-      );
+      const textSearch = buildIlikeSearch(["name", "description"], keyword);
+
+      const numericSearch = buildNumericSearch(["inventory_number"], keyword);
+
+      const searchConditions = [textSearch, numericSearch].filter(Boolean);
+
+      query = query.or(searchConditions.join(","));
     }
 
     if (options.status) {
@@ -112,7 +120,7 @@ export const boardGamesRepository = {
   },
 
   existsByInventoryNumber: async (
-    inventoryNumber: string,
+    inventoryNumber: number,
     excludeId?: string,
   ): Promise<boolean> => {
     let query = supabase

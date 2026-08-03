@@ -9,3 +9,11 @@ export function buildIlikeSearch(fields: string[], keyword: string): string {
   const escaped = keyword.replace(/[%_]/g, (c) => `\\${c}`);
   return fields.map((field) => `${field}.ilike.%${escaped}%`).join(",");
 }
+
+export function buildNumericSearch(fields: string[], keyword: string): string {
+  if (!/^\d+$/.test(keyword)) {
+    return "";
+  }
+
+  return fields.map((field) => `${field}.eq.${keyword}`).join(",");
+}

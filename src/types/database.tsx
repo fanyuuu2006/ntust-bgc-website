@@ -185,7 +185,7 @@ export type BoardGame = {
   category_id: UUID;
   location_id: UUID;
   status: BoardGameStatus;
-  inventory_number: string;
+  inventory_number: number;
 };
 
 /* =========================================================
