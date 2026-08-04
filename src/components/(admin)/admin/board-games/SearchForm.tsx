@@ -5,6 +5,7 @@ import type {
   BoardGameStatus,
 } from "@/types/database";
 import { cn } from "@/utils/className";
+import { BoardGamesQueryState } from "@/app/(admin)/admin/board-games/types";
 
 const STATUS_OPTIONS: { value: BoardGameStatus; label: string }[] = [
   { value: "available", label: "可借用" },
@@ -17,17 +18,10 @@ const STATUS_OPTIONS: { value: BoardGameStatus; label: string }[] = [
 
 const BASE_PATH = "/admin/board-games";
 
-type BoardGamesQuery = {
-  search?: string;
-  status?: BoardGameStatus[];
-  category?: string[];
-  location?: string[];
-};
-
 type SearchFormProps = React.FormHTMLAttributes<HTMLFormElement> & {
   categories: BoardGameCategory[];
   locations: BoardGameLocation[];
-  query: BoardGamesQuery;
+  query: BoardGamesQueryState;
 };
 
 /* ============================================================ *
@@ -61,12 +55,12 @@ export function SearchForm({
       key={formKey}
       method="GET"
       className={cn(
-        "card flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center",
+        "card flex flex-wrap items-center gap-3 rounded-2xl p-4",
         className,
       )}
       {...rest}
     >
-      <div className="relative shrink-0 flex-1">
+      <div className="relative shrink-0 w-full sm:max-w-100">
         <label className="sr-only" htmlFor="board-game-search">
           搜尋桌遊名稱、編號或相關描述
         </label>
@@ -87,7 +81,7 @@ export function SearchForm({
         </button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-2">
         <FilterChip label="狀態" count={statusCount}>
           {STATUS_OPTIONS.map((option) => (
             <FilterOption

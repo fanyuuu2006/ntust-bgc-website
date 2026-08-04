@@ -43,7 +43,7 @@ export default async function BoardGamesAdminPage({
         ? [params.status]
         : []
   ) as BoardGameStatus[];
-  const categorie_ids = Array.isArray(params.category)
+  const category_ids = Array.isArray(params.category)
     ? params.category
     : params.category
       ? [params.category]
@@ -63,28 +63,34 @@ export default async function BoardGamesAdminPage({
       orderDirection,
       search: params.search,
       status: statuses.length > 0 ? statuses : undefined,
-      category_ids: categorie_ids,
+      category_ids: category_ids,
       location_ids: location_ids,
     }),
     boardGamesService.listCategories(),
     boardGamesService.listLocations(),
   ]);
 
+  const query = {
+    search: params.search,
+    status: statuses.length > 0 ? statuses : undefined,
+    category: category_ids.length > 0 ? category_ids : undefined,
+    location: location_ids.length > 0 ? location_ids : undefined,
+    orderBy,
+    orderDirection,
+    page,
+  } as const;
+
   return (
     <>
       <HeadingSection title="桌遊管理" />
       <section className="px-4 space-y-4">
         <SearchForm
+          className="sticky top-4 z-5"
           categories={category}
           locations={location}
-          query={{
-            search: params.search,
-            status: statuses.length > 0 ? statuses : undefined,
-            category: categorie_ids.length > 0 ? categorie_ids : undefined,
-            location: location_ids.length > 0 ? location_ids : undefined,
-          }}
+          query={query}
         />
-        <BoardGameTable boardGames={boardGames.data} />
+        <BoardGameTable boardGames={boardGames.data} query={query} />
       </section>
     </>
   );
