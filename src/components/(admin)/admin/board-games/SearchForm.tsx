@@ -1,32 +1,16 @@
 import Link from "next/link";
-import type {
-  BoardGameCategory,
-  BoardGameLocation,
-  BoardGameStatus,
-} from "@/types/database";
+import type { BoardGameCategory, BoardGameLocation } from "@/types/database";
+import type { BoardGamesQuery } from "@/app/(admin)/admin/board-games/types";
 import { cn } from "@/utils/className";
-import { BoardGamesQueryState } from "@/app/(admin)/admin/board-games/types";
-
-const STATUS_OPTIONS: { value: BoardGameStatus; label: string }[] = [
-  { value: "available", label: "可借用" },
-  { value: "borrowed", label: "已借出" },
-  { value: "maintenance", label: "維護中" },
-  { value: "lost", label: "遺失" },
-  { value: "damaged", label: "損壞" },
-  { value: "retired", label: "已除役" },
-];
+import { BoardGameFilterBar } from "@/components/(admin)/admin/board-games/BoardGameFilterBar";
 
 const BASE_PATH = "/admin/board-games";
 
-type SearchFormProps = React.FormHTMLAttributes<HTMLFormElement> & {
+type SearchFormProps = React.HTMLAttributes<HTMLDivElement> & {
   categories: BoardGameCategory[];
   locations: BoardGameLocation[];
-  query: BoardGamesQueryState;
+  query: BoardGamesQuery;
 };
-
-/* ============================================================ *
- * SearchForm
- * ============================================================ */
 
 export function SearchForm({
   categories,
@@ -42,25 +26,19 @@ export function SearchForm({
   const hasActiveFilters =
     Boolean(query.search) || statusCount + categoryCount + locationCount > 0;
 
-  // query 變動時重掛載表單，確保 uncontrolled input 與網址列 query 同步
-  const formKey = [
-    query.search ?? "",
-    query.status?.join(",") ?? "",
-    query.category?.join(",") ?? "",
-    query.location?.join(",") ?? "",
-  ].join("|");
-
   return (
-    <form
-      key={formKey}
-      method="GET"
+    <div
       className={cn(
         "card flex flex-wrap items-center gap-3 rounded-2xl p-4",
         className,
       )}
       {...rest}
     >
-      <div className="relative shrink-0 w-full sm:max-w-100">
+      <form
+        key={query.search ?? ""}
+        method="GET"
+        className="relative w-full shrink-0 sm:max-w-100"
+      >
         <label className="sr-only" htmlFor="board-game-search">
           搜尋桌遊名稱、編號或相關描述
         </label>
@@ -79,44 +57,40 @@ export function SearchForm({
         >
           搜尋
         </button>
-      </div>
 
-      <div className="flex items-center gap-2">
-        <FilterChip label="狀態" count={statusCount}>
-          {STATUS_OPTIONS.map((option) => (
-            <FilterOption
-              key={option.value}
-              name="status"
-              value={option.value}
-              label={option.label}
-              defaultChecked={query.status?.includes(option.value)}
-            />
-          ))}
-        </FilterChip>
+        {/* 維持原生 GET 表單送出，並帶入目前的搜尋文字與其他篩選條件 */}
+        {query.status?.map((value) => (
+          <input
+            key={`status-${value}`}
+            type="hidden"
+            name="status"
+            value={value}
+          />
+        ))}
+        {query.category?.map((value) => (
+          <input
+            key={`category-${value}`}
+            type="hidden"
+            name="category"
+            value={value}
+          />
+        ))}
+        {query.location?.map((value) => (
+          <input
+            key={`location-${value}`}
+            type="hidden"
+            name="location"
+            value={value}
+          />
+        ))}
+      </form>
 
-        <FilterChip label="分類" count={categoryCount}>
-          {categories.map((category) => (
-            <FilterOption
-              key={category.id}
-              name="category"
-              value={category.id}
-              label={category.name}
-              defaultChecked={query.category?.includes(category.id)}
-            />
-          ))}
-        </FilterChip>
-
-        <FilterChip label="位置" count={locationCount}>
-          {locations.map((location) => (
-            <FilterOption
-              key={location.id}
-              name="location"
-              value={location.id}
-              label={location.name}
-              defaultChecked={query.location?.includes(location.id)}
-            />
-          ))}
-        </FilterChip>
+      <div className="flex flex-wrap items-center gap-2">
+        <BoardGameFilterBar
+          categories={categories}
+          locations={locations}
+          query={query}
+        />
 
         {hasActiveFilters && (
           <Link
@@ -127,73 +101,6 @@ export function SearchForm({
           </Link>
         )}
       </div>
-    </form>
-  );
-}
-
-/* ============================================================ *
- * FilterChip：單一篩選群組（下拉多選）
- * ============================================================ */
-
-type FilterChipProps = {
-  label: string;
-  count: number;
-  children: React.ReactNode;
-};
-
-function FilterChip({ label, count, children }: FilterChipProps) {
-  const isActive = count > 0;
-
-  return (
-    <details className="group relative">
-      <summary
-        className={cn(
-          "flex h-8 shrink-0 cursor-pointer items-center gap-1 rounded-full border px-3 text-sm transition [&::-webkit-details-marker]:hidden",
-          isActive ? "border-(--primary)" : "border-(--border)",
-          "text-(--foreground)",
-        )}
-      >
-        {label}
-        {isActive && <span className="text-(--primary)">({count})</span>}
-        <span className="text-xs text-(--muted) transition group-open:rotate-180">
-          ▾
-        </span>
-      </summary>
-
-      <div className="card absolute top-[calc(100%+0.5rem)] left-0 z-10 max-h-64 w-max min-w-32 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-md py-1">
-        {children}
-      </div>
-    </details>
-  );
-}
-
-/* ============================================================ *
- * FilterOption：下拉選單內的單一 checkbox 項目
- * ============================================================ */
-
-type FilterOptionProps = {
-  name: string;
-  value: string;
-  label: string;
-  defaultChecked?: boolean;
-};
-
-function FilterOption({
-  name,
-  value,
-  label,
-  defaultChecked,
-}: FilterOptionProps) {
-  return (
-    <label className="flex items-center gap-2 px-3 py-1.5 text-sm whitespace-nowrap text-(--foreground) hover:bg-(--secondary-background)">
-      <input
-        type="checkbox"
-        name={name}
-        value={value}
-        defaultChecked={defaultChecked}
-        className="size-4 rounded border-(--border) accent-(--primary)"
-      />
-      {label}
-    </label>
+    </div>
   );
 }

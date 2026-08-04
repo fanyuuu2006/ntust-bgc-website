@@ -1,11 +1,11 @@
-// src/components/(admin)/admin/board-games/BoardGameActions.tsx
 "use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
+import { useOutsideDismiss } from "@/hooks/useOutsideDismiss";
 
 type BoardGameActionsProps = {
   boardGameId: string;
@@ -20,27 +20,9 @@ export function BoardGameActions({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    }
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") setIsMenuOpen(false);
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscape);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [isMenuOpen]);
+  const menuRef = useOutsideDismiss<HTMLDivElement>(isMenuOpen, () =>
+    setIsMenuOpen(false),
+  );
 
   async function handleDelete() {
     const confirmed = window.confirm(
@@ -66,12 +48,12 @@ export function BoardGameActions({
 
   return (
     <div
-      className="relative flex items-center justify-end gap-1.5"
+      className="relative flex shrink-0 items-center justify-end gap-1.5"
       ref={menuRef}
     >
       <Link
         href={`/admin/board-games/${boardGameId}/edit`}
-        className="btn outline h-8 rounded-md px-3 text-xs"
+        className="btn outline shrink-0 rounded-md px-2.5 py-1 text-xs"
       >
         編輯
       </Link>
@@ -82,7 +64,7 @@ export function BoardGameActions({
         aria-haspopup="menu"
         aria-expanded={isMenuOpen}
         aria-label="更多操作"
-        className="flex h-8 w-8 items-center justify-center rounded-md border border-(--border) text-(--muted) transition hover:border-(--primary) hover:text-(--primary)"
+        className="flex size-8 shrink-0 items-center justify-center rounded-md border border-(--border) text-(--muted) transition hover:border-(--primary) hover:text-(--primary)"
       >
         ⋯
       </button>

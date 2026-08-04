@@ -1,4 +1,4 @@
-export type BoardGamesQueryState = {
+export type BoardGamesQuery = {
   search?: string;
   status?: string[];
   category?: string[];

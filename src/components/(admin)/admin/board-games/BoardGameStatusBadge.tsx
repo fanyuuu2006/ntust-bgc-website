@@ -27,7 +27,7 @@ export function BoardGameStatusBadge({ status }: BoardGameStatusBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border border-(--border) bg-(--secondary-background) px-2.5 py-1 text-xs font-medium",
+        "inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-(--border) bg-(--secondary-background) px-2 py-0.5 text-xs font-medium",
         STATUS_TEXT_COLOR[status],
       )}
     >

@@ -181,7 +181,9 @@ src
 │   ├── (admin)/
 │   │   ├── admin/
 │   │   │   ├── board-games/
-│   │   │   │   └── page.tsx
+│   │   │   │   ├── constants.ts
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── types.tsx
 │   │   │   ├── layout.tsx
 │   │   │   └── page.tsx
 │   │   └── layout.tsx
@@ -251,6 +253,10 @@ src
 │   │   └── admin/
 │   │       ├── HeadingSection.tsx
 │   │       └── board-games/
+│   │           ├── BoardGameActions.tsx
+│   │           ├── BoardGameFilterBar.tsx
+│   │           ├── BoardGameStatusBadge.tsx
+│   │           ├── BoardGameTable.tsx
 │   │           └── SearchForm.tsx
 │   ├── (auth)/
 │   │   ├── AuthCard.tsx
@@ -288,6 +294,8 @@ src
 │       └── WebsiteShell.tsx
 ├── contexts/
 │   └── UserContext.tsx
+├── hooks/
+│   └── useOutsideDismiss.tsx
 ├── libs/
 │   ├── api/
 │   │   ├── client.tsx
@@ -360,7 +368,8 @@ src
     │   └── session.tsx
     ├── className.tsx
     ├── date.tsx
-    └── navigation.tsx
+    ├── navigation.tsx
+    └── url.tsx
 ```
 
 ### expected file structure (for reference)
