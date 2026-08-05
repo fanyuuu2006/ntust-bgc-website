@@ -17,12 +17,15 @@ type BoardGameTableProps = React.HTMLAttributes<HTMLDivElement> & {
  * BoardGameTable
  *
  * 欄位優先序（由高到低）：桌遊 > 狀態 > 位置 / 分類 > 編號 / 更新。
- * 採「重排」而非「刪減」：手機版把位置／分類收進名稱副標，
- * 隨斷點（sm / md / lg）逐步展開為獨立欄位，資訊不因裝置縮小而消失。
+ * 編號在所有斷點皆顯示（管理者對照實體庫存必備），因此整體 padding
+ * 採較緊湊的設定，確保手機版仍能容納「編號、桌遊、狀態、操作」。
+ * 位置／分類在手機收進名稱副標，隨斷點（md / lg）展開為獨立欄位。
  * 各欄位皆為固定寬度，僅「桌遊」欄使用剩餘空間，避免互相擠壓。
  * ============================================================ */
 
-const HEADER_CELL = "px-4 py-2 font-medium text-(--muted) whitespace-nowrap";
+const HEADER_CELL =
+  "px-2 py-2 font-medium text-(--muted) whitespace-nowrap sm:px-3";
+const BODY_CELL = "px-2 py-2 align-middle sm:px-3 sm:py-2.5";
 
 export function BoardGameTable({
   boardGames,
@@ -59,12 +62,15 @@ export function BoardGameTable({
               column="inventory_number"
               label="編號"
               query={query}
-              className="w-16"
+              className="w-10 text-center sm:w-12"
             />
-            <th scope="col" className={cn(HEADER_CELL, "min-w-40")}>
+            <th scope="col" className={cn(HEADER_CELL, "min-w-32 sm:min-w-40")}>
               桌遊
             </th>
-            <th scope="col" className={cn(HEADER_CELL, "w-20")}>
+            <th
+              scope="col"
+              className={cn(HEADER_CELL, "w-16 text-center sm:w-20 ")}
+            >
               狀態
             </th>
             <th
@@ -81,11 +87,14 @@ export function BoardGameTable({
             </th>
             <SortableHeader
               column="updated_at"
-              label="最近更新時間"
+              label="更新"
               query={query}
               className="hidden w-28 lg:table-cell"
             />
-            <th scope="col" className={cn(HEADER_CELL, "w-24 text-right")}>
+            <th
+              scope="col"
+              className={cn(HEADER_CELL, "w-10 sm:w-12")}
+            >
               操作
             </th>
           </tr>
@@ -96,23 +105,28 @@ export function BoardGameTable({
               key={boardGame.id}
               className="border-b border-(--border) last:border-0 hover:bg-(--secondary-background)"
             >
-              <td className="px-4 py-2 align-middle font-mono text-xs whitespace-nowrap text-(--muted)">
-                <span>{boardGame.inventory_number}</span>
+              <td
+                className={cn(
+                  BODY_CELL,
+                  "text-center font-mono text-xs whitespace-nowrap text-(--muted)",
+                )}
+              >
+                {boardGame.inventory_number}
               </td>
 
-              <td className="px-4 py-2 align-middle">
-                <div className="flex items-center gap-2">
+              <td className={BODY_CELL}>
+                <div className="flex items-center gap-2 sm:gap-3">
                   {boardGame.image ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={boardGame.image}
                       alt={`桌遊 ${boardGame.name} 的圖片`}
-                      className="size-10 shrink-0 rounded-md object-cover"
+                      className="size-8 shrink-0 rounded-md object-cover md:size-10"
                     />
                   ) : (
                     <div
                       aria-hidden="true"
-                      className="size-10 shrink-0 rounded-md bg-(--secondary-background)"
+                      className="size-9 shrink-0 rounded-md bg-(--secondary-background)"
                     />
                   )}
                   <div className="min-w-0">
@@ -126,19 +140,34 @@ export function BoardGameTable({
                 </div>
               </td>
 
-              <td className="px-4 py-2 align-middle whitespace-nowrap">
+              <td className={cn(BODY_CELL, "text-center whitespace-nowrap")}>
                 <BoardGameStatusBadge status={boardGame.status} />
               </td>
-              <td className="hidden px-4 py-2 align-middle whitespace-nowrap text-(--muted) md:table-cell">
+              <td
+                className={cn(
+                  BODY_CELL,
+                  "hidden whitespace-nowrap text-(--muted) md:table-cell",
+                )}
+              >
                 {boardGame.location.name}
               </td>
-              <td className="hidden px-4 py-2 align-middle whitespace-nowrap text-(--muted) md:table-cell">
+              <td
+                className={cn(
+                  BODY_CELL,
+                  "hidden whitespace-nowrap text-(--muted) md:table-cell",
+                )}
+              >
                 {boardGame.category.name}
               </td>
-              <td className="hidden px-4 py-2 align-middle whitespace-nowrap text-(--muted) lg:table-cell">
+              <td
+                className={cn(
+                  BODY_CELL,
+                  "hidden whitespace-nowrap text-(--muted) lg:table-cell",
+                )}
+              >
                 {formatDate(boardGame.updated_at)}
               </td>
-              <td className="px-4 py-2 align-middle">
+              <td className={cn(BODY_CELL, "text-center")}>
                 <BoardGameActions
                   boardGameId={boardGame.id}
                   boardGameName={boardGame.name}
@@ -182,7 +211,7 @@ function SortableHeader({
     <th scope="col" className={cn(HEADER_CELL, className)}>
       <Link
         href={href}
-        className="inline-flex items-center transition hover:text-(--foreground)"
+        className="inline-flex items-center justify-center gap-1 transition hover:text-(--foreground)"
       >
         <span className="truncate">{label}</span>
         {isActive && (

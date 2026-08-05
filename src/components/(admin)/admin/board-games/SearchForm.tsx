@@ -95,7 +95,7 @@ export function SearchForm({
         {hasActiveFilters && (
           <Link
             href={BASE_PATH}
-            className="inline-flex h-8 shrink-0 items-center rounded-full border border-(--border) px-3 text-sm text-(--muted) transition hover:border-(--primary) hover:text-(--primary)"
+            className="btn rounded-full px-3 py-1 text-sm"
           >
             清除
           </Link>
