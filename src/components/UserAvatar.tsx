@@ -17,7 +17,7 @@ function hashString(str: string) {
 
 export function UserAvatar({ user, className, ...rest }: UserAvatarProps) {
   if (!user.avatar) {
-    const seed = hashString(user.id ?? user.name);
+    const seed = hashString(user.id);
     const colorIndex1 = seed % CSS_VARIABLE_COLORS.length;
     // 讓第二個顏色與第一個不同，避免漸層失效變成單一色塊
     const colorIndex2 =

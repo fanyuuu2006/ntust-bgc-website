@@ -16,8 +16,8 @@ import {
 } from "./auth.errors";
 import { sessionRepository } from "@/repositories/sessions.repository";
 import { generateSessionToken } from "@/utils/auth/session";
-import { userProfilesRepository } from "@/repositories/user-profiles.repository";
 import { SessionSummary } from "./auth.types";
+import { usersService } from "../users/users.service";
 
 /** Session 有效期：7 天 */
 const SESSION_DURATION = 1000 * 60 * 60 * 24 * 7;
@@ -70,8 +70,9 @@ export const authService = {
       passwordHash,
     });
 
-    await userProfilesRepository.create(user.id, {
-      
+    await usersService.createProfile(user.id, {
+      real_name: data.real_name,
+      phone: data.phone,
     });
 
     return user;

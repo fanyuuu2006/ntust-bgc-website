@@ -11,8 +11,10 @@ import { FormFeedback } from "@/components/FormFeedback";
 import { NEXT_PUBLIC_TURNSTILE_SITE_KEY } from "@/libs/env";
 
 type RegisterFormValues = {
-  name: string;
   email: string;
+  name: string;
+  real_name: string;
+  phone: string;
   password: string;
   confirmPassword: string;
   acceptTerms: boolean;
@@ -29,6 +31,8 @@ type FieldErrors = Partial<Record<keyof RegisterFormValues, string>>;
 const createInitialValues = (): RegisterFormValues => ({
   name: "",
   email: "",
+  real_name: "",
+  phone: "",
   password: "",
   confirmPassword: "",
   acceptTerms: false,
@@ -36,20 +40,36 @@ const createInitialValues = (): RegisterFormValues => ({
 
 const fields: RegisterField[] = [
   {
-    id: "name",
-    label: "姓名",
-    type: "text",
-    required: true,
-    autoComplete: "name",
-    placeholder: "請輸入您的姓名",
-  },
-  {
     id: "email",
     label: "Email",
     type: "email",
     required: true,
     autoComplete: "email",
     placeholder: "請輸入 Email",
+  },
+  {
+    id: "name",
+    label: "帳號名稱",
+    type: "text",
+    required: true,
+    autoComplete: "name",
+    placeholder: "請輸入您的帳號名稱",
+  },
+  {
+    id: "real_name",
+    label: "真實姓名",
+    type: "text",
+    required: true,
+    autoComplete: "given-name",
+    placeholder: "請輸入您的真實姓名",
+  },
+  {
+    id: "phone",
+    label: "電話",
+    type: "tel",
+    required: true,
+    autoComplete: "tel",
+    placeholder: "請輸入您的電話號碼",
   },
   {
     id: "password",

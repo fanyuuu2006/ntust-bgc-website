@@ -2,6 +2,7 @@ import "server-only";
 import { userProfilesRepository } from "@/repositories/user-profiles.repository";
 import {
   createUserProfileSchema,
+  updateAcademicProfileSchema,
   updateUserAccountSchema,
   updateUserProfileSchema,
 } from "./users.schema";
@@ -58,6 +59,20 @@ export const usersService = {
     return updated;
   },
 
+  updateAcademicProfile: async (
+    userId: string,
+    payload: unknown,
+  ): Promise<UserProfile> => {
+    const data = updateAcademicProfileSchema.parse(payload);
+
+    const updated = await userProfilesRepository.updateByUserId(userId, data);
+
+    if (!updated) {
+      throw new UserProfileNotFoundError();
+    }
+
+    return updated;
+  },
   /**
    * 更新使用者帳號資料（部分欄位）。
    * @throws {UserProfileNotFoundError} 當該 userId 沒有對應的個人資料時
@@ -72,6 +87,21 @@ export const usersService = {
     }
 
     return updated;
+  },
+
+  hasRequiredProfileFields: async (userId: string): Promise<boolean> => {
+    const profile = await userProfilesRepository.findByUserId(userId);
+    if (!profile) {
+      return false;
+    }
+
+    // 判斷必要欄位是否都有值
+    const requiredFields: (keyof UserProfile)[] = ["real_name", "phone"];
+
+    return requiredFields.every((field) => {
+      const value = profile[field];
+      return value !== null && value !== undefined && value !== "";
+    });
   },
 };
 

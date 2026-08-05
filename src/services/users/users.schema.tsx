@@ -1,22 +1,33 @@
 import { z } from "zod";
 
-const NAME_MAX_LENGTH = 50;
+const REAL_NAME_MAX_LENGTH = 50;
 
-const userProfileFields = {
-  real_name: z.string().max(NAME_MAX_LENGTH).optional(),
-  phone: z.string().optional(),
+const userAcademicFields = {
   student_id: z.string().optional(),
   school: z.string().optional(),
   department: z.string().optional(),
   grade: z.string().optional(),
 };
 
+export const userContactFields = {
+  real_name: z.string().trim().max(REAL_NAME_MAX_LENGTH),
+  phone: z.string().trim().min(1, { error: "電話不可為空" }),
+};
+
 export const createUserProfileSchema = z.object({
-  ...userProfileFields,
+  ...userContactFields,
+  ...userAcademicFields,
 });
 
+export const updateAcademicProfileSchema = z
+  .object({
+    ...userAcademicFields,
+  })
+  .refine((data) => Object.keys(data).length > 0, "沒有可更新的欄位");
+
 export const updateUserProfileSchema = z.object({
-  ...userProfileFields,
+  ...userContactFields,
+  ...userAcademicFields,
 });
 
 export const updateUserAccountSchema = z
@@ -25,7 +36,7 @@ export const updateUserAccountSchema = z
       .string()
       .trim()
       .min(1, "顯示名稱不可為空")
-      .max(NAME_MAX_LENGTH)
+      .max(REAL_NAME_MAX_LENGTH)
       .optional(),
 
     avatar: z.union([z.url("請輸入有效的圖片網址"), z.null()]).optional(),
