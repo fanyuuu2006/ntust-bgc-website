@@ -7,6 +7,7 @@ import { cn } from "@/utils/className";
 import { buildQueryString } from "@/utils/url";
 import { BoardGamesQuery } from "@/app/(admin)/admin/board-games/types";
 import { BASE_PATH } from "@/app/(admin)/admin/board-games/constants";
+import { BoardGameImage } from "@/components/BoardGameImage";
 
 type BoardGameTableProps = React.HTMLAttributes<HTMLDivElement> & {
   boardGames: BoardGameWithCategoryAndLocation[];
@@ -91,10 +92,7 @@ export function BoardGameTable({
               query={query}
               className="hidden w-28 lg:table-cell"
             />
-            <th
-              scope="col"
-              className={cn(HEADER_CELL, "w-10 sm:w-12")}
-            >
+            <th scope="col" className={cn(HEADER_CELL, "w-10 sm:w-12")}>
               操作
             </th>
           </tr>
@@ -116,19 +114,10 @@ export function BoardGameTable({
 
               <td className={BODY_CELL}>
                 <div className="flex items-center gap-2 sm:gap-3">
-                  {boardGame.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={boardGame.image}
-                      alt={`桌遊 ${boardGame.name} 的圖片`}
-                      className="size-8 shrink-0 rounded-md object-cover md:size-10"
-                    />
-                  ) : (
-                    <div
-                      aria-hidden="true"
-                      className="size-9 shrink-0 rounded-md bg-(--secondary-background)"
-                    />
-                  )}
+                  <BoardGameImage
+                    boardGame={boardGame}
+                    className="size-8 shrink-0 rounded-md object-cover md:size-10"
+                  />
                   <div className="min-w-0">
                     <p className="line-clamp-2 font-medium text-(--foreground)">
                       {boardGame.name}
