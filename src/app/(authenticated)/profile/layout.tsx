@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "個人資料",
+  title: "個人檔案",
 };
 
 export default function ProfileLayout({

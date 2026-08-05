@@ -1,6 +1,6 @@
 import { AccountSettingsCard } from "@/components/(authenticated)/settings/AccountSettingsCard";
 import { PasswordSettingsCard } from "@/components/(authenticated)/settings/PasswordSettingsCard";
-import { ProfileSettingsCard } from "@/components/(authenticated)/settings/ProfileSettingsCard";
+import { UserProfileSettingsCard } from "@/components/(authenticated)/settings/UserProfileSettingsCard";
 import { SessionSettingsCard } from "@/components/(authenticated)/settings/SessionSettingsCard";
 import { getCurrentUser } from "@/libs/auth";
 import { usersService } from "@/services/users/users.service";
@@ -11,6 +11,8 @@ export default async function SettingsPage() {
   if (!user) return null;
 
   const profile = await usersService.getProfile(user.id);
+
+  if (!profile) return null;
 
   return (
     <main className="pb-8 sm:pb-12">
@@ -26,8 +28,8 @@ export default async function SettingsPage() {
               id="account"
               user={user}
             />
-            <ProfileSettingsCard
-              key={profile?.updated_at ?? "new-profile"}
+            <UserProfileSettingsCard
+              key={profile.updated_at ?? "new-profile"}
               id="profile"
               profile={profile}
             />

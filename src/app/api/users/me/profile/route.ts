@@ -4,7 +4,6 @@ import { z, ZodError } from "zod";
 import { getCurrentUser } from "@/libs/auth";
 import { usersService } from "@/services/users/users.service";
 import {
-  UserProfileAlreadyExistsError,
   UserProfileNotFoundError,
 } from "@/services/users/users.errors";
 import type { User } from "@/types/database";
@@ -46,46 +45,6 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
-  // 先驗證登入，避免對未授權請求做無謂的 body parsing
-  const authResult = await requireUser();
-  if (authResult instanceof NextResponse) {
-    return authResult;
-  }
-  const user = authResult;
-
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ message: "請求格式錯誤" }, { status: 400 });
-  }
-
-  try {
-    const profile = await usersService.createProfile(user.id, body);
-
-    return NextResponse.json({ data: profile }, { status: 201 });
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { message: "輸入資料格式不正確", errors: error.issues },
-        { status: 400 },
-      );
-    }
-
-    if (error instanceof UserProfileAlreadyExistsError) {
-      return NextResponse.json({ message: "個人資料已存在" }, { status: 409 });
-    }
-
-    console.error("[POST /api/users/me/profile]", error);
-
-    return NextResponse.json(
-      { message: "建立個人資料失敗，請稍後再試" },
-      { status: 500 },
-    );
-  }
-}
-
 export async function PATCH(request: Request) {
   const authResult = await requireUser();
   if (authResult instanceof NextResponse) {
@@ -101,7 +60,7 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    const profile = await usersService.updateProfile(user.id, body);
+    const profile = await usersService.updateAcademicProfile(user.id, body);
 
     return NextResponse.json({ data: profile }, { status: 200 });
   } catch (error) {

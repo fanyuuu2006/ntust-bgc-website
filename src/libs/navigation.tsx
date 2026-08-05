@@ -19,7 +19,7 @@ export const userNavigation = [
     href: "/dashboard",
   },
   {
-    label: "個人資料",
+    label: "個人檔案",
     href: "/profile",
   },
   {

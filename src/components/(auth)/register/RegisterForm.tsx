@@ -10,35 +10,7 @@ import { FieldInput, type FieldInputField } from "@/components/FieldInput";
 import { FormFeedback } from "@/components/FormFeedback";
 import { NEXT_PUBLIC_TURNSTILE_SITE_KEY } from "@/libs/env";
 
-type RegisterFormValues = {
-  email: string;
-  name: string;
-  real_name: string;
-  phone: string;
-  password: string;
-  confirmPassword: string;
-  acceptTerms: boolean;
-};
-
-type RegisterFieldId = Exclude<keyof RegisterFormValues, "acceptTerms">;
-
-type RegisterField = Omit<FieldInputField, "id"> & {
-  id: RegisterFieldId;
-};
-
-type FieldErrors = Partial<Record<keyof RegisterFormValues, string>>;
-
-const createInitialValues = (): RegisterFormValues => ({
-  name: "",
-  email: "",
-  real_name: "",
-  phone: "",
-  password: "",
-  confirmPassword: "",
-  acceptTerms: false,
-});
-
-const fields: RegisterField[] = [
+const fields = [
   {
     id: "email",
     label: "Email",
@@ -88,8 +60,25 @@ const fields: RegisterField[] = [
     autoComplete: "new-password",
     placeholder: "請再次輸入密碼",
   },
-];
+] as const satisfies readonly FieldInputField[];
 
+type RegisterFieldId = (typeof fields)[number]["id"];
+
+type RegisterFormValues = Record<RegisterFieldId, string> & {
+  acceptTerms: boolean;
+};
+
+type FieldErrors = Partial<Record<RegisterFieldId | "acceptTerms", string>>;
+
+const INITIAL_VALUES: RegisterFormValues = {
+  email: "",
+  name: "",
+  real_name: "",
+  phone: "",
+  password: "",
+  confirmPassword: "",
+  acceptTerms: false,
+};
 type RegisterFormProps = Omit<
   React.FormHTMLAttributes<HTMLFormElement>,
   "onSubmit"
@@ -99,7 +88,7 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
   const router = useRouter();
   const acceptTermsId = useId();
 
-  const [values, setValues] = useState<RegisterFormValues>(createInitialValues);
+  const [values, setValues] = useState<RegisterFormValues>(INITIAL_VALUES);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -110,33 +99,17 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
 
-    setValues((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
+    setValues((prev) => ({ ...prev, [name]: value }));
     setFormError(null);
-
-    setFieldErrors((prev) => ({
-      ...prev,
-      [name]: undefined,
-    }));
+    setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
   }
 
   function handleAcceptTermsChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { checked } = event.target;
 
-    setValues((prev) => ({
-      ...prev,
-      acceptTerms: checked,
-    }));
-
+    setValues((prev) => ({ ...prev, acceptTerms: checked }));
     setFormError(null);
-
-    setFieldErrors((prev) => ({
-      ...prev,
-      acceptTerms: undefined,
-    }));
+    setFieldErrors((prev) => ({ ...prev, acceptTerms: undefined }));
   }
 
   function validate(): FieldErrors {
@@ -153,15 +126,8 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
     return errors;
   }
 
-  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
-    setFormError(null);
-
-    if (!turnstileToken) {
-      setFormError("請完成安全驗證");
-      return;
-    }
 
     const errors = validate();
     setFieldErrors(errors);
@@ -170,6 +136,12 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
       return;
     }
 
+    if (!turnstileToken) {
+      setFormError("請完成安全驗證");
+      return;
+    }
+
+    setFormError(null);
     setIsLoading(true);
 
     try {
@@ -180,14 +152,14 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
           email: values.email,
           password: values.password,
           turnstileToken,
+          real_name: values.real_name,
+          phone: values.phone,
         },
       });
-      turnstileRef.current?.reset();
-      setTurnstileToken("");
       router.push("/login");
     } catch (err) {
       turnstileRef.current?.reset();
-      setTurnstileToken(""); // ← 新增：同步清空 state，避免帶著失效 token 再次送出
+      setTurnstileToken("");
       setFormError(
         err instanceof ApiError ? err.message : "註冊失敗，請稍後再試",
       );
@@ -238,19 +210,13 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
             className="mt-0.5 size-4 shrink-0 rounded border-(--border) accent-(--primary)"
           />
 
-          <span>
+          <span className="flex flex-wrap items-center gap-1">
             我已閱讀並同意
-            <Link
-              href="/terms"
-              className="mx-1 text-(--primary) hover:underline"
-            >
+            <Link href="/terms" className="text-(--primary) hover:underline">
               服務條款
             </Link>
             與
-            <Link
-              href="/privacy"
-              className="ml-1 text-(--primary) hover:underline"
-            >
+            <Link href="/privacy" className="text-(--primary) hover:underline">
               隱私權政策
             </Link>
           </span>
@@ -266,13 +232,13 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
           </p>
         )}
       </div>
+
       <div className="flex justify-center">
         <Turnstile
           ref={turnstileRef}
           siteKey={NEXT_PUBLIC_TURNSTILE_SITE_KEY}
           onSuccess={(token) => {
             setTurnstileToken(token);
-            setFormError(null);
           }}
           onExpire={() => {
             setTurnstileToken("");
@@ -283,6 +249,7 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
           }}
         />
       </div>
+
       <FormFeedback error={formError} />
 
       <div className="flex flex-col gap-4">

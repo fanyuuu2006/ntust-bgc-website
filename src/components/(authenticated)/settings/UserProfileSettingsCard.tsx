@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SettingsCard } from "./SettingsCard";
 import { FieldInput, type FieldInputField } from "@/components/FieldInput";
@@ -9,9 +9,7 @@ import { ApiError } from "@/libs/api/errors";
 import type { UserProfile } from "@/types/database";
 import { FormFeedback } from "@/components/FormFeedback";
 
-type ProfileSettingsCardValues = {
-  real_name: string;
-  phone: string;
+type AcademicProfileValues = {
   student_id: string;
   school: string;
   department: string;
@@ -19,25 +17,23 @@ type ProfileSettingsCardValues = {
 };
 
 type EditableField = Omit<FieldInputField, "id"> & {
-  id: keyof ProfileSettingsCardValues;
+  id: keyof AcademicProfileValues;
 };
 
-const basicFields: EditableField[] = [
+const contactFields: FieldInputField[] = [
   {
     id: "real_name",
     label: "真實姓名",
     type: "text",
-    autoComplete: "name",
-    placeholder: "請輸入您的真實姓名",
-    hint: "用於社團確認與辨識社員資料",
+    disabled: true,
+    hint: "如需修改請聯絡社團幹部",
   },
   {
     id: "phone",
     label: "手機號碼",
     type: "tel",
-    autoComplete: "tel",
-    placeholder: "請輸入您的手機號碼",
-    hint: "例如：0912345678",
+    disabled: true,
+    hint: "如需修改請聯絡社團幹部",
   },
 ];
 
@@ -60,42 +56,45 @@ const academicFields: EditableField[] = [
     type: "text",
     placeholder: "例如：資訊管理、企業管理",
   },
-  { id: "grade", label: "年級", type: "text", placeholder: "例如：大一、碩二" },
+  {
+    id: "grade",
+    label: "年級",
+    type: "text",
+    placeholder: "例如：大一、碩二",
+  },
 ];
 
-function toFormValues(profile: UserProfile | null): ProfileSettingsCardValues {
+function toFormValues(profile: UserProfile): AcademicProfileValues {
   return {
-    real_name: profile?.real_name ?? "",
-    phone: profile?.phone ?? "",
-    student_id: profile?.student_id ?? "",
-    school: profile?.school ?? "",
-    department: profile?.department ?? "",
-    grade: profile?.grade ?? "",
+    student_id: profile.student_id ?? "",
+    school: profile.school ?? "",
+    department: profile.department ?? "",
+    grade: profile.grade ?? "",
   };
 }
 
 function isValuesDirty(
-  current: ProfileSettingsCardValues,
-  initial: ProfileSettingsCardValues,
+  current: AcademicProfileValues,
+  initial: AcademicProfileValues,
 ) {
-  return (Object.keys(current) as (keyof ProfileSettingsCardValues)[]).some(
+  return (Object.keys(current) as (keyof AcademicProfileValues)[]).some(
     (key) => current[key] !== initial[key],
   );
 }
 
-type ProfileSettingsCardProps = React.HTMLAttributes<HTMLDivElement> & {
-  profile: UserProfile | null;
+type UserProfileSettingsCardProps = React.HTMLAttributes<HTMLDivElement> & {
+  profile: UserProfile;
 };
 
-export const ProfileSettingsCard = ({
+export const UserProfileSettingsCard = ({
   profile,
+  className,
   ...rest
-}: ProfileSettingsCardProps) => {
+}: UserProfileSettingsCardProps) => {
   const router = useRouter();
 
-  const initialValues = useMemo(() => toFormValues(profile), [profile]);
-  const [values, setValues] =
-    useState<ProfileSettingsCardValues>(initialValues);
+  const initialValues = toFormValues(profile);
+  const [values, setValues] = useState<AcademicProfileValues>(initialValues);
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -122,14 +121,14 @@ export const ProfileSettingsCard = ({
 
     try {
       await apiClient("/api/users/me/profile", {
-        method: profile ? "PATCH" : "POST",
+        method: "PATCH",
         body: values,
       });
-      setSuccessMessage("個人資料已更新");
+      setSuccessMessage("學籍資訊已更新");
       router.refresh();
     } catch (err) {
       setFormError(
-        err instanceof ApiError ? err.message : "更新個人資料失敗，請稍後再試",
+        err instanceof ApiError ? err.message : "更新學籍資訊失敗，請稍後再試",
       );
     } finally {
       setIsLoading(false);
@@ -139,26 +138,27 @@ export const ProfileSettingsCard = ({
   return (
     <SettingsCard
       title="個人資料"
-      description="真實姓名、聯絡方式與學籍資訊"
+      description="查看聯絡資訊與修改學籍資訊"
+      className={className}
       {...rest}
     >
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-        <fieldset className="flex flex-col gap-3">
-          <legend className="text-sm font-semibold text-(--foreground)">聯絡資訊</legend>
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
+        <section className="flex flex-col gap-4">
+          <p className="text-sm font-semibold text-(--foreground)">聯絡資訊</p>
           <div className="grid gap-4 lg:grid-cols-2">
-            {basicFields.map((field) => (
+            {contactFields.map((field) => (
               <FieldInput
                 key={field.id}
                 field={field}
-                value={values[field.id]}
-                onChange={handleChange}
+                value={profile[field.id as keyof UserProfile] as string}
+                onChange={() => {}}
               />
             ))}
           </div>
-        </fieldset>
+        </section>
 
-        <fieldset className="flex flex-col gap-3">
-          <legend className="text-sm font-semibold text-(--foreground)">學籍資訊</legend>
+        <section className="flex flex-col gap-4 border-t border-(--border) pt-6">
+          <p className="text-sm font-semibold text-(--foreground)">學籍資訊</p>
           <div className="grid gap-4 lg:grid-cols-2">
             {academicFields.map((field) => (
               <FieldInput
@@ -169,7 +169,7 @@ export const ProfileSettingsCard = ({
               />
             ))}
           </div>
-        </fieldset>
+        </section>
 
         <FormFeedback error={formError} success={successMessage} />
 

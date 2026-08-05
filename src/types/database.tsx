@@ -76,14 +76,14 @@ export type User = {
 export type UserProfile = {
   id: UUID;
   user_id: UUID;
-  phone: string | null;
+  real_name: string;
+  phone: string;
   student_id: string | null;
   school: string | null;
   department: string | null;
   grade: string | null;
   created_at: Timestamp;
   updated_at: Timestamp;
-  real_name: string | null;
 };
 
 /* =========================================================

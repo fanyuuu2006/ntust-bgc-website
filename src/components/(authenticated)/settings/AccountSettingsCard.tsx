@@ -25,11 +25,10 @@ type AccountSettingsCardProps = React.HTMLAttributes<HTMLDivElement> & {
 
 const nameField: FieldInputField = {
   id: "name",
-  label: "名稱",
+  label: "帳號名稱",
   type: "text",
   autoComplete: "nickname",
   placeholder: "請輸入顯示名稱",
-  hint: "將顯示於留言、討論區與個人頁面",
 };
 
 const avatarField: FieldInputField = {
