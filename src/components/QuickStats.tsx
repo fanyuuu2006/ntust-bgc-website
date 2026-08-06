@@ -6,11 +6,10 @@ export type QuickStat = {
   key: string;
   label: string;
   value: string | number;
-  /** 僅在數值有明確語意時指定顏色（例如逾期用 red），預設一律使用 primary */
   accent?: QuickStatAccent;
 };
 
-type QuickStatsSectionProps = React.HTMLAttributes<HTMLElement> & {
+type QuickStatsProps = {
   stats: QuickStat[];
 };
 
@@ -59,42 +58,16 @@ function StatCard({ stat }: { stat: QuickStat }) {
   );
 }
 
-export function QuickStatsSection({
-  stats,
-  className,
-  ...rest
-}: QuickStatsSectionProps) {
+export function QuickStats({ stats }: QuickStatsProps) {
   if (stats.length === 0) return null;
 
-  return (
-    <section
-      className={className}
-      aria-labelledby="profile-stats-title"
-      {...rest}
-    >
-      <div className="container">
-        <div className="mb-3">
-          <h2
-            id="profile-stats-title"
-            className="text-base font-bold text-(--foreground) sm:text-lg"
-          >
-            統計資訊
-          </h2>
-        </div>
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-          {stats.map((stat, index) => (
-            <StatCard
-              key={stat.key}
-              stat={{
-                accent:
-                  stat.accent ??
-                  DEFAULT_ACCENTS[index % DEFAULT_ACCENTS.length],
-                ...stat,
-              }}
-            />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+  return stats.map((stat, index) => (
+    <StatCard
+      key={stat.key}
+      stat={{
+        accent: stat.accent ?? DEFAULT_ACCENTS[index % DEFAULT_ACCENTS.length],
+        ...stat,
+      }}
+    />
+  ));
 }

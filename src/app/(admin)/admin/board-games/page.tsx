@@ -9,6 +9,7 @@ import {
   DEFAULT_ORDER_DIRECTION,
   DEFAULT_PAGE_SIZE,
 } from "./constants";
+import { QuickStats } from "@/components/QuickStats";
 
 type BoardGamesSearchParams = {
   page?: string;
@@ -63,7 +64,15 @@ export default async function BoardGamesAdminPage({
       ? [params.location]
       : [];
 
-  const [boardGames, category, location] = await Promise.all([
+  const [
+    boardGames,
+    category,
+    location,
+    boardGamesCount,
+    availableBoardGamesCount,
+    borrowedBoardGamesCount,
+    pendingBoardGamesCount,
+  ] = await Promise.all([
     boardGamesService.listBoardGamesWithCategoryAndLocation({
       page,
       pageSize,
@@ -76,6 +85,10 @@ export default async function BoardGamesAdminPage({
     }),
     boardGamesService.listCategories(),
     boardGamesService.listLocations(),
+    boardGamesService.countAllBoardGames(),
+    boardGamesService.countBoardGamesByStatus("available"),
+    boardGamesService.countBoardGamesByStatus("borrowed"),
+    boardGamesService.countBorrowingsByStatus("pending"),
   ]);
 
   const query = {
@@ -91,12 +104,35 @@ export default async function BoardGamesAdminPage({
   return (
     <>
       <HeadingSection title="桌遊管理" />
+
       <section className="px-4 space-y-4">
-        <SearchForm
-          categories={category}
-          locations={location}
-          query={query}
-        />
+        <SearchForm categories={category} locations={location} query={query} />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <QuickStats
+            stats={[
+              {
+                key: "boardGamesCount",
+                label: "桌遊總數",
+                value: boardGamesCount,
+              },
+              {
+                key: "availableBoardGamesCount",
+                label: "可借用桌遊",
+                value: availableBoardGamesCount,
+              },
+              {
+                key: "borrowedBoardGamesCount",
+                label: "借出中桌遊",
+                value: borrowedBoardGamesCount,
+              },
+              {
+                key: "pendingBoardGamesCount",
+                label: "待審核借用",
+                value: pendingBoardGamesCount,
+              },
+            ]}
+          />
+        </div>
         <BoardGameTable boardGames={boardGames.data} query={query} />
       </section>
     </>

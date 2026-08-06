@@ -23,6 +23,8 @@ import {
   BoardGame,
   BoardGameCategory,
   BoardGameLocation,
+  BoardGameStatus,
+  BorrowingStatus,
 } from "@/types/database";
 import {
   BoardGameBorrowingWithBoardGame,
@@ -443,5 +445,23 @@ export const boardGamesService = {
     ]);
 
     return updated;
+  },
+
+  countAllBoardGames: async (): Promise<number> => {
+    return boardGamesRepository.countAll();
+  },
+
+  /**
+   * 依狀態計算桌遊數量（供管理後台總覽統計使用）。
+   */
+  countBoardGamesByStatus: async (status: BoardGameStatus): Promise<number> => {
+    return boardGamesRepository.countByStatus(status);
+  },
+
+  /**
+   * 依狀態計算借用紀錄數量（供管理後台總覽統計使用）。
+   */
+  countBorrowingsByStatus: async (status: BorrowingStatus): Promise<number> => {
+    return boardGameBorrowingsRepository.countByStatus(status);
   },
 };

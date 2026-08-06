@@ -134,6 +134,14 @@ export const boardGamesRepository = {
     return (count ?? 0) > 0;
   },
 
+  countAll: async (): Promise<number> => {
+    const { count, error } = await supabase
+      .from("board_games")
+      .select("*", { count: "exact", head: true });
+    if (error) throwRepositoryError("計算桌遊總數失敗", error);
+    return count ?? 0;
+  },
+
   countByStatus: async (status: BoardGameStatus): Promise<number> => {
     const { count, error } = await supabase
       .from("board_games")

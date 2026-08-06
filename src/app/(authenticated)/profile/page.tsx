@@ -4,7 +4,6 @@ import {
 } from "@/components/(authenticated)/profile/HistorySection";
 import { ProfileBasicInfoSection } from "@/components/(authenticated)/profile/ProfileBasicInfoSection";
 import { ProfileHeroSection } from "@/components/(authenticated)/profile/ProfileHeroSection";
-import { QuickStatsSection } from "@/components/(authenticated)/profile/QuickStats";
 import { getCurrentUser } from "@/libs/auth";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { membershipService } from "@/services/memberships/memberships.service";
@@ -15,6 +14,7 @@ import { eventsService } from "@/services/events/events.service";
 import { BoardGameBorrowingWithBoardGame } from "@/services/board-games/board-games.types";
 import { EventAttendanceWithEvent } from "@/repositories/event-attendances.repository";
 import { formatDate } from "@/utils/date";
+import { QuickStats } from "@/components/QuickStats";
 
 type HistoryVariant = HistoryItem["statusVariant"];
 
@@ -141,30 +141,45 @@ export default async function ProfilePage() {
         currentMembership={currentMembership}
         currentOfficerPositions={currentOfficerPositions}
       />
-      <QuickStatsSection
-        stats={[
-          {
-            key: "borrowings",
-            label: "累計借用桌遊次數",
-            value: totalBorrowings,
-          },
-          {
-            key: "currently-borrowings",
-            label: "借用中桌遊數量",
-            value: currentlyBorrowings,
-          },
-          {
-            key: "attendances",
-            label: "本學年簽到次數",
-            value: attendanceCount,
-          },
-          {
-            key: "joined-year",
-            label: "入社學年",
-            value: joinedYear ?? "尚無紀錄",
-          },
-        ]}
-      />
+      <section aria-labelledby="profile-stats-title">
+        <div className="container">
+          <div className="mb-3">
+            <h2
+              id="profile-stats-title"
+              className="text-base font-bold text-(--foreground) sm:text-lg"
+            >
+              統計資訊
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+            <QuickStats
+              stats={[
+                {
+                  key: "borrowings",
+                  label: "累計借用桌遊次數",
+                  value: totalBorrowings,
+                },
+                {
+                  key: "currently-borrowings",
+                  label: "借用中桌遊數量",
+                  value: currentlyBorrowings,
+                },
+                {
+                  key: "attendances",
+                  label: "本學年簽到次數",
+                  value: attendanceCount,
+                },
+                {
+                  key: "joined-year",
+                  label: "入社學年",
+                  value: joinedYear ?? "尚無紀錄",
+                },
+              ]}
+            />
+          </div>
+        </div>
+      </section>
+
       <HistorySection
         groups={[
           {

@@ -193,6 +193,16 @@ export const boardGameBorrowingsRepository = {
     return count ?? 0;
   },
 
+  countByStatus: async (status: BorrowingStatus): Promise<number> => {
+    const { count, error } = await supabase
+      .from("board_game_borrowings")
+      .select("*", { count: "exact", head: true })
+      .eq("status", status);
+
+    if (error) throwRepositoryError("依狀態計算借用紀錄數量失敗", error);
+    return count ?? 0;
+  },
+
   create: async (
     payload: CreateBoardGameBorrowingInput,
   ): Promise<BoardGameBorrowing> => {
