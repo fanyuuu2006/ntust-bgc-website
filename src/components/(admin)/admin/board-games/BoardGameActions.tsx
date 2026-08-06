@@ -8,7 +8,9 @@ import { ApiError } from "@/libs/api/errors";
 import { useOutsideDismiss } from "@/hooks/useOutsideDismiss";
 import { cn } from "@/utils/className";
 
-const BASE_CLASS = "px-3 py-1.5 text-sm transition-colors duration-300";
+const MENU_ITEM_CLASS =
+  "flex w-full items-center justify-center px-3.5 py-2 text-sm transition";
+
 type BoardGameActionsProps = {
   boardGameId: string;
   boardGameName: string;
@@ -49,26 +51,30 @@ export function BoardGameActions({
   }
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div
+      className="relative flex shrink-0 flex-col items-center justify-center"
+      ref={menuRef}
+    >
       <button
         type="button"
         onClick={() => setIsMenuOpen((open) => !open)}
         aria-haspopup="menu"
         aria-expanded={isMenuOpen}
         aria-label={`「${boardGameName}」的操作選單`}
+        className="flex size-8 shrink-0 items-center justify-center text-lg text-(--muted)"
       >
-        ⋯
+        ⋮
       </button>
 
       {isMenuOpen && (
         <div
           role="menu"
-          className="card absolute top-[calc(100%+0.25rem)] right-0 w-28 z-10 flex flex-col rounded-md"
+          className="card absolute top-[calc(100%+0.5rem)] right-0 z-5 min-w-28 overflow-hidden rounded-xl"
         >
           <Link
             href={`/admin/board-games/${boardGameId}/edit`}
             role="menuitem"
-            className={BASE_CLASS}
+            className={cn(MENU_ITEM_CLASS, "hover:bg-(--secondary-background)")}
           >
             編輯
           </Link>
@@ -77,7 +83,10 @@ export function BoardGameActions({
             role="menuitem"
             onClick={handleDelete}
             disabled={isDeleting}
-            className={cn(BASE_CLASS, "text-(--game-red)")}
+            className={cn(
+              MENU_ITEM_CLASS,
+              "text-(--game-red) hover:bg-(--game-red)/10",
+            )}
           >
             {isDeleting ? "刪除中…" : "刪除"}
           </button>
@@ -87,7 +96,7 @@ export function BoardGameActions({
       {error && (
         <p
           role="alert"
-          className="absolute top-full right-0 mt-1 w-36 text-right text-xs text-(--game-red)"
+          className="mt-1 max-w-36 text-right text-xs text-(--game-red)"
         >
           {error}
         </p>

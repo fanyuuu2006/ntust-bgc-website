@@ -29,7 +29,7 @@ export function SearchForm({
   return (
     <div
       className={cn(
-        "card flex flex-wrap items-center gap-3 rounded-2xl p-4",
+        "sticky top-4 z-10 card flex flex-wrap items-center gap-3 rounded-2xl p-4",
         className,
       )}
       {...rest}

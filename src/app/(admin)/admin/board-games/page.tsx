@@ -93,7 +93,6 @@ export default async function BoardGamesAdminPage({
       <HeadingSection title="桌遊管理" />
       <section className="px-4 space-y-4">
         <SearchForm
-          className="sticky top-4 z-5"
           categories={category}
           locations={location}
           query={query}

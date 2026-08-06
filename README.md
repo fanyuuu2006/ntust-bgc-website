@@ -176,7 +176,6 @@
 ### current routes
 
 ```text
-src
 ├── app/
 │   ├── (admin)/
 │   │   ├── admin/

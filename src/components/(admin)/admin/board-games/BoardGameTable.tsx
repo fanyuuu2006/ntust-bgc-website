@@ -116,7 +116,7 @@ export function BoardGameTable({
                 <div className="flex items-center gap-2 sm:gap-3">
                   <BoardGameImage
                     boardGame={boardGame}
-                    className="size-8 shrink-0 rounded-md object-cover md:size-10"
+                    className="size-8 shrink-0 rounded-md border border-(--border) object-cover md:size-10"
                   />
                   <div className="min-w-0">
                     <p className="line-clamp-2 font-medium text-(--foreground)">
