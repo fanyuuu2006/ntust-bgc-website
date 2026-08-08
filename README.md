@@ -176,6 +176,7 @@
 ### current routes
 
 ```text
+src
 ├── app/
 │   ├── (admin)/
 │   │   ├── admin/
@@ -269,15 +270,15 @@
 │   │   ├── profile/
 │   │   │   ├── HistorySection.tsx
 │   │   │   ├── ProfileBasicInfoSection.tsx
-│   │   │   ├── ProfileHeroSection.tsx
-│   │   │   └── QuickStats.tsx
+│   │   │   └── ProfileHeroSection.tsx
 │   │   └── settings/
 │   │       ├── AccountSettingsCard.tsx
 │   │       ├── PasswordSettingsCard.tsx
-│   │       ├── ProfileSettingsCard.tsx
 │   │       ├── SessionList.tsx
 │   │       ├── SessionSettingsCard.tsx
-│   │       └── SettingsCard.tsx
+│   │       ├── SettingsCard.tsx
+│   │       └── UserProfileSettingsCard.tsx
+│   ├── BoardGameImage.tsx
 │   ├── FieldInput.tsx
 │   ├── FormFeedback.tsx
 │   ├── Header/
@@ -287,6 +288,12 @@
 │   │   ├── MobileNavigation.tsx
 │   │   └── UserMenu.tsx
 │   ├── LogoutButton.tsx
+│   ├── Pagination/
+│   │   ├── Pagination.tsx
+│   │   ├── PaginationNavLinks.tsx
+│   │   ├── PaginationPageSelect.tsx
+│   │   └── PaginationPageSizeSelect.tsx
+│   ├── QuickStats.tsx
 │   ├── UserAvatar.tsx
 │   └── layouts/
 │       ├── AdminShell.tsx
@@ -368,6 +375,7 @@
     ├── className.tsx
     ├── date.tsx
     ├── navigation.tsx
+    ├── pagination.tsx
     └── url.tsx
 ```
 
