@@ -5,12 +5,15 @@ import { FindManyBoardGamesOptions } from "@/repositories/board-games.repository
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import type { BoardGameStatus } from "@/types/database";
 import {
+  BASE_PATH,
   DEFAULT_ORDER_BY,
   DEFAULT_ORDER_DIRECTION,
   DEFAULT_PAGE_SIZE,
+  PAGE_SIZE_OPTIONS,
 } from "./constants";
 import { QuickStats } from "@/components/QuickStats";
 import Link from "next/link";
+import { Pagination } from "@/components/Pagination/Pagination";
 
 type BoardGamesSearchParams = {
   page?: string;
@@ -146,6 +149,17 @@ export default async function BoardGamesAdminPage({
           />
         </div>
         <BoardGameTable boardGames={boardGames.data} query={query} />
+
+        <Pagination
+          className="p-4"
+          page={page}
+          pageSize={pageSize}
+          total={boardGames.total}
+          totalPages={boardGames.totalPages}
+          basePath={BASE_PATH}
+          pageSizeOptions={PAGE_SIZE_OPTIONS}
+          query={query}
+        />
       </section>
     </>
   );

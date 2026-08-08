@@ -1,5 +1,9 @@
 type QueryPrimitive = string | number | boolean | Date;
-type QueryValue = QueryPrimitive | readonly QueryPrimitive[] | null | undefined;
+export type QueryValue =
+  | QueryPrimitive
+  | readonly QueryPrimitive[]
+  | null
+  | undefined;
 
 export function buildQueryString<T extends Record<string, QueryValue>>(
   state: T,
