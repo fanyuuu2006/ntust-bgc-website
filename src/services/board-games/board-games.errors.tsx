@@ -67,3 +67,31 @@ export class BoardGameHasOpenBorrowingError extends Error {
     this.name = "BoardGameHasOpenBorrowingError";
   }
 }
+
+export class BoardGameNotAvailableForBorrowingError extends Error {
+  constructor() {
+    super("此桌遊目前無法借用");
+    this.name = "BoardGameNotAvailableForBorrowingError";
+  }
+}
+
+export class BoardGameBorrowingConflictError extends Error {
+  constructor() {
+    super("已有進行中的借用申請，請勿重複申請");
+    this.name = "BoardGameBorrowingConflictError";
+  }
+}
+
+export class BorrowingPermissionError extends Error {
+  constructor() {
+    super("目前沒有權限進行此借用操作");
+    this.name = "BorrowingPermissionError";
+  }
+}
+
+export class BorrowingStatusTransitionError extends Error {
+  constructor(expectedStatus: string, actualStatus: string) {
+    super(`只能從 ${expectedStatus} 狀態進行此操作，目前狀態為 ${actualStatus}`);
+    this.name = "BorrowingStatusTransitionError";
+  }
+}

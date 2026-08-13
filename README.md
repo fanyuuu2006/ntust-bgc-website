@@ -224,7 +224,11 @@ src
 │   │       └── page.tsx
 │   ├── api/
 │   │   ├── admin/
-│   │   │   └── board-games/
+│   │   │   ├── board-games/
+│   │   │   │   ├── [id]/
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   └── borrowings/
 │   │   │       ├── [id]/
 │   │   │       │   └── route.ts
 │   │   │       └── route.ts
@@ -243,9 +247,15 @@ src
 │   │   │       ├── [id]/
 │   │   │       │   └── route.ts
 │   │   │       └── route.ts
+│   │   ├── board-games/
+│   │   │   └── [id]/
+│   │   │       └── borrow/
+│   │   │           └── route.ts
 │   │   └── users/
 │   │       └── me/
 │   │           ├── account/
+│   │           │   └── route.ts
+│   │           ├── borrowings/
 │   │           │   └── route.ts
 │   │           └── profile/
 │   │               └── route.ts
@@ -435,6 +445,8 @@ src/
 │           ├── layout.tsx
 │           ├── page.tsx
 │           ├── board-games/
+│           │   └── page.tsx
+│           ├── borrowings/
 │           │   └── page.tsx
 │           ├── members/
 │           │   └── page.tsx

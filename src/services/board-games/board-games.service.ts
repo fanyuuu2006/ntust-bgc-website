@@ -41,11 +41,15 @@ import {
   DuplicateBoardGameLocationNameError,
   BoardGameLocationInUseError,
   BoardGameHasOpenBorrowingError,
+  BoardGameNotAvailableForBorrowingError,
+  BoardGameBorrowingConflictError,
+  BorrowingStatusTransitionError,
 } from "./board-games.errors";
 import {
   createBoardGameSchema,
   updateBoardGameSchema,
 } from "./board-games.schema";
+import { membershipService } from "@/services/memberships/memberships.service";
 
 export const boardGamesService = {
   /* ============================================================ *
@@ -262,7 +266,7 @@ export const boardGamesService = {
     if (data.location_id) {
       checks.push(boardGamesService.getLocationById(data.location_id));
     }
-    
+
     if (data.status && data.status !== boardGame.status) {
       checks.push(
         boardGameBorrowingsRepository
@@ -348,6 +352,44 @@ export const boardGamesService = {
     return { ...result, data };
   },
 
+  getBorrowingById: async (
+    borrowingId: string,
+  ): Promise<BoardGameBorrowingWithBoardGame> => {
+    const borrowing = await boardGameBorrowingsRepository.findById(borrowingId);
+    if (!borrowing) throw new BorrowingNotFoundError();
+
+    const boardGame = await boardGamesService.getBoardGameById(
+      borrowing.board_game_id,
+    );
+
+    return { ...borrowing, board_game: boardGame };
+  },
+
+  listBorrowings: async (
+    options: FindManyBoardGameBorrowingsOptions = {},
+  ): Promise<
+    ReturnType<typeof buildPaginationResult<BoardGameBorrowingWithBoardGame>>
+  > => {
+    const result = await boardGameBorrowingsRepository.findMany({
+      orderBy: "created_at",
+      orderDirection: "desc",
+      ...options,
+    });
+
+    const boardGameIds = [...new Set(result.data.map((b) => b.board_game_id))];
+    const boardGames = await boardGamesRepository.findManyByIds(boardGameIds);
+
+    const data = result.data.map((borrowing) => {
+      const boardGame = boardGames.find(
+        (game) => game.id === borrowing.board_game_id,
+      );
+      if (!boardGame) throw new BoardNotFoundError();
+      return { ...borrowing, board_game: boardGame };
+    });
+
+    return { ...result, data };
+  },
+
   /* ============================================================ *
    * 借閱流程：pending -> approved/rejected -> borrowed -> returned
    * ============================================================ */
@@ -355,12 +397,20 @@ export const boardGamesService = {
   /**
    * 提出借用申請。
    * - 桌遊必須存在且狀態為 available
+   * - 使用者必須為目前學年度的 active 社員
    * - 使用者對同一桌遊不可有尚未結束的借閱流程（pending/approved/borrowed）
    */
   requestBorrowing: async (userId: string, boardGameId: string) => {
     const boardGame = await boardGamesService.getBoardGameById(boardGameId);
     if (boardGame.status !== "available") {
-      throw new Error("此桌遊目前無法借用");
+      throw new BoardGameNotAvailableForBorrowingError();
+    }
+
+    const isCurrentActiveMember = await membershipService.isCurrentActiveMember(
+      userId,
+    );
+    if (!isCurrentActiveMember) {
+      throw new Error("只有目前學年度有效社員才能借用桌遊");
     }
 
     const existing =
@@ -369,7 +419,7 @@ export const boardGamesService = {
         boardGameId,
       );
     if (existing) {
-      throw new Error("已有進行中的借用申請，請勿重複申請");
+      throw new BoardGameBorrowingConflictError();
     }
 
     return boardGameBorrowingsRepository.create({
@@ -386,7 +436,7 @@ export const boardGamesService = {
     const borrowing = await boardGameBorrowingsRepository.findById(borrowingId);
     if (!borrowing) throw new BorrowingNotFoundError();
     if (borrowing.status !== "pending") {
-      throw new Error("只有審核中的申請可以被核准");
+      throw new BorrowingStatusTransitionError("pending", borrowing.status);
     }
 
     return boardGameBorrowingsRepository.updateById(borrowingId, {
@@ -402,7 +452,7 @@ export const boardGamesService = {
     const borrowing = await boardGameBorrowingsRepository.findById(borrowingId);
     if (!borrowing) throw new BorrowingNotFoundError();
     if (borrowing.status !== "pending") {
-      throw new Error("只有審核中的申請可以被拒絕");
+      throw new BorrowingStatusTransitionError("pending", borrowing.status);
     }
 
     return boardGameBorrowingsRepository.updateById(borrowingId, {
@@ -418,7 +468,7 @@ export const boardGamesService = {
     const borrowing = await boardGameBorrowingsRepository.findById(borrowingId);
     if (!borrowing) throw new BorrowingNotFoundError();
     if (borrowing.status !== "approved") {
-      throw new Error("只有已核准的申請可以借出");
+      throw new BorrowingStatusTransitionError("approved", borrowing.status);
     }
 
     const [updated] = await Promise.all([
@@ -443,7 +493,7 @@ export const boardGamesService = {
     const borrowing = await boardGameBorrowingsRepository.findById(borrowingId);
     if (!borrowing) throw new BorrowingNotFoundError();
     if (borrowing.status !== "borrowed") {
-      throw new Error("只有借用中的紀錄可以歸還");
+      throw new BorrowingStatusTransitionError("borrowed", borrowing.status);
     }
 
     const [updated] = await Promise.all([

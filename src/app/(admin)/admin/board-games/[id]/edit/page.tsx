@@ -14,12 +14,16 @@ export default async function BoardGameEditPage({
 }: BoardGameEditPageProps) {
   const { id } = await params;
 
-  const boardGame = await boardGamesService.getBoardGameById(id).catch((error) => {
+  let boardGame;
+
+  try {
+    boardGame = await boardGamesService.getBoardGameById(id);
+  } catch (error) {
     if (error instanceof BoardNotFoundError) {
       notFound();
     }
     throw error;
-  });
+  }
 
   const [categories, locations] = await Promise.all([
     boardGamesService.listCategories(),

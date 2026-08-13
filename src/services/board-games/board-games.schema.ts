@@ -9,6 +9,14 @@ export const boardGameStatusSchema = z.enum([
   "retired",
 ]);
 
+export const borrowingStatusSchema = z.enum([
+  "pending",
+  "approved",
+  "rejected",
+  "borrowed",
+  "returned",
+]);
+
 const optionalText = (max: number) =>
   z.preprocess(
     (value) => {
@@ -51,4 +59,24 @@ export const listBoardGamesQuerySchema = z.object({
     .enum(["name", "created_at", "updated_at", "inventory_number"])
     .optional(),
   orderDirection: z.enum(["asc", "desc"]).optional(),
+});
+
+export const listBorrowingsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).optional(),
+  status: borrowingStatusSchema.optional(),
+  board_game_id: z.uuid().optional(),
+  user_id: z.uuid().optional(),
+  orderBy: z.enum(["created_at", "borrowed_at", "due_at"]).optional(),
+  orderDirection: z.enum(["asc", "desc"]).optional(),
+});
+
+export const createBorrowingRequestSchema = z.object({
+  board_game_id: z.uuid("請選擇要借用的桌遊"),
+  due_at: z.iso.datetime({ local: false }).optional(),
+});
+
+export const updateBorrowingActionSchema = z.object({
+  action: z.enum(["approve", "reject", "checkout", "return"]),
+  due_at: z.iso.datetime({ local: false }).optional(),
 });
