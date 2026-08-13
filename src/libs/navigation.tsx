@@ -19,6 +19,10 @@ export const userNavigation = [
     href: "/dashboard",
   },
   {
+    label: "我的借用",
+    href: "/borrowings",
+  },
+  {
     label: "個人檔案",
     href: "/profile",
   },
