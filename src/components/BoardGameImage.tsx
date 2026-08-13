@@ -1,36 +1,26 @@
 import type { BoardGame } from "@/types/database";
+import { cn } from "@/utils/className";
 
 type BoardGameImageProps = React.ImgHTMLAttributes<HTMLImageElement> & {
-  boardGame: Pick<BoardGame, "id" | "name" | "image">;
+  boardGame: Pick<BoardGame, "name" | "image">;
 };
 
 export function BoardGameImage({
   boardGame,
+  alt,
   className,
   ...rest
 }: BoardGameImageProps) {
+  const accessibleName = alt ?? boardGame.name;
+
   if (!boardGame.image) {
     return (
-      <svg
-        viewBox="0 0 100 100"
+      <BoardGameImageFallback
+        name={accessibleName}
         className={className}
-        role="img"
-        aria-label={`${boardGame.name}尚無圖片`}
-      >
-        <rect width="100" height="100" fill="#00000088" />
-        <text
-          x="50"
-          y="50"
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize="16"
-          fontWeight="500"
-          fill="#fff"
-          style={{ userSelect: "none" }}
-        >
-          無圖片
-        </text>
-      </svg>
+        width={rest.width}
+        height={rest.height}
+      />
     );
   }
 
@@ -38,9 +28,54 @@ export function BoardGameImage({
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={boardGame.image}
-      alt={boardGame.name}
-      className={className}
+      alt={accessibleName}
+      className={cn("shrink-0", className)}
       {...rest}
     />
+  );
+}
+
+type BoardGameImageFallbackProps = {
+  name: string;
+  className?: string;
+  width?: React.ImgHTMLAttributes<HTMLImageElement>["width"];
+  height?: React.ImgHTMLAttributes<HTMLImageElement>["height"];
+};
+
+function BoardGameImageFallback({
+  name,
+  className,
+  width,
+  height,
+}: BoardGameImageFallbackProps) {
+  return (
+    <svg
+      viewBox="0 0 100 100"
+      width={width}
+      height={height}
+      role="img"
+      aria-label={`${name}尚無圖片`}
+      className={cn(
+        "shrink-0 bg-(--secondary-background) text-(--muted)",
+        className,
+      )}
+    >
+      <rect
+        x="24"
+        y="24"
+        width="52"
+        height="52"
+        rx="10"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="4"
+        opacity="0.5"
+      />
+      <circle cx="38" cy="38" r="4" fill="currentColor" opacity="0.5" />
+      <circle cx="62" cy="38" r="4" fill="currentColor" opacity="0.5" />
+      <circle cx="50" cy="50" r="4" fill="currentColor" opacity="0.5" />
+      <circle cx="38" cy="62" r="4" fill="currentColor" opacity="0.5" />
+      <circle cx="62" cy="62" r="4" fill="currentColor" opacity="0.5" />
+    </svg>
   );
 }

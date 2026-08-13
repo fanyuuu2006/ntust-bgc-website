@@ -22,10 +22,13 @@ export function BorrowBoardGameForm({ boardGameId }: BorrowBoardGameFormProps) {
     setSuccess(null);
 
     try {
-      await apiClient<{ data: { id: string } }>(`/api/board-games/${boardGameId}/borrow`, {
-        method: "POST",
-        body: {},
-      });
+      await apiClient<{ data: { id: string } }>(
+        `/api/board-games/${boardGameId}/borrow`,
+        {
+          method: "POST",
+          body: {},
+        },
+      );
 
       setSuccess("借用申請已送出，請等待幹部審核。")
       router.refresh();
@@ -33,7 +36,7 @@ export function BorrowBoardGameForm({ boardGameId }: BorrowBoardGameFormProps) {
       if (caughtError instanceof ApiError) {
         setError(caughtError.message);
       } else {
-        setError("申請借用失敗，請稍後再試。")
+        setError("申請借用失敗，請稍後再試。");
       }
     } finally {
       setIsSubmitting(false);
@@ -48,7 +51,7 @@ export function BorrowBoardGameForm({ boardGameId }: BorrowBoardGameFormProps) {
         disabled={isSubmitting}
         className="btn primary w-full rounded-xl px-4 py-3 text-sm font-semibold sm:text-base"
       >
-        {isSubmitting ? "送出申請中..." : "送出借用申請"}
+        {isSubmitting ? "送出申請中..." : "申請借用"}
       </button>
 
       <FormFeedback error={error} success={success} className="min-h-0" />
