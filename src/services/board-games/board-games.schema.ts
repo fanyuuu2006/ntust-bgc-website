@@ -1,5 +1,3 @@
-import "server-only";
-
 import { z } from "zod";
 
 export const boardGameStatusSchema = z.enum([
@@ -12,7 +10,23 @@ export const boardGameStatusSchema = z.enum([
 ]);
 
 const optionalText = (max: number) =>
-  z.string().trim().max(max, `長度不可超過 ${max} 字`).optional();
+  z.preprocess(
+    (value) => {
+      if (value === null || value === undefined) return undefined;
+      if (typeof value === "string" && value.trim() === "") return undefined;
+      return value;
+    },
+    z.string().trim().max(max, `長度不可超過 ${max} 字`).optional(),
+  );
+
+const optionalImage = z.preprocess(
+  (value) => {
+    if (value === null || value === undefined) return null;
+    if (typeof value === "string" && value.trim() === "") return null;
+    return value;
+  },
+  z.union([z.url("請輸入有效的圖片網址"), z.null()]).optional(),
+);
 
 export const createBoardGameSchema = z.object({
   name: z.string().trim().min(1, "請輸入名稱").max(100, "名稱不可超過 100 字"),
@@ -20,8 +34,8 @@ export const createBoardGameSchema = z.object({
   category_id: z.uuid("請選擇分類"),
   location_id: z.uuid("請選擇位置"),
   description: optionalText(2000),
-  image: z.union([z.url("請輸入有效的圖片網址"), z.null()]).optional(),
-  status: boardGameStatusSchema.optional(),
+  image: optionalImage,
+  status: boardGameStatusSchema.default("available"),
 });
 
 export const updateBoardGameSchema = createBoardGameSchema.partial();

@@ -242,7 +242,7 @@ export const boardGamesService = {
   },
 
   updateBoardGame: async (id: string, input: unknown): Promise<BoardGame> => {
-    await boardGamesService.getBoardGameById(id);
+    const boardGame = await boardGamesService.getBoardGameById(id);
     const data = updateBoardGameSchema.parse(input);
 
     const checks: Promise<unknown>[] = [];
@@ -262,6 +262,19 @@ export const boardGamesService = {
     if (data.location_id) {
       checks.push(boardGamesService.getLocationById(data.location_id));
     }
+    
+    if (data.status && data.status !== boardGame.status) {
+      checks.push(
+        boardGameBorrowingsRepository
+          .findManyByBoardGameId(id, ["pending", "approved", "borrowed"])
+          .then((openBorrowings) => {
+            if (openBorrowings.length > 0) {
+              throw new BoardGameHasOpenBorrowingError();
+            }
+          }),
+      );
+    }
+
     await Promise.all(checks);
 
     const updated = await boardGamesRepository.updateById(id, data);

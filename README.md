@@ -181,7 +181,12 @@ src
 │   ├── (admin)/
 │   │   ├── admin/
 │   │   │   ├── board-games/
+│   │   │   │   ├── [id]/
+│   │   │   │   │   └── edit/
+│   │   │   │   │       └── page.tsx
 │   │   │   │   ├── constants.ts
+│   │   │   │   ├── new/
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── types.tsx
 │   │   │   ├── layout.tsx
@@ -255,6 +260,7 @@ src
 │   │       └── board-games/
 │   │           ├── BoardGameActions.tsx
 │   │           ├── BoardGameFilterBar.tsx
+│   │           ├── BoardGameForm.tsx
 │   │           ├── BoardGameStatusBadge.tsx
 │   │           ├── BoardGameTable.tsx
 │   │           └── SearchForm.tsx
