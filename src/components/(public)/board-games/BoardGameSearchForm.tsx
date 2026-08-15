@@ -1,8 +1,12 @@
 import Link from "next/link";
 import type { BoardGameCategory, BoardGameLocation } from "@/types/database";
-import { BASE_PATH, SORT_OPTIONS } from "@/app/(public)/board-games/constants";
+import {
+  BASE_PATH,
+  ORDER_BY_OPTIONS,
+} from "@/app/(public)/board-games/constants";
 import type { BoardGamesQuery } from "@/app/(public)/board-games/types";
 import { BoardGameFilterBar } from "@/components/(public)/board-games/BoardGameFilterBar";
+import { buildQueryString } from "@/utils/url";
 import { cn } from "@/utils/className";
 
 type BoardGameSearchFormProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -20,13 +24,19 @@ export function BoardGameSearchForm({
   className,
   ...rest
 }: BoardGameSearchFormProps) {
-  const selectedSort = `${query.orderBy}:${query.orderDirection}`;
-
   const hasActiveFilters =
     Boolean(query.search) ||
     (query.status?.length ?? 0) > 0 ||
     (query.category?.length ?? 0) > 0 ||
     (query.location?.length ?? 0) > 0;
+
+  const nextDirection = query.orderDirection === "asc" ? "desc" : "asc";
+  const directionHref = `${BASE_PATH}?${buildQueryString(
+    { ...query, page: 1 },
+    {
+      orderDirection: nextDirection,
+    },
+  )}`;
 
   return (
     <div className={cn("card rounded-2xl p-4 sm:p-5", className)} {...rest}>
@@ -81,23 +91,36 @@ export function BoardGameSearchForm({
             value={value}
           />
         ))}
+        <input
+          type="hidden"
+          name="orderDirection"
+          value={query.orderDirection}
+        />
         <input type="hidden" name="pageSize" value={pageSize} />
 
-        <label className="sr-only" htmlFor="board-game-sort">
-          排序方式
+        <label className="sr-only" htmlFor="board-game-order-by">
+          排序欄位
         </label>
         <select
-          id="board-game-sort"
-          name="sort"
-          defaultValue={selectedSort}
+          id="board-game-order-by"
+          name="orderBy"
+          defaultValue={query.orderBy}
           className="shrink-0 rounded-lg border border-(--border) bg-(--secondary-background) px-3 py-2 text-sm text-(--foreground) outline-none focus:border-(--primary)"
         >
-          {SORT_OPTIONS.map((option) => (
-            <option key={option.key} value={option.key}>
+          {ORDER_BY_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
         </select>
+
+        <Link
+          href={directionHref}
+          aria-label={`切換為${nextDirection === "asc" ? "升冪" : "降冪"}排序`}
+          className="btn shrink-0 rounded-lg px-3 py-2 text-sm"
+        >
+          {query.orderDirection === "asc" ? "升冪" : "降冪"}
+        </Link>
       </form>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">

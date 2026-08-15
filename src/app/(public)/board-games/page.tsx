@@ -1,5 +1,4 @@
 import { boardGamesService } from "@/services/board-games/board-games.service";
-import { QuickStats } from "@/components/QuickStats";
 import { Pagination } from "@/components/Pagination/Pagination";
 import { BoardGameSearchForm } from "@/components/(public)/board-games/BoardGameSearchForm";
 import { BoardGameGrid } from "@/components/(public)/board-games/BoardGameGrid";
@@ -7,10 +6,12 @@ import type { BoardGameStatus } from "@/types/database";
 import {
   ALLOWED_STATUSES,
   BASE_PATH,
+  DEFAULT_ORDER_BY,
+  DEFAULT_ORDER_DIRECTION,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
+  ORDER_BY_OPTIONS,
   PAGE_SIZE_OPTIONS,
-  SORT_OPTIONS,
 } from "./constants";
 import type { BoardGamesQuery } from "./types";
 
@@ -21,7 +22,8 @@ type BoardGamesSearchParams = {
   status?: string | string[];
   category?: string | string[];
   location?: string | string[];
-  sort?: string;
+  orderBy?: string;
+  orderDirection?: string;
 };
 
 type BoardGamesPageProps = {
@@ -54,6 +56,15 @@ function normalizeStatuses(value?: string | string[]) {
   );
 }
 
+function normalizeOrderBy(value?: string): BoardGamesQuery["orderBy"] {
+  const match = ORDER_BY_OPTIONS.find((option) => option.value === value);
+  return match?.value ?? DEFAULT_ORDER_BY;
+}
+
+function normalizeOrderDirection(value?: string): "asc" | "desc" {
+  return value === "asc" || value === "desc" ? value : DEFAULT_ORDER_DIRECTION;
+}
+
 export default async function BoardGamesPage({
   searchParams,
 }: BoardGamesPageProps) {
@@ -65,21 +76,19 @@ export default async function BoardGamesPage({
   const statuses = normalizeStatuses(params.status);
   const categoryIds = getArrayParam(params.category);
   const locationIds = getArrayParam(params.location);
-
-  const sortOption =
-    SORT_OPTIONS.find((option) => option.key === params.sort) ??
-    SORT_OPTIONS[0];
+  const orderBy = normalizeOrderBy(params.orderBy);
+  const orderDirection = normalizeOrderDirection(params.orderDirection);
 
   const query: BoardGamesQuery = {
     search,
     status: statuses.length > 0 ? statuses : undefined,
     category: categoryIds.length > 0 ? categoryIds : undefined,
     location: locationIds.length > 0 ? locationIds : undefined,
-    orderBy: sortOption.orderBy,
-    orderDirection: sortOption.orderDirection,
+    orderBy,
+    orderDirection,
   };
 
-  const [categories, locations, boardGames, boardGamesCount, availableCount] =
+  const [categories, locations, boardGames, ] =
     await Promise.all([
       boardGamesService.listCategories(),
       boardGamesService.listLocations(),
@@ -93,8 +102,8 @@ export default async function BoardGamesPage({
         orderBy: query.orderBy,
         orderDirection: query.orderDirection,
       }),
-      boardGamesService.countAllBoardGames(),
-      boardGamesService.countBoardGamesByStatus("available"),
+      // boardGamesService.countAllBoardGames(),
+      // boardGamesService.countBoardGamesByStatus("available"),
     ]);
 
   return (
@@ -115,7 +124,7 @@ export default async function BoardGamesPage({
           query={query}
           pageSize={pageSize}
         />
-
+        {/* 
         <div className="flex flex-wrap items-center gap-3">
           <QuickStats
             stats={[
@@ -133,7 +142,7 @@ export default async function BoardGamesPage({
               },
             ]}
           />
-        </div>
+        </div> */}
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-(--muted)">

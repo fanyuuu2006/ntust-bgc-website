@@ -1,9 +1,11 @@
 import type { BoardGameStatus } from "@/types/database";
+import type { FindManyBoardGamesOptions } from "@/repositories/board-games.repository";
 
 export const BASE_PATH = "/board-games";
 
-export const DEFAULT_ORDER_BY = "created_at";
-export const DEFAULT_ORDER_DIRECTION = "desc";
+export const DEFAULT_ORDER_BY: FindManyBoardGamesOptions["orderBy"] =
+  "created_at";
+export const DEFAULT_ORDER_DIRECTION: "asc" | "desc" = "desc";
 export const DEFAULT_PAGE_SIZE = 12;
 export const MAX_PAGE_SIZE = 100;
 export const PAGE_SIZE_OPTIONS = [12, 24, 36] as const;
@@ -29,29 +31,12 @@ export const STATUS_META: Record<
   retired: { label: "已除役", dotClass: "bg-(--muted)" },
 };
 
-export const SORT_OPTIONS = [
-  {
-    key: "created_at:desc",
-    label: "最新加入",
-    orderBy: "created_at",
-    orderDirection: "desc",
-  },
-  {
-    key: "inventory_number:asc",
-    label: "社產編號",
-    orderBy: "inventory_number",
-    orderDirection: "asc",
-  },
-  {
-    key: "name:asc",
-    label: "名稱 A-Z",
-    orderBy: "name",
-    orderDirection: "asc",
-  },
-  {
-    key: "updated_at:desc",
-    label: "最近更新",
-    orderBy: "updated_at",
-    orderDirection: "desc",
-  },
-] as const;
+export const ORDER_BY_OPTIONS: {
+  value: FindManyBoardGamesOptions["orderBy"];
+  label: string;
+}[] = [
+  { value: "created_at", label: "加入時間" },
+  { value: "inventory_number", label: "社產編號" },
+  { value: "name", label: "名稱" },
+  { value: "updated_at", label: "更新時間" },
+];
