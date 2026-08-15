@@ -199,6 +199,8 @@ src
 │   │   └── register/
 │   │       └── page.tsx
 │   ├── (authenticated)/
+│   │   ├── borrowings/
+│   │   │   └── page.tsx
 │   │   ├── dashboard/
 │   │   │   ├── layout.tsx
 │   │   │   └── page.tsx
@@ -213,7 +215,11 @@ src
 │   │   ├── announcements/
 │   │   │   └── page.tsx
 │   │   ├── board-games/
-│   │   │   └── page.tsx
+│   │   │   ├── [id]/
+│   │   │   │   └── page.tsx
+│   │   │   ├── constants.ts
+│   │   │   ├── page.tsx
+│   │   │   └── types.ts
 │   │   ├── layout.tsx
 │   │   ├── page.tsx
 │   │   ├── privacy/
@@ -271,9 +277,9 @@ src
 │   │           ├── BoardGameActions.tsx
 │   │           ├── BoardGameFilterBar.tsx
 │   │           ├── BoardGameForm.tsx
+│   │           ├── BoardGameSearchForm.tsx
 │   │           ├── BoardGameStatusBadge.tsx
-│   │           ├── BoardGameTable.tsx
-│   │           └── SearchForm.tsx
+│   │           └── BoardGameTable.tsx
 │   ├── (auth)/
 │   │   ├── AuthCard.tsx
 │   │   ├── AuthNotice.tsx
@@ -294,7 +300,15 @@ src
 │   │       ├── SessionSettingsCard.tsx
 │   │       ├── SettingsCard.tsx
 │   │       └── UserProfileSettingsCard.tsx
+│   ├── (public)/
+│   │   └── board-games/
+│   │       ├── BoardGameCard.tsx
+│   │       ├── BoardGameFilterBar.tsx
+│   │       ├── BoardGameGrid.tsx
+│   │       ├── BoardGameSearchForm.tsx
+│   │       └── BorrowBoardGameForm.tsx
 │   ├── BoardGameImage.tsx
+│   ├── BorrowingStatusBadge.tsx
 │   ├── FieldInput.tsx
 │   ├── FormFeedback.tsx
 │   ├── Header/

@@ -3,22 +3,21 @@ import type { BoardGameCategory, BoardGameLocation } from "@/types/database";
 import type { BoardGamesQuery } from "@/app/(admin)/admin/board-games/types";
 import { cn } from "@/utils/className";
 import { BoardGameFilterBar } from "@/components/(admin)/admin/board-games/BoardGameFilterBar";
+import { BASE_PATH } from "@/app/(admin)/admin/board-games/constants";
 
-const BASE_PATH = "/admin/board-games";
-
-type SearchFormProps = React.HTMLAttributes<HTMLDivElement> & {
+type BoardGameSearchFormProps = React.HTMLAttributes<HTMLDivElement> & {
   categories: BoardGameCategory[];
   locations: BoardGameLocation[];
   query: BoardGamesQuery;
 };
 
-export function SearchForm({
+export function BoardGameSearchForm({
   categories,
   locations,
   query,
   className,
   ...rest
-}: SearchFormProps) {
+}: BoardGameSearchFormProps) {
   const statusCount = query.status?.length ?? 0;
   const categoryCount = query.category?.length ?? 0;
   const locationCount = query.location?.length ?? 0;
@@ -93,10 +92,7 @@ export function SearchForm({
         />
 
         {hasActiveFilters && (
-          <Link
-            href={BASE_PATH}
-            className="btn rounded-full px-3 py-1 text-sm"
-          >
+          <Link href={BASE_PATH} className="btn rounded-full px-3 py-1 text-sm">
             清除
           </Link>
         )}
