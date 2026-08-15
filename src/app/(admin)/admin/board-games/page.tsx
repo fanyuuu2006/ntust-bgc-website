@@ -1,6 +1,6 @@
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { BoardGameTable } from "@/components/(admin)/admin/board-games/BoardGameTable";
-import { SearchForm } from "@/components/(admin)/admin/board-games/SearchForm";
+import { BoardGameSearchForm } from "@/components/(admin)/admin/board-games/BoardGameSearchForm";
 import { FindManyBoardGamesOptions } from "@/repositories/board-games.repository";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import type { BoardGameStatus } from "@/types/database";
@@ -121,8 +121,14 @@ export default async function BoardGamesAdminPage({
       />
 
       <section className="px-4 space-y-4">
-        <SearchForm categories={category} locations={location} query={query} />
+        <BoardGameSearchForm
+          categories={category}
+          locations={location}
+          query={query}
+        />
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {" "}
           <QuickStats
             stats={[
               {
