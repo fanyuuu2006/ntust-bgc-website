@@ -11,6 +11,7 @@ import type {
 import { BASE_PATH, STATUS_META } from "@/app/(public)/board-games/constants";
 import type { BoardGamesQuery } from "@/app/(public)/board-games/types";
 import { BoardGameSortMenu } from "@/components/(public)/board-games/BoardGameSortMenu";
+import { BoardGameActiveFilters } from "@/components/(public)/board-games/BoardGameActiveFilters";
 import { buildQueryString } from "@/utils/url";
 import { cn } from "@/utils/className";
 
@@ -64,14 +65,16 @@ export function BoardGameFilterPanel({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             aria-expanded={open}
             onClick={() => setOpen((prev) => !prev)}
             className={cn(
-              "btn flex shrink-0 items-center gap-2 rounded-full px-3 py-1 text-sm",
-              { "border-(--primary)": filterCount > 0 },
+              "flex shrink-0 items-center gap-2 rounded-full border border-(--border) px-3 py-1 text-sm text-(--foreground) transition-colors hover:border-(--primary)",
+              {
+                "border-(--primary) text-(--primary)": filterCount > 0 || open,
+              },
             )}
           >
             進階篩選
@@ -85,7 +88,7 @@ export function BoardGameFilterPanel({
           {filterCount > 0 && (
             <Link
               href={BASE_PATH}
-              className="btn shrink-0 rounded-full px-3 py-1 text-sm"
+              className="shrink-0 text-sm text-(--muted) transition-colors hover:text-(--foreground)"
             >
               重設
             </Link>
@@ -95,47 +98,55 @@ export function BoardGameFilterPanel({
         <BoardGameSortMenu query={query} />
       </div>
 
-      {open && (
-        <div className="grid gap-4 border-t border-(--border) pt-3 sm:grid-cols-3">
-          <FilterSection label="狀態">
-            {STATUS_OPTIONS.map((option) => (
-              <FilterPill
-                key={option.value}
-                label={option.label}
-                checked={query.status?.includes(option.value) ?? false}
-                onChange={(checked) =>
-                  toggleFilter("status", option.value, checked)
-                }
-              />
-            ))}
-          </FilterSection>
+      {open ? (
+        <div className="space-y-4 border-t border-(--border) pt-4">
+          <div className="grid gap-x-6 gap-y-4 sm:grid-cols-3">
+            <FilterSection label="狀態">
+              {STATUS_OPTIONS.map((option) => (
+                <FilterPill
+                  key={option.value}
+                  label={option.label}
+                  checked={query.status?.includes(option.value) ?? false}
+                  onChange={(checked) =>
+                    toggleFilter("status", option.value, checked)
+                  }
+                />
+              ))}
+            </FilterSection>
 
-          <FilterSection label="分類">
-            {categories.map((category) => (
-              <FilterPill
-                key={category.id}
-                label={category.name}
-                checked={query.category?.includes(category.id) ?? false}
-                onChange={(checked) =>
-                  toggleFilter("category", category.id, checked)
-                }
-              />
-            ))}
-          </FilterSection>
+            <FilterSection label="分類">
+              {categories.map((category) => (
+                <FilterPill
+                  key={category.id}
+                  label={category.name}
+                  checked={query.category?.includes(category.id) ?? false}
+                  onChange={(checked) =>
+                    toggleFilter("category", category.id, checked)
+                  }
+                />
+              ))}
+            </FilterSection>
 
-          <FilterSection label="位置">
-            {locations.map((location) => (
-              <FilterPill
-                key={location.id}
-                label={location.name}
-                checked={query.location?.includes(location.id) ?? false}
-                onChange={(checked) =>
-                  toggleFilter("location", location.id, checked)
-                }
-              />
-            ))}
-          </FilterSection>
+            <FilterSection label="位置">
+              {locations.map((location) => (
+                <FilterPill
+                  key={location.id}
+                  label={location.name}
+                  checked={query.location?.includes(location.id) ?? false}
+                  onChange={(checked) =>
+                    toggleFilter("location", location.id, checked)
+                  }
+                />
+              ))}
+            </FilterSection>
+          </div>
         </div>
+      ) : (
+        <BoardGameActiveFilters
+          categories={categories}
+          locations={locations}
+          query={query}
+        />
       )}
     </div>
   );
@@ -167,9 +178,11 @@ function FilterPill({ label, checked, onChange }: FilterPillProps) {
       type="button"
       aria-pressed={checked}
       onClick={() => onChange(!checked)}
-      className={cn("btn shrink-0 rounded-full px-3 py-1 text-xs", {
-        "border-(--primary) text-(--primary)": checked,
-      })}
+      className={cn(
+        "shrink-0 rounded-full border px-3 py-1 text-xs transition-colors",
+        "border-(--border) text-(--muted) hover:border-(--primary) hover:text-(--foreground)",
+        { "border-(--primary) text-(--primary)": checked },
+      )}
     >
       {label}
     </button>
