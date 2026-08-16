@@ -1,12 +1,8 @@
-import Link from "next/link";
 import type { BoardGameCategory, BoardGameLocation } from "@/types/database";
-import {
-  BASE_PATH,
-  ORDER_BY_OPTIONS,
-} from "@/app/(public)/board-games/constants";
+import { BASE_PATH } from "@/app/(public)/board-games/constants";
 import type { BoardGamesQuery } from "@/app/(public)/board-games/types";
-import { BoardGameFilterBar } from "@/components/(public)/board-games/BoardGameFilterBar";
-import { buildQueryString } from "@/utils/url";
+import { BoardGameFilterPanel } from "@/components/(public)/board-games/BoardGameFilterPanel";
+import { BoardGameActiveFilters } from "@/components/(public)/board-games/BoardGameActiveFilters";
 import { cn } from "@/utils/className";
 
 type BoardGameSearchFormProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -24,32 +20,20 @@ export function BoardGameSearchForm({
   className,
   ...rest
 }: BoardGameSearchFormProps) {
-  const hasActiveFilters =
-    Boolean(query.search) ||
-    (query.status?.length ?? 0) > 0 ||
-    (query.category?.length ?? 0) > 0 ||
-    (query.location?.length ?? 0) > 0;
-
-  const nextDirection = query.orderDirection === "asc" ? "desc" : "asc";
-  const directionHref = `${BASE_PATH}?${buildQueryString(
-    { ...query, page: 1 },
-    {
-      orderDirection: nextDirection,
-    },
-  )}`;
-
   return (
-    <div className={cn("card rounded-2xl p-4 sm:p-5", className)} {...rest}>
-      <form
-        method="GET"
-        action={BASE_PATH}
-        className="flex flex-col gap-3 sm:flex-row sm:items-center"
-      >
+    <div
+      className={cn(
+        "space-y-3 rounded-2xl border border-(--border) bg-(--primary-background) p-3 sm:p-4",
+        className,
+      )}
+      {...rest}
+    >
+      <form method="GET" action={BASE_PATH}>
         <label className="sr-only" htmlFor="board-game-search">
           搜尋桌遊名稱、編號或描述
         </label>
 
-        <div className="relative min-w-0 flex-1 sm:max-w-100">
+        <div className="flex items-center gap-2 rounded-xl border border-(--border) bg-(--secondary-background) px-3 py-2">
           <input
             id="board-game-search"
             type="search"
@@ -57,11 +41,11 @@ export function BoardGameSearchForm({
             autoComplete="off"
             defaultValue={query.search}
             placeholder="搜尋桌遊名稱、編號或描述"
-            className="w-full rounded-lg border border-(--border) bg-(--secondary-background) py-2 pr-16 pl-3 text-sm text-(--foreground) outline-none transition focus:border-(--primary)"
+            className="h-8 min-w-0 flex-1 border-0 bg-transparent px-0 text-sm text-(--foreground) outline-none placeholder:text-(--muted)"
           />
           <button
             type="submit"
-            className="btn primary absolute top-1 right-1 bottom-1 shrink-0 rounded-md px-3 text-xs"
+            className="btn primary shrink-0 rounded-lg px-4 py-1.5 text-sm"
           >
             搜尋
           </button>
@@ -91,54 +75,26 @@ export function BoardGameSearchForm({
             value={value}
           />
         ))}
+        <input type="hidden" name="orderBy" value={query.orderBy} />
         <input
           type="hidden"
           name="orderDirection"
           value={query.orderDirection}
         />
         <input type="hidden" name="pageSize" value={pageSize} />
-
-        <label className="sr-only" htmlFor="board-game-order-by">
-          排序欄位
-        </label>
-        <select
-          id="board-game-order-by"
-          name="orderBy"
-          defaultValue={query.orderBy}
-          className="shrink-0 rounded-lg border border-(--border) bg-(--secondary-background) px-3 py-2 text-sm text-(--foreground) outline-none focus:border-(--primary)"
-        >
-          {ORDER_BY_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-
-        <Link
-          href={directionHref}
-          aria-label={`切換為${nextDirection === "asc" ? "升冪" : "降冪"}排序`}
-          className="btn shrink-0 rounded-lg px-3 py-2 text-sm"
-        >
-          {query.orderDirection === "asc" ? "升冪" : "降冪"}
-        </Link>
       </form>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <BoardGameFilterBar
-          categories={categories}
-          locations={locations}
-          query={query}
-        />
+      <BoardGameFilterPanel
+        categories={categories}
+        locations={locations}
+        query={query}
+      />
 
-        {hasActiveFilters && (
-          <Link
-            href={BASE_PATH}
-            className="btn shrink-0 rounded-full px-3 py-1 text-sm"
-          >
-            清除
-          </Link>
-        )}
-      </div>
+      <BoardGameActiveFilters
+        categories={categories}
+        locations={locations}
+        query={query}
+      />
     </div>
   );
 }

@@ -6,12 +6,10 @@ import type { BoardGameStatus } from "@/types/database";
 import {
   ALLOWED_STATUSES,
   BASE_PATH,
-  DEFAULT_ORDER_BY,
-  DEFAULT_ORDER_DIRECTION,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
-  ORDER_BY_OPTIONS,
   PAGE_SIZE_OPTIONS,
+  SORT_OPTIONS,
 } from "./constants";
 import type { BoardGamesQuery } from "./types";
 
@@ -56,13 +54,13 @@ function normalizeStatuses(value?: string | string[]) {
   );
 }
 
-function normalizeOrderBy(value?: string): BoardGamesQuery["orderBy"] {
-  const match = ORDER_BY_OPTIONS.find((option) => option.value === value);
-  return match?.value ?? DEFAULT_ORDER_BY;
-}
-
-function normalizeOrderDirection(value?: string): "asc" | "desc" {
-  return value === "asc" || value === "desc" ? value : DEFAULT_ORDER_DIRECTION;
+function normalizeSortOption(orderBy?: string, orderDirection?: string) {
+  return (
+    SORT_OPTIONS.find(
+      (option) =>
+        option.orderBy === orderBy && option.orderDirection === orderDirection,
+    ) ?? SORT_OPTIONS[0]
+  );
 }
 
 export default async function BoardGamesPage({
@@ -76,35 +74,31 @@ export default async function BoardGamesPage({
   const statuses = normalizeStatuses(params.status);
   const categoryIds = getArrayParam(params.category);
   const locationIds = getArrayParam(params.location);
-  const orderBy = normalizeOrderBy(params.orderBy);
-  const orderDirection = normalizeOrderDirection(params.orderDirection);
+  const sortOption = normalizeSortOption(params.orderBy, params.orderDirection);
 
   const query: BoardGamesQuery = {
     search,
     status: statuses.length > 0 ? statuses : undefined,
     category: categoryIds.length > 0 ? categoryIds : undefined,
     location: locationIds.length > 0 ? locationIds : undefined,
-    orderBy,
-    orderDirection,
+    orderBy: sortOption.orderBy,
+    orderDirection: sortOption.orderDirection,
   };
 
-  const [categories, locations, boardGames, ] =
-    await Promise.all([
-      boardGamesService.listCategories(),
-      boardGamesService.listLocations(),
-      boardGamesService.listBoardGamesWithCategoryAndLocation({
-        page,
-        pageSize,
-        search,
-        status: query.status,
-        category_ids: query.category,
-        location_ids: query.location,
-        orderBy: query.orderBy,
-        orderDirection: query.orderDirection,
-      }),
-      // boardGamesService.countAllBoardGames(),
-      // boardGamesService.countBoardGamesByStatus("available"),
-    ]);
+  const [categories, locations, boardGames] = await Promise.all([
+    boardGamesService.listCategories(),
+    boardGamesService.listLocations(),
+    boardGamesService.listBoardGamesWithCategoryAndLocation({
+      page,
+      pageSize,
+      search,
+      status: query.status,
+      category_ids: query.category,
+      location_ids: query.location,
+      orderBy: query.orderBy,
+      orderDirection: query.orderDirection,
+    }),
+  ]);
 
   return (
     <section className="py-8">
@@ -124,25 +118,6 @@ export default async function BoardGamesPage({
           query={query}
           pageSize={pageSize}
         />
-        {/* 
-        <div className="flex flex-wrap items-center gap-3">
-          <QuickStats
-            stats={[
-              {
-                key: "total",
-                label: "館藏總數",
-                value: boardGamesCount,
-                accent: "primary",
-              },
-              {
-                key: "available",
-                label: "目前可借用",
-                value: availableCount,
-                accent: "green",
-              },
-            ]}
-          />
-        </div> */}
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-(--muted)">
