@@ -69,7 +69,7 @@ export function BoardGameActiveFilters({
         <Link
           key={chip.key}
           href={chip.href}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-(--border) px-2.5 py-1 text-xs text-(--foreground) transition-colors hover:border-(--primary)"
+          className="flex btn shrink-0 items-center gap-1 rounded-full px-3 py-1 text-xs"
         >
           <span className="shrink-0 font-semibold text-(--primary)">
             {chip.label}

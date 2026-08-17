@@ -71,7 +71,7 @@ export function BoardGameFilterPanel({
             aria-expanded={open}
             onClick={() => setOpen((prev) => !prev)}
             className={cn(
-              "flex shrink-0 items-center gap-2 rounded-full border border-(--border) px-3 py-1 text-sm text-(--foreground) transition-colors hover:border-(--primary)",
+              "btn flex shrink-0 items-center gap-2 rounded-full px-3 py-1 text-sm",
               {
                 "border-(--primary) text-(--primary)": filterCount > 0 || open,
               },
@@ -179,9 +179,9 @@ function FilterPill({ label, checked, onChange }: FilterPillProps) {
       aria-pressed={checked}
       onClick={() => onChange(!checked)}
       className={cn(
-        "shrink-0 rounded-full border px-3 py-1 text-xs transition-colors",
-        "border-(--border) text-(--muted) hover:border-(--primary) hover:text-(--foreground)",
-        { "border-(--primary) text-(--primary)": checked },
+        "shrink-0 rounded-full px-3 py-1 text-xs transition-colors",
+        "btn",
+        { primary: checked },
       )}
     >
       {label}

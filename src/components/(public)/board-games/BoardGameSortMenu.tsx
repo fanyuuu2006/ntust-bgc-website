@@ -29,7 +29,7 @@ export function BoardGameSortMenu({ query }: BoardGameSortMenuProps) {
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((prev) => !prev)}
-        className="flex shrink-0 items-center gap-1 rounded-full px-3 py-1 text-sm text-(--muted) transition hover:text-(--foreground)"
+        className="btn flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-sm"
       >
         排序：{activeOption.label}
       </button>
