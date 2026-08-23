@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { cn } from "@/utils/className";
+import { Input } from "@/components/ui/Input";
 
 export type FieldInputField = {
   id: string;
@@ -81,7 +82,7 @@ export const FieldInput = ({
       </label>
 
       <div className="relative">
-        <input
+        <Input
           id={field.id}
           name={field.id}
           type={inputType}
