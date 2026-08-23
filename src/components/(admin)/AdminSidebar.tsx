@@ -85,19 +85,19 @@ export function AdminSidebar({
         aria-label="管理選單"
         className={cn(
           "fixed inset-y-0 left-0 z-50",
-          "flex h-screen w-72 flex-col",
+          "flex h-dvh w-72 flex-col",
           "border-r border-(--border) bg-(--primary-background)",
           "transition-transform duration-300",
           isOpen ? "translate-x-0" : "-translate-x-full",
-          "lg:sticky lg:top-0 lg:z-30 lg:w-64",
-          "lg:translate-x-0",
+          "lg:relative lg:inset-auto lg:z-auto lg:h-auto lg:w-64 lg:shrink-0",
+          "lg:translate-x-0 lg:transition-none",
           className,
         )}
         {...rest}
       >
         <AdminSidebarHeader onClose={onClose} />
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           <AdminSidebarNav onNavigate={onClose} />
         </div>
 

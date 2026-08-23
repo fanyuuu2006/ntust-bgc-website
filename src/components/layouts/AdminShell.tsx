@@ -26,23 +26,23 @@ export function AdminShell({ user, children }: AdminShellProps) {
   );
 
   return (
-    <>
+    <div className="flex h-dvh flex-col overflow-hidden">
       <AdminHeader
-        className="sticky top-0 z-40"
+        className="z-40 shrink-0"
         user={user}
         currentSectionLabel={currentSection?.label}
         isSidebarOpen={isSidebarOpen}
         sidebarId={sidebarId}
         onOpenMenu={() => setIsSidebarOpen(true)}
       />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1">
         <AdminSidebar
           id={sidebarId}
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
         />
-        <main className="min-w-0 flex-1 overflow-auto">{children}</main>
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">{children}</main>
       </div>
-    </>
+    </div>
   );
 }
