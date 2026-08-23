@@ -4,7 +4,9 @@ import {
   eventsRepository,
   FindManyEventsOptions,
 } from "@/repositories/events.repository";
-import { createEventSchema, updateEventSchema } from "./events.schema";
+import { attendanceInputSchema, attendanceUpdateSchema, createEventSchema, updateEventSchema } from "./events.schema";
+import { usersRepository } from "@/repositories/users.repository";
+import { userProfilesRepository } from "@/repositories/user-profiles.repository";
 import { EventNotFoundError } from "./events.errors";
 import { academicYearsRepository } from "@/repositories/academic-years.repository";
 import {
@@ -99,5 +101,37 @@ export const eventsService = {
       user_id: userId,
       ...options,
     });
+  },
+
+  listAttendancesForAdmin: async (eventId: string) => {
+    const result = await eventAttendancesRepository.findMany({ event_id: eventId, pageSize: 100, orderDirection: "asc" });
+    const userIds = result.data.map((item) => item.user_id);
+    const [users, profiles] = await Promise.all([usersRepository.findManyByIds(userIds), userProfilesRepository.findManyByUserIds(userIds)]);
+    const usersById = new Map(users.map((user) => [user.id, user]));
+    const profilesById = new Map(profiles.map((profile) => [profile.user_id, profile]));
+    return result.data.flatMap((item) => { const user = usersById.get(item.user_id); return user ? [{ ...item, user, profile: profilesById.get(user.id) ?? null }] : []; });
+  },
+
+  createAttendanceForAdmin: async (eventId: string, input: unknown) => {
+    const data = attendanceInputSchema.parse(input);
+    const [event, user, existing] = await Promise.all([eventsRepository.findById(eventId), usersRepository.findById(data.user_id), eventAttendancesRepository.findByUserIdAndEventId(data.user_id, eventId)]);
+    if (!event) throw new EventNotFoundError();
+    if (!user) throw new Error("找不到使用者");
+    if (existing) throw new Error("此使用者已有該活動的簽到紀錄");
+    return eventAttendancesRepository.create({ user_id: data.user_id, event_id: eventId, status: data.status, attended_at: data.status === "absent" ? null : data.attended_at ?? new Date().toISOString() });
+  },
+
+  updateAttendanceForAdmin: async (attendanceId: string, input: unknown) => {
+    const data = attendanceUpdateSchema.parse(input);
+    const current = await eventAttendancesRepository.findById(attendanceId);
+    if (!current) throw new Error("找不到簽到紀錄");
+    const updated = await eventAttendancesRepository.updateById(attendanceId, { status: data.status, attended_at: data.status === "absent" ? null : data.attended_at ?? current.attended_at ?? new Date().toISOString() });
+    if (!updated) throw new Error("更新簽到紀錄失敗");
+    return updated;
+  },
+
+  deleteAttendanceForAdmin: async (attendanceId: string) => {
+    if (!await eventAttendancesRepository.findById(attendanceId)) throw new Error("找不到簽到紀錄");
+    await eventAttendancesRepository.deleteById(attendanceId);
   },
 };

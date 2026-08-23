@@ -19,7 +19,7 @@ export function BoardGameGrid({
         <p className="mt-2 text-sm text-(--muted)">
           {hasActiveQuery
             ? "試試看減少篩選條件、改用桌遊名稱或社產編號搜尋。"
-            : "等管理員新增桌遊後，這裡會顯示可查詢的館藏。"}
+            : "等管理員新增桌遊後，這裡會顯示可查詢的社產。"}
         </p>
       </div>
     );

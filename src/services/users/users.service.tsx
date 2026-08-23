@@ -14,6 +14,23 @@ import {
 import { usersRepository } from "@/repositories/users.repository";
 
 export const usersService = {
+  listForAdmin: async (options: { page?: number; pageSize?: number; search?: string } = {}) => {
+    const result = await usersRepository.findMany(options);
+    const profiles = await userProfilesRepository.findManyByUserIds(
+      result.data.map((user) => user.id),
+    );
+    const profilesByUserId = new Map(profiles.map((profile) => [profile.user_id, profile]));
+    return { ...result, data: result.data.map((user) => ({ ...user, profile: profilesByUserId.get(user.id) ?? null })) };
+  },
+
+  getUserForAdmin: async (userId: string) => {
+    const [user, profile] = await Promise.all([
+      usersRepository.findById(userId),
+      userProfilesRepository.findByUserId(userId),
+    ]);
+    return user ? { ...user, profile } : null;
+  },
+
   getProfile: async (userId: string): Promise<UserProfile | null> => {
     return userProfilesRepository.findByUserId(userId);
   },
@@ -67,6 +84,30 @@ export const usersService = {
 
     const updated = await userProfilesRepository.updateByUserId(userId, data);
 
+    if (!updated) {
+      throw new UserProfileNotFoundError();
+    }
+
+    return updated;
+  },
+
+  updateProfileForAdmin: async (
+    userId: string,
+    payload: unknown,
+  ): Promise<UserProfile> => {
+    const data = updateUserProfileSchema.parse(payload);
+    const user = await usersRepository.findById(userId);
+
+    if (!user) {
+      throw new UserProfileNotFoundError();
+    }
+
+    const profile = await userProfilesRepository.findByUserId(userId);
+    if (!profile) {
+      return userProfilesRepository.create(userId, data);
+    }
+
+    const updated = await userProfilesRepository.updateByUserId(userId, data);
     if (!updated) {
       throw new UserProfileNotFoundError();
     }

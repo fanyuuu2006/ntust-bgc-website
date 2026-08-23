@@ -18,6 +18,8 @@ import type { Membership } from "@/types/database";
 import {
   activateMembershipSchema,
   generateMembershipRegisterKeysSchema,
+  createAdminMembershipSchema,
+  updateAdminMembershipSchema,
   listAdminMembershipsQuerySchema,
   listMembershipRegisterKeysQuerySchema,
 } from "./memberships.schema";
@@ -26,6 +28,7 @@ import {
   MembershipRegisterKeyInactiveError,
   MembershipRegisterKeyNotCurrentYearError,
   MembershipRegisterKeyNotFoundError,
+  MembershipRegisterKeyCannotBeRevokedError,
   RegisterKeySecretNotConfiguredError,
   UserAlreadyCurrentMemberError,
   UserAlreadyLifetimeMemberError,
@@ -55,6 +58,28 @@ async function attachAcademicYears(
 }
 
 export const membershipService = {
+  createForAdmin: async (input: unknown) => {
+    const data = createAdminMembershipSchema.parse(input);
+    const [user, year, existing] = await Promise.all([
+      usersRepository.findById(data.user_id),
+      academicYearsRepository.findById(data.academic_year_id),
+      membershipsRepository.findByUserIdAndAcademicYearId(data.user_id, data.academic_year_id),
+    ]);
+    if (!user) throw new Error("找不到此使用者");
+    if (!year) throw new AcademicYearNotFoundError();
+    if (existing) throw new Error("此使用者在該學年度已有社員資格");
+    return membershipsRepository.create({ ...data, joined_at: data.joined_at ?? (data.status === "active" ? new Date().toISOString() : null), membership_register_key_id: null });
+  },
+
+  updateForAdmin: async (id: string, input: unknown) => {
+    const current = await membershipsRepository.findById(id);
+    if (!current) throw new Error("找不到此社員資格");
+    const data = updateAdminMembershipSchema.parse(input);
+    if (!canTransitionMembershipStatus(current.status, data.status)) throw new Error(`不允許從 ${current.status} 變更為 ${data.status}`);
+    const updated = await membershipsRepository.updateById(id, { type: data.type, status: data.status, joined_at: data.joined_at ?? current.joined_at });
+    if (!updated) throw new Error("更新社員資格失敗");
+    return updated;
+  },
   listAcademicYears: async () => {
     return academicYearsRepository.findMany();
   },
@@ -270,6 +295,12 @@ export const membershipService = {
     }));
   },
 
+  revokeRegisterKey: async (id: string) => {
+    const revoked = await membershipRegisterKeysRepository.revokeAvailableById(id);
+    if (!revoked) throw new MembershipRegisterKeyCannotBeRevokedError();
+    return revoked;
+  },
+
   activateByRegisterKey: async (
     userId: string,
     input: unknown,
@@ -338,3 +369,11 @@ export const membershipService = {
     return academicYear?.year ?? null;
   },
 };
+
+function canTransitionMembershipStatus(from: Membership["status"], to: Membership["status"]) {
+  if (from === to) return true;
+  const transitions: Record<Membership["status"], Membership["status"][]> = {
+    pending: ["active", "cancelled"], active: ["suspended", "cancelled", "expired"], suspended: ["active", "cancelled"], expired: [], cancelled: [],
+  };
+  return transitions[from].includes(to);
+}

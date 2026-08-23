@@ -56,7 +56,7 @@ export default async function BorrowingsPage() {
             href="/board-games"
             className="btn outline inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium"
           >
-            前往桌遊館藏
+            前往桌遊社產
           </Link>
         </header>
 
@@ -103,7 +103,7 @@ export default async function BorrowingsPage() {
               目前沒有借用紀錄
             </p>
             <p className="mt-2 text-sm text-(--muted)">
-              先看看桌遊館藏，申請借用後就會出現在這裡。
+              先看看桌遊社產，申請借用後就會出現在這裡。
             </p>
           </div>
         ) : (
@@ -162,7 +162,7 @@ function BorrowingSection({ title, emptyText, items }: BorrowingSectionProps) {
                           {boardGame.name}
                         </p>
                         <p className="text-sm text-(--muted)">
-                          館藏編號：{boardGame.inventory_number}
+                          社產編號：{boardGame.inventory_number}
                         </p>
                       </div>
 

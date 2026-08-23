@@ -6,9 +6,39 @@ import {
   type FindManyOfficerPositionsOptions,
 } from "@/repositories/officer-positions.repository";
 import type { UUID } from "@/types/database";
+import { usersRepository } from "@/repositories/users.repository";
 import type { OfficerPositionWithAcademicYear } from "./officer-positions.types";
 
 export const officerPositionsService = {
+  listForAdmin: async (options: FindManyOfficerPositionsOptions = {}) => {
+    const result = await officerPositionsRepository.findMany(options);
+    const [users, academicYears] = await Promise.all([
+      usersRepository.findManyByIds(result.data.map((item) => item.user_id)),
+      academicYearsRepository.findManyByIds(result.data.map((item) => item.academic_year_id)),
+    ]);
+    const usersById = new Map(users.map((user) => [user.id, user]));
+    const yearsById = new Map(academicYears.map((year) => [year.id, year]));
+    return { ...result, data: result.data.flatMap((item) => { const user = usersById.get(item.user_id); if (!user) return []; return [{ ...item, user, academic_year: yearsById.get(item.academic_year_id) ?? null }]; }) };
+  },
+
+  createForAdmin: async (input: unknown) => {
+    const data = parseOfficerInput(input);
+    if (!await usersRepository.findById(data.user_id)) throw new Error("找不到此使用者");
+    if (!await academicYearsRepository.findById(data.academic_year_id)) throw new Error("找不到此學年度");
+    return officerPositionsRepository.create(data);
+  },
+
+  updateForAdmin: async (id: string, input: unknown) => {
+    const data = parseOfficerInput(input);
+    const updated = await officerPositionsRepository.updateById(id, data);
+    if (!updated) throw new Error("找不到此幹部職位");
+    return updated;
+  },
+
+  deleteForAdmin: async (id: string) => {
+    if (!await officerPositionsRepository.findById(id)) throw new Error("找不到此幹部職位");
+    await officerPositionsRepository.deleteById(id);
+  },
   /**
    * 取得使用者的幹部職位紀錄（附帶學年度資料），依 created_at 排序。
    * pageSize / orderDirection 由呼叫端決定，例如 Profile 頁想顯示
@@ -81,3 +111,10 @@ export const officerPositionsService = {
     return await officerPositionsRepository.existsByUserId(userId);
   },
 };
+
+function parseOfficerInput(input: unknown): { user_id: string; academic_year_id: string; title: string } {
+  if (!input || typeof input !== "object") throw new Error("輸入資料格式不正確");
+  const value = input as Record<string, unknown>;
+  if (typeof value.user_id !== "string" || typeof value.academic_year_id !== "string" || typeof value.title !== "string" || !value.title.trim()) throw new Error("請完整填寫使用者、學年度與職位名稱");
+  return { user_id: value.user_id, academic_year_id: value.academic_year_id, title: value.title.trim() };
+}

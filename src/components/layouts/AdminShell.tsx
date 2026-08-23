@@ -6,7 +6,7 @@ import { AdminHeader } from "../(admin)/AdminHeader";
 import { AdminSidebar } from "../(admin)/AdminSidebar";
 import { adminSidebarNavigation } from "@/libs/navigation";
 import type { User } from "@/types/database";
-import { isAdminActivePath } from "@/utils/navigation";
+import { getActiveNavigationHref } from "@/utils/navigation";
 
 type AdminShellProps = {
   user: User | null;
@@ -20,8 +20,9 @@ export function AdminShell({ user, children }: AdminShellProps) {
 
   if (!user) return null;
 
-  const currentSection = adminSidebarNavigation.find((item) =>
-    isAdminActivePath(pathname, item.href),
+  const activeHref = getActiveNavigationHref(pathname, adminSidebarNavigation);
+  const currentSection = adminSidebarNavigation.find(
+    (item) => item.href === activeHref,
   );
 
   return (
@@ -40,7 +41,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
         />
-        <main className="flex-1 overflow-auto">{children}</main>
+        <main className="min-w-0 flex-1 overflow-auto">{children}</main>
       </div>
     </>
   );

@@ -12,6 +12,13 @@ export class MembershipRegisterKeyAlreadyUsedError extends Error {
   }
 }
 
+export class MembershipRegisterKeyCannotBeRevokedError extends Error {
+  constructor() {
+    super("只有尚未使用的社員註冊碼可以撤銷");
+    this.name = "MembershipRegisterKeyCannotBeRevokedError";
+  }
+}
+
 export class MembershipRegisterKeyInactiveError extends Error {
   constructor() {
     super("此社員註冊序號目前無法使用");

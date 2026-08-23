@@ -38,6 +38,14 @@ export type FindManyAdminMembershipsOptions = PaginationQuery &
   };
 
 export const membershipsRepository = {
+  countByAcademicYearId: async (academicYearId: string): Promise<number> => {
+    const { count, error } = await supabase
+      .from("memberships")
+      .select("id", { count: "exact", head: true })
+      .eq("academic_year_id", academicYearId);
+    if (error) throwRepositoryError("統計學年度社員資格失敗", error);
+    return count ?? 0;
+  },
   findManyForAdmin: async (options: FindManyAdminMembershipsOptions = {}) => {
     const { page, pageSize, from, to } = normalizePaginationOptions({
       page: options.page,

@@ -20,9 +20,26 @@ type CreateOfficerPositionInput = Omit<
 type UpdateOfficerPositionInput = Partial<CreateOfficerPositionInput>;
 
 export type FindManyOfficerPositionsOptions = PaginationQuery &
-  OrderOptions<"created_at">;
+  OrderOptions<"created_at"> & { academicYearId?: UUID; userId?: UUID };
 
 export const officerPositionsRepository = {
+  findMany: async (options: FindManyOfficerPositionsOptions = {}) => {
+    const { page, pageSize, from, to } = normalizePaginationOptions(options);
+    let query = supabase.from("officer_positions").select("*", { count: "exact" });
+    if (options.academicYearId) query = query.eq("academic_year_id", options.academicYearId);
+    if (options.userId) query = query.eq("user_id", options.userId);
+    const { data, error, count } = await query.order("created_at", { ascending: options.orderDirection === "asc" }).range(from, to);
+    if (error) throwRepositoryError("讀取幹部職位失敗", error);
+    return buildPaginationResult<OfficerPosition>(data ?? [], count, page, pageSize);
+  },
+  countByAcademicYearId: async (academicYearId: UUID): Promise<number> => {
+    const { count, error } = await supabase
+      .from("officer_positions")
+      .select("id", { count: "exact", head: true })
+      .eq("academic_year_id", academicYearId);
+    if (error) throwRepositoryError("統計學年度幹部職位失敗", error);
+    return count ?? 0;
+  },
   /**
    * 取得使用者的幹部職位紀錄，依 created_at 排序。
    * 只回傳 officer_positions table 本身的資料，不 join 其他 table。

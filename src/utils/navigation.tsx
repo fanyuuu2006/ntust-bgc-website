@@ -1,5 +1,22 @@
-/** 判斷目前路徑是否對應到某個導覽項目（根路徑需完全比對，避免例如 /admin 誤判所有子路由）*/
-export function isAdminActivePath(pathname: string, href: string) {
-  if (href === "/admin") return pathname === "/admin";
-  return pathname === href || pathname.startsWith(`${href}/`);
+type NavigationItem = { href: string };
+
+export function getActiveNavigationHref(
+  pathname: string,
+  items: readonly NavigationItem[],
+): string | null {
+  const matches = items.filter(
+    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
+  );
+  if (matches.length === 0) return null;
+  return matches.reduce((longest, item) =>
+    item.href.length > longest.href.length ? item : longest,
+  ).href;
+}
+
+export function isAdminActivePath(
+  pathname: string,
+  href: string,
+  items: readonly NavigationItem[],
+) {
+  return getActiveNavigationHref(pathname, items) === href;
 }

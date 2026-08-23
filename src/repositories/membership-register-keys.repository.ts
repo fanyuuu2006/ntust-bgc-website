@@ -53,6 +53,17 @@ type ClaimMembershipRegisterKeyRpcRow = {
 };
 
 export const membershipRegisterKeysRepository = {
+  revokeAvailableById: async (id: string): Promise<MembershipRegisterKey | null> => {
+    const { data, error } = await supabase
+      .from("membership_register_keys")
+      .update({ status: "revoked", revoked_at: new Date().toISOString() })
+      .eq("id", id)
+      .eq("status", "available")
+      .select()
+      .maybeSingle();
+    if (error) throwRepositoryError("撤銷社員註冊碼失敗", error);
+    return data;
+  },
   findMany: async (options: FindManyRegisterKeysOptions = {}) => {
     const { page, pageSize, from, to } = normalizePaginationOptions({
       page: options.page,

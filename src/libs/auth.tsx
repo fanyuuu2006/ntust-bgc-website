@@ -18,6 +18,7 @@ export async function getCurrentUser() {
   return authService.getUserBySessionToken(token);
 }
 
+// 固定為曾經擔任幹部職位的使用者，才算是管理員
 export function isAdminByUserId(userId: string) {
   return officerPositionsService.hasEverBeenOfficer(userId);
 }

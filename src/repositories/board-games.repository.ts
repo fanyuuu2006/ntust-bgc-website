@@ -130,7 +130,7 @@ export const boardGamesRepository = {
     if (excludeId) query = query.neq("id", excludeId);
 
     const { count, error } = await query;
-    if (error) throwRepositoryError("檢查館藏編號是否存在失敗", error);
+    if (error) throwRepositoryError("檢查社產編號是否存在失敗", error);
     return (count ?? 0) > 0;
   },
 
@@ -148,6 +148,18 @@ export const boardGamesRepository = {
       .select("*", { count: "exact", head: true })
       .eq("status", status);
     if (error) throwRepositoryError("依狀態計算桌遊數量失敗", error);
+    return count ?? 0;
+  },
+
+  countByCategoryId: async (categoryId: string): Promise<number> => {
+    const { count, error } = await supabase.from("board_games").select("id", { count: "exact", head: true }).eq("category_id", categoryId);
+    if (error) throwRepositoryError("統計桌遊種類社產數量失敗", error);
+    return count ?? 0;
+  },
+
+  countByLocationId: async (locationId: string): Promise<number> => {
+    const { count, error } = await supabase.from("board_games").select("id", { count: "exact", head: true }).eq("location_id", locationId);
+    if (error) throwRepositoryError("統計桌遊位置社產數量失敗", error);
     return count ?? 0;
   },
 

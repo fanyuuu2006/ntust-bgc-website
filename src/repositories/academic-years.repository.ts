@@ -4,12 +4,12 @@ import { supabase } from "@/libs/supabase/server";
 import { AcademicYear } from "@/types/database";
 import { throwRepositoryError } from "./shared/errors";
 
-type CreateAcademicYearInput = Pick<
+export type CreateAcademicYearInput = Pick<
   AcademicYear,
   "year" | "start_date" | "end_date"
 >;
 
-type UpdateAcademicYearInput = Partial<
+export type UpdateAcademicYearInput = Partial<
   Pick<AcademicYear, "year" | "start_date" | "end_date">
 >;
 
@@ -73,6 +73,14 @@ export const academicYearsRepository = {
     }
 
     return data;
+  },
+
+  existsByYear: async (year: string, excludeId?: string): Promise<boolean> => {
+    let query = supabase.from("academic_years").select("id", { count: "exact", head: true }).eq("year", year);
+    if (excludeId) query = query.neq("id", excludeId);
+    const { count, error } = await query;
+    if (error) throwRepositoryError("檢查學年度是否重複失敗", error);
+    return (count ?? 0) > 0;
   },
 
   /**

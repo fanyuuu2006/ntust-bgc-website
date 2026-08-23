@@ -1,0 +1,42 @@
+import "server-only";
+
+import { supabase } from "@/libs/supabase/server";
+import { throwRepositoryError } from "@/repositories/shared/errors";
+import { buildPaginationResult, normalizePaginationOptions } from "@/repositories/shared/pagination";
+import type { PaginationQuery } from "@/repositories/shared/types";
+import type { Announcement } from "@/types/database";
+
+export const ANNOUNCEMENT_SORT_FIELDS = ["title", "created_at", "updated_at", "published_at"] as const;
+export type AnnouncementSortField = (typeof ANNOUNCEMENT_SORT_FIELDS)[number];
+export type FindPublishedAnnouncementsOptions = PaginationQuery & { search?: string; orderBy?: AnnouncementSortField; orderDirection?: "asc" | "desc" };
+
+export const announcementsRepository = {
+  findManyForAdmin: async (options: FindPublishedAnnouncementsOptions & { published?: boolean } = {}) => {
+    const { page, pageSize, from, to } = normalizePaginationOptions(options);
+    let query = supabase.from("announcements").select("*", { count: "exact" });
+    if (options.published !== undefined) query = query.eq("is_published", options.published);
+    const search = options.search?.trim();
+    if (search) query = query.or(`title.ilike.%${search.replace(/[%,()]/g, "")}%,content.ilike.%${search.replace(/[%,()]/g, "")}%`);
+    const { data, error, count } = await query.order(options.orderBy ?? "created_at", { ascending: options.orderDirection === "asc" }).range(from, to);
+    if (error) throwRepositoryError("取得管理公告失敗", error);
+    return buildPaginationResult<Announcement>(data ?? [], count, page, pageSize);
+  },
+  findById: async (id: string): Promise<Announcement | null> => { const { data, error } = await supabase.from("announcements").select("*").eq("id", id).maybeSingle(); if (error) throwRepositoryError("取得公告失敗", error); return data; },
+  create: async (payload: Pick<Announcement, "title" | "content" | "author_id" | "is_published" | "published_at">) => { const { data, error } = await supabase.from("announcements").insert(payload).select().single(); if (error) throwRepositoryError("建立公告失敗", error); return data; },
+  updateById: async (id: string, payload: Partial<Pick<Announcement, "title" | "content" | "is_published" | "published_at">>) => { const { data, error } = await supabase.from("announcements").update(payload).eq("id", id).select().maybeSingle(); if (error) throwRepositoryError("更新公告失敗", error); return data; },
+  deleteById: async (id: string) => { const { error } = await supabase.from("announcements").delete().eq("id", id); if (error) throwRepositoryError("刪除公告失敗", error); },
+  findPublished: async (options: FindPublishedAnnouncementsOptions = {}) => {
+    const { page, pageSize, from, to } = normalizePaginationOptions(options);
+    let query = supabase.from("announcements").select("*", { count: "exact" }).eq("is_published", true);
+    const search = options.search?.trim();
+    if (search) query = query.or(`title.ilike.%${search.replace(/[%,()]/g, "")}%,content.ilike.%${search.replace(/[%,()]/g, "")}%`);
+    const { data, error, count } = await query.order("published_at", { ascending: false }).range(from, to);
+    if (error) throwRepositoryError("讀取已發布公告失敗", error);
+    return buildPaginationResult<Announcement>(data ?? [], count, page, pageSize);
+  },
+  findPublishedById: async (id: string): Promise<Announcement | null> => {
+    const { data, error } = await supabase.from("announcements").select("*").eq("id", id).eq("is_published", true).maybeSingle();
+    if (error) throwRepositoryError("讀取公告失敗", error);
+    return data;
+  },
+};

@@ -27,3 +27,14 @@ export const updateEventSchema = z
       new Date(data.end_time) > new Date(data.start_time),
     { message: "結束時間必須晚於開始時間", path: ["end_time"] },
   );
+
+export const attendanceInputSchema = z.object({
+  user_id: z.uuid(),
+  status: z.enum(["present", "late", "absent"]),
+  attended_at: z.iso.datetime().nullable().optional(),
+});
+
+export const attendanceUpdateSchema = z.object({
+  status: z.enum(["present", "late", "absent"]),
+  attended_at: z.iso.datetime().nullable().optional(),
+});

@@ -62,3 +62,17 @@ export const generateMembershipRegisterKeysSchema = z.object({
     .min(1, "至少產生 1 組序號")
     .max(100, "一次最多產生 100 組序號"),
 });
+
+export const createAdminMembershipSchema = z.object({
+  user_id: z.uuid(),
+  academic_year_id: z.uuid(),
+  type: z.enum(["annual", "lifetime"]),
+  status: z.enum(["pending", "active", "expired", "suspended", "cancelled"]),
+  joined_at: z.string().datetime().nullable().optional(),
+});
+
+export const updateAdminMembershipSchema = z.object({
+  type: z.enum(["annual", "lifetime"]),
+  status: z.enum(["pending", "active", "expired", "suspended", "cancelled"]),
+  joined_at: z.string().datetime().nullable().optional(),
+});

@@ -44,12 +44,17 @@ import {
   BoardGameNotAvailableForBorrowingError,
   BoardGameBorrowingConflictError,
   BorrowingStatusTransitionError,
+  BorrowingPermissionError,
+  BorrowingDueDateError,
 } from "./board-games.errors";
 import {
   createBoardGameSchema,
   updateBoardGameSchema,
 } from "./board-games.schema";
 import { membershipService } from "@/services/memberships/memberships.service";
+import { usersRepository } from "@/repositories/users.repository";
+import { userProfilesRepository } from "@/repositories/user-profiles.repository";
+import type { BoardGameBorrowingForAdmin } from "./board-games.types";
 
 export const boardGamesService = {
   /* ============================================================ *
@@ -368,7 +373,7 @@ export const boardGamesService = {
   listBorrowings: async (
     options: FindManyBoardGameBorrowingsOptions = {},
   ): Promise<
-    ReturnType<typeof buildPaginationResult<BoardGameBorrowingWithBoardGame>>
+    ReturnType<typeof buildPaginationResult<BoardGameBorrowingForAdmin>>
   > => {
     const result = await boardGameBorrowingsRepository.findMany({
       orderBy: "created_at",
@@ -377,14 +382,43 @@ export const boardGamesService = {
     });
 
     const boardGameIds = [...new Set(result.data.map((b) => b.board_game_id))];
-    const boardGames = await boardGamesRepository.findManyByIds(boardGameIds);
+    const userIds = [...new Set(result.data.map((borrowing) => borrowing.user_id))];
+    const approverIds = [
+      ...new Set(
+        result.data
+          .map((borrowing) => borrowing.approved_by_user_id)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+    const [boardGames, users, profiles, approvers] = await Promise.all([
+      boardGamesRepository.findManyByIds(boardGameIds),
+      usersRepository.findManyByIds(userIds),
+      userProfilesRepository.findManyByUserIds(userIds),
+      usersRepository.findManyByIds(approverIds),
+    ]);
+    const usersById = new Map(users.map((user) => [user.id, user]));
+    const profilesByUserId = new Map(
+      profiles.map((profile) => [profile.user_id, profile]),
+    );
+    const approversById = new Map(approvers.map((user) => [user.id, user]));
 
     const data = result.data.map((borrowing) => {
       const boardGame = boardGames.find(
         (game) => game.id === borrowing.board_game_id,
       );
       if (!boardGame) throw new BoardNotFoundError();
-      return { ...borrowing, board_game: boardGame };
+      const user = usersById.get(borrowing.user_id);
+      if (!user) throw new Error("找不到借用人資料");
+
+      return {
+        ...borrowing,
+        board_game: boardGame,
+        user,
+        user_profile: profilesByUserId.get(user.id) ?? null,
+        approved_by_user: borrowing.approved_by_user_id
+          ? approversById.get(borrowing.approved_by_user_id) ?? null
+          : null,
+      };
     });
 
     return { ...result, data };
@@ -410,7 +444,7 @@ export const boardGamesService = {
       userId,
     );
     if (!isCurrentActiveMember) {
-      throw new Error("只有目前學年度有效社員才能借用桌遊");
+      throw new BorrowingPermissionError();
     }
 
     const existing =
@@ -471,6 +505,11 @@ export const boardGamesService = {
       throw new BorrowingStatusTransitionError("approved", borrowing.status);
     }
 
+    const dueAtDate = new Date(dueAt);
+    if (Number.isNaN(dueAtDate.getTime()) || dueAtDate <= new Date()) {
+      throw new BorrowingDueDateError();
+    }
+
     const [updated] = await Promise.all([
       boardGameBorrowingsRepository.updateById(borrowingId, {
         status: "borrowed",
@@ -519,6 +558,14 @@ export const boardGamesService = {
    */
   countBoardGamesByStatus: async (status: BoardGameStatus): Promise<number> => {
     return boardGamesRepository.countByStatus(status);
+  },
+
+  countBoardGamesByCategoryId: async (categoryId: string): Promise<number> => {
+    return boardGamesRepository.countByCategoryId(categoryId);
+  },
+
+  countBoardGamesByLocationId: async (locationId: string): Promise<number> => {
+    return boardGamesRepository.countByLocationId(locationId);
   },
 
   /**
