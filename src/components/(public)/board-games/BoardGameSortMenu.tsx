@@ -27,9 +27,10 @@ export function BoardGameSortMenu({ query }: BoardGameSortMenuProps) {
     <div ref={ref} className="relative shrink-0">
       <button
         type="button"
+        aria-label="選擇桌遊排序方式"
         aria-expanded={open}
         onClick={() => setOpen((prev) => !prev)}
-        className="btn flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-sm"
+        className="btn flex min-h-9 shrink-0 items-center gap-1 rounded-full px-3 text-sm font-medium"
       >
         排序：{activeOption.label}
       </button>
@@ -52,7 +53,7 @@ export function BoardGameSortMenu({ query }: BoardGameSortMenuProps) {
                 href={href}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "block px-3 py-1.5 text-sm whitespace-nowrap text-(--foreground) hover:bg-(--secondary-background)",
+                  "block min-h-9 px-3 py-2 text-sm whitespace-nowrap text-(--foreground) hover:bg-(--secondary-background)",
                   { "font-medium text-(--primary)": isActive },
                 )}
               >

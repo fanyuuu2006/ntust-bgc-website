@@ -84,6 +84,11 @@ export default async function BoardGamesPage({
     orderBy: sortOption.orderBy,
     orderDirection: sortOption.orderDirection,
   };
+  const hasActiveQuery =
+    Boolean(search) ||
+    statuses.length > 0 ||
+    categoryIds.length > 0 ||
+    locationIds.length > 0;
 
   const [categories, locations, boardGames] = await Promise.all([
     boardGamesService.listCategories(),
@@ -101,15 +106,17 @@ export default async function BoardGamesPage({
   ]);
 
   return (
-    <section className="py-8">
-      <div className="container space-y-6">
+    <section className="p-4">
+      <div className="container space-y-5 sm:space-y-6">
         <header className="space-y-2">
-          <h1 className="text-2xl font-bold text-(--foreground) sm:text-3xl">
-            桌遊館藏
-          </h1>
-          <p className="text-sm text-(--muted) sm:text-base">
-            探索社團目前收藏的桌遊，找到適合你的下一款遊戲。
-          </p>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-(--foreground) sm:text-3xl">
+              桌遊
+            </h1>
+            <p className="max-w-3xl text-sm leading-relaxed text-(--muted) sm:text-base">
+              這裡提供社團內的桌遊資料，包含桌遊名稱、分類、位置、狀態等資訊。您可以使用搜尋功能或篩選條件來快速找到想要的桌遊。
+            </p>
+          </div>
         </header>
 
         <BoardGameSearchForm
@@ -117,19 +124,13 @@ export default async function BoardGamesPage({
           locations={locations}
           query={query}
           pageSize={pageSize}
+          total={boardGames.total}
         />
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-(--muted)">
-            共{" "}
-            <span className="font-medium text-(--foreground)">
-              {boardGames.total}
-            </span>{" "}
-            款桌遊符合條件
-          </p>
-        </div>
-
-        <BoardGameGrid boardGames={boardGames.data} />
+        <BoardGameGrid
+          boardGames={boardGames.data}
+          hasActiveQuery={hasActiveQuery}
+        />
 
         <Pagination
           page={page}

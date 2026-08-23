@@ -69,7 +69,8 @@ export function BoardGameActiveFilters({
         <Link
           key={chip.key}
           href={chip.href}
-          className="flex btn shrink-0 items-center gap-1 rounded-full px-3 py-1 text-xs"
+          aria-label={`移除${chip.label}${chip.value}篩選`}
+          className="btn flex min-h-8 shrink-0 items-center gap-1 rounded-full px-3 text-xs"
         >
           <span className="shrink-0 font-semibold text-(--primary)">
             {chip.label}

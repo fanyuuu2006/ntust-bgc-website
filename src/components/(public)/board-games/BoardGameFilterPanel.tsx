@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type {
@@ -16,7 +16,11 @@ import { buildQueryString } from "@/utils/url";
 import { cn } from "@/utils/className";
 
 const STATUS_OPTIONS = (Object.keys(STATUS_META) as BoardGameStatus[]).map(
-  (value) => ({ value, label: STATUS_META[value].label }),
+  (value) => ({
+    value,
+    label: STATUS_META[value].label,
+    description: STATUS_META[value].description,
+  }),
 );
 
 type FilterKey = "status" | "category" | "location";
@@ -40,38 +44,56 @@ export function BoardGameFilterPanel({
     (query.status?.length ?? 0) +
     (query.category?.length ?? 0) +
     (query.location?.length ?? 0);
-
-  const toggleFilter = useCallback(
-    (key: FilterKey, value: string, checked: boolean) => {
-      const current = query[key] ?? [];
-      const next = checked
-        ? [...current, value]
-        : current.filter((item) => item !== value);
-
-      const queryString = buildQueryString(
-        { ...query, page: undefined },
-        {
-          [key]: next,
-        },
-      );
-
-      router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
-        scroll: false,
-      });
+  const isOnlyAvailable =
+    query.status?.length === 1 && query.status.includes("available");
+  const availableQueryString = buildQueryString(
+    { ...query, page: 1 },
+    {
+      status: isOnlyAvailable ? undefined : ["available"],
     },
-    [query, pathname, router],
   );
+  const availableHref = availableQueryString
+    ? `${BASE_PATH}?${availableQueryString}`
+    : BASE_PATH;
+
+  function toggleFilter(key: FilterKey, value: string, checked: boolean) {
+    const current = query[key] ?? [];
+    const next = checked
+      ? [...current, value]
+      : current.filter((item) => item !== value);
+
+    const queryString = buildQueryString(
+      { ...query, page: undefined },
+      {
+        [key]: next,
+      },
+    );
+
+    router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
+      scroll: false,
+    });
+  }
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={availableHref}
+            className={cn(
+              "btn flex min-h-9 shrink-0 items-center rounded-full px-3 text-sm font-medium",
+              { primary: isOnlyAvailable },
+            )}
+          >
+            只看可借用
+          </Link>
+
           <button
             type="button"
             aria-expanded={open}
             onClick={() => setOpen((prev) => !prev)}
             className={cn(
-              "btn flex shrink-0 items-center gap-2 rounded-full px-3 py-1 text-sm",
+              "btn flex min-h-9 shrink-0 items-center gap-2 rounded-full px-3 text-sm font-medium",
               {
                 "border-(--primary) text-(--primary)": filterCount > 0 || open,
               },
@@ -88,7 +110,7 @@ export function BoardGameFilterPanel({
           {filterCount > 0 && (
             <Link
               href={BASE_PATH}
-              className="shrink-0 text-sm text-(--muted) transition-colors hover:text-(--foreground)"
+              className="flex min-h-9 shrink-0 items-center px-1 text-sm font-medium text-(--muted) transition-colors hover:text-(--foreground)"
             >
               重設
             </Link>
@@ -100,12 +122,13 @@ export function BoardGameFilterPanel({
 
       {open ? (
         <div className="space-y-4 border-t border-(--border) pt-4">
-          <div className="grid gap-x-6 gap-y-4 sm:grid-cols-3">
+          <div className="grid gap-x-6 gap-y-5 md:grid-cols-3">
             <FilterSection label="狀態">
               {STATUS_OPTIONS.map((option) => (
                 <FilterPill
                   key={option.value}
                   label={option.label}
+                  title={option.description}
                   checked={query.status?.includes(option.value) ?? false}
                   onChange={(checked) =>
                     toggleFilter("status", option.value, checked)
@@ -119,6 +142,7 @@ export function BoardGameFilterPanel({
                 <FilterPill
                   key={category.id}
                   label={category.name}
+                  title={category.description ?? undefined}
                   checked={query.category?.includes(category.id) ?? false}
                   onChange={(checked) =>
                     toggleFilter("category", category.id, checked)
@@ -132,6 +156,7 @@ export function BoardGameFilterPanel({
                 <FilterPill
                   key={location.id}
                   label={location.name}
+                  title={location.description ?? undefined}
                   checked={query.location?.includes(location.id) ?? false}
                   onChange={(checked) =>
                     toggleFilter("location", location.id, checked)
@@ -160,26 +185,28 @@ type FilterSectionProps = {
 function FilterSection({ label, children }: FilterSectionProps) {
   return (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-(--muted)">{label}</p>
-      <div className="flex flex-wrap gap-1.5">{children}</div>
+      <p className="text-xs font-semibold text-(--muted)">{label}</p>
+      <div className="flex flex-wrap gap-2">{children}</div>
     </div>
   );
 }
 
 type FilterPillProps = {
   label: string;
+  title?: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
 };
 
-function FilterPill({ label, checked, onChange }: FilterPillProps) {
+function FilterPill({ label, title, checked, onChange }: FilterPillProps) {
   return (
     <button
       type="button"
       aria-pressed={checked}
+      title={title}
       onClick={() => onChange(!checked)}
       className={cn(
-        "shrink-0 rounded-full px-3 py-1 text-xs transition-colors",
+        "min-h-9 shrink-0 rounded-full px-3 text-sm transition-colors sm:min-h-8 sm:text-xs",
         "btn",
         { primary: checked },
       )}
