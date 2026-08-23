@@ -56,7 +56,22 @@
 | created_at | timestamp | Timestamp of when the membership was created |
 | updated_at | timestamp | Timestamp of when the membership was last updated |
 | joined_at | timestamp | Timestamp of when the user joined the membership |
-| register_key | text | Registration key used for membership registration |
+| membership_register_key_id | UUID | Nullable foreign key referencing the membership_register_keys table |
+
+### membership_register_keys
+
+| Column Name | Data Type | Description |
+| --- | --- | --- |
+| id | UUID | Unique identifier for each membership register key |
+| academic_year_id | UUID | Foreign key referencing the academic_years table |
+| sequence_number | integer | Per-academic-year generation sequence |
+| register_key | text | Full membership register key shown to admins and students |
+| status | text | Status of the register key ("available", "claimed", "revoked", "expired") |
+| created_by_user_id | UUID | Nullable foreign key referencing the admin/officer user who generated the key |
+| created_at | timestamp | Timestamp of when the register key was created |
+| updated_at | timestamp | Timestamp of when the register key was last updated |
+| claimed_at | timestamp | Timestamp of when the key successfully created a membership |
+| revoked_at | timestamp | Timestamp of when the key was revoked |
 
 ### academic_years
 

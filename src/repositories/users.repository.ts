@@ -18,6 +18,19 @@ type FindManyUsersOptions = PaginationQuery &
   };
 
 export const usersRepository = {
+  findIdsBySearch: async (search: string): Promise<string[]> => {
+    const keyword = search.trim();
+    if (!keyword) return [];
+
+    const { data, error } = await supabase
+      .from("users")
+      .select("id")
+      .or(buildIlikeSearch(["name", "email"], keyword));
+
+    if (error) throwRepositoryError("依關鍵字取得用戶 ID 失敗", error);
+    return (data ?? []).map((user) => user.id);
+  },
+
   findMany: async (options: FindManyUsersOptions = {}) => {
     const { page, pageSize, from, to } = normalizePaginationOptions({
       page: options.page,

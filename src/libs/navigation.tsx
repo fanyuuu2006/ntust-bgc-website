@@ -23,7 +23,11 @@ export const userNavigation = [
     href: "/borrowings",
   },
   {
-    label: "個人檔案",
+    label: "我的社員資格",
+    href: "/memberships",
+  },
+  {
+    label: "個人資料",
     href: "/profile",
   },
   {
@@ -34,7 +38,7 @@ export const userNavigation = [
 
 export const adminNavigation = [
   {
-    label: "管理後臺",
+    label: "管理後台",
     href: "/admin",
   },
 ] as const;

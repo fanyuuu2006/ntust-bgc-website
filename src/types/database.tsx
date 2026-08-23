@@ -31,6 +31,12 @@ export type MembershipStatus =
   | "suspended"
   | "cancelled";
 
+export type MembershipRegisterKeyStatus =
+  | "available"
+  | "claimed"
+  | "revoked"
+  | "expired";
+
 /**
  * 桌遊狀態
  */
@@ -129,14 +135,27 @@ export type AcademicYear = {
 
 export type Membership = {
   id: UUID;
-  user_id: UUID;
+  user_id: UUID | null;
   type: MembershipType;
   academic_year_id: UUID;
   status: MembershipStatus;
   created_at: Timestamp;
   updated_at: Timestamp;
-  joined_at: Timestamp;
+  joined_at: Timestamp | null;
+  membership_register_key_id: UUID | null;
+};
+
+export type MembershipRegisterKey = {
+  id: UUID;
+  academic_year_id: UUID;
+  sequence_number: number;
   register_key: string;
+  status: MembershipRegisterKeyStatus;
+  created_by_user_id: UUID | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+  claimed_at: Timestamp | null;
+  revoked_at: Timestamp | null;
 };
 
 /* =========================================================

@@ -77,7 +77,7 @@ function toMembershipHistoryItem(
       : undefined,
     statusLabel: status?.label ?? membership.status,
     statusVariant: status?.variant ?? "muted",
-    date: formatDate(membership.joined_at),
+    date: membership.joined_at ? formatDate(membership.joined_at) : "尚未啟用",
   };
 }
 

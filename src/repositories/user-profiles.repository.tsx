@@ -3,6 +3,7 @@ import "server-only";
 import { supabase } from "@/libs/supabase/server";
 import type { UserProfile } from "@/types/database";
 import { throwRepositoryError } from "./shared/errors";
+import { buildIlikeSearch } from "./shared/search";
 
 export type CreateUserProfileInput = Partial<
   Omit<UserProfile, "id" | "user_id" | "created_at" | "updated_at">
@@ -11,6 +12,31 @@ export type CreateUserProfileInput = Partial<
 export type UpdateUserProfileInput = Partial<CreateUserProfileInput>;
 
 export const userProfilesRepository = {
+  findUserIdsBySearch: async (search: string): Promise<string[]> => {
+    const keyword = search.trim();
+    if (!keyword) return [];
+
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("user_id")
+      .or(buildIlikeSearch(["real_name", "student_id"], keyword));
+
+    if (error) throwRepositoryError("依關鍵字取得個人資料用戶 ID 失敗", error);
+    return (data ?? []).map((profile) => profile.user_id);
+  },
+
+  findManyByUserIds: async (userIds: string[]): Promise<UserProfile[]> => {
+    if (userIds.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .in("user_id", userIds);
+
+    if (error) throwRepositoryError("依用戶 ID 批次取得個人資料失敗", error);
+    return data ?? [];
+  },
+
   findByUserId: async (userId: string): Promise<UserProfile | null> => {
     const { data, error } = await supabase
       .from("user_profiles")

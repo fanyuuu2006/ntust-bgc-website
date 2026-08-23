@@ -1,30 +1,89 @@
 import "server-only";
 
 import { supabase } from "@/libs/supabase/server";
-import type { Membership } from "@/types/database";
-import { throwRepositoryError } from "./shared/errors";
+import type { Membership, MembershipStatus, MembershipType } from "@/types/database";
 import {
   buildPaginationResult,
   normalizePaginationOptions,
 } from "./shared/pagination";
-import { OrderOptions, PaginationQuery } from "./shared/types";
+import { throwRepositoryError } from "./shared/errors";
+import type { OrderOptions, PaginationQuery } from "./shared/types";
 
 type CreateMembershipInput = Pick<
   Membership,
-  "user_id" | "type" | "academic_year_id" | "status" | "joined_at"
+  | "user_id"
+  | "type"
+  | "academic_year_id"
+  | "status"
+  | "joined_at"
+  | "membership_register_key_id"
 >;
 
-type UpdateMembershipInput = Partial<Pick<Membership, "type" | "status">>;
+type UpdateMembershipInput = Partial<
+  Pick<
+    Membership,
+    "type" | "status" | "user_id" | "joined_at" | "membership_register_key_id"
+  >
+>;
 
 export type FindManyMembershipsOptions = PaginationQuery &
   OrderOptions<"joined_at" | "created_at">;
 
+export type FindManyAdminMembershipsOptions = PaginationQuery &
+  OrderOptions<"joined_at" | "created_at"> & {
+    academicYearId?: string;
+    userIds?: string[];
+    type?: MembershipType;
+    status?: MembershipStatus;
+  };
+
 export const membershipsRepository = {
-  /**
-   * 取得使用者的社員紀錄，依 joined_at 排序。
-   * 只回傳 memberships table 本身的資料，不 join 其他 table。
-   * 需要 academic_year 資料請由呼叫端（Service）另外組合。
-   */
+  findManyForAdmin: async (options: FindManyAdminMembershipsOptions = {}) => {
+    const { page, pageSize, from, to } = normalizePaginationOptions({
+      page: options.page,
+      pageSize: options.pageSize,
+    });
+    const orderBy = options.orderBy ?? "joined_at";
+    const orderDirection = options.orderDirection ?? "desc";
+
+    let query = supabase
+      .from("memberships")
+      .select("*", { count: "exact" })
+      .filter("user_id", "not.is", null);
+
+    if (options.academicYearId) {
+      query = query.eq("academic_year_id", options.academicYearId);
+    }
+
+    if (options.type) {
+      query = query.eq("type", options.type);
+    }
+
+    if (options.status) {
+      query = query.eq("status", options.status);
+    }
+
+    if (options.userIds) {
+      if (options.userIds.length === 0) {
+        return buildPaginationResult<Membership>([], 0, page, pageSize);
+      }
+      query = query.in("user_id", options.userIds);
+    }
+
+    const { data, error, count } = await query
+      .order(orderBy, {
+        ascending: orderDirection === "asc",
+        nullsFirst: false,
+      })
+      .range(from, to);
+
+    if (error) {
+      throwRepositoryError("查詢社員資格列表失敗", error);
+    }
+
+    return buildPaginationResult<Membership>(data ?? [], count, page, pageSize);
+  },
+
   findManyByUserId: async (
     userId: string,
     options: FindManyMembershipsOptions = {},
@@ -33,7 +92,6 @@ export const membershipsRepository = {
       page: options.page,
       pageSize: options.pageSize,
     });
-
     const orderBy = options.orderBy ?? "joined_at";
     const orderDirection = options.orderDirection ?? "desc";
 
@@ -45,7 +103,7 @@ export const membershipsRepository = {
       .range(from, to);
 
     if (error) {
-      throwRepositoryError("取得使用者社員紀錄失敗", error);
+      throwRepositoryError("查詢使用者社員資格失敗", error);
     }
 
     return buildPaginationResult<Membership>(data ?? [], count, page, pageSize);
@@ -59,7 +117,7 @@ export const membershipsRepository = {
       .maybeSingle();
 
     if (error) {
-      throwRepositoryError("取得社員資料失敗", error);
+      throwRepositoryError("依 ID 尋找社員資格失敗", error);
     }
 
     return data;
@@ -77,10 +135,64 @@ export const membershipsRepository = {
       .maybeSingle();
 
     if (error) {
-      throwRepositoryError("取得指定學年度社員資格失敗", error);
+      throwRepositoryError("依使用者與學年度尋找社員資格失敗", error);
     }
 
     return data;
+  },
+
+  findActiveOrSuspendedByUserIdAndAcademicYearId: async (
+    userId: string,
+    academicYearId: string,
+  ): Promise<Membership | null> => {
+    const { data, error } = await supabase
+      .from("memberships")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("academic_year_id", academicYearId)
+      .in("status", ["active", "suspended"])
+      .maybeSingle();
+
+    if (error) {
+      throwRepositoryError("查詢目前有效或停權社員資格失敗", error);
+    }
+
+    return data;
+  },
+
+  findActiveLifetimeByUserId: async (
+    userId: string,
+  ): Promise<Membership | null> => {
+    const { data, error } = await supabase
+      .from("memberships")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("type", "lifetime")
+      .in("status", ["active", "suspended"])
+      .maybeSingle();
+
+    if (error) {
+      throwRepositoryError("查詢永久社員資格失敗", error);
+    }
+
+    return data;
+  },
+
+  findManyByRegisterKeyIds: async (
+    registerKeyIds: string[],
+  ): Promise<Membership[]> => {
+    if (registerKeyIds.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from("memberships")
+      .select("*")
+      .in("membership_register_key_id", registerKeyIds);
+
+    if (error) {
+      throwRepositoryError("依註冊序號查詢社員資格失敗", error);
+    }
+
+    return data ?? [];
   },
 
   create: async (payload: CreateMembershipInput): Promise<Membership> => {

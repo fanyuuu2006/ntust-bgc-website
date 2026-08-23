@@ -24,9 +24,15 @@ export function buildQueryString<T extends Record<string, QueryValue>>(
       if (value.length === 0) continue;
 
       for (const item of value) {
+        const normalizedItem =
+          typeof item === "string" ? item.trim() : item;
+        if (normalizedItem === "") continue;
+
         params.append(
           key,
-          item instanceof Date ? item.toISOString() : String(item),
+          normalizedItem instanceof Date
+            ? normalizedItem.toISOString()
+            : String(normalizedItem),
         );
       }
 
@@ -34,13 +40,14 @@ export function buildQueryString<T extends Record<string, QueryValue>>(
     }
 
     // 過濾掉空字串，避免產生無意義的查詢參數
-    if (typeof value === "string" && value === "") {
-      continue;
-    }
+    const normalizedValue = typeof value === "string" ? value.trim() : value;
+    if (normalizedValue === "") continue;
 
     params.set(
       key,
-      value instanceof Date ? value.toISOString() : String(value),
+      normalizedValue instanceof Date
+        ? normalizedValue.toISOString()
+        : String(normalizedValue),
     );
   }
 
