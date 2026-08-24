@@ -44,18 +44,6 @@ export function BoardGameFilterPanel({
     (query.status?.length ?? 0) +
     (query.category?.length ?? 0) +
     (query.location?.length ?? 0);
-  const isOnlyAvailable =
-    query.status?.length === 1 && query.status.includes("available");
-  const availableQueryString = buildQueryString(
-    { ...query, page: 1 },
-    {
-      status: isOnlyAvailable ? undefined : ["available"],
-    },
-  );
-  const availableHref = availableQueryString
-    ? `${BASE_PATH}?${availableQueryString}`
-    : BASE_PATH;
-
   function toggleFilter(key: FilterKey, value: string, checked: boolean) {
     const current = query[key] ?? [];
     const next = checked
@@ -78,16 +66,6 @@ export function BoardGameFilterPanel({
     <div className="space-y-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={availableHref}
-            className={cn(
-              "btn flex min-h-9 shrink-0 items-center rounded-full px-3 text-sm font-medium",
-              { primary: isOnlyAvailable },
-            )}
-          >
-            只看可借用
-          </Link>
-
           <button
             type="button"
             aria-expanded={open}
