@@ -50,7 +50,7 @@ export const listAdminMembershipsQuerySchema = z.object({
   status: optionalQueryString(
     z.enum(["pending", "active", "expired", "suspended", "cancelled"]),
   ),
-  orderBy: optionalQueryString(z.enum(["joined_at", "created_at"])),
+  orderBy: optionalQueryString(z.enum(["joined_at", "created_at", "status"])),
   orderDirection: optionalQueryString(z.enum(["asc", "desc"])),
 });
 

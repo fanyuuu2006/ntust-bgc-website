@@ -13,7 +13,7 @@ type CreateUserInput = Pick<User, "email" | "name">;
 type UpdateUserInput = Partial<Pick<User, "name" | "avatar">>;
 
 type FindManyUsersOptions = PaginationQuery &
-  OrderOptions<"name" | "email" | "created_at"> & {
+  OrderOptions<"name" | "email" | "created_at" | "updated_at"> & {
     search?: string;
   };
 

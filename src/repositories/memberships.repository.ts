@@ -30,7 +30,7 @@ export type FindManyMembershipsOptions = PaginationQuery &
   OrderOptions<"joined_at" | "created_at">;
 
 export type FindManyAdminMembershipsOptions = PaginationQuery &
-  OrderOptions<"joined_at" | "created_at"> & {
+  OrderOptions<"joined_at" | "created_at" | "status"> & {
     academicYearId?: string;
     userIds?: string[];
     type?: MembershipType;

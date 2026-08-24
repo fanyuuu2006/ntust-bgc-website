@@ -1,8 +1,17 @@
 import { cn } from "@/utils/className";
+
+type EmptyStateProps = React.HTMLAttributes<HTMLDivElement> & {
+  title?: string;
+  description?: string;
+};
+
 export function EmptyState({
   className,
+  title,
+  description,
+  children,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+}: EmptyStateProps) {
   return (
     <div
       className={cn(
@@ -10,6 +19,10 @@ export function EmptyState({
         className,
       )}
       {...props}
-    />
+    >
+      {title ? <p className="font-medium text-(--foreground)">{title}</p> : null}
+      {description ? <p className={cn(title && "mt-1")}>{description}</p> : null}
+      {children ? <div className="mt-4">{children}</div> : null}
+    </div>
   );
 }

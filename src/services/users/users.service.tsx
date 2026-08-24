@@ -14,7 +14,7 @@ import {
 import { usersRepository } from "@/repositories/users.repository";
 
 export const usersService = {
-  listForAdmin: async (options: { page?: number; pageSize?: number; search?: string } = {}) => {
+  listForAdmin: async (options: { page?: number; pageSize?: number; search?: string; orderBy?: "name" | "email" | "created_at" | "updated_at"; orderDirection?: "asc" | "desc" } = {}) => {
     const result = await usersRepository.findMany(options);
     const profiles = await userProfilesRepository.findManyByUserIds(
       result.data.map((user) => user.id),

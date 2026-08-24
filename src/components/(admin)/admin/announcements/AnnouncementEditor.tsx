@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/libs/api/client";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { Button } from "@/components/ui/Button";
 export function AnnouncementEditor({
   announcement,
 }: {
@@ -49,7 +52,7 @@ export function AnnouncementEditor({
     >
       <label className="block text-sm font-medium">
         標題
-        <input
+        <Input
           required
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -58,7 +61,7 @@ export function AnnouncementEditor({
       </label>
       <label className="block text-sm font-medium">
         內容
-        <textarea
+        <Textarea
           required
           rows={18}
           value={content}
@@ -75,27 +78,28 @@ export function AnnouncementEditor({
         </p>
       )}
       <div className="flex flex-wrap justify-end gap-2">
-        <button
+        <Button
           type="button"
           onClick={() => router.push("/admin/announcements")}
           className="btn outline shrink-0 whitespace-nowrap rounded-lg px-4 py-2"
         >
           取消
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           disabled={busy}
           onClick={() => void save(false)}
           className="btn outline shrink-0 whitespace-nowrap rounded-lg px-4 py-2"
         >
           儲存草稿
-        </button>
-        <button
+        </Button>
+        <Button
+          type="submit"
           disabled={busy}
           className="btn primary shrink-0 whitespace-nowrap rounded-lg px-4 py-2"
         >
           {busy ? "儲存中…" : announcement?.is_published ? "儲存" : "發布"}
-        </button>
+        </Button>
       </div>
     </form>
   );

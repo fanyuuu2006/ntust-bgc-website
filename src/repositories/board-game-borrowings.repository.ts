@@ -32,7 +32,7 @@ type UpdateBoardGameBorrowingInput = Partial<
 >;
 
 export type FindManyBoardGameBorrowingsOptions = PaginationQuery &
-  OrderOptions<"created_at" | "borrowed_at" | "due_at"> & {
+  OrderOptions<"created_at" | "borrowed_at" | "due_at" | "returned_at"> & {
     status?: BorrowingStatus | BorrowingStatus[];
     board_game_id?: string;
     user_id?: string;

@@ -67,7 +67,9 @@ export const listBorrowingsQuerySchema = z.object({
   status: borrowingStatusSchema.optional(),
   board_game_id: z.uuid().optional(),
   user_id: z.uuid().optional(),
-  orderBy: z.enum(["created_at", "borrowed_at", "due_at"]).optional(),
+  orderBy: z
+    .enum(["created_at", "borrowed_at", "due_at", "returned_at"])
+    .optional(),
   orderDirection: z.enum(["asc", "desc"]).optional(),
 });
 
