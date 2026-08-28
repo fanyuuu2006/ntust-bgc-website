@@ -23,12 +23,12 @@ export const HeadingSection = ({
       )}
     >
       <div className="min-w-0">
-        <h1 className="text-xl font-semibold leading-tight text-(--foreground) sm:text-2xl">
+        <h1 className="text-xl font-semibold leading-tight text-(--text-primary) sm:text-2xl">
           {title}
         </h1>
 
         {description && (
-          <p className="mt-1 text-sm text-(--muted)">{description}</p>
+          <p className="mt-1 text-sm text-(--text-muted)">{description}</p>
         )}
       </div>
 

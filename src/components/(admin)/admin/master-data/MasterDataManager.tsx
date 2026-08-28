@@ -4,6 +4,11 @@ import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Modal } from "@/components/Modal";
 import { apiClient } from "@/libs/api/client";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { Field } from "@/components/ui/Field";
+import { EmptyState } from "@/components/ui/EmptyState";
 type Item = {
   id: string;
   name: string;
@@ -93,25 +98,25 @@ export function MasterDataManager({ title, singular, endpoint, items }: Props) {
       <div className="flex flex-col gap-3 sm:flex-row">
         <label className="min-w-0 flex-1">
           <span className="sr-only">搜尋{title}</span>
-          <input
+          <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder={`搜尋${title}`}
-            className="w-full rounded-lg border border-(--border) bg-(--primary-background) px-3 py-2.5 text-sm outline-none focus:border-(--primary)"
+            className="w-full"
           />
         </label>
-        <button
+        <Button
           type="button"
           onClick={openCreate}
-          className="btn primary rounded-lg px-4 py-2.5 text-sm font-medium"
+          className="rounded-lg"
         >
           + 新增{singular}
-        </button>
+        </Button>
       </div>
       {message && (
         <p
           role="status"
-          className="rounded-lg border border-(--border) bg-(--secondary-background) px-3 py-2 text-sm"
+          className="rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2 text-sm"
         >
           {message}
         </p>
@@ -122,26 +127,30 @@ export function MasterDataManager({ title, singular, endpoint, items }: Props) {
             <div className="flex justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="font-semibold">{item.name}</h2>
-                <p className="mt-1 text-sm text-(--muted)">
+                <p className="mt-1 text-sm text-(--text-muted)">
                   {item.description || "尚未填寫說明"}
                 </p>
-                <p className="mt-2 text-xs text-(--muted)">
+                <p className="mt-2 text-xs text-(--text-muted)">
                   社產數：{item.count}
                 </p>
               </div>
               <div className="flex h-fit gap-2">
-                <button
+                <Button
                   onClick={() => openEdit(item)}
-                  className="btn outline rounded-lg px-3 py-1.5 text-xs"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-lg"
                 >
                   編輯
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setDeleting(item)}
-                  className="btn danger rounded-lg px-3 py-1.5 text-xs"
+                  variant="danger"
+                  size="sm"
+                  className="rounded-lg"
                 >
                   刪除
-                </button>
+                </Button>
               </div>
             </div>
           </article>
@@ -149,7 +158,7 @@ export function MasterDataManager({ title, singular, endpoint, items }: Props) {
       </div>
       <div className="card hidden overflow-x-auto rounded-xl md:block">
         <table className="w-full text-left text-sm">
-          <thead className="bg-(--secondary-background)">
+          <thead className="bg-(--surface-subtle)">
             <tr>
               <th className="px-4 py-3">名稱</th>
               <th className="px-4 py-3">說明</th>
@@ -159,26 +168,30 @@ export function MasterDataManager({ title, singular, endpoint, items }: Props) {
           </thead>
           <tbody>
             {visible.map((item) => (
-              <tr key={item.id} className="border-t border-(--border)">
+              <tr key={item.id} className="border-t border-(--border-default)">
                 <td className="px-4 py-3 font-medium">{item.name}</td>
-                <td className="px-4 py-3 text-(--muted)">
+                <td className="px-4 py-3 text-(--text-muted)">
                   {item.description || "—"}
                 </td>
                 <td className="px-4 py-3">{item.count}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       onClick={() => openEdit(item)}
-                      className="btn outline rounded-lg px-3 py-1.5 text-xs"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg"
                     >
                       編輯
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => setDeleting(item)}
-                      className="btn danger rounded-lg px-3 py-1.5 text-xs"
+                      variant="danger"
+                      size="sm"
+                      className="rounded-lg"
                     >
                       刪除
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -187,9 +200,7 @@ export function MasterDataManager({ title, singular, endpoint, items }: Props) {
         </table>
       </div>
       {visible.length === 0 && (
-        <p className="card rounded-xl p-8 text-center text-sm text-(--muted)">
-          沒有符合條件的{title}。
-        </p>
+        <EmptyState description={`沒有符合條件的${title}。`} />
       )}
       <Modal
         open={editing !== null}
@@ -197,42 +208,42 @@ export function MasterDataManager({ title, singular, endpoint, items }: Props) {
         title={editing === "new" ? `新增${singular}` : `編輯${singular}`}
       >
         <form onSubmit={save} className="space-y-4">
-          <label className="block text-sm font-medium">
-            名稱
-            <input
+          <Field label="名稱" htmlFor="master-data-name">
+            <Input
+              id="master-data-name"
               autoFocus
               required
               maxLength={100}
               value={name}
               onChange={(event) => setName(event.target.value)}
-              className="mt-1.5 w-full rounded-lg border border-(--border) px-3 py-2.5 font-normal outline-none focus:border-(--primary)"
             />
-          </label>
-          <label className="block text-sm font-medium">
-            說明<span className="text-(--muted)">（選填）</span>
-            <textarea
+          </Field>
+          <Field label="說明（選填）" htmlFor="master-data-description">
+            <Textarea
+              id="master-data-description"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               maxLength={500}
               rows={3}
-              className="mt-1.5 w-full resize-y rounded-lg border border-(--border) px-3 py-2.5 font-normal outline-none focus:border-(--primary)"
             />
-          </label>
+          </Field>
           <div className="flex justify-end gap-2">
-            <button
+            <Button
               type="button"
               disabled={busy}
               onClick={closeEdit}
-              className="btn outline rounded-lg px-4 py-2 text-sm"
+              variant="outline"
+              className="rounded-lg"
             >
               取消
-            </button>
-            <button
+            </Button>
+            <Button
               disabled={busy}
-              className="btn primary rounded-lg px-4 py-2 text-sm"
+              isLoading={busy}
+              className="rounded-lg"
             >
               {busy ? "儲存中…" : editing === "new" ? "新增" : "儲存"}
-            </button>
+            </Button>
           </div>
         </form>
       </Modal>

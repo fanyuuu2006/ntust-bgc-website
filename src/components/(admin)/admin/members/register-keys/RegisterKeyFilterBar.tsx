@@ -4,6 +4,10 @@ import { usePathname, useRouter } from "next/navigation";
 
 import type { AcademicYear, MembershipRegisterKeyStatus } from "@/types/database";
 import { buildQueryString } from "@/utils/url";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 
 type RegisterKeyFilterBarProps = {
   academicYears: AcademicYear[];
@@ -44,22 +48,20 @@ export function RegisterKeyFilterBar({
       onSubmit={handleSubmit}
       className="card grid gap-3 p-4 lg:grid-cols-[minmax(0,1fr)_12rem_10rem_auto_auto] lg:items-end"
     >
-      <label className="flex flex-col gap-1.5 text-sm font-medium text-(--foreground)">
-        搜尋序號
-        <input
+      <Field label="搜尋序號" htmlFor="register-key-search">
+        <Input
+          id="register-key-search"
           name="search"
           defaultValue={query.search}
           placeholder="114NTUSTBGC 或完整序號"
-          className="rounded-lg border border-(--border) bg-(--secondary-background) px-3 py-2 text-sm outline-none focus:border-(--primary)"
         />
-      </label>
+      </Field>
 
-      <label className="flex flex-col gap-1.5 text-sm font-medium text-(--foreground)">
-        學年度
-        <select
+      <Field label="學年度" htmlFor="register-key-year-filter">
+        <Select
+          id="register-key-year-filter"
           name="academic_year_id"
           defaultValue={query.academic_year_id ?? ""}
-          className="rounded-lg border border-(--border) bg-(--secondary-background) px-3 py-2 text-sm outline-none focus:border-(--primary)"
         >
           <option value="">全部</option>
           {academicYears.map((year) => (
@@ -67,38 +69,38 @@ export function RegisterKeyFilterBar({
               {year.year} 學年度
             </option>
           ))}
-        </select>
-      </label>
+        </Select>
+      </Field>
 
-      <label className="flex flex-col gap-1.5 text-sm font-medium text-(--foreground)">
-        狀態
-        <select
+      <Field label="狀態" htmlFor="register-key-status-filter">
+        <Select
+          id="register-key-status-filter"
           name="status"
           defaultValue={query.status ?? ""}
-          className="rounded-lg border border-(--border) bg-(--secondary-background) px-3 py-2 text-sm outline-none focus:border-(--primary)"
         >
           <option value="">全部</option>
           <option value="available">可使用</option>
           <option value="claimed">已啟用</option>
           <option value="revoked">已作廢</option>
           <option value="expired">已過期</option>
-        </select>
-      </label>
+        </Select>
+      </Field>
 
-      <button
+      <Button
         type="submit"
-        className="btn primary rounded-md px-4 py-2 text-sm font-medium"
+        className="rounded-md"
       >
         搜尋
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="outline"
         disabled={!hasFilters}
         onClick={() => router.push(pathname)}
-        className="btn outline rounded-md px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
+        className="rounded-md"
       >
         清除
-      </button>
+      </Button>
     </form>
   );
 }

@@ -11,6 +11,11 @@ const BOARD_GAME_STATUS_TONE: Record<BoardGameStatus, BadgeTone> = {
   retired: "neutral",
 };
 
+export const BOARD_GAME_STATUS_LABEL: Record<BoardGameStatus, string> =
+  Object.fromEntries(
+    Object.entries(STATUS_META).map(([status, meta]) => [status, meta.label]),
+  ) as Record<BoardGameStatus, string>;
+
 type BoardGameStatusBadgeProps = {
   status: BoardGameStatus;
   className?: string;
@@ -28,7 +33,7 @@ export function BoardGameStatusBadge({
       title={meta.description}
       className={className}
     >
-      {meta.label}
+      {BOARD_GAME_STATUS_LABEL[status]}
     </Badge>
   );
 }

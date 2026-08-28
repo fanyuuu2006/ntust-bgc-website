@@ -25,7 +25,7 @@ export const STATUS_META: Record<
     description: "目前可提出借用申請",
   },
   borrowed: {
-    label: "借用中",
+    label: "借出中",
     description: "已被借出，暫時無法借用",
   },
   maintenance: {

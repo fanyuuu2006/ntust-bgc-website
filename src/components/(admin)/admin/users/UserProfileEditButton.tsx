@@ -4,6 +4,10 @@ import { useState } from "react";
 import { Modal } from "@/components/Modal";
 import { apiClient } from "@/libs/api/client";
 import type { UserProfile } from "@/types/database";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Field } from "@/components/ui/Field";
+import { FormFeedback } from "@/components/FormFeedback";
 
 type Values = {
   real_name: string;
@@ -60,24 +64,25 @@ export function UserProfileEditButton({
   }
 
   return <>
-    <button type="button" onClick={() => { setValues(valuesFromProfile(profile)); setError(null); setOpen(true); }} className="btn primary rounded-lg px-4 py-2 text-sm">編輯基本資料</button>
+    <Button type="button" onClick={() => { setValues(valuesFromProfile(profile)); setError(null); setOpen(true); }} className="rounded-lg">編輯基本資料</Button>
     <Modal open={open} onClose={() => { if (!busy) setOpen(false); }} title="編輯使用者基本資料">
       <form onSubmit={submit} className="space-y-4">
-        {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        <FormFeedback error={error} />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="真實姓名" value={values.real_name} onChange={(value) => update("real_name", value)} required />
-          <Field label="聯絡電話" value={values.phone} onChange={(value) => update("phone", value)} required />
-          <Field label="學號" value={values.student_id} onChange={(value) => update("student_id", value)} />
-          <Field label="學校／學院" value={values.school} onChange={(value) => update("school", value)} />
-          <Field label="系所" value={values.department} onChange={(value) => update("department", value)} />
-          <Field label="年級" value={values.grade} onChange={(value) => update("grade", value)} />
+          <ProfileField label="真實姓名" value={values.real_name} onChange={(value) => update("real_name", value)} required />
+          <ProfileField label="聯絡電話" value={values.phone} onChange={(value) => update("phone", value)} required />
+          <ProfileField label="學號" value={values.student_id} onChange={(value) => update("student_id", value)} />
+          <ProfileField label="學校／學院" value={values.school} onChange={(value) => update("school", value)} />
+          <ProfileField label="系所" value={values.department} onChange={(value) => update("department", value)} />
+          <ProfileField label="年級" value={values.grade} onChange={(value) => update("grade", value)} />
         </div>
-        <div className="flex justify-end gap-2"><button type="button" disabled={busy} onClick={() => setOpen(false)} className="btn outline rounded-lg px-4 py-2 text-sm">取消</button><button disabled={busy} className="btn primary rounded-lg px-4 py-2 text-sm">{busy ? "儲存中…" : "儲存"}</button></div>
+        <div className="flex justify-end gap-2"><Button type="button" disabled={busy} onClick={() => setOpen(false)} variant="outline" className="rounded-lg">取消</Button><Button disabled={busy} isLoading={busy} className="rounded-lg">{busy ? "儲存中…" : "儲存"}</Button></div>
       </form>
     </Modal>
   </>;
 }
 
-function Field({ label, value, onChange, required = false }: { label: string; value: string; onChange: (value: string) => void; required?: boolean }) {
-  return <label className="block text-sm font-medium">{label}<input required={required} value={value} onChange={(event) => onChange(event.target.value)} className="mt-1.5 w-full rounded-lg border border-(--border) px-3 py-2.5 font-normal" /></label>;
+function ProfileField({ label, value, onChange, required = false }: { label: string; value: string; onChange: (value: string) => void; required?: boolean }) {
+  const id = `profile-${label}`;
+  return <Field label={label} htmlFor={id} required={required}><Input id={id} required={required} value={value} onChange={(event) => onChange(event.target.value)} /></Field>;
 }

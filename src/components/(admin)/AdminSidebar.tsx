@@ -3,6 +3,7 @@ import Link from "next/link";
 import { siteConfigs } from "@/libs/siteConfigs";
 import { cn } from "@/utils/className";
 import { AdminSidebarNav } from "./AdminSidebarNav";
+import { Button } from "@/components/ui/Button";
 
 type AdminSidebarProps = React.HTMLAttributes<HTMLElement> & {
   id: string;
@@ -12,7 +13,7 @@ type AdminSidebarProps = React.HTMLAttributes<HTMLElement> & {
 
 function AdminSidebarHeader({ onClose }: { onClose: () => void }) {
   return (
-    <div className="flex items-center justify-between gap-2 border-b border-(--border) px-4 py-2">
+    <div className="flex items-center justify-between gap-2 border-b border-(--border-default) px-4 py-2">
       <Link
         href="/admin"
         onClick={onClose}
@@ -33,14 +34,16 @@ function AdminSidebarHeader({ onClose }: { onClose: () => void }) {
         </p>
       </Link>
 
-      <button
+      <Button
         type="button"
         onClick={onClose}
         aria-label="關閉管理選單"
-        className="btn shrink-0 rounded-lg px-2.5 py-1 text-sm lg:hidden"
+        variant="ghost"
+        size="sm"
+        className="shrink-0 rounded-lg lg:hidden"
       >
         關閉
-      </button>
+      </Button>
     </div>
   );
 }
@@ -48,11 +51,11 @@ function AdminSidebarHeader({ onClose }: { onClose: () => void }) {
 function AdminSidebarFooter({ onNavigate }: { onNavigate: () => void }) {
   return (
     // sm 以上 Header 已提供「回網站」，這裡只服務手機 Drawer，避免同一功能出現兩次
-    <div className="mt-auto border-t border-(--border) p-3 sm:hidden">
+    <div className="mt-auto border-t border-(--border-default) p-3 sm:hidden">
       <Link
         href="/"
         onClick={onNavigate}
-        className="block truncate rounded-lg px-3 py-2 text-sm text-(--muted) transition-colors hover:bg-(--secondary-background) hover:text-(--foreground)"
+        className="block truncate rounded-lg px-3 py-2 text-sm text-(--text-muted) transition-colors hover:bg-(--surface-subtle) hover:text-(--text-primary)"
       >
         回網站
       </Link>
@@ -86,7 +89,7 @@ export function AdminSidebar({
         className={cn(
           "fixed inset-y-0 left-0 z-50",
           "flex h-dvh w-72 flex-col",
-          "border-r border-(--border) bg-(--primary-background)",
+          "border-r border-(--border-default) bg-(--surface-default)",
           "transition-transform duration-300",
           isOpen ? "translate-x-0" : "-translate-x-full",
           "lg:relative lg:inset-auto lg:z-auto lg:h-auto lg:w-64 lg:shrink-0",

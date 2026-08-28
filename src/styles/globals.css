@@ -75,7 +75,8 @@
     --status-neutral: var(--muted);
 
     /* === Focus === */
-    --focus-ring: color-mix(in oklab, var(--primary) 42%, transparent);
+    --focus-ring: color-mix(in oklab, var(--primary) 30%, transparent);
+    --focus-ring-danger: color-mix(in oklab, var(--status-danger) 28%, transparent);
 
     /* === 陰影 === */
     --shadow-base: 0 0.25rem 1rem rgba(15, 23, 42, 0.06);
@@ -587,8 +588,12 @@
 
 @layer utilities {
   :is(a, button, .btn, input, select, textarea, summary):focus-visible {
-    outline: 3px solid var(--focus-ring);
-    outline-offset: 2px;
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 0;
+  }
+
+  :is(input, select, textarea)[aria-invalid="true"]:focus-visible {
+    outline-color: var(--focus-ring-danger);
   }
 
   @keyframes shimmer {
