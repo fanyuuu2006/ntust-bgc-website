@@ -22,12 +22,12 @@ export const FormFeedback = ({
   return (
     <div aria-live="polite" className={cn(`min-h-5`, className)} {...props}>
       {error && (
-        <p role="alert" className="text-sm text-(--game-red)">
+        <p role="alert" className="text-sm text-(--status-danger)">
           {error}
         </p>
       )}
       {success && (
-        <p role="status" className="text-sm text-(--secondary)">
+        <p role="status" className="text-sm text-(--status-success)">
           {success}
         </p>
       )}

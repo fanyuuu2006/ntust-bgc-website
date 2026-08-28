@@ -1,2 +1,21 @@
 import { cn } from "@/utils/className";
-export function Textarea({ className, ...props }: React.ComponentProps<"textarea">) { return <textarea className={cn("w-full rounded-lg border border-(--border) bg-(--primary-background) px-3 py-2.5 text-sm outline-none focus:border-(--primary) disabled:cursor-not-allowed disabled:opacity-60", className)} {...props} />; }
+import { formControlClassName } from "./Input";
+
+type TextareaProps = React.ComponentProps<"textarea"> & {
+  invalid?: boolean;
+};
+
+export function Textarea({
+  className,
+  invalid,
+  "aria-invalid": ariaInvalid,
+  ...props
+}: TextareaProps) {
+  return (
+    <textarea
+      className={cn(formControlClassName, "min-h-24 resize-y", className)}
+      aria-invalid={invalid ?? ariaInvalid}
+      {...props}
+    />
+  );
+}

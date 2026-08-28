@@ -1,11 +1,25 @@
 import { cn } from "@/utils/className";
-export function Input({ className, ...props }: React.ComponentProps<"input">) {
+
+export const formControlClassName =
+  "w-full min-h-10 rounded-lg border border-(--border-default) bg-(--surface-default) px-3 py-2 text-sm text-(--text-primary) outline-none placeholder:text-(--text-muted) aria-invalid:border-(--status-danger) disabled:cursor-not-allowed disabled:bg-(--surface-subtle) disabled:text-(--text-muted) disabled:opacity-80";
+
+type InputProps = React.ComponentProps<"input"> & {
+  invalid?: boolean;
+};
+
+export function Input({
+  className,
+  invalid,
+  "aria-invalid": ariaInvalid,
+  ...props
+}: InputProps) {
   return (
     <input
       className={cn(
-        "rounded-lg border border-(--border) bg-(--primary-background) px-3 py-2.5 text-sm outline-none focus:border-(--primary) disabled:cursor-not-allowed disabled:opacity-60",
+        formControlClassName,
         className,
       )}
+      aria-invalid={invalid ?? ariaInvalid}
       {...props}
     />
   );

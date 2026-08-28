@@ -4,6 +4,7 @@ import { useState } from "react";
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { cn } from "@/utils/className";
 import { Input } from "@/components/ui/Input";
+import { Field, getFieldDescribedBy } from "@/components/ui/Field";
 
 export type FieldInputField = {
   id: string;
@@ -24,25 +25,15 @@ type FieldInputProps = Omit<
   field: FieldInputField;
   value: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  inputClassName?: string;
 };
-
-const labelClassName = "text-sm font-medium text-(--foreground) leading-snug";
-const requiredMarkClassName =
-  "after:ml-0.5 after:text-(--game-red) after:content-['*']";
-
-const inputBaseClassName = cn(
-  "w-full rounded-lg border border-(--border) bg-(--secondary-background)",
-  "px-3 py-2 text-sm text-(--foreground) outline-none transition-colors",
-  "placeholder:text-(--muted)",
-  "focus:border-(--primary)",
-  "disabled:cursor-not-allowed disabled:bg-(--secondary-background) disabled:text-(--muted) disabled:opacity-60",
-);
 
 export const FieldInput = ({
   field,
   value,
   onChange,
   className,
+  inputClassName,
   ...rest
 }: FieldInputProps) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -50,37 +41,26 @@ export const FieldInput = ({
   const isPasswordField = field.type === "password";
   const inputType = isPasswordField && isPasswordVisible ? "text" : field.type;
 
-  const hintId = field.hint ? `${field.id}-hint` : undefined;
-  const errorId = field.error ? `${field.id}-error` : undefined;
-  const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
+  const describedBy = getFieldDescribedBy(
+    field.id,
+    field.hint,
+    field.error,
+  );
 
   function togglePasswordVisibility() {
     setIsPasswordVisible((visible) => !visible);
   }
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)} {...rest}>
-      <label
-        htmlFor={field.id}
-        className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5"
-      >
-        <span
-          className={cn(labelClassName, "shrink-0", {
-            [requiredMarkClassName]: field.required,
-          })}
-        >
-          {field.label}
-        </span>
-        {field.hint && (
-          <span
-            id={hintId}
-            className="min-w-0 flex-1 basis-40 text-right text-xs font-normal text-(--muted) sm:text-left"
-          >
-            {field.hint}
-          </span>
-        )}
-      </label>
-
+    <Field
+      label={field.label}
+      htmlFor={field.id}
+      hint={field.hint}
+      error={field.error}
+      required={field.required}
+      className={className}
+      {...rest}
+    >
       <div className="relative">
         <Input
           id={field.id}
@@ -93,12 +73,12 @@ export const FieldInput = ({
           placeholder={field.placeholder}
           autoComplete={field.autoComplete}
           aria-required={field.required}
-          aria-invalid={!!field.error}
+          invalid={Boolean(field.error)}
           aria-describedby={describedBy}
-          className={cn(inputBaseClassName, {
+          className={cn("bg-(--surface-subtle)", {
             "pr-10": isPasswordField,
-            "border-(--game-red) (--game-red)/20": field.error,
-          })}
+            "border-(--status-danger)": field.error,
+          }, inputClassName)}
         />
 
         {isPasswordField && (
@@ -107,18 +87,13 @@ export const FieldInput = ({
             onClick={togglePasswordVisibility}
             aria-label={isPasswordVisible ? "隱藏密碼" : "顯示密碼"}
             aria-pressed={isPasswordVisible}
-            className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-2 text-(--muted) transition-colors hover:text-(--foreground)"
+            className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-2 text-(--text-muted) transition-colors hover:text-(--text-primary)"
           >
             {isPasswordVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
           </button>
         )}
       </div>
 
-      {field.error && (
-        <p id={errorId} role="alert" className="text-xs text-(--game-red)">
-          {field.error}
-        </p>
-      )}
-    </div>
+    </Field>
   );
 };

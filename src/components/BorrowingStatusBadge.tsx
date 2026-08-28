@@ -1,6 +1,5 @@
 import type { BorrowingStatus } from "@/types/database";
-import { cn } from "@/utils/className";
-import { Badge } from "@/components/ui/Badge";
+import { Badge, type BadgeTone } from "@/components/ui/Badge";
 
 export const BORROWING_STATUS_LABEL: Record<BorrowingStatus, string> = {
   pending: "待審核",
@@ -10,10 +9,14 @@ export const BORROWING_STATUS_LABEL: Record<BorrowingStatus, string> = {
   returned: "已歸還",
 };
 
-const BORROWING_STATUS_CLASS: Record<BorrowingStatus, string> = {
-  pending: "text-(--game-yellow)", approved: "text-(--game-blue)", rejected: "text-(--game-red)", borrowed: "text-(--game-green)", returned: "text-(--muted)",
+const BORROWING_STATUS_TONE: Record<BorrowingStatus, BadgeTone> = {
+  pending: "warning",
+  approved: "info",
+  rejected: "danger",
+  borrowed: "success",
+  returned: "neutral",
 };
 
 export function BorrowingStatusBadge({ status, className }: { status: BorrowingStatus; className?: string }) {
-  return <Badge className={cn(BORROWING_STATUS_CLASS[status], className)}>{BORROWING_STATUS_LABEL[status]}</Badge>;
+  return <Badge tone={BORROWING_STATUS_TONE[status]} className={className}>{BORROWING_STATUS_LABEL[status]}</Badge>;
 }

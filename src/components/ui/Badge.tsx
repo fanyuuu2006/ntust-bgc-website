@@ -1,22 +1,34 @@
 import { cn } from "@/utils/className";
-type Props = React.HTMLAttributes<HTMLSpanElement> & {
-  tone?: "neutral" | "success" | "info" | "warning" | "danger";
+
+export type BadgeTone = "neutral" | "success" | "info" | "warning" | "danger";
+
+type BadgeProps = React.HTMLAttributes<HTMLSpanElement> & {
+  tone?: BadgeTone;
 };
-const tones = {
-  neutral: "bg-(--secondary-background) text-(--muted)",
-  success: "bg-green-50 text-green-700",
-  info: "bg-blue-50 text-blue-700",
-  warning: "bg-yellow-50 text-yellow-700",
-  danger: "bg-red-50 text-red-700",
+
+const toneTokens: Record<BadgeTone, string> = {
+  neutral: "var(--status-neutral)",
+  success: "var(--status-success)",
+  info: "var(--status-info)",
+  warning: "var(--status-warning)",
+  danger: "var(--status-danger)",
 } as const;
-export function Badge({ tone = "neutral", className, ...props }: Props) {
+
+export function Badge({ tone = "neutral", className, style, ...props }: BadgeProps) {
+  const token = toneTokens[tone];
+
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 rounded-full px-2.5 py-1 text-xs font-medium",
-        tones[tone],
+        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium",
         className,
       )}
+      style={{
+        backgroundColor: `color-mix(in oklab, ${token} 14%, var(--surface-default))`,
+        borderColor: `color-mix(in oklab, ${token} 34%, var(--border-default))`,
+        color: token,
+        ...style,
+      }}
       {...props}
     />
   );

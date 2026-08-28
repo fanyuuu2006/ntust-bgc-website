@@ -22,7 +22,7 @@ export function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   return (
     <tr
       className={cn(
-        "border-t border-(--border) hover:bg-(--secondary-background)",
+        "border-t border-(--border-muted) hover:bg-(--surface-subtle)",
         className,
       )}
       {...props}
