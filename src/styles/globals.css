@@ -118,8 +118,16 @@
 
     --scrollbar-track: transparent;
 
-    --skeleton-bg: rgba(15, 23, 42, 0.08);
-    --skeleton-highlight: rgba(255, 255, 255, 0.75);
+    --skeleton-bg: color-mix(
+      in oklab,
+      var(--interactive-primary) 8%,
+      var(--surface-subtle)
+    );
+    --skeleton-highlight: color-mix(
+      in oklab,
+      var(--text-inverse) 70%,
+      transparent
+    );
   }
 
   /* =====================================================
@@ -154,9 +162,9 @@
 
     min-height: 100%;
 
-    background: var(--background);
+    background: var(--surface-page);
 
-    color: var(--foreground);
+    color: var(--text-primary);
 
     font-family:
       system-ui,
@@ -195,55 +203,41 @@
    🔘 Button System
    ===================================================== */
 
-  button,
-  .btn {
+  button {
     cursor: pointer;
-
-    border: none;
-
-    text-decoration: none;
-
-    transition:
-      transform var(--transition-normal) var(--transition-timing),
-      background var(--transition-normal) var(--transition-timing),
-      color var(--transition-normal) var(--transition-timing),
-      border-color var(--transition-normal) var(--transition-timing),
-      filter var(--transition-normal) var(--transition-timing);
-
     -webkit-tap-highlight-color: transparent;
   }
-
-  /* === Hover === */
-
-  button:hover,
-  .btn:hover {
-    text-decoration: none !important;
-
-    filter: brightness(1.08);
-  }
-
-  /* === Active === */
-
-  button:active,
-  .btn:active {
-    transform: scale(0.95);
-
-    filter: brightness(0.92);
-
-    transition-duration: var(--transition-fast);
-  }
-
-  /* === Disabled === */
 
   button:disabled,
   .btn:disabled {
     cursor: not-allowed;
-
-    opacity: 0.5;
-
-    filter: grayscale(0.6);
-
     transform: none;
+    box-shadow: none;
+    background: var(--surface-subtle);
+    border-color: var(--border-default);
+    color: var(--text-muted);
+    opacity: 0.72;
+  }
+
+  .btn,
+  .btn:link,
+  .btn:visited {
+    cursor: pointer;
+    border: 1px solid var(--border-default);
+    color: var(--text-primary);
+    text-decoration: none;
+    transition:
+      transform var(--transition-fast) var(--transition-timing),
+      background var(--transition-normal) var(--transition-timing),
+      color var(--transition-normal) var(--transition-timing),
+      border-color var(--transition-normal) var(--transition-timing),
+      box-shadow var(--transition-normal) var(--transition-timing);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn:not(:disabled):active {
+    transform: scale(0.98);
+    transition-duration: var(--transition-fast);
   }
 
   /* =====================================================
@@ -251,11 +245,7 @@
    ===================================================== */
 
   .btn {
-    background: var(--secondary-background);
-
-    border: 1px solid var(--border);
-
-    color: var(--foreground);
+    background: var(--interactive-muted);
   }
 
   /* =====================================================
@@ -263,9 +253,27 @@
    ===================================================== */
 
   .btn.primary {
-    background: linear-gradient(135deg, var(--primary), var(--primary-light));
-    color: var(--primary-background);
-    border: 1px solid var(--primary);
+    background: linear-gradient(
+      135deg,
+      var(--interactive-primary),
+      var(--primary-light)
+    );
+    color: var(--text-inverse);
+    border-color: var(--interactive-primary);
+  }
+
+  .btn.primary:hover {
+    background: linear-gradient(
+      135deg,
+      var(--interactive-primary-hover),
+      var(--interactive-primary)
+    );
+    border-color: var(--interactive-primary-hover);
+  }
+
+  .btn.primary:not(:disabled):active {
+    background: var(--interactive-primary-active);
+    border-color: var(--interactive-primary-active);
   }
 
   /* =====================================================
@@ -273,17 +281,14 @@
    ===================================================== */
 
   .btn.secondary {
-    background: var(--secondary-background);
-
-    color: var(--secondary);
-
-    border-color: var(--secondary);
+    background: var(--surface-subtle);
+    color: var(--status-success);
+    border-color: var(--status-success);
   }
 
   .btn.secondary:hover {
-    background: var(--secondary);
-
-    color: var(--primary-background);
+    background: var(--status-success);
+    color: var(--text-inverse);
   }
 
   /* =====================================================
@@ -292,13 +297,24 @@
 
   .btn.outline {
     background: transparent;
-    color: var(--primary);
-    border-color: var(--primary);
+    color: var(--interactive-primary);
+    border-color: var(--interactive-primary);
   }
 
   .btn.outline:hover {
-    background: var(--primary);
-    color: var(--primary-background);
+    background: var(--interactive-primary);
+    color: var(--text-inverse);
+  }
+
+  .btn.ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--interactive-primary);
+  }
+
+  .btn.ghost:hover {
+    background: var(--surface-subtle);
+    border-color: var(--border-muted);
   }
 
   /* =====================================================
@@ -306,26 +322,35 @@
    ===================================================== */
 
   .btn.green {
-    background: var(--game-green);
-
-    color: var(--primary-background);
-
-    border: 1px solid transparent;
+    background: var(--status-success);
+    color: var(--text-inverse);
+    border-color: transparent;
   }
 
   .btn.yellow {
-    background: var(--game-yellow);
-    color: var(--foreground);
-    border: 1px solid transparent;
+    background: var(--status-warning);
+    color: var(--text-primary);
+    border-color: transparent;
   }
 
   .btn.red,
   .btn.danger {
-    background: var(--game-red);
+    background: var(--status-danger);
+    color: var(--text-inverse);
+    border-color: transparent;
+  }
 
-    color: var(--primary-background);
+  .btn.danger:hover,
+  .btn.red:hover {
+    background: color-mix(in oklab, var(--status-danger) 86%, black);
+  }
 
-    border: 1px solid transparent;
+  .btn.green:hover {
+    background: color-mix(in oklab, var(--status-success) 86%, black);
+  }
+
+  .btn.yellow:hover {
+    background: color-mix(in oklab, var(--status-warning) 88%, white);
   }
 
   /* =====================================================
@@ -351,8 +376,8 @@
      ===================================================== */
 
   .card {
-    background: var(--primary-background);
-    border: 1px solid var(--border);
+    background: var(--surface-default);
+    border: 1px solid var(--border-default);
     box-shadow: var(--shadow-base);
 
     transition:
@@ -361,42 +386,50 @@
       box-shadow var(--transition-normal) var(--transition-timing);
   }
 
-  .card:hover {
-    border-color: color-mix(in oklab, var(--primary) 45%, transparent);
-
-    box-shadow: var(--shadow-hover);
+  .card.interactive,
+  a.card {
+    cursor: pointer;
   }
-
-  /* === Card with Top Accent === */
-
-  .card.accent {
-    border-top: 0.25rem solid var(--primary);
-  }
-
-  .card.accent.green {
-    border-top-color: var(--game-green);
-  }
-
-  .card.accent.yellow {
-    border-top-color: var(--game-yellow);
-  }
-
-  .card.accent.red {
-    border-top-color: var(--game-red);
-  }
-
-  /* === Link Card === */
 
   a.card {
     display: block;
   }
 
+  .card.interactive:hover,
   a.card:hover {
     transform: translateY(calc(-1 * var(--move-y)));
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-hover);
+  }
 
-    border-color: var(--primary);
+  .card.selected {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-card-hover);
+  }
 
-    text-decoration: none;
+  /* === Card with Top Accent === */
+
+  .card.accent {
+    border-top: 0.25rem solid var(--interactive-primary);
+  }
+
+  .card.accent.primary {
+    border-top-color: var(--interactive-primary);
+  }
+
+  .card.accent.success,
+  .card.accent.green {
+    border-top-color: var(--status-success);
+  }
+
+  .card.accent.warning,
+  .card.accent.yellow {
+    border-top-color: var(--status-warning);
+  }
+
+  .card.accent.danger,
+  .card.accent.red {
+    border-top-color: var(--status-danger);
   }
 
   /* =====================================================
@@ -461,7 +494,10 @@
   }
 
   .tooltip:hover::before,
-  .overlay-wrapper:hover .overlay-content {
+  .tooltip:focus-visible::before,
+  .tooltip:focus-within::before,
+  .overlay-wrapper:hover .overlay-content,
+  .overlay-wrapper:focus-within .overlay-content {
     bottom: 120%;
     opacity: 1;
     visibility: visible;
@@ -474,8 +510,8 @@
     max-width: 200px;
 
     padding: 0.4rem 0.75rem;
-    background: var(--foreground);
-    color: #ffffff;
+    background: var(--text-primary);
+    color: var(--text-inverse);
     border-radius: var(--border-radius-md);
     white-space: nowrap;
 
@@ -550,6 +586,11 @@
    ========================================================= */
 
 @layer utilities {
+  :is(a, button, .btn, input, select, textarea, summary):focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
   @keyframes shimmer {
     0% {
       transform: translateX(-100%);
@@ -563,11 +604,7 @@
     overflow: hidden;
     color: transparent;
 
-    background: color-mix(
-      in oklab,
-      var(--primary) 8%,
-      var(--secondary-background)
-    );
+    background: var(--skeleton-bg);
   }
 
   .skeleton::after {
@@ -577,7 +614,7 @@
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(255, 255, 255, 0.7),
+      var(--skeleton-highlight),
       transparent
     );
     transform: translateX(-100%);
@@ -585,11 +622,7 @@
   }
 
   .skeleton-line {
-    background: color-mix(
-      in oklab,
-      var(--primary) 5%,
-      var(--secondary-background)
-    );
+    background: var(--skeleton-bg);
   }
 
   @media (prefers-reduced-motion: reduce) {
