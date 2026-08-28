@@ -38,6 +38,45 @@
     /* === 邊框 === */
     --border: rgba(0, 91, 172, 0.28);
 
+    /* =====================================================
+       Semantic tokens
+       Alias existing foundation tokens so component and feature
+       styles can depend on UI roles without changing the current UI.
+       ===================================================== */
+
+    /* === Text === */
+    --text-primary: var(--foreground);
+    --text-secondary: color-mix(in oklab, var(--foreground) 78%, var(--muted));
+    --text-muted: var(--muted);
+    --text-inverse: var(--primary-background);
+
+    /* === Surface === */
+    --surface-page: var(--background);
+    --surface-default: var(--primary-background);
+    --surface-subtle: var(--secondary-background);
+    --surface-elevated: var(--primary-background);
+
+    /* === Border === */
+    --border-default: var(--border);
+    --border-muted: color-mix(in oklab, var(--border) 55%, transparent);
+    --border-strong: color-mix(in oklab, var(--primary) 58%, transparent);
+
+    /* === Interactive === */
+    --interactive-primary: var(--primary);
+    --interactive-primary-hover: var(--primary-dark);
+    --interactive-primary-active: var(--primary-dark);
+    --interactive-muted: var(--secondary-background);
+
+    /* === Status === */
+    --status-success: var(--game-green);
+    --status-warning: var(--game-yellow);
+    --status-danger: var(--game-red);
+    --status-info: var(--game-blue);
+    --status-neutral: var(--muted);
+
+    /* === Focus === */
+    --focus-ring: color-mix(in oklab, var(--primary) 42%, transparent);
+
     /* === 陰影 === */
     --shadow-base: 0 0.25rem 1rem rgba(15, 23, 42, 0.06);
 
