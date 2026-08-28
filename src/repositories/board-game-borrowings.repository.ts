@@ -36,6 +36,10 @@ export type FindManyBoardGameBorrowingsOptions = PaginationQuery &
     status?: BorrowingStatus | BorrowingStatus[];
     board_game_id?: string;
     user_id?: string;
+    board_game_ids?: string[];
+    user_ids?: string[];
+    search_board_game_ids?: string[];
+    search_user_ids?: string[];
   };
 
 export const boardGameBorrowingsRepository = {
@@ -79,6 +83,22 @@ export const boardGameBorrowingsRepository = {
 
     if (options.user_id) {
       query = query.eq("user_id", options.user_id);
+    }
+    if (options.search_board_game_ids || options.search_user_ids) {
+      const predicates = [
+        options.search_board_game_ids?.length ? `board_game_id.in.(${options.search_board_game_ids.join(",")})` : "",
+        options.search_user_ids?.length ? `user_id.in.(${options.search_user_ids.join(",")})` : "",
+      ].filter(Boolean);
+      if (!predicates.length) return buildPaginationResult<BoardGameBorrowing>([], 0, page, pageSize);
+      query = query.or(predicates.join(","));
+    }
+    if (options.board_game_ids) {
+      if (options.board_game_ids.length === 0) return buildPaginationResult<BoardGameBorrowing>([], 0, page, pageSize);
+      query = query.in("board_game_id", options.board_game_ids);
+    }
+    if (options.user_ids) {
+      if (options.user_ids.length === 0) return buildPaginationResult<BoardGameBorrowing>([], 0, page, pageSize);
+      query = query.in("user_id", options.user_ids);
     }
 
     query = query

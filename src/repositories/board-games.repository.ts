@@ -41,6 +41,17 @@ export type FindManyBoardGamesOptions = PaginationQuery &
   };
 
 export const boardGamesRepository = {
+  findIdsBySearch: async (search: string): Promise<string[]> => {
+    const keyword = search.trim();
+    if (!keyword) return [];
+    const conditions = [
+      buildIlikeSearch(["name", "description"], keyword),
+      buildNumericSearch(["inventory_number"], keyword),
+    ].filter(Boolean);
+    const { data, error } = await supabase.from("board_games").select("id").or(conditions.join(","));
+    if (error) throwRepositoryError("搜尋桌遊 ID 失敗", error);
+    return (data ?? []).map((item) => item.id);
+  },
   findMany: async (options: FindManyBoardGamesOptions = {}) => {
     const { page, pageSize, from, to } = normalizePaginationOptions({
       page: options.page,

@@ -371,14 +371,27 @@ export const boardGamesService = {
   },
 
   listBorrowings: async (
-    options: FindManyBoardGameBorrowingsOptions = {},
+    options: FindManyBoardGameBorrowingsOptions & { search?: string } = {},
   ): Promise<
     ReturnType<typeof buildPaginationResult<BoardGameBorrowingForAdmin>>
   > => {
+    const keyword = options.search?.trim();
+    const [matchingBoardGameIds, matchingUserIds, matchingProfileUserIds] = keyword
+      ? await Promise.all([
+          boardGamesRepository.findIdsBySearch(keyword),
+          usersRepository.findIdsBySearch(keyword),
+          userProfilesRepository.findUserIdsBySearch(keyword),
+        ])
+      : [undefined, undefined, undefined];
+    const searchBoardGameIds = matchingBoardGameIds;
+    const searchUserIds = keyword
+      ? [...new Set([...(matchingUserIds ?? []), ...(matchingProfileUserIds ?? [])])]
+      : undefined;
     const result = await boardGameBorrowingsRepository.findMany({
       orderBy: "created_at",
       orderDirection: "desc",
       ...options,
+      ...(keyword ? { search_board_game_ids: searchBoardGameIds, search_user_ids: searchUserIds } : {}),
     });
 
     const boardGameIds = [...new Set(result.data.map((b) => b.board_game_id))];

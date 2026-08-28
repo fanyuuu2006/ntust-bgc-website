@@ -67,6 +67,7 @@ export const listBorrowingsQuerySchema = z.object({
   status: borrowingStatusSchema.optional(),
   board_game_id: z.uuid().optional(),
   user_id: z.uuid().optional(),
+  search: z.string().trim().max(100).optional(),
   orderBy: z
     .enum(["created_at", "borrowed_at", "due_at", "returned_at"])
     .optional(),

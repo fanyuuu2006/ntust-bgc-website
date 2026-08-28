@@ -20,6 +20,7 @@ export type UpdateEventInput = Partial<
 export type FindManyEventsOptions = PaginationQuery &
   OrderOptions<"start_time" | "end_time" | "created_at" | "name"> & {
     search?: string;
+    status?: "upcoming" | "ongoing" | "ended";
     /** 只取開始時間在此之後的活動，例如「即將舉行」列表 */
     startsAfter?: string;
     /** 只取開始時間在此之前的活動，例如「歷史活動」列表 */
@@ -48,6 +49,13 @@ export const eventsRepository = {
 
     if (options.startsBefore) {
       query = query.lte("start_time", options.startsBefore);
+    }
+
+    if (options.status) {
+      const now = new Date().toISOString();
+      if (options.status === "upcoming") query = query.gt("start_time", now);
+      if (options.status === "ongoing") query = query.lte("start_time", now).gte("end_time", now);
+      if (options.status === "ended") query = query.lt("end_time", now);
     }
 
     query = query

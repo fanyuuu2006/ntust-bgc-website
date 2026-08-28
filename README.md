@@ -197,6 +197,13 @@ src
 │   │   ├── admin/
 │   │   │   ├── academic-years/
 │   │   │   │   └── page.tsx
+│   │   │   ├── announcements/
+│   │   │   │   ├── [id]/
+│   │   │   │   │   └── edit/
+│   │   │   │   │       └── page.tsx
+│   │   │   │   ├── new/
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx
 │   │   │   ├── board-game-categories/
 │   │   │   │   └── page.tsx
 │   │   │   ├── board-game-locations/
@@ -218,6 +225,10 @@ src
 │   │   │   │   └── types.tsx
 │   │   │   ├── borrowings/
 │   │   │   │   └── page.tsx
+│   │   │   ├── events/
+│   │   │   │   ├── [id]/
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx
 │   │   │   ├── layout.tsx
 │   │   │   ├── members/
 │   │   │   │   ├── page.tsx
@@ -227,6 +238,8 @@ src
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── register-keys/
 │   │   │   │       └── page.tsx
+│   │   │   ├── officers/
+│   │   │   │   └── page.tsx
 │   │   │   ├── page.tsx
 │   │   │   └── users/
 │   │   │       ├── [id]/
@@ -279,6 +292,10 @@ src
 │   │   │   │   ├── [id]/
 │   │   │   │   │   └── route.ts
 │   │   │   │   └── route.ts
+│   │   │   ├── announcements/
+│   │   │   │   ├── [id]/
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
 │   │   │   ├── board-game-categories/
 │   │   │   │   ├── [id]/
 │   │   │   │   │   └── route.ts
@@ -295,11 +312,31 @@ src
 │   │   │   │   ├── [id]/
 │   │   │   │   │   └── route.ts
 │   │   │   │   └── route.ts
-│   │   │   └── members/
-│   │   │       └── register-keys/
-│   │   │           ├── [id]/
-│   │   │           │   └── route.ts
-│   │   │           └── route.ts
+│   │   │   ├── events/
+│   │   │   │   ├── [id]/
+│   │   │   │   │   ├── attendances/
+│   │   │   │   │   │   ├── [attendanceId]/
+│   │   │   │   │   │   │   └── route.ts
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── members/
+│   │   │   │   └── register-keys/
+│   │   │   │       ├── [id]/
+│   │   │   │       │   └── route.ts
+│   │   │   │       └── route.ts
+│   │   │   ├── memberships/
+│   │   │   │   ├── [id]/
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── officers/
+│   │   │   │   ├── [id]/
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   └── users/
+│   │   │       └── [id]/
+│   │   │           └── profile/
+│   │   │               └── route.ts
 │   │   ├── auth/
 │   │   │   ├── login/
 │   │   │   │   └── route.ts
@@ -337,9 +374,15 @@ src
 │   │   ├── AdminSidebar.tsx
 │   │   ├── AdminSidebarNav.tsx
 │   │   └── admin/
+│   │       ├── AdminListSection.tsx
+│   │       ├── AdminToolbar.tsx
 │   │       ├── HeadingSection.tsx
+│   │       ├── SortableTableHeader.tsx
 │   │       ├── academic-years/
 │   │       │   └── AcademicYearManager.tsx
+│   │       ├── announcements/
+│   │       │   ├── AnnouncementEditor.tsx
+│   │       │   └── AnnouncementStatusBadge.tsx
 │   │       ├── board-games/
 │   │       │   ├── BoardGameActions.tsx
 │   │       │   ├── BoardGameFilterBar.tsx
@@ -349,17 +392,26 @@ src
 │   │       │   └── BoardGameTable.tsx
 │   │       ├── borrowings/
 │   │       │   └── AdminBorrowingList.tsx
+│   │       ├── events/
+│   │       │   ├── AttendanceManager.tsx
+│   │       │   ├── EventManager.tsx
+│   │       │   └── EventStatusBadge.tsx
 │   │       ├── master-data/
 │   │       │   └── MasterDataManager.tsx
-│   │       └── members/
-│   │           ├── MemberFilterBar.tsx
-│   │           ├── MemberStatusBadge.tsx
-│   │           ├── MemberTable.tsx
-│   │           ├── RegisterKeyGenerateForm.tsx
-│   │           ├── RegisterKeyStatusBadge.tsx
-│   │           ├── RegisterKeyTable.tsx
-│   │           └── register-keys/
-│   │               └── RegisterKeyFilterBar.tsx
+│   │       ├── members/
+│   │       │   ├── MemberFilterBar.tsx
+│   │       │   ├── MemberStatusBadge.tsx
+│   │       │   ├── RegisterKeyGenerateForm.tsx
+│   │       │   ├── RegisterKeyStatusBadge.tsx
+│   │       │   ├── RegisterKeyTable.tsx
+│   │       │   └── register-keys/
+│   │       │       └── RegisterKeyFilterBar.tsx
+│   │       ├── memberships/
+│   │       │   └── MembershipManager.tsx
+│   │       ├── officers/
+│   │       │   └── OfficerManager.tsx
+│   │       └── users/
+│   │           └── UserProfileEditButton.tsx
 │   ├── (auth)/
 │   │   ├── AuthCard.tsx
 │   │   ├── AuthNotice.tsx
@@ -398,6 +450,7 @@ src
 │   │       └── BorrowBoardGameForm.tsx
 │   ├── BoardGameImage.tsx
 │   ├── BorrowingStatusBadge.tsx
+│   ├── ConfirmDialog.tsx
 │   ├── FieldInput.tsx
 │   ├── FormFeedback.tsx
 │   ├── Header/
@@ -407,6 +460,7 @@ src
 │   │   ├── MobileNavigation.tsx
 │   │   └── UserMenu.tsx
 │   ├── LogoutButton.tsx
+│   ├── Modal.tsx
 │   ├── Pagination/
 │   │   ├── Pagination.tsx
 │   │   ├── PaginationNavLinks.tsx
@@ -414,9 +468,18 @@ src
 │   │   └── PaginationPageSizeSelect.tsx
 │   ├── QuickStats.tsx
 │   ├── UserAvatar.tsx
-│   └── layouts/
-│       ├── AdminShell.tsx
-│       └── WebsiteShell.tsx
+│   ├── layouts/
+│   │   ├── AdminShell.tsx
+│   │   └── WebsiteShell.tsx
+│   └── ui/
+│       ├── Badge.tsx
+│       ├── Button.tsx
+│       ├── Card.tsx
+│       ├── EmptyState.tsx
+│       ├── Input.tsx
+│       ├── Select.tsx
+│       ├── Table.tsx
+│       └── Textarea.tsx
 ├── contexts/
 │   └── UserContext.tsx
 ├── hooks/
