@@ -8,6 +8,7 @@ import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import { FieldInput, type FieldInputField } from "@/components/FieldInput";
 import { FormFeedback } from "@/components/FormFeedback";
+import { Button } from "@/components/ui/Button";
 import { NEXT_PUBLIC_TURNSTILE_SITE_KEY } from "@/libs/env";
 
 const fields = [
@@ -193,7 +194,7 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor={acceptTermsId}
-          className="flex items-start gap-2 text-sm text-(--foreground)"
+          className="flex items-start gap-2 text-sm text-(--text-primary)"
         >
           <input
             id={acceptTermsId}
@@ -207,16 +208,16 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
             aria-describedby={
               fieldErrors.acceptTerms ? `${acceptTermsId}-error` : undefined
             }
-            className="mt-0.5 size-4 shrink-0 rounded border-(--border) accent-(--primary)"
+            className="mt-0.5 size-4 shrink-0 rounded border-(--border-default) accent-(--interactive-primary)"
           />
 
           <span className="flex flex-wrap items-center gap-1">
             我已閱讀並同意
-            <Link href="/terms" className="text-(--primary) hover:underline">
+            <Link href="/terms" className="text-(--interactive-primary) hover:underline">
               服務條款
             </Link>
             與
-            <Link href="/privacy" className="text-(--primary) hover:underline">
+            <Link href="/privacy" className="text-(--interactive-primary) hover:underline">
               隱私權政策
             </Link>
           </span>
@@ -226,7 +227,7 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
           <p
             id={`${acceptTermsId}-error`}
             role="alert"
-            className="text-xs text-(--game-red)"
+            className="text-xs text-(--status-danger)"
           >
             {fieldErrors.acceptTerms}
           </p>
@@ -253,18 +254,18 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
       <FormFeedback error={formError} />
 
       <div className="flex flex-col gap-4">
-        <button
+        <Button
           type="submit"
           disabled={isLoading || !turnstileToken}
-          aria-busy={isLoading}
-          className="btn primary w-full rounded-lg py-2.5 text-sm font-medium sm:text-base"
+          isLoading={isLoading}
+          className="w-full py-2.5 sm:text-base"
         >
           {isLoading ? "建立中..." : "建立帳號"}
-        </button>
+        </Button>
 
-        <p className="text-center text-sm text-(--muted)">
+        <p className="text-center text-sm text-(--text-muted)">
           已經有帳號？
-          <Link href="/login" className="ml-1 text-(--primary) hover:underline">
+          <Link href="/login" className="ml-1 text-(--interactive-primary) hover:underline">
             前往登入
           </Link>
         </p>

@@ -8,6 +8,7 @@ import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import { FieldInput, type FieldInputField } from "@/components/FieldInput";
 import { FormFeedback } from "@/components/FormFeedback";
+import { Button } from "@/components/ui/Button";
 
 type LoginFormValues = {
   email: string;
@@ -104,20 +105,20 @@ export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
       <FormFeedback error={error} />
 
       <div className="flex flex-col gap-4">
-        <button
+        <Button
           type="submit"
           disabled={isLoading}
-          aria-busy={isLoading}
-          className="btn primary w-full rounded-lg py-2.5 text-sm font-medium sm:text-base"
+          isLoading={isLoading}
+          className="w-full py-2.5 sm:text-base"
         >
           {isLoading ? "登入中..." : "登入"}
-        </button>
+        </Button>
 
-        <p className="text-center text-sm text-(--muted)">
+        <p className="text-center text-sm text-(--text-muted)">
           還沒有帳號？
           <Link
             href="/register"
-            className="ml-1 text-(--primary) hover:underline"
+            className="ml-1 text-(--interactive-primary) hover:underline"
           >
             前往註冊
           </Link>

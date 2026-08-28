@@ -8,6 +8,7 @@ import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import type { UserProfile } from "@/types/database";
 import { FormFeedback } from "@/components/FormFeedback";
+import { Button } from "@/components/ui/Button";
 
 type AcademicProfileValues = {
   student_id: string;
@@ -144,7 +145,7 @@ export const UserProfileSettingsCard = ({
     >
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
         <section className="flex flex-col gap-4">
-          <p className="text-sm font-semibold text-(--foreground)">聯絡資訊</p>
+          <p className="text-sm font-semibold text-(--text-primary)">聯絡資訊</p>
           <div className="grid gap-4 lg:grid-cols-2">
             {contactFields.map((field) => (
               <FieldInput
@@ -157,13 +158,13 @@ export const UserProfileSettingsCard = ({
           </div>
         </section>
 
-        <section className="flex flex-col gap-4 border-t border-(--border) pt-6">
-          <p className="text-sm font-semibold text-(--foreground)">學籍資訊</p>
+        <section className="flex flex-col gap-4 border-t border-(--border-default) pt-6">
+          <p className="text-sm font-semibold text-(--text-primary)">學籍資訊</p>
           <div className="grid gap-4 lg:grid-cols-2">
             {academicFields.map((field) => (
               <FieldInput
                 key={field.id}
-                field={field}
+                field={{ ...field, disabled: isLoading }}
                 value={values[field.id]}
                 onChange={handleChange}
               />
@@ -174,22 +175,23 @@ export const UserProfileSettingsCard = ({
         <FormFeedback error={formError} success={successMessage} />
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button
+          <Button
             type="button"
             onClick={handleReset}
             disabled={isLoading || !isDirty}
-            className="btn outline w-full rounded-lg px-6 py-2.5 text-sm font-medium sm:w-auto sm:text-base"
+            variant="outline"
+            className="w-full px-6 py-2.5 sm:w-auto sm:text-base"
           >
             重設
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             disabled={isLoading || !isDirty}
-            aria-busy={isLoading}
-            className="btn primary w-full rounded-lg px-6 py-2.5 text-sm font-medium sm:w-auto sm:text-base"
+            isLoading={isLoading}
+            className="w-full px-6 py-2.5 sm:w-auto sm:text-base"
           >
             {isLoading ? "儲存中..." : "儲存修改"}
-          </button>
+          </Button>
         </div>
       </form>
     </SettingsCard>

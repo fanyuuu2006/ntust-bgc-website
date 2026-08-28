@@ -1,4 +1,5 @@
 import { cn } from "@/utils/className";
+import { Card } from "@/components/ui/Card";
 
 type AuthCardProps = React.HTMLAttributes<HTMLDivElement> & {
   title: string;
@@ -13,21 +14,21 @@ export const AuthCard = ({
   ...rest
 }: AuthCardProps) => {
   return (
-    <div
+    <Card
       className={cn(
-        "border border-(--border) bg-(--primary-background) p-6 sm:p-8",
+        "p-6 sm:p-8",
         className,
       )}
       {...rest}
     >
       <div className="mb-6 space-y-1">
-        <h1 className="text-xl font-bold text-(--foreground) sm:text-2xl">
+        <h1 className="text-xl font-bold text-(--text-primary) sm:text-2xl">
           {title}
         </h1>
-        {description && <p className="text-sm text-(--muted)">{description}</p>}
+        {description && <p className="text-sm text-(--text-muted)">{description}</p>}
       </div>
 
       {children}
-    </div>
+    </Card>
   );
 };

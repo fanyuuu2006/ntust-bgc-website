@@ -6,6 +6,7 @@ import { FieldInput, type FieldInputField } from "@/components/FieldInput";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import { FormFeedback } from "@/components/FormFeedback";
+import { Button } from "@/components/ui/Button";
 
 type PasswordFormValues = {
   currentPassword: string;
@@ -128,23 +129,24 @@ export const PasswordSettingsCard = (props: PasswordSettingsCardProps) => {
         <FormFeedback error={formError} success={successMessage} />
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button
+          <Button
             type="button"
             onClick={handleReset}
             disabled={isLoading || !isDirty}
-            className="btn outline w-full rounded-lg px-6 py-2.5 text-sm font-medium sm:w-auto sm:text-base"
+            variant="outline"
+            className="w-full px-6 py-2.5 sm:w-auto sm:text-base"
           >
             重設
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="submit"
             disabled={isLoading || !isDirty}
-            aria-busy={isLoading}
-            className="btn primary w-full rounded-lg px-6 py-2.5 text-sm font-medium sm:w-auto sm:text-base"
+            isLoading={isLoading}
+            className="w-full px-6 py-2.5 sm:w-auto sm:text-base"
           >
             {isLoading ? "更新中..." : "更新密碼"}
-          </button>
+          </Button>
         </div>
       </form>
     </SettingsCard>

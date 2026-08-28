@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { FieldInput } from "@/components/FieldInput";
 import { FormFeedback } from "@/components/FormFeedback";
+import { Button } from "@/components/ui/Button";
 import { apiClient } from "@/libs/api/client";
 import type { MembershipWithAcademicYear } from "@/services/memberships/memberships.types";
 
@@ -53,10 +54,10 @@ export function MembershipActivationForm() {
   return (
     <form onSubmit={handleSubmit} className="card flex flex-col gap-4 p-5">
       <div className="space-y-1">
-        <h2 className="text-lg font-semibold text-(--foreground)">
+        <h2 className="text-lg font-semibold text-(--text-primary)">
           啟用社員資格
         </h2>
-        <p className="text-sm leading-6 text-(--muted)">
+        <p className="text-sm leading-6 text-(--text-muted)">
           如果你已完成本學年度社費繳交，請輸入幹部提供的社員註冊序號。
         </p>
       </div>
@@ -77,13 +78,14 @@ export function MembershipActivationForm() {
 
       <FormFeedback error={error} success={success} />
 
-      <button
+      <Button
         type="submit"
         disabled={isSubmitting}
-        className="btn primary rounded-md px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60"
+        isLoading={isSubmitting}
+        className="self-start rounded-md"
       >
         {isSubmitting ? "啟用中..." : "啟用社員資格"}
-      </button>
+      </Button>
     </form>
   );
 }

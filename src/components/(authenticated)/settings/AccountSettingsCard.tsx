@@ -9,6 +9,7 @@ import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import type { User } from "@/types/database";
 import { FormFeedback } from "@/components/FormFeedback";
+import { Button } from "@/components/ui/Button";
 
 type AccountFormValues = {
   name: string;
@@ -137,21 +138,21 @@ export const AccountSettingsCard = ({
             className="size-16 shrink-0 rounded-2xl border border-(--border)"
           />
           <div className="flex min-w-0 flex-col gap-0.5">
-            <p className="truncate text-sm font-medium text-(--foreground)">
+            <p className="truncate text-sm font-medium text-(--text-primary)">
               {values.name.trim() || user.name}
             </p>
-            <p className="text-sm text-(--muted)">頭像與名稱會在此預覽</p>
+            <p className="text-sm text-(--text-muted)">頭像與名稱會在此預覽</p>
           </div>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
           <FieldInput
-            field={nameField}
+            field={{ ...nameField, disabled: isLoading }}
             value={values.name}
             onChange={handleChange}
           />
           <FieldInput
-            field={avatarField}
+            field={{ ...avatarField, disabled: isLoading }}
             value={values.avatar}
             onChange={handleChange}
           />
@@ -162,23 +163,24 @@ export const AccountSettingsCard = ({
         <FormFeedback error={formError} success={successMessage} />
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button
+          <Button
             type="button"
             onClick={handleReset}
             disabled={isLoading || !isDirty}
-            className="btn outline w-full rounded-lg px-6 py-2.5 text-sm font-medium sm:w-auto sm:text-base"
+            variant="outline"
+            className="w-full px-6 py-2.5 sm:w-auto sm:text-base"
           >
             重設
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="submit"
             disabled={isLoading || !isDirty}
-            aria-busy={isLoading}
-            className="btn primary w-full rounded-lg px-6 py-2.5 text-sm font-medium sm:w-auto sm:text-base"
+            isLoading={isLoading}
+            className="w-full px-6 py-2.5 sm:w-auto sm:text-base"
           >
             {isLoading ? "儲存中..." : "儲存"}
-          </button>
+          </Button>
         </div>
       </form>
     </SettingsCard>

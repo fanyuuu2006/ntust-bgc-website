@@ -51,11 +51,11 @@ export default async function MembershipsPage() {
   return (
     <section className="container space-y-6 py-8">
       <header className="space-y-2">
-        <p className="text-sm font-medium text-(--primary)">我的帳號</p>
-        <h1 className="text-2xl font-semibold text-(--foreground)">
+        <p className="text-sm font-medium text-(--interactive-primary)">我的帳號</p>
+        <h1 className="text-2xl font-semibold text-(--text-primary)">
           我的社員資格
         </h1>
-        <p className="max-w-2xl text-sm leading-6 text-(--muted)">
+        <p className="max-w-2xl text-sm leading-6 text-(--text-muted)">
           查看目前資格與歷年社員紀錄；完成線下繳費後，可在此啟用新的學年度資格。
         </p>
       </header>
@@ -74,10 +74,10 @@ export default async function MembershipsPage() {
             <MembershipActivationForm />
           ) : (
             <section className="card p-5">
-              <h2 className="text-lg font-semibold text-(--foreground)">
+              <h2 className="text-lg font-semibold text-(--text-primary)">
                 社員資格啟用
               </h2>
-              <p className="mt-2 text-sm leading-6 text-(--muted)">
+              <p className="mt-2 text-sm leading-6 text-(--text-muted)">
                 {lifetimeMembership
                   ? "你已有永久社員資格，無需再啟用一般社員資格。"
                   : currentYearMembership?.status === "active"
