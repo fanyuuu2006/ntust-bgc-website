@@ -1,10 +1,11 @@
-import Link from "next/link";
 import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { QuickStats } from "@/components/QuickStats";
 import { getCurrentUser } from "@/libs/auth";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { formatDate } from "@/utils/date";
+import { ButtonLink } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default async function BorrowingsPage() {
   const user = await getCurrentUser();
@@ -46,18 +47,19 @@ export default async function BorrowingsPage() {
       <div className="container">
         <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-medium text-(--primary)">我的借用</p>
-            <h1 className="text-2xl font-bold text-(--foreground) sm:text-3xl">
+            <p className="text-sm font-medium text-(--interactive-primary)">我的借用</p>
+            <h1 className="text-2xl font-bold text-(--text-primary) sm:text-3xl">
               借用紀錄
             </h1>
           </div>
 
-          <Link
+          <ButtonLink
             href="/board-games"
-            className="btn outline inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium"
+            variant="outline"
+            className="rounded-xl"
           >
             前往桌遊社產
-          </Link>
+          </ButtonLink>
         </header>
 
         <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-5">
@@ -98,14 +100,10 @@ export default async function BorrowingsPage() {
         </div>
 
         {borrowings.data.length === 0 ? (
-          <div className="card rounded-2xl p-8 text-center">
-            <p className="text-base font-medium text-(--foreground)">
-              目前沒有借用紀錄
-            </p>
-            <p className="mt-2 text-sm text-(--muted)">
-              先看看桌遊社產，申請借用後就會出現在這裡。
-            </p>
-          </div>
+          <EmptyState
+            title="目前沒有借用紀錄"
+            description="先看看桌遊社產，申請借用後就會出現在這裡。"
+          />
         ) : (
           <div className="space-y-6">
             <BorrowingSection
@@ -136,12 +134,10 @@ type BorrowingSectionProps = {
 function BorrowingSection({ title, emptyText, items }: BorrowingSectionProps) {
   return (
     <section className="space-y-3">
-      <h2 className="text-lg font-bold text-(--foreground)">{title}</h2>
+      <h2 className="text-lg font-bold text-(--text-primary)">{title}</h2>
 
       {items.length === 0 ? (
-        <div className="card rounded-2xl p-6 text-center text-sm text-(--muted)">
-          {emptyText}
-        </div>
+        <EmptyState className="p-6" description={emptyText} />
       ) : (
         <div className="space-y-3">
           {items.map((borrowing) => {
@@ -152,16 +148,16 @@ function BorrowingSection({ title, emptyText, items }: BorrowingSectionProps) {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                   <BoardGameImage
                     boardGame={boardGame}
-                    className="aspect-[4/3] w-full shrink-0 rounded-xl border border-(--border) object-cover sm:h-24 sm:w-32"
+                    className="aspect-[4/3] w-full shrink-0 rounded-xl border border-(--border-default) object-cover sm:h-24 sm:w-32"
                   />
 
                   <div className="min-w-0 flex-1 space-y-2">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
-                        <p className="truncate text-lg font-bold text-(--foreground)">
+                        <p className="truncate text-lg font-bold text-(--text-primary)">
                           {boardGame.name}
                         </p>
-                        <p className="text-sm text-(--muted)">
+                        <p className="text-sm text-(--text-muted)">
                           社產編號：{boardGame.inventory_number}
                         </p>
                       </div>
@@ -169,16 +165,16 @@ function BorrowingSection({ title, emptyText, items }: BorrowingSectionProps) {
                       <BorrowingStatusBadge status={borrowing.status} />
                     </div>
 
-                    <div className="grid gap-2 text-sm text-(--muted) sm:grid-cols-3">
+                    <div className="grid gap-2 text-sm text-(--text-muted) sm:grid-cols-3">
                       <div>
                         <p className="text-xs uppercase tracking-wide">申請時間</p>
-                        <p className="mt-1 text-(--foreground)">
+                        <p className="mt-1 text-(--text-primary)">
                           {formatDate(borrowing.created_at)}
                         </p>
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-wide">借出日期</p>
-                        <p className="mt-1 text-(--foreground)">
+                        <p className="mt-1 text-(--text-primary)">
                           {borrowing.borrowed_at
                             ? formatDate(borrowing.borrowed_at)
                             : "尚未借出"}
@@ -186,7 +182,7 @@ function BorrowingSection({ title, emptyText, items }: BorrowingSectionProps) {
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-wide">預計歸還</p>
-                        <p className="mt-1 text-(--foreground)">
+                        <p className="mt-1 text-(--text-primary)">
                           {borrowing.due_at
                             ? formatDate(borrowing.due_at)
                             : "待安排"}

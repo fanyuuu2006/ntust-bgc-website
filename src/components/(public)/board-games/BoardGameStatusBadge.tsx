@@ -1,34 +1,34 @@
 import type { BoardGameStatus } from "@/types/database";
 import { STATUS_META } from "@/app/(public)/board-games/constants";
-import { cn } from "@/utils/className";
+import { Badge, type BadgeTone } from "@/components/ui/Badge";
+
+const BOARD_GAME_STATUS_TONE: Record<BoardGameStatus, BadgeTone> = {
+  available: "success",
+  borrowed: "info",
+  maintenance: "warning",
+  lost: "danger",
+  damaged: "danger",
+  retired: "neutral",
+};
 
 type BoardGameStatusBadgeProps = {
   status: BoardGameStatus;
-  compact?: boolean;
   className?: string;
 };
 
 export function BoardGameStatusBadge({
   status,
-  compact = false,
   className,
 }: BoardGameStatusBadgeProps) {
   const meta = STATUS_META[status];
 
   return (
-    <span
+    <Badge
+      tone={BOARD_GAME_STATUS_TONE[status]}
       title={meta.description}
-      className={cn(
-        "inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-semibold",
-        meta.toneClass,
-        className,
-      )}
+      className={className}
     >
-      <span
-        className={cn("size-1.5 shrink-0 rounded-full", meta.dotClass)}
-        aria-hidden
-      />
-      {compact ? meta.label : `${meta.label}`}
-    </span>
+      {meta.label}
+    </Badge>
   );
 }

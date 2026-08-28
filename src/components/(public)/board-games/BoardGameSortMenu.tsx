@@ -7,6 +7,7 @@ import type { BoardGamesQuery } from "@/app/(public)/board-games/types";
 import { buildQueryString } from "@/utils/url";
 import { cn } from "@/utils/className";
 import { useOutsideDismiss } from "@/hooks/useOutsideDismiss";
+import { Button } from "@/components/ui/Button";
 
 type BoardGameSortMenuProps = {
   query: BoardGamesQuery;
@@ -25,15 +26,16 @@ export function BoardGameSortMenu({ query }: BoardGameSortMenuProps) {
 
   return (
     <div ref={ref} className="relative shrink-0">
-      <button
+      <Button
         type="button"
         aria-label="選擇桌遊排序方式"
         aria-expanded={open}
         onClick={() => setOpen((prev) => !prev)}
-        className="btn flex min-h-9 shrink-0 items-center gap-1 rounded-full px-3 text-sm font-medium"
+        variant="secondary"
+        className="min-h-9 shrink-0 rounded-full px-3"
       >
         排序：{activeOption.label}
-      </button>
+      </Button>
 
       {open && (
         <div className="card absolute top-[calc(100%+0.5rem)] right-0 z-10 w-max min-w-36 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-md py-1">
@@ -53,8 +55,8 @@ export function BoardGameSortMenu({ query }: BoardGameSortMenuProps) {
                 href={href}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "block min-h-9 px-3 py-2 text-sm whitespace-nowrap text-(--foreground) hover:bg-(--secondary-background)",
-                  { "font-medium text-(--primary)": isActive },
+                  "block min-h-9 px-3 py-2 text-sm whitespace-nowrap text-(--text-primary) hover:bg-(--surface-subtle)",
+                  { "font-medium text-(--interactive-primary)": isActive },
                 )}
               >
                 {option.label}

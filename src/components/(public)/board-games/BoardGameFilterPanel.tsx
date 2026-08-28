@@ -14,6 +14,7 @@ import { BoardGameSortMenu } from "@/components/(public)/board-games/BoardGameSo
 import { BoardGameActiveFilters } from "@/components/(public)/board-games/BoardGameActiveFilters";
 import { buildQueryString } from "@/utils/url";
 import { cn } from "@/utils/className";
+import { Button } from "@/components/ui/Button";
 
 const STATUS_OPTIONS = (Object.keys(STATUS_META) as BoardGameStatus[]).map(
   (value) => ({
@@ -66,29 +67,27 @@ export function BoardGameFilterPanel({
     <div className="space-y-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
-          <button
+          <Button
             type="button"
             aria-expanded={open}
             onClick={() => setOpen((prev) => !prev)}
+            variant={filterCount > 0 || open ? "outline" : "secondary"}
             className={cn(
-              "btn flex min-h-9 shrink-0 items-center gap-2 rounded-full px-3 text-sm font-medium",
-              {
-                "border-(--primary) text-(--primary)": filterCount > 0 || open,
-              },
+              "min-h-9 shrink-0 rounded-full px-3",
             )}
           >
             進階篩選
             {filterCount > 0 && (
-              <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-(--primary) text-[10px] font-medium text-(--primary-background)">
+              <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-(--interactive-primary) text-[10px] font-medium text-(--text-inverse)">
                 {filterCount}
               </span>
             )}
-          </button>
+          </Button>
 
           {filterCount > 0 && (
             <Link
               href={BASE_PATH}
-              className="flex min-h-9 shrink-0 items-center px-1 text-sm font-medium text-(--muted) transition-colors hover:text-(--foreground)"
+              className="flex min-h-9 shrink-0 items-center px-1 text-sm font-medium text-(--text-muted) transition-colors hover:text-(--text-primary)"
             >
               重設
             </Link>
@@ -99,7 +98,7 @@ export function BoardGameFilterPanel({
       </div>
 
       {open ? (
-        <div className="space-y-4 border-t border-(--border) pt-4">
+        <div className="space-y-4 border-t border-(--border-muted) pt-4">
           <div className="grid gap-x-6 gap-y-5 md:grid-cols-3">
             <FilterSection label="狀態">
               {STATUS_OPTIONS.map((option) => (
@@ -163,7 +162,7 @@ type FilterSectionProps = {
 function FilterSection({ label, children }: FilterSectionProps) {
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold text-(--muted)">{label}</p>
+      <p className="text-xs font-semibold text-(--text-muted)">{label}</p>
       <div className="flex flex-wrap gap-2">{children}</div>
     </div>
   );
@@ -178,18 +177,15 @@ type FilterPillProps = {
 
 function FilterPill({ label, title, checked, onChange }: FilterPillProps) {
   return (
-    <button
+    <Button
       type="button"
       aria-pressed={checked}
       title={title}
       onClick={() => onChange(!checked)}
-      className={cn(
-        "min-h-9 shrink-0 rounded-full px-3 text-sm transition-colors sm:min-h-8 sm:text-xs",
-        "btn",
-        { primary: checked },
-      )}
+      variant={checked ? "primary" : "secondary"}
+      className="min-h-9 shrink-0 rounded-full px-3 sm:min-h-8 sm:text-xs"
     >
       {label}
-    </button>
+    </Button>
   );
 }

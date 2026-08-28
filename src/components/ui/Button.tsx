@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cn } from "@/utils/className";
 
 type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
@@ -8,6 +9,12 @@ type ButtonProps = React.ComponentProps<"button"> & {
   size?: ButtonSize;
   isLoading?: boolean;
   iconOnly?: boolean;
+};
+
+type ButtonLinkProps = Omit<React.ComponentProps<typeof Link>, "className"> & {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  className?: string;
 };
 
 const variants = {
@@ -59,5 +66,24 @@ export function Button({
       ) : null}
       {children}
     </button>
+  );
+}
+
+export function ButtonLink({
+  variant = "primary",
+  size = "md",
+  className,
+  ...props
+}: ButtonLinkProps) {
+  return (
+    <Link
+      className={cn(
+        variants[variant],
+        "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium",
+        sizes[size],
+        className,
+      )}
+      {...props}
+    />
   );
 }

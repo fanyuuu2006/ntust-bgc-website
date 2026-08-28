@@ -56,7 +56,7 @@ function BoardGameImageFallback({
       role="img"
       aria-label={`${name}尚無圖片`}
       className={cn(
-        "shrink-0 bg-(--secondary-background) text-(--muted)",
+        "shrink-0 bg-(--surface-subtle) text-(--text-muted)",
         className,
       )}
     >

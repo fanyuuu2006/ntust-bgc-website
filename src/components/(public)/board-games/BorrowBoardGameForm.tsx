@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ApiError } from "@/libs/api/errors";
 import { apiClient } from "@/libs/api/client";
 import { FormFeedback } from "@/components/FormFeedback";
+import { Button } from "@/components/ui/Button";
 
 type BorrowBoardGameFormProps = {
   boardGameId: string;
@@ -45,14 +46,15 @@ export function BorrowBoardGameForm({ boardGameId }: BorrowBoardGameFormProps) {
 
   return (
     <div className="space-y-3">
-      <button
+      <Button
         type="button"
         onClick={handleSubmit}
         disabled={isSubmitting}
-        className="btn primary w-full rounded-xl px-4 py-3 text-sm font-semibold sm:text-base"
+        isLoading={isSubmitting}
+        className="w-full rounded-xl py-3 sm:text-base"
       >
         {isSubmitting ? "送出申請中..." : "申請借用"}
-      </button>
+      </Button>
 
       <FormFeedback error={error} success={success} className="min-h-0" />
     </div>

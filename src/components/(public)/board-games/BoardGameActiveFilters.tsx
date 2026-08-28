@@ -1,8 +1,8 @@
-import Link from "next/link";
 import type { BoardGameCategory, BoardGameLocation } from "@/types/database";
 import { BASE_PATH, STATUS_META } from "@/app/(public)/board-games/constants";
 import type { BoardGamesQuery } from "@/app/(public)/board-games/types";
 import { buildQueryString } from "@/utils/url";
+import { ButtonLink } from "@/components/ui/Button";
 
 type BoardGameActiveFiltersProps = {
   categories: BoardGameCategory[];
@@ -66,19 +66,21 @@ export function BoardGameActiveFilters({
   return (
     <div className="flex flex-wrap gap-2">
       {chips.map((chip) => (
-        <Link
+        <ButtonLink
           key={chip.key}
           href={chip.href}
           aria-label={`移除${chip.label}${chip.value}篩選`}
-          className="btn flex min-h-8 shrink-0 items-center gap-1 rounded-full px-3 text-xs"
+          variant="secondary"
+          size="sm"
+          className="min-h-8 shrink-0 rounded-full text-xs"
         >
-          <span className="shrink-0 font-semibold text-(--primary)">
+          <span className="shrink-0 font-semibold text-(--interactive-primary)">
             {chip.label}
           </span>
-          <span className="shrink-0 text-(--muted)">|</span>
+          <span className="shrink-0 text-(--text-muted)">|</span>
           <span>{chip.value}</span>
-          <span className="shrink-0 text-(--muted)">×</span>
-        </Link>
+          <span className="shrink-0 text-(--text-muted)">×</span>
+        </ButtonLink>
       ))}
     </div>
   );

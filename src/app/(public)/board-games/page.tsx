@@ -110,10 +110,10 @@ export default async function BoardGamesPage({
       <div className="container space-y-5 sm:space-y-6">
         <header className="space-y-2">
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-(--foreground) sm:text-3xl">
+            <h1 className="text-2xl font-bold text-(--text-primary) sm:text-3xl">
               桌遊
             </h1>
-            <p className="max-w-3xl text-sm leading-relaxed text-(--muted) sm:text-base">
+            <p className="max-w-3xl text-sm leading-relaxed text-(--text-muted) sm:text-base">
               這裡提供社團內的桌遊資料，包含桌遊名稱、分類、位置、狀態等資訊。您可以使用搜尋功能或篩選條件來快速找到想要的桌遊。
             </p>
           </div>

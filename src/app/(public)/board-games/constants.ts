@@ -18,43 +18,30 @@ export const ALLOWED_STATUSES: BoardGameStatus[] = [
 
 export const STATUS_META: Record<
   BoardGameStatus,
-  { label: string; toneClass: string; dotClass: string; description: string }
+  { label: string; description: string }
 > = {
   available: {
     label: "可借用",
-    toneClass:
-      "border-(--game-green) bg-green-50 text-green-700",
-    dotClass: "bg-(--game-green)",
     description: "目前可提出借用申請",
   },
   borrowed: {
     label: "借用中",
-    toneClass: "border-(--game-blue) bg-blue-50 text-blue-700",
-    dotClass: "bg-(--game-blue)",
     description: "已被借出，暫時無法借用",
   },
   maintenance: {
     label: "維護中",
-    toneClass: "border-(--game-yellow) bg-yellow-50 text-yellow-700",
-    dotClass: "bg-(--game-yellow)",
     description: "整理或修復中",
   },
   lost: {
     label: "遺失",
-    toneClass: "border-(--game-red) bg-red-50 text-red-700",
-    dotClass: "bg-(--game-red)",
     description: "目前找不到實體遊戲",
   },
   damaged: {
     label: "損壞",
-    toneClass: "border-(--game-red) bg-red-50 text-red-700",
-    dotClass: "bg-(--game-red)",
     description: "配件或內容物有損壞",
   },
   retired: {
     label: "已除役",
-    toneClass: "border-(--border) bg-(--secondary-background) text-(--muted)",
-    dotClass: "bg-(--muted)",
     description: "不再開放一般借用",
   },
 };

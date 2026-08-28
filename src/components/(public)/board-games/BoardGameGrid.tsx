@@ -1,5 +1,6 @@
 import { BoardGameCard } from "@/components/(public)/board-games/BoardGameCard";
 import type { BoardGameWithCategoryAndLocation } from "@/services/board-games/board-games.types";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 type BoardGameGridProps = {
   boardGames: BoardGameWithCategoryAndLocation[];
@@ -12,16 +13,14 @@ export function BoardGameGrid({
 }: BoardGameGridProps) {
   if (boardGames.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-(--border) bg-(--primary-background) p-8 text-center">
-        <p className="text-base font-medium text-(--foreground)">
-          {hasActiveQuery ? "找不到符合條件的桌遊" : "目前尚無桌遊資料"}
-        </p>
-        <p className="mt-2 text-sm text-(--muted)">
-          {hasActiveQuery
+      <EmptyState
+        title={hasActiveQuery ? "找不到符合條件的桌遊" : "目前尚無桌遊資料"}
+        description={
+          hasActiveQuery
             ? "試試看減少篩選條件、改用桌遊名稱或社產編號搜尋。"
-            : "等管理員新增桌遊後，這裡會顯示可查詢的社產。"}
-        </p>
-      </div>
+            : "等管理員新增桌遊後，這裡會顯示可查詢的社產。"
+        }
+      />
     );
   }
 

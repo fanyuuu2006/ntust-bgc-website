@@ -3,6 +3,9 @@ import { BASE_PATH } from "@/app/(public)/board-games/constants";
 import type { BoardGamesQuery } from "@/app/(public)/board-games/types";
 import { BoardGameFilterPanel } from "@/components/(public)/board-games/BoardGameFilterPanel";
 import { cn } from "@/utils/className";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card } from "@/components/ui/Card";
 
 type BoardGameSearchFormProps = React.HTMLAttributes<HTMLDivElement> & {
   categories: BoardGameCategory[];
@@ -22,9 +25,9 @@ export function BoardGameSearchForm({
   ...rest
 }: BoardGameSearchFormProps) {
   return (
-    <div
+    <Card
       className={cn(
-        "space-y-3 rounded-xl border border-(--border) bg-(--primary-background) p-3 shadow-(--shadow-base)",
+        "space-y-3 rounded-xl p-3",
         className,
       )}
       {...rest}
@@ -34,22 +37,22 @@ export function BoardGameSearchForm({
           搜尋桌遊名稱、編號或描述
         </label>
 
-        <div className="flex items-center gap-2 rounded-lg border border-(--border) bg-(--secondary-background) p-2 focus-within:border-(--primary)">
-          <input
+        <div className="flex items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-subtle) p-2 focus-within:border-(--interactive-primary)">
+          <Input
             id="board-game-search"
             type="search"
             name="search"
             autoComplete="off"
             defaultValue={query.search}
             placeholder="搜尋名稱、社產編號或描述"
-            className="min-h-10 min-w-0 flex-1 border-0 bg-transparent px-2 text-base text-(--foreground) outline-none placeholder:text-(--muted) sm:text-sm"
+            className="min-w-0 flex-1 border-0 bg-transparent px-2 text-base sm:text-sm"
           />
-          <button
+          <Button
             type="submit"
-            className="btn primary min-h-10 shrink-0 rounded-lg px-4 text-sm font-medium"
+            className="min-h-10 shrink-0 px-4"
           >
             搜尋
-          </button>
+          </Button>
         </div>
 
         <HiddenQueryArray name="status" values={query.status} />
@@ -64,10 +67,10 @@ export function BoardGameSearchForm({
         <input type="hidden" name="pageSize" value={pageSize} />
       </form>
 
-      <div className="border-t border-(--border) pt-3">
-        <p className="text-sm text-(--muted)" aria-live="polite">
+      <div className="border-t border-(--border-muted) pt-3">
+        <p className="text-sm text-(--text-muted)" aria-live="polite">
           找到{" "}
-          <span className="font-semibold text-(--foreground)">{total}</span>{" "}
+          <span className="font-semibold text-(--text-primary)">{total}</span>{" "}
           款桌遊
         </p>
       </div>
@@ -77,7 +80,7 @@ export function BoardGameSearchForm({
         locations={locations}
         query={query}
       />
-    </div>
+    </Card>
   );
 }
 
