@@ -1,201 +1,224 @@
-import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
 import { BoardGameImage } from "@/components/BoardGameImage";
-import { QuickStats } from "@/components/QuickStats";
-import { getCurrentUser } from "@/libs/auth";
-import { boardGamesService } from "@/services/board-games/board-games.service";
-import { formatDate } from "@/utils/date";
+import {
+  BORROWING_STATUS_LABEL,
+  BorrowingStatusBadge,
+} from "@/components/BorrowingStatusBadge";
+import { Pagination } from "@/components/Pagination/Pagination";
 import { ButtonLink } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { getCurrentUser } from "@/libs/auth";
+import { boardGamesService } from "@/services/board-games/board-games.service";
+import type { BorrowingStatus } from "@/types/database";
+import { formatDate } from "@/utils/date";
+import { parsePage, parsePageSize } from "@/utils/pagination";
 
-export default async function BorrowingsPage() {
+const BASE_PATH = "/borrowings";
+const PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
+const DEFAULT_PAGE_SIZE = PAGE_SIZE_OPTIONS[0];
+
+const STATUS_OPTIONS: Array<{
+  value: BorrowingStatus;
+  label: string;
+}> = [
+  { value: "pending", label: BORROWING_STATUS_LABEL.pending },
+  { value: "approved", label: BORROWING_STATUS_LABEL.approved },
+  { value: "borrowed", label: BORROWING_STATUS_LABEL.borrowed },
+  { value: "returned", label: BORROWING_STATUS_LABEL.returned },
+  { value: "rejected", label: BORROWING_STATUS_LABEL.rejected },
+];
+
+type BorrowingsSearchParams = {
+  status?: string | string[];
+  page?: string;
+  pageSize?: string;
+};
+
+type BorrowingsPageProps = {
+  searchParams: Promise<BorrowingsSearchParams>;
+};
+
+function normalizeStatus(value?: string | string[]): BorrowingStatus | undefined {
+  const status = Array.isArray(value) ? value[0] : value;
+
+  return STATUS_OPTIONS.some((option) => option.value === status)
+    ? (status as BorrowingStatus)
+    : undefined;
+}
+
+export default async function BorrowingsPage({
+  searchParams,
+}: BorrowingsPageProps) {
   const user = await getCurrentUser();
 
   if (!user) {
     return null;
   }
 
+  const params = await searchParams;
+  const page = parsePage(params.page);
+  const pageSize = parsePageSize(params.pageSize, DEFAULT_PAGE_SIZE, 50);
+  const status = normalizeStatus(params.status);
   const borrowings = await boardGamesService.getBorrowingsByUserId(user.id, {
-    page: 1,
-    pageSize: 50,
+    page,
+    pageSize,
+    status,
   });
-
-  const pendingBorrowings = borrowings.data.filter(
-    (item) => item.status === "pending",
-  );
-  const approvedBorrowings = borrowings.data.filter(
-    (item) => item.status === "approved",
-  );
-  const borrowedBorrowings = borrowings.data.filter(
-    (item) => item.status === "borrowed",
-  );
-  const returnedBorrowings = borrowings.data.filter(
-    (item) => item.status === "returned",
-  );
-  const rejectedBorrowings = borrowings.data.filter(
-    (item) => item.status === "rejected",
-  );
-
-  const currentBorrowings = [
-    ...pendingBorrowings,
-    ...approvedBorrowings,
-    ...borrowedBorrowings,
-  ];
-  const historyBorrowings = [...returnedBorrowings, ...rejectedBorrowings];
 
   return (
     <section className="py-8">
-      <div className="container">
-        <header className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-(--interactive-primary)">我的借用</p>
+      <div className="container space-y-6">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-(--interactive-primary)">
+              我的桌遊借用
+            </p>
             <h1 className="text-2xl font-bold text-(--text-primary) sm:text-3xl">
               借用紀錄
             </h1>
+            <p className="text-sm text-(--text-muted)">
+              查看目前申請、借出與歷史借用紀錄。
+            </p>
           </div>
 
-          <ButtonLink
-            href="/board-games"
-            variant="outline"
-            className="rounded-xl"
-          >
-            前往桌遊社產
+          <ButtonLink href="/board-games" variant="outline" className="rounded-xl">
+            瀏覽桌遊
           </ButtonLink>
         </header>
 
-        <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-5">
-          <QuickStats
-            stats={[
-              {
-                key: "pending",
-                label: "待審核",
-                value: pendingBorrowings.length,
-                accent: "highlight",
-              },
-              {
-                key: "approved",
-                label: "已核准",
-                value: approvedBorrowings.length,
-                accent: "primary",
-              },
-              {
-                key: "borrowed",
-                label: "借用中",
-                value: borrowedBorrowings.length,
-                accent: "supporting",
-              },
-              {
-                key: "returned",
-                label: "已歸還",
-                value: returnedBorrowings.length,
-                accent: "primary",
-              },
-              {
-                key: "rejected",
-                label: "已拒絕",
-                value: rejectedBorrowings.length,
-                accent: "contrast",
-              },
-            ]}
-          />
-        </div>
+        <BorrowingStatusFilter status={status} pageSize={pageSize} />
 
         {borrowings.data.length === 0 ? (
           <EmptyState
-            title="目前沒有借用紀錄"
-            description="先看看桌遊社產，申請借用後就會出現在這裡。"
+            title={status ? `沒有${BORROWING_STATUS_LABEL[status]}紀錄` : "目前沒有借用紀錄"}
+            description={
+              status
+                ? "可以切換其他狀態，或清除篩選查看全部紀錄。"
+                : "前往桌遊頁面選擇想借用的桌遊後，即可提出借用申請。"
+            }
           />
         ) : (
-          <div className="space-y-6">
-            <BorrowingSection
-              title="目前借用"
-              emptyText="目前沒有進行中的借用。"
-              items={currentBorrowings}
-            />
-            <BorrowingSection
-              title="歷史紀錄"
-              emptyText="目前沒有歷史借用紀錄。"
-              items={historyBorrowings}
-            />
+          <div className="space-y-3">
+            {borrowings.data.map((borrowing) => (
+              <BorrowingCard key={borrowing.id} borrowing={borrowing} />
+            ))}
           </div>
         )}
+
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          total={borrowings.total}
+          totalPages={borrowings.totalPages}
+          basePath={BASE_PATH}
+          pageSizeOptions={PAGE_SIZE_OPTIONS}
+          query={{ status }}
+        />
       </div>
     </section>
   );
 }
 
-type BorrowingSectionProps = {
-  title: string;
-  emptyText: string;
-  items: Awaited<
+function BorrowingStatusFilter({
+  status,
+  pageSize,
+}: {
+  status?: BorrowingStatus;
+  pageSize: number;
+}) {
+  return (
+    <form
+      action={BASE_PATH}
+      className="card flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-end sm:justify-between"
+    >
+      <input type="hidden" name="pageSize" value={pageSize} />
+
+      <label className="grid gap-1.5 text-sm font-medium text-(--text-primary)">
+        借用狀態
+        <select
+          name="status"
+          defaultValue={status ?? ""}
+          className="min-h-11 rounded-xl border border-(--border) bg-(--primary-background) px-3 text-base text-(--text-primary) outline-none focus:border-(--primary) sm:min-w-48 sm:text-sm"
+        >
+          <option value="">全部狀態</option>
+          {STATUS_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="flex flex-wrap gap-2">
+        <button type="submit" className="btn primary min-h-11 rounded-xl px-4">
+          套用篩選
+        </button>
+        {status ? (
+          <ButtonLink
+            href={`${BASE_PATH}?pageSize=${pageSize}`}
+            variant="outline"
+            className="min-h-11 rounded-xl px-4"
+          >
+            清除篩選
+          </ButtonLink>
+        ) : null}
+      </div>
+    </form>
+  );
+}
+
+type BorrowingCardProps = {
+  borrowing: Awaited<
     ReturnType<typeof boardGamesService.getBorrowingsByUserId>
-  >["data"];
+  >["data"][number];
 };
 
-function BorrowingSection({ title, emptyText, items }: BorrowingSectionProps) {
+function BorrowingCard({ borrowing }: BorrowingCardProps) {
+  const { board_game: boardGame } = borrowing;
+
   return (
-    <section className="space-y-3">
-      <h2 className="text-lg font-bold text-(--text-primary)">{title}</h2>
+    <article className="card rounded-2xl p-4 sm:p-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <BoardGameImage
+          boardGame={boardGame}
+          className="aspect-[4/3] w-full shrink-0 rounded-xl border border-(--border-default) object-cover sm:h-24 sm:w-32"
+        />
 
-      {items.length === 0 ? (
-        <EmptyState className="p-6" description={emptyText} />
-      ) : (
-        <div className="space-y-3">
-          {items.map((borrowing) => {
-            const { board_game: boardGame } = borrowing;
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="truncate text-lg font-bold text-(--text-primary)">
+                {boardGame.name}
+              </p>
+              <p className="text-sm text-(--text-muted)">
+                社產編號 #{boardGame.inventory_number}
+              </p>
+            </div>
 
-            return (
-              <article key={borrowing.id} className="card rounded-2xl p-4 sm:p-5">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                  <BoardGameImage
-                    boardGame={boardGame}
-                    className="aspect-[4/3] w-full shrink-0 rounded-xl border border-(--border-default) object-cover sm:h-24 sm:w-32"
-                  />
+            <BorrowingStatusBadge status={borrowing.status} />
+          </div>
 
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="min-w-0">
-                        <p className="truncate text-lg font-bold text-(--text-primary)">
-                          {boardGame.name}
-                        </p>
-                        <p className="text-sm text-(--text-muted)">
-                          社產編號：{boardGame.inventory_number}
-                        </p>
-                      </div>
-
-                      <BorrowingStatusBadge status={borrowing.status} />
-                    </div>
-
-                    <div className="grid gap-2 text-sm text-(--text-muted) sm:grid-cols-3">
-                      <div>
-                        <p className="text-xs uppercase tracking-wide">申請時間</p>
-                        <p className="mt-1 text-(--text-primary)">
-                          {formatDate(borrowing.created_at)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs uppercase tracking-wide">借出日期</p>
-                        <p className="mt-1 text-(--text-primary)">
-                          {borrowing.borrowed_at
-                            ? formatDate(borrowing.borrowed_at)
-                            : "尚未借出"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs uppercase tracking-wide">預計歸還</p>
-                        <p className="mt-1 text-(--text-primary)">
-                          {borrowing.due_at
-                            ? formatDate(borrowing.due_at)
-                            : "待安排"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+          <dl className="grid gap-3 text-sm text-(--text-muted) sm:grid-cols-3">
+            <BorrowingDate label="申請時間" value={formatDate(borrowing.created_at)} />
+            <BorrowingDate
+              label="借出時間"
+              value={borrowing.borrowed_at ? formatDate(borrowing.borrowed_at) : "尚未借出"}
+            />
+            <BorrowingDate
+              label="應歸還時間"
+              value={borrowing.due_at ? formatDate(borrowing.due_at) : "尚未設定"}
+            />
+          </dl>
         </div>
-      )}
-    </section>
+      </div>
+    </article>
+  );
+}
+
+function BorrowingDate({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-xs tracking-wide">{label}</dt>
+      <dd className="mt-1 text-(--text-primary)">{value}</dd>
+    </div>
   );
 }
