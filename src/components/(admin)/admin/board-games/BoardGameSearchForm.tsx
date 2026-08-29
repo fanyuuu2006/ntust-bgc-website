@@ -24,7 +24,7 @@ export function BoardGameSearchForm({
   return (
     <Card
       className={cn(
-        "sticky top-4 z-10 flex flex-col gap-3 rounded-2xl p-4 lg:flex-row lg:items-center",
+        "sticky top-4 z-10 flex flex-col gap-3 rounded-2xl p-4 md:flex-row md:items-center",
         className,
       )}
       {...rest}
@@ -32,7 +32,7 @@ export function BoardGameSearchForm({
       <form
         key={query.search ?? ""}
         method="GET"
-        className="flex w-full min-w-0 items-center gap-2 lg:flex-1"
+        className="flex w-full flex-col gap-2 md:flex-1 md:flex-row"
       >
         <label className="sr-only" htmlFor="board-game-search">
           搜尋桌遊名稱、編號或相關描述
@@ -43,13 +43,13 @@ export function BoardGameSearchForm({
           clearHref={clearSearchHref}
           name="search"
           placeholder="搜尋桌遊名稱、編號或相關描述"
-          className="min-w-0 flex-1"
+          className="w-full md:flex-1"
           inputClassName="py-2 pl-3"
         />
         <Button
           type="submit"
           size="sm"
-          className="shrink-0 rounded-md px-3"
+          className="w-full rounded-md px-3 md:w-auto"
         >
           搜尋
         </Button>
@@ -81,7 +81,7 @@ export function BoardGameSearchForm({
         ))}
       </form>
 
-      <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
+      <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:justify-end">
         <BoardGameFilterBar
           categories={categories}
           locations={locations}

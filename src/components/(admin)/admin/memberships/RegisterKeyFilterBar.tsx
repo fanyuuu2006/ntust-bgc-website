@@ -53,11 +53,11 @@ export function RegisterKeyFilterBar({
 
   return (
     <form onSubmit={handleSubmit}>
-      <AdminToolbar className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_12rem_10rem_auto] lg:items-end">
+      <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_12rem_10rem_auto] lg:items-end">
         <Field
           label="搜尋註冊碼"
           htmlFor="register-key-search"
-          className="min-w-0 sm:col-span-2 lg:col-span-1"
+          className="w-full md:col-span-2 lg:col-span-1"
         >
           <ClearableSearchInput
             id="register-key-search"
@@ -99,7 +99,7 @@ export function RegisterKeyFilterBar({
           </Select>
         </Field>
 
-        <Button type="submit" className="shrink-0">
+        <Button type="submit" className="w-full md:w-auto">
           搜尋
         </Button>
       </AdminToolbar>

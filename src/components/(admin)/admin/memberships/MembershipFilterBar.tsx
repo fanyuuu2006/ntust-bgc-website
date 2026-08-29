@@ -56,8 +56,8 @@ export function MemberFilterBar({
 
   return (
     <form onSubmit={handleSubmit}>
-      <AdminToolbar className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_10rem_9rem_9rem_auto] lg:items-end">
-        <label className="grid min-w-0 gap-1.5 text-sm font-medium sm:col-span-2 lg:col-span-1">
+      <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_10rem_9rem_9rem_auto] lg:items-end">
+        <label className="grid w-full gap-1.5 text-sm font-medium md:col-span-2 lg:col-span-1">
           搜尋社員資格
           <ClearableSearchInput
             initialValue={query.search}
@@ -91,7 +91,7 @@ export function MemberFilterBar({
           <option value="suspended">停權</option>
           <option value="cancelled">已取消</option>
         </FilterSelect>
-        <Button type="submit" className="shrink-0">
+        <Button type="submit" className="w-full md:w-auto">
           搜尋
         </Button>
       </AdminToolbar>
@@ -111,7 +111,7 @@ function FilterSelect({
   children: React.ReactNode;
 }) {
   return (
-    <label className="grid min-w-0 gap-1.5 text-sm font-medium">
+    <label className="grid w-full gap-1.5 text-sm font-medium">
       {label}
       <Select name={name} defaultValue={defaultValue ?? ""} className="w-full">
         {children}

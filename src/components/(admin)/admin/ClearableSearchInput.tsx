@@ -38,7 +38,7 @@ function ClearableSearchInputControl({
   const hasValue = value.trim().length > 0;
 
   return (
-    <div className={cn("relative min-w-0", className)}>
+    <div className={cn("relative w-full", className)}>
       <Input
         name={hasValue ? name : undefined}
         id={id}

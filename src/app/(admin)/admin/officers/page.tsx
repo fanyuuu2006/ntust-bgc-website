@@ -63,13 +63,13 @@ export default async function OfficersPage({
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
-          <AdminToolbar className="grid grid-cols-[minmax(0,1fr)_auto] items-center lg:grid-cols-[minmax(0,1fr)_12rem_auto]">
-            <ClearableSearchInput initialValue={params.search} clearHref={clearSearchHref} name="search" placeholder="搜尋職位" aria-label="搜尋幹部職位" className="min-w-0" />
-            <Select name="academicYearId" defaultValue={params.academicYearId ?? ""} className="col-span-2 w-full lg:col-span-1">
+          <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_12rem_auto] md:items-center">
+            <ClearableSearchInput initialValue={params.search} clearHref={clearSearchHref} name="search" placeholder="搜尋職位" aria-label="搜尋幹部職位" className="w-full" />
+            <Select name="academicYearId" defaultValue={params.academicYearId ?? ""} className="w-full">
               <option value="">全部學年度</option>
               {years.map((year) => <option key={year.id} value={year.id}>{year.year} 學年度</option>)}
             </Select>
-            <Button type="submit" className="shrink-0">搜尋</Button>
+            <Button type="submit" className="w-full md:w-auto">搜尋</Button>
           </AdminToolbar>
         </form>
         <OfficerRecords officers={officers.data} years={years} users={users.data} />

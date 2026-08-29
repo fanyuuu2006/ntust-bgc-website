@@ -36,15 +36,15 @@ export default async function AcademicYearsPage({
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
-          <AdminToolbar className="grid grid-cols-[minmax(0,1fr)_auto] items-center">
+          <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
             <ClearableSearchInput
               initialValue={search}
               clearHref={clearSearchHref}
               name="search"
               placeholder="搜尋學年度"
-              className="min-w-0"
+              className="w-full"
             />
-            <Button type="submit" className="shrink-0">
+            <Button type="submit" className="w-full md:w-auto">
               搜尋
             </Button>
           </AdminToolbar>
