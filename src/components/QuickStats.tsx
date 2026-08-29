@@ -1,6 +1,11 @@
 import { cn } from "@/utils/className";
 
-export type QuickStatAccent = "primary" | "green" | "yellow" | "red";
+/** Decorative variation only; it does not convey a domain status. */
+export type QuickStatAccent =
+  | "primary"
+  | "supporting"
+  | "highlight"
+  | "contrast";
 
 export type QuickStat = {
   key: string;
@@ -15,16 +20,16 @@ type QuickStatsProps = {
 
 const ACCENT_CARD_CLASS: Record<QuickStatAccent, string> = {
   primary: "",
-  green: "green",
-  yellow: "yellow",
-  red: "red",
+  supporting: "supporting",
+  highlight: "highlight",
+  contrast: "contrast",
 };
 
 const DEFAULT_ACCENTS: QuickStatAccent[] = [
   "primary",
-  "green",
-  "yellow",
-  "red",
+  "supporting",
+  "highlight",
+  "contrast",
 ];
 
 function formatStatValue(value: string | number) {

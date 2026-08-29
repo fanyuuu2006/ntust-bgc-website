@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { buildQueryString, type QueryValue } from "@/utils/url";
 import { cn } from "@/utils/className";
+import { Select } from "@/components/ui/Select";
 
 type PaginationPageSizeSelectProps =
   React.LabelHTMLAttributes<HTMLLabelElement> & {
@@ -40,18 +41,18 @@ export function PaginationPageSizeSelect({
       {...rest}
     >
       每頁
-      <select
+      <Select
         value={pageSize}
         onChange={handleChange}
         aria-label="每頁顯示筆數"
-        className="shrink-0 rounded-md border border-(--border) bg-(--secondary-background) px-2 py-1 text-sm text-(--foreground) outline-none focus:border-(--primary)"
+        className="min-h-0 shrink-0 bg-(--surface-subtle) px-2 py-1 text-sm"
       >
         {options.map((option) => (
           <option key={option} value={option}>
             {option}
           </option>
         ))}
-      </select>
+      </Select>
       筆
     </label>
   );

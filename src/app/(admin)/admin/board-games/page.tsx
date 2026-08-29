@@ -12,7 +12,7 @@ import {
   PAGE_SIZE_OPTIONS,
 } from "./constants";
 import { QuickStats } from "@/components/QuickStats";
-import Link from "next/link";
+import { ButtonLink } from "@/components/ui/Button";
 import { Pagination } from "@/components/Pagination/Pagination";
 
 type BoardGamesSearchParams = {
@@ -111,12 +111,9 @@ export default async function BoardGamesAdminPage({
         title="桌遊管理"
         description="管理所有桌遊資訊"
         actions={
-          <Link
-            href="/admin/board-games/new"
-            className="btn primary inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium"
-          >
+          <ButtonLink href="/admin/board-games/new">
             新增桌遊
-          </Link>
+          </ButtonLink>
         }
       />
 

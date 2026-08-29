@@ -5,6 +5,8 @@ import { apiClient } from "@/libs/api/client";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { FormFeedback } from "@/components/FormFeedback";
 export function AnnouncementEditor({
   announcement,
 }: {
@@ -50,55 +52,46 @@ export function AnnouncementEditor({
       }}
       className="space-y-5"
     >
-      <label className="block text-sm font-medium">
-        標題
+      <Field label="標題" htmlFor="announcement-title" required>
         <Input
+          id="announcement-title"
           required
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="mt-1.5 w-full rounded-lg border border-(--border) px-3 py-2.5"
         />
-      </label>
-      <label className="block text-sm font-medium">
-        內容
+      </Field>
+      <Field label="內容" htmlFor="announcement-content" required>
         <Textarea
+          id="announcement-content"
           required
           rows={18}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="mt-1.5 w-full rounded-lg border border-(--border) px-3 py-2.5 leading-7"
+          className="leading-7"
         />
-      </label>
-      {error && (
-        <p
-          role="alert"
-          className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
-        >
-          {error}
-        </p>
-      )}
+      </Field>
+      <FormFeedback error={error} />
       <div className="flex flex-wrap justify-end gap-2">
         <Button
           type="button"
           onClick={() => router.push("/admin/announcements")}
-          className="btn outline shrink-0 whitespace-nowrap rounded-lg px-4 py-2"
+          variant="outline"
         >
           取消
         </Button>
         <Button
           type="button"
-          disabled={busy}
+          isLoading={busy}
           onClick={() => void save(false)}
-          className="btn outline shrink-0 whitespace-nowrap rounded-lg px-4 py-2"
+          variant="outline"
         >
           儲存草稿
         </Button>
         <Button
           type="submit"
-          disabled={busy}
-          className="btn primary shrink-0 whitespace-nowrap rounded-lg px-4 py-2"
+          isLoading={busy}
         >
-          {busy ? "儲存中…" : announcement?.is_published ? "儲存" : "發布"}
+          {announcement?.is_published ? "儲存" : "發布"}
         </Button>
       </div>
     </form>

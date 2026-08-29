@@ -5,6 +5,7 @@ import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { cn } from "@/utils/className";
 import { Input } from "@/components/ui/Input";
 import { Field, getFieldDescribedBy } from "@/components/ui/Field";
+import { Button } from "@/components/ui/Button";
 
 export type FieldInputField = {
   id: string;
@@ -75,22 +76,24 @@ export const FieldInput = ({
           aria-required={field.required}
           invalid={Boolean(field.error)}
           aria-describedby={describedBy}
-          className={cn("bg-(--surface-subtle)", {
-            "pr-10": isPasswordField,
-            "border-(--status-danger)": field.error,
-          }, inputClassName)}
+          className={cn(
+            "bg-(--surface-subtle)",
+            isPasswordField && "pr-10",
+            inputClassName,
+          )}
         />
 
         {isPasswordField && (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="none"
             onClick={togglePasswordVisibility}
             aria-label={isPasswordVisible ? "隱藏密碼" : "顯示密碼"}
             aria-pressed={isPasswordVisible}
-            className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-2 text-(--text-muted) transition-colors hover:text-(--text-primary)"
+            className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-2 text-(--text-muted) hover:text-(--text-primary)"
           >
             {isPasswordVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-          </button>
+          </Button>
         )}
       </div>
 

@@ -12,8 +12,11 @@ import type {
   BoardGameLocation,
   BoardGameStatus,
 } from "@/types/database";
-import { cn } from "@/utils/className";
 import { BOARD_GAME_STATUS_LABEL } from "@/components/(admin)/admin/board-games/BoardGameStatusBadge";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { Select } from "@/components/ui/Select";
+import { Textarea } from "@/components/ui/Textarea";
 
 type BoardGameFormMode = "create" | "edit";
 
@@ -187,8 +190,8 @@ export function BoardGameForm({
       <div className="flex flex-col gap-6">
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-4">
-            <div className="flex items-center justify-between gap-2 border-b border-(--border) pb-2">
-              <h2 className="text-base font-semibold text-(--foreground)">基本資訊</h2>
+            <div className="flex items-center justify-between gap-2 border-b border-(--border-default) pb-2">
+              <h2 className="text-base font-semibold text-(--text-primary)">基本資訊</h2>
             </div>
 
             <FieldInput
@@ -207,7 +210,7 @@ export function BoardGameForm({
             <FieldInput
               field={{
                 id: "inventory_number",
-                label: "庫存編號",
+                label: "編號",
                 type: "number",
                 required: true,
                 placeholder: "例如：101",
@@ -217,32 +220,17 @@ export function BoardGameForm({
               onChange={handleChange}
             />
 
-            <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="description"
-                className="text-sm font-medium text-(--foreground)"
-              >
-                描述
-              </label>
-              <textarea
+            <Field label="描述" htmlFor="description" error={errors.description}>
+              <Textarea
                 id="description"
                 name="description"
                 value={values.description}
                 onChange={handleChange}
                 placeholder="請輸入桌遊簡介或說明"
                 rows={6}
-                aria-invalid={!!errors.description}
-                className={cn(
-                  "w-full rounded-lg border border-(--border) bg-(--secondary-background) px-3 py-2 text-sm text-(--foreground) outline-none transition-colors placeholder:text-(--muted) focus:border-(--primary)",
-                  {
-                    "border-(--game-red)": !!errors.description,
-                  },
-                )}
+                invalid={!!errors.description}
               />
-              {errors.description && (
-                <p className="text-xs text-(--game-red)">{errors.description}</p>
-              )}
-            </div>
+            </Field>
 
             <FieldInput
               field={{
@@ -258,25 +246,18 @@ export function BoardGameForm({
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between gap-2 border-b border-(--border) pb-2">
-              <h2 className="text-base font-semibold text-(--foreground)">管理資訊</h2>
+            <div className="flex items-center justify-between gap-2 border-b border-(--border-default) pb-2">
+              <h2 className="text-base font-semibold text-(--text-primary)">管理資訊</h2>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="category_id" className="text-sm font-medium text-(--foreground)">
-                分類
-              </label>
-              <select
+            <Field label="分類" htmlFor="category_id" error={errors.category_id}>
+              <Select
                 id="category_id"
                 name="category_id"
                 value={values.category_id}
                 onChange={handleChange}
                 required
-                aria-invalid={!!errors.category_id}
-                className={cn(
-                  "w-full rounded-lg border border-(--border) bg-(--secondary-background) px-3 py-2 text-sm text-(--foreground) outline-none transition-colors focus:border-(--primary)",
-                  { "border-(--game-red)": !!errors.category_id },
-                )}
+                invalid={!!errors.category_id}
               >
                 <option value="">請選擇分類</option>
                 {categories.map((category) => (
@@ -284,27 +265,17 @@ export function BoardGameForm({
                     {category.name}
                   </option>
                 ))}
-              </select>
-              {errors.category_id && (
-                <p className="text-xs text-(--game-red)">{errors.category_id}</p>
-              )}
-            </div>
+              </Select>
+            </Field>
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="location_id" className="text-sm font-medium text-(--foreground)">
-                位置
-              </label>
-              <select
+            <Field label="位置" htmlFor="location_id" error={errors.location_id}>
+              <Select
                 id="location_id"
                 name="location_id"
                 value={values.location_id}
                 onChange={handleChange}
                 required
-                aria-invalid={!!errors.location_id}
-                className={cn(
-                  "w-full rounded-lg border border-(--border) bg-(--secondary-background) px-3 py-2 text-sm text-(--foreground) outline-none transition-colors focus:border-(--primary)",
-                  { "border-(--game-red)": !!errors.location_id },
-                )}
+                invalid={!!errors.location_id}
               >
                 <option value="">請選擇位置</option>
                 {locations.map((location) => (
@@ -312,57 +283,45 @@ export function BoardGameForm({
                     {location.name}
                   </option>
                 ))}
-              </select>
-              {errors.location_id && (
-                <p className="text-xs text-(--game-red)">{errors.location_id}</p>
-              )}
-            </div>
+              </Select>
+            </Field>
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="status" className="text-sm font-medium text-(--foreground)">
-                狀態
-              </label>
-              <select
+            <Field label="狀態" htmlFor="status" error={errors.status}>
+              <Select
                 id="status"
                 name="status"
                 value={values.status}
                 onChange={handleChange}
                 required
-                aria-invalid={!!errors.status}
-                className={cn(
-                  "w-full rounded-lg border border-(--border) bg-(--secondary-background) px-3 py-2 text-sm text-(--foreground) outline-none transition-colors focus:border-(--primary)",
-                  { "border-(--game-red)": !!errors.status },
-                )}
+                invalid={!!errors.status}
               >
                 {statusOptions.map((status) => (
                   <option key={status} value={status}>
                     {BOARD_GAME_STATUS_LABEL[status]}
                   </option>
                 ))}
-              </select>
-              {errors.status && (
-                <p className="text-xs text-(--game-red)">{errors.status}</p>
-              )}
-            </div>
+              </Select>
+            </Field>
           </div>
         </div>
 
         <FormFeedback error={formError} />
 
-        <div className="flex flex-col gap-3 border-t border-(--border) pt-4 sm:flex-row sm:justify-end">
-          <button
+        <div className="flex flex-col gap-3 border-t border-(--border-default) pt-4 sm:flex-row sm:justify-end">
+          <Button
             type="button"
-            className="btn rounded-lg px-4 py-2 text-sm"
+            variant="outline"
+            className="rounded-lg"
             onClick={() => router.push("/admin/board-games")}
             disabled={isSubmitting}
           >
             取消
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            className="btn primary rounded-lg px-4 py-2 text-sm"
             disabled={isSubmitting}
-            aria-busy={isSubmitting}
+            isLoading={isSubmitting}
+            className="rounded-lg"
           >
             {isSubmitting
               ? mode === "create"
@@ -371,7 +330,7 @@ export function BoardGameForm({
               : mode === "create"
                 ? "新增桌遊"
                 : "更新桌遊"}
-          </button>
+          </Button>
         </div>
       </div>
     </form>

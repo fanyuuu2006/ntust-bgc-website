@@ -33,7 +33,7 @@ export const HeadingSection = ({
       </div>
 
       {actions && (
-        <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto [&_.btn]:shrink-0 [&_.btn]:whitespace-nowrap">
+        <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto [&>*]:shrink-0 [&>*]:whitespace-nowrap">
           {actions}
         </div>
       )}

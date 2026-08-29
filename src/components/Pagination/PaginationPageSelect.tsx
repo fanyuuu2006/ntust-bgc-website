@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { buildQueryString, type QueryValue } from "@/utils/url";
 import { cn } from "@/utils/className";
+import { Select } from "@/components/ui/Select";
 
 type PaginationPageSelectProps = React.LabelHTMLAttributes<HTMLLabelElement> & {
   page: number;
@@ -41,11 +42,11 @@ export function PaginationPageSelect({
       {...rest}
     >
       頁面
-      <select
+      <Select
         value={page}
         onChange={handleChange}
         aria-label="目前頁碼"
-        className="shrink-0 rounded-md border border-(--border) bg-(--secondary-background) px-2 py-1 text-sm text-(--foreground) outline-none focus:border-(--primary)"
+        className="min-h-0 shrink-0 bg-(--surface-subtle) px-2 py-1 text-sm"
       >
         {Array.from({ length: totalPages }, (_, index) => {
           const pageNumber = index + 1;
@@ -55,7 +56,7 @@ export function PaginationPageSelect({
             </option>
           );
         })}
-      </select>
+      </Select>
       / {totalPages}
     </label>
   );

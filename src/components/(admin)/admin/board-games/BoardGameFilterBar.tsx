@@ -11,6 +11,7 @@ import { buildQueryString } from "@/utils/url";
 import { cn } from "@/utils/className";
 import { BoardGamesQuery } from "@/app/(admin)/admin/board-games/types";
 import { useOutsideDismiss } from "@/hooks/useOutsideDismiss";
+import { Button } from "@/components/ui/Button";
 
 const STATUS_OPTIONS: { value: BoardGameStatus; label: string }[] = [
   { value: "available", label: "可借用" },
@@ -115,20 +116,22 @@ function FilterDropdown({ label, count, children }: FilterDropdownProps) {
 
   return (
     <div ref={ref} className="relative shrink-0">
-      <button
+      <Button
         type="button"
         aria-expanded={open}
+        aria-pressed={isActive}
         onClick={() => setOpen((prev) => !prev)}
+        variant="outline"
+        size="sm"
         className={cn(
-          "btn flex items-center gap-1 rounded-full px-3 py-1 text-sm",
-          {
-            "border-(--primary)": isActive,
-          },
+          "rounded-full",
+          isActive &&
+            "border-(--border-strong) bg-(--surface-subtle) text-(--interactive-primary)",
         )}
       >
         {label}
-        {isActive && <span className="text-(--primary)">({count})</span>}
-      </button>
+        {isActive && <span className="text-(--interactive-primary)">({count})</span>}
+      </Button>
 
       {open && (
         <div className="card absolute top-[calc(100%+0.5rem)] left-0 z-10 max-h-64 w-max min-w-32 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-md py-1">
@@ -147,12 +150,12 @@ type FilterOptionProps = {
 
 function FilterOption({ label, checked, onChange }: FilterOptionProps) {
   return (
-    <label className="cursor-pointer flex items-center gap-2 px-3 py-1.5 text-sm whitespace-nowrap text-(--foreground) hover:bg-(--secondary-background)">
+    <label className="flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm whitespace-nowrap text-(--text-primary) hover:bg-(--surface-subtle)">
       <input
         type="checkbox"
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}
-        className="size-4 rounded border-(--border) accent-(--primary)"
+        className="size-4 rounded border-(--border-default) accent-(--interactive-primary)"
       />
       {label}
     </label>

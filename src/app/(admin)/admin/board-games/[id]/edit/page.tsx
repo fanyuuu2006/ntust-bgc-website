@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ButtonLink } from "@/components/ui/Button";
 import { notFound } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { BoardGameForm } from "@/components/(admin)/admin/board-games/BoardGameForm";
@@ -36,12 +36,9 @@ export default async function BoardGameEditPage({
         title="編輯桌遊"
         description={`更新「${boardGame.name}」的資訊`}
         actions={
-          <Link
-            href="/admin/board-games"
-            className="btn outline inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium"
-          >
+          <ButtonLink href="/admin/board-games" variant="outline">
             返回列表
-          </Link>
+          </ButtonLink>
         }
       />
 
