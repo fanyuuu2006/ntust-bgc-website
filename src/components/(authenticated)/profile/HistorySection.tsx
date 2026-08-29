@@ -29,9 +29,9 @@ type HistorySectionProps = React.HTMLAttributes<HTMLElement> & {
 };
 
 const STATUS_DOT_CLASS: Record<HistoryStatusVariant, string> = {
-  success: "bg-(--game-green)",
-  warning: "bg-(--game-yellow)",
-  danger: "bg-(--game-red)",
+  success: "bg-(--status-success)",
+  warning: "bg-(--status-warning)",
+  danger: "bg-(--status-danger)",
   muted: "bg-(--muted)",
 };
 

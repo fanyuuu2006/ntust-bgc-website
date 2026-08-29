@@ -1,8 +1,9 @@
 "use client";
 import { apiClient } from "@/libs/api/client";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 
-type LogoutButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
+type LogoutButtonProps = React.ComponentProps<typeof Button>;
 export const LogoutButton = ({ onClick, ...rest }: LogoutButtonProps) => {
   const router = useRouter();
   async function handleLogout(e: React.MouseEvent<HTMLButtonElement>) {
@@ -17,5 +18,5 @@ export const LogoutButton = ({ onClick, ...rest }: LogoutButtonProps) => {
       console.error("登出失敗", error);
     }
   }
-  return <button type="button" onClick={handleLogout} {...rest} />;
+  return <Button type="button" onClick={handleLogout} {...rest} />;
 };

@@ -1,6 +1,7 @@
 "use client";
 import { mainNavigation } from "@/libs/navigation";
 import { cn } from "@/utils/className";
+import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
@@ -47,18 +48,19 @@ export const MobileNavigation = ({
       className={cn("relative md:hidden", className)}
       {...rest}
     >
-      <button
+      <Button
         type="button"
         aria-label={isOpen ? "關閉主選單" : "開啟主選單"}
         aria-expanded={isOpen}
         aria-controls={panelId}
         onClick={() => setIsOpen((prev) => !prev)}
-        className={cn(
-          "shrink-0 btn rounded-xl size-10 flex items-center justify-center",
-        )}
+        variant="secondary"
+        size="none"
+        iconOnly
+        className={cn("size-10 shrink-0 rounded-xl")}
       >
         <span>{isOpen ? "✕" : "☰"}</span>
-      </button>
+      </Button>
 
       {isOpen && (
         <nav
@@ -89,8 +91,6 @@ export const MobileNavigation = ({
                     "transition-all duration-300",
                     // hover(與 desktop 一致)
                     "hover:bg-(--secondary-background) hover:text-(--primary)",
-                    // 鍵盤可及性
-                    "outline-none focus-visible:ring-2 focus-visible:ring-(--primary) focus-visible:ring-offset-2",
                     {
                       // 當前頁面樣式
                       "text-(--primary) bg-(--secondary-background) font-semibold before:scale-y-100":

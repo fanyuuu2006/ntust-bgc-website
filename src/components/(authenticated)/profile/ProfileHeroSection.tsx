@@ -1,8 +1,9 @@
 import { UserAvatar } from "@/components/UserAvatar";
+import { MembershipStatusBadge } from "@/components/(authenticated)/memberships/MembershipStatusBadge";
+import { Badge } from "@/components/ui/Badge";
 import { MembershipWithAcademicYear } from "@/services/memberships/memberships.types";
 import { OfficerPositionWithAcademicYear } from "@/services/officer-positions/officer-positions.types";
-import type { MembershipStatus, User, UserProfile } from "@/types/database";
-import { cn } from "@/utils/className";
+import type { User, UserProfile } from "@/types/database";
 
 type ProfileHeroSectionProps = React.HTMLAttributes<HTMLElement> & {
   user: User;
@@ -11,47 +12,6 @@ type ProfileHeroSectionProps = React.HTMLAttributes<HTMLElement> & {
   currentOfficerPositions: OfficerPositionWithAcademicYear[];
 };
 
-type BadgeVariant = "primary" | "green" | "yellow" | "red" | "muted";
-
-type BadgeData = {
-  key: string;
-  label: string;
-  variant: BadgeVariant;
-};
-
-const BADGE_VARIANT_CLASS: Record<BadgeVariant, string> = {
-  primary: "border-(--primary) bg-(--secondary-background) text-(--primary)",
-  green:
-    "border-(--game-green) bg-(--secondary-background) text-(--game-green)",
-  yellow:
-    "border-(--game-yellow) bg-(--secondary-background) text-(--foreground)",
-  red: "border-(--game-red) bg-(--secondary-background) text-(--game-red)",
-  muted: "border-(--border) bg-(--secondary-background) text-(--muted)",
-};
-
-const MEMBERSHIP_STATUS_CONFIG: Record<
-  MembershipStatus,
-  Omit<BadgeData, "key">
-> = {
-  pending: { label: "社員資格審核中", variant: "yellow" },
-  active: { label: "目前社員", variant: "green" },
-  expired: { label: "社員資格已到期", variant: "muted" },
-  suspended: { label: "社員資格已停權", variant: "red" },
-  cancelled: { label: "社員資格已取消", variant: "muted" },
-};
-
-function Badge({ label, variant }: Omit<BadgeData, "key">) {
-  return (
-    <span
-      className={cn(
-        "whitespace-nowrap rounded-full border px-3 py-1 text-xs font-semibold",
-        BADGE_VARIANT_CLASS[variant],
-      )}
-    >
-      {label}
-    </span>
-  );
-}
 
 export function ProfileHeroSection({
   user,
@@ -61,27 +21,10 @@ export function ProfileHeroSection({
   className,
   ...rest
 }: ProfileHeroSectionProps) {
-  const membershipBadge = currentMembership
-    ? {
-        key: `membership-${currentMembership.id}`,
-        ...MEMBERSHIP_STATUS_CONFIG[currentMembership.status],
-      }
-    : null;
-
   const metaText = [profile.school, profile.department, profile.grade]
     .filter((item): item is string => Boolean(item))
     .join(" · ");
 
-  const badges: BadgeData[] = [
-    ...(membershipBadge ? [membershipBadge] : []),
-    ...currentOfficerPositions.map((officer) => ({
-      key: `officer-${officer.id}`,
-      label: officer.academic_year
-        ? `${officer.academic_year.year} | ${officer.title}`
-        : officer.title,
-      variant: "primary" as const,
-    })),
-  ];
 
   return (
     <section className={className} {...rest} aria-labelledby="profile-title">
@@ -125,11 +68,10 @@ export function ProfileHeroSection({
                     {metaText}
                   </p>
                 )}
-                {badges.length > 0 && (
+                {(currentMembership || currentOfficerPositions.length > 0) && (
                   <div className="mt-4 flex flex-wrap justify-center gap-2 sm:justify-start">
-                    {badges.map(({ key, ...badge }) => (
-                      <Badge key={key} {...badge} />
-                    ))}
+                    {currentMembership ? <MembershipStatusBadge status={currentMembership.status} /> : null}
+                    {currentOfficerPositions.map((officer) => <Badge key={officer.id} tone="info">{officer.academic_year ? `${officer.academic_year.year} | ${officer.title}` : officer.title}</Badge>)}
                   </div>
                 )}
               </div>

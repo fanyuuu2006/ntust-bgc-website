@@ -69,7 +69,7 @@ export default async function BorrowingsPage() {
                 key: "pending",
                 label: "待審核",
                 value: pendingBorrowings.length,
-                accent: "yellow",
+                accent: "highlight",
               },
               {
                 key: "approved",
@@ -81,7 +81,7 @@ export default async function BorrowingsPage() {
                 key: "borrowed",
                 label: "借用中",
                 value: borrowedBorrowings.length,
-                accent: "green",
+                accent: "supporting",
               },
               {
                 key: "returned",
@@ -93,7 +93,7 @@ export default async function BorrowingsPage() {
                 key: "rejected",
                 label: "已拒絕",
                 value: rejectedBorrowings.length,
-                accent: "red",
+                accent: "contrast",
               },
             ]}
           />

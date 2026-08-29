@@ -1,6 +1,6 @@
-import Link from "next/link";
 import type { HTMLAttributes } from "react";
 import { cn } from "@/utils/className";
+import { ButtonLink } from "@/components/ui/Button";
 import type { User, UserProfile } from "@/types/database";
 
 type ProfileBasicInfoSectionProps = HTMLAttributes<HTMLElement> & {
@@ -14,7 +14,7 @@ type InfoFieldData = {
   value: string | null;
 };
 
-type GroupAccent = "green" | "primary";
+type GroupAccent = "supporting" | "primary";
 
 type InfoGroupData = {
   key: string;
@@ -45,7 +45,7 @@ function InfoGroupCard({ title, description, accent, fields }: InfoGroupData) {
     <div
       className={cn(
         "card accent rounded-2xl p-4 sm:p-6",
-        accent === "green" && "green",
+        accent === "supporting" && "supporting",
       )}
     >
       <h3 className="text-base font-bold text-(--foreground)">{title}</h3>
@@ -71,7 +71,7 @@ export function ProfileBasicInfoSection({
       key: "contact",
       title: "聯絡資訊",
       description: "用於借用桌遊與活動聯繫",
-      accent: "green",
+      accent: "supporting",
       fields: [
         { key: "real_name", label: "姓名", value: profile.real_name },
         { key: "email", label: "Email", value: user.email },
@@ -106,12 +106,9 @@ export function ProfileBasicInfoSection({
           >
             基本資料
           </h2>
-          <Link
-            href="/settings"
-            className="btn primary inline-flex w-full shrink-0 justify-center rounded-xl px-4 py-2.5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary) sm:w-auto"
-          >
+          <ButtonLink href="/settings" className="w-full rounded-xl sm:w-auto">
             編輯資料
-          </Link>
+          </ButtonLink>
         </div>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
           {groups.map(({ key, ...group }) => (

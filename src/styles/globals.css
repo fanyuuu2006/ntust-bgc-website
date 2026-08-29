@@ -318,40 +318,14 @@
     border-color: var(--border-muted);
   }
 
-  /* =====================================================
-   Game Colors
-   ===================================================== */
-
-  .btn.green {
-    background: var(--status-success);
-    color: var(--text-inverse);
-    border-color: transparent;
-  }
-
-  .btn.yellow {
-    background: var(--status-warning);
-    color: var(--text-primary);
-    border-color: transparent;
-  }
-
-  .btn.red,
   .btn.danger {
     background: var(--status-danger);
     color: var(--text-inverse);
     border-color: transparent;
   }
 
-  .btn.danger:hover,
-  .btn.red:hover {
+  .btn.danger:hover {
     background: color-mix(in oklab, var(--status-danger) 86%, black);
-  }
-
-  .btn.green:hover {
-    background: color-mix(in oklab, var(--status-success) 86%, black);
-  }
-
-  .btn.yellow:hover {
-    background: color-mix(in oklab, var(--status-warning) 88%, white);
   }
 
   /* =====================================================
@@ -418,19 +392,29 @@
     border-top-color: var(--interactive-primary);
   }
 
-  .card.accent.success,
-  .card.accent.green {
+  .card.accent.success {
     border-top-color: var(--status-success);
   }
 
-  .card.accent.warning,
-  .card.accent.yellow {
+  .card.accent.warning {
     border-top-color: var(--status-warning);
   }
 
-  .card.accent.danger,
-  .card.accent.red {
+  .card.accent.danger {
     border-top-color: var(--status-danger);
+  }
+
+  /* Decorative roles used by QuickStats and profile information groups. */
+  .card.accent.supporting {
+    border-top-color: var(--game-green);
+  }
+
+  .card.accent.highlight {
+    border-top-color: var(--game-yellow);
+  }
+
+  .card.accent.contrast {
+    border-top-color: var(--game-red);
   }
 
   /* =====================================================

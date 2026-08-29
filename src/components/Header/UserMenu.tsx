@@ -109,7 +109,7 @@ export const UserMenu = ({
         aria-expanded={isOpen}
         aria-controls={panelId}
         aria-label={`使用者選單，${user.name}`}
-        className="rounded-full p-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+        className="rounded-full p-0.5"
       >
         <UserAvatar
           user={user}
