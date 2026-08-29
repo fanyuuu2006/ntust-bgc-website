@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
+import { ClearableSearchInput } from "@/components/(admin)/admin/ClearableSearchInput";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -22,7 +23,7 @@ import { formatAdminDateTime } from "@/utils/date";
 import { buildQueryString } from "@/utils/url";
 
 type Action = "approve" | "reject" | "checkout" | "return";
-type BorrowingQuery = { search?: string; status?: BorrowingStatus; orderBy?: "created_at" | "borrowed_at" | "due_at" | "returned_at"; orderDirection?: "asc" | "desc"; page?: number; pageSize?: number };
+type BorrowingQuery = { search?: string; status?: BorrowingStatus; board_game_id?: string; user_id?: string; orderBy?: "created_at" | "borrowed_at" | "due_at" | "returned_at"; orderDirection?: "asc" | "desc"; page?: number; pageSize?: number };
 
 const BASE_PATH = "/admin/board-games/borrowings";
 const FILTERS: Array<{ label: string; value?: BorrowingStatus }> = [
@@ -35,6 +36,7 @@ export function AdminBorrowingList({ borrowings, query }: { borrowings: BoardGam
   const [dueAt, setDueAt] = useState("");
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const clearSearchHref = (() => { const queryString = buildQueryString({ status: query.status, board_game_id: query.board_game_id, user_id: query.user_id, orderBy: query.orderBy, orderDirection: query.orderDirection, pageSize: query.pageSize }); return queryString ? `${BASE_PATH}?${queryString}` : BASE_PATH; })();
   const choose = (borrowing: BoardGameBorrowingForAdmin, action: Action) => { setDueAt(""); setFeedback(null); setSelected({ borrowing, action }); };
   const close = () => { if (!busy) setSelected(null); };
   const changeStatus = (status?: BorrowingStatus) => router.push(`${BASE_PATH}?${buildQueryString(toHeaderQuery(query), { status, page: "1" })}`);
@@ -50,7 +52,7 @@ export function AdminBorrowingList({ borrowings, query }: { borrowings: BoardGam
   const actionTitle = selected ? ({ approve: "核准借用申請？", reject: "拒絕借用申請？", checkout: "確認借出社產", return: "確認收到歸還？" })[selected.action] : "";
   const actionDescription = selected ? `桌遊「${selected.borrowing.board_game.name}」將套用此操作。` : "";
   return <div className="space-y-4">
-    <AdminToolbar aria-label="借用搜尋與篩選"><form className="flex min-w-0 flex-1 gap-2" onSubmit={(event) => { event.preventDefault(); const search = String(new FormData(event.currentTarget).get("search") ?? "").trim() || undefined; router.push(`${BASE_PATH}?${buildQueryString(toHeaderQuery(query), { search, page: "1" })}`); }}><Input name="search" defaultValue={query.search} placeholder="搜尋桌遊、社產編號或借用人" className="min-w-0 flex-1" /><Button type="submit">搜尋</Button></form><div className="flex flex-wrap gap-2">{FILTERS.map((filter) => <Button key={filter.label} variant={query.status === filter.value ? "primary" : "outline"} className="px-3 py-2 text-sm" onClick={() => changeStatus(filter.value)}>{filter.label}</Button>)}</div></AdminToolbar>
+    <AdminToolbar aria-label="借用搜尋與篩選"><form className="flex min-w-0 flex-1 gap-2" onSubmit={(event) => { event.preventDefault(); const search = String(new FormData(event.currentTarget).get("search") ?? "").trim() || undefined; router.push(`${BASE_PATH}?${buildQueryString(toHeaderQuery(query), { search, page: "1" })}`); }}><ClearableSearchInput initialValue={query.search} clearHref={clearSearchHref} name="search" placeholder="搜尋桌遊、社產編號或借用人" className="min-w-0 flex-1" /><Button type="submit">搜尋</Button></form><div className="flex flex-wrap gap-2">{FILTERS.map((filter) => <Button type="button" key={filter.label} variant={query.status === filter.value ? "primary" : "outline"} className="px-3 py-2 text-sm" onClick={() => changeStatus(filter.value)}>{filter.label}</Button>)}</div></AdminToolbar>
     <FormFeedback error={feedback} />
     {borrowings.length === 0 ? <EmptyState title="目前沒有借用紀錄" description="調整篩選條件後再試一次。" /> : <>
       <AdminListSection className="hidden lg:block"><Table><TableHeader><TableRow><TableHead>社產</TableHead><TableHead>借用人</TableHead><TableHead>狀態</TableHead><SortableTableHeader label="申請時間" column="created_at" basePath={BASE_PATH} query={toHeaderQuery(query)} /><SortableTableHeader label="借出時間" column="borrowed_at" basePath={BASE_PATH} query={toHeaderQuery(query)} /><SortableTableHeader label="應還時間" column="due_at" basePath={BASE_PATH} query={toHeaderQuery(query)} /><SortableTableHeader label="歸還時間" column="returned_at" basePath={BASE_PATH} query={toHeaderQuery(query)} /><TableHead className="text-right">操作</TableHead></TableRow></TableHeader><TableBody>{borrowings.map((borrowing) => <TableRow key={borrowing.id}><TableCell className="font-medium">{borrowing.board_game.name}<span className="ml-2 text-xs text-(--muted)">#{String(borrowing.board_game.inventory_number).padStart(3, "0")}</span></TableCell><TableCell>{getBorrowerName(borrowing)}</TableCell><TableCell><BorrowingStatusBadge status={borrowing.status} /></TableCell><TableCell className="whitespace-nowrap">{formatAdminDateTime(borrowing.created_at)}</TableCell><TableCell className="whitespace-nowrap">{formatOptionalDate(borrowing.borrowed_at)}</TableCell><TableCell className="whitespace-nowrap">{formatOptionalDate(borrowing.due_at)}</TableCell><TableCell className="whitespace-nowrap">{formatOptionalDate(borrowing.returned_at)}</TableCell><TableCell className="text-right"><BorrowingActions borrowing={borrowing} onAction={choose} /></TableCell></TableRow>)}</TableBody></Table></AdminListSection>

@@ -36,7 +36,7 @@ export function PaginationPageSelect({
   return (
     <label
       className={cn(
-        "flex shrink-0 items-center gap-1.5 whitespace-nowrap text-sm text-(--muted)",
+        "flex items-center gap-1.5 whitespace-nowrap text-sm text-(--muted)",
         className,
       )}
       {...rest}
@@ -46,7 +46,7 @@ export function PaginationPageSelect({
         value={page}
         onChange={handleChange}
         aria-label="目前頁碼"
-        className="min-h-0 shrink-0 bg-(--surface-subtle) px-2 py-1 text-sm"
+        className="min-h-0 w-auto bg-(--surface-subtle) px-2 py-1 text-sm"
       >
         {Array.from({ length: totalPages }, (_, index) => {
           const pageNumber = index + 1;

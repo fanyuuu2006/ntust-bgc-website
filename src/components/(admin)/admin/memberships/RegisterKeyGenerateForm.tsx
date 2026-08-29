@@ -116,7 +116,7 @@ export function RegisterKeyGenerateForm({
             <Button type="button" variant="outline" disabled={busy} onClick={close}>
               取消
             </Button>
-            <Button disabled={busy || !academicYearId} isLoading={busy}>
+            <Button type="submit" disabled={busy || !academicYearId} isLoading={busy}>
               {busy ? "產生中…" : "產生"}
             </Button>
           </div>

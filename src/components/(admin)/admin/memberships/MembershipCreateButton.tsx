@@ -52,7 +52,7 @@ export function MembershipCreateButton({ users, years }: Props) {
 
   return (
     <>
-      <Button onClick={showDialog}>新增社員資格</Button>
+      <Button type="button" onClick={showDialog}>新增社員資格</Button>
       <Modal open={open} onClose={() => !busy && setOpen(false)} title="新增社員資格">
         <form className="space-y-4" onSubmit={submit}>
           <Field label="使用者" htmlFor="membership-user">
@@ -79,7 +79,7 @@ export function MembershipCreateButton({ users, years }: Props) {
           <FormFeedback error={error} />
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" disabled={busy} onClick={() => setOpen(false)}>取消</Button>
-            <Button type="submit" isLoading={busy}>新增</Button>
+            <Button type="submit" isLoading={busy}>{busy ? "新增中…" : "新增"}</Button>
           </div>
         </form>
       </Modal>

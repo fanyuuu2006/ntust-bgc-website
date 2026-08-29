@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Modal } from "@/components/Modal";
 import { apiClient } from "@/libs/api/client";
 import type { UserProfile } from "@/types/database";
@@ -36,6 +37,7 @@ export function UserProfileEditButton({
   userId: string;
   profile: UserProfile | null;
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<Values>(() => valuesFromProfile(profile));
   const [busy, setBusy] = useState(false);
@@ -55,7 +57,7 @@ export function UserProfileEditButton({
         body: values,
       });
       setOpen(false);
-      window.location.reload();
+      router.refresh();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "更新使用者資料失敗");
     } finally {
@@ -76,7 +78,7 @@ export function UserProfileEditButton({
           <ProfileField label="系所" value={values.department} onChange={(value) => update("department", value)} />
           <ProfileField label="年級" value={values.grade} onChange={(value) => update("grade", value)} />
         </div>
-        <div className="flex justify-end gap-2"><Button type="button" disabled={busy} onClick={() => setOpen(false)} variant="outline" className="rounded-lg">取消</Button><Button disabled={busy} isLoading={busy} className="rounded-lg">{busy ? "儲存中…" : "儲存"}</Button></div>
+        <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end"><Button type="button" disabled={busy} onClick={() => setOpen(false)} variant="outline" className="rounded-lg">取消</Button><Button type="submit" disabled={busy} isLoading={busy} className="rounded-lg">{busy ? "儲存中…" : "儲存"}</Button></div>
       </form>
     </Modal>
   </>;

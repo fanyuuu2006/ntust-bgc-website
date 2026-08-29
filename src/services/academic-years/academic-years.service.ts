@@ -1,6 +1,9 @@
 import "server-only";
 
-import { academicYearsRepository } from "@/repositories/academic-years.repository";
+import {
+  academicYearsRepository,
+  type FindManyAcademicYearsOptions,
+} from "@/repositories/academic-years.repository";
 import { membershipsRepository } from "@/repositories/memberships.repository";
 import { officerPositionsRepository } from "@/repositories/officer-positions.repository";
 import type { AcademicYear } from "@/types/database";
@@ -12,6 +15,8 @@ export class AcademicYearInUseError extends Error { constructor() { super("æ­¤å­
 
 export const academicYearsService = {
   list: (): Promise<AcademicYear[]> => academicYearsRepository.findMany(),
+  listForAdmin: (options: FindManyAcademicYearsOptions = {}) =>
+    academicYearsRepository.findManyForAdmin(options),
   create: async (input: unknown) => {
     const data = createAcademicYearSchema.parse(input);
     if (await academicYearsRepository.existsByYear(data.year)) throw new DuplicateAcademicYearError();

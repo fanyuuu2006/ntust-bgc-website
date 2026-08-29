@@ -104,6 +104,14 @@ export default async function BoardGamesAdminPage({
     orderDirection,
     page,
   } as const;
+  const clearSearchParams = new URLSearchParams();
+  for (const status of statuses) clearSearchParams.append("status", status);
+  for (const categoryId of category_ids) clearSearchParams.append("category", categoryId);
+  for (const locationId of location_ids) clearSearchParams.append("location", locationId);
+  if (params.orderBy) clearSearchParams.set("orderBy", params.orderBy);
+  if (params.orderDirection) clearSearchParams.set("orderDirection", params.orderDirection);
+  if (params.pageSize) clearSearchParams.set("pageSize", params.pageSize);
+  const clearSearchHref = clearSearchParams.size ? `${BASE_PATH}?${clearSearchParams}` : BASE_PATH;
 
   return (
     <>
@@ -117,11 +125,12 @@ export default async function BoardGamesAdminPage({
         }
       />
 
-      <section className="px-4 space-y-4">
+      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <BoardGameSearchForm
           categories={category}
           locations={location}
           query={query}
+          clearSearchHref={clearSearchHref}
         />
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

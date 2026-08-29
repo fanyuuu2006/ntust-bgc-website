@@ -33,16 +33,16 @@ export function Pagination({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 rounded-2xl sm:flex-row sm:items-center sm:justify-between",
+        "flex flex-col gap-3 rounded-2xl sm:flex-row sm:flex-wrap sm:items-center sm:justify-between",
         className,
       )}
       {...rest}
     >
-      <p className="shrink-0 whitespace-nowrap text-sm text-(--muted)">
+      <p className="text-sm text-(--muted)">
         顯示 {start}–{end}，共 {total} 筆
       </p>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3 sm:justify-end">
         <PaginationPageSizeSelect
           pageSize={pageSize}
           options={pageSizeOptions}

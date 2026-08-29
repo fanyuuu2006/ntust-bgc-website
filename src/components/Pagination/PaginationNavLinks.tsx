@@ -25,7 +25,7 @@ export function PaginationNavLinks({
 
   return (
     <div
-      className={cn("flex shrink-0 items-center gap-2", className)}
+      className={cn("flex items-center gap-2", className)}
       {...rest}
     >
       <NavLink

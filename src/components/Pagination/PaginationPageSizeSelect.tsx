@@ -35,7 +35,7 @@ export function PaginationPageSizeSelect({
   return (
     <label
       className={cn(
-        "flex shrink-0 items-center gap-1.5 whitespace-nowrap text-sm text-(--muted)",
+        "flex items-center gap-1.5 whitespace-nowrap text-sm text-(--muted)",
         className,
       )}
       {...rest}
@@ -45,7 +45,7 @@ export function PaginationPageSizeSelect({
         value={pageSize}
         onChange={handleChange}
         aria-label="每頁顯示筆數"
-        className="min-h-0 shrink-0 bg-(--surface-subtle) px-2 py-1 text-sm"
+        className="min-h-0 w-auto bg-(--surface-subtle) px-2 py-1 text-sm"
       >
         {options.map((option) => (
           <option key={option} value={option}>

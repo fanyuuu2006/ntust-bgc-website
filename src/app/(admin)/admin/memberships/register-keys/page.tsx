@@ -1,17 +1,64 @@
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
-import { RegisterKeyGenerateForm } from "@/components/(admin)/admin/members/RegisterKeyGenerateForm";
-import { RegisterKeyTable } from "@/components/(admin)/admin/members/RegisterKeyTable";
-import { RegisterKeyFilterBar } from "@/components/(admin)/admin/members/register-keys/RegisterKeyFilterBar";
-import { ButtonLink } from "@/components/ui/Button";
+import { RegisterKeyFilterBar } from "@/components/(admin)/admin/memberships/RegisterKeyFilterBar";
+import { RegisterKeyGenerateForm } from "@/components/(admin)/admin/memberships/RegisterKeyGenerateForm";
+import { RegisterKeyTable } from "@/components/(admin)/admin/memberships/RegisterKeyTable";
 import { Pagination } from "@/components/Pagination/Pagination";
+import { ButtonLink } from "@/components/ui/Button";
 import { listMembershipRegisterKeysQuerySchema } from "@/services/memberships/memberships.schema";
 import { membershipService } from "@/services/memberships/memberships.service";
 
-type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+type Props = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
 export default async function MembershipRegisterKeysPage({ searchParams }: Props) {
-  const parsed = listMembershipRegisterKeysQuerySchema.safeParse(await searchParams);
+  const parsed = listMembershipRegisterKeysQuerySchema.safeParse(
+    await searchParams,
+  );
   const query = parsed.success ? parsed.data : {};
-  const page = query.page ?? 1; const pageSize = query.pageSize ?? 20;
-  const [academicYears, registerKeys] = await Promise.all([membershipService.listAcademicYears(), membershipService.listRegisterKeys({ ...query, page, pageSize })]);
-  return <><HeadingSection title="社員註冊碼" description="產生、查詢與管理社員註冊碼，並追蹤建立、領取與撤銷狀態。" actions={<><ButtonLink href="/admin/memberships" variant="outline">返回社員資格</ButtonLink><RegisterKeyGenerateForm academicYears={academicYears} defaultAcademicYearId={academicYears.find((year) => year.is_current)?.id} /></>} /><section className="space-y-4 px-4 pb-6"><RegisterKeyFilterBar academicYears={academicYears} query={query} /><RegisterKeyTable registerKeys={registerKeys.data} hasFilters={Boolean(query.search || query.academic_year_id || query.status)} /><Pagination className="p-4" page={page} pageSize={pageSize} total={registerKeys.total} totalPages={registerKeys.totalPages} basePath="/admin/memberships/register-keys" pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} /></section></>;
+  const page = query.page ?? 1;
+  const pageSize = query.pageSize ?? 20;
+  const [academicYears, registerKeys] = await Promise.all([
+    membershipService.listAcademicYears(),
+    membershipService.listRegisterKeys({ ...query, page, pageSize }),
+  ]);
+
+  return (
+    <>
+      <HeadingSection
+        title="社員註冊碼"
+        description="建立並管理社員註冊碼；註冊碼可用於社員資格申請。"
+        actions={
+          <>
+            <ButtonLink href="/admin/memberships" variant="outline">
+              返回社員資格
+            </ButtonLink>
+            <RegisterKeyGenerateForm
+              academicYears={academicYears}
+              defaultAcademicYearId={academicYears.find((year) => year.is_current)?.id}
+            />
+          </>
+        }
+      />
+      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+        <RegisterKeyFilterBar academicYears={academicYears} query={query} />
+        <RegisterKeyTable
+          registerKeys={registerKeys.data}
+          hasFilters={Boolean(
+            query.search || query.academic_year_id || query.status,
+          )}
+        />
+        <Pagination
+          className="p-4"
+          page={page}
+          pageSize={pageSize}
+          total={registerKeys.total}
+          totalPages={registerKeys.totalPages}
+          basePath="/admin/memberships/register-keys"
+          pageSizeOptions={[10, 20, 50, 100]}
+          query={{ ...query, page }}
+        />
+      </section>
+    </>
+  );
 }

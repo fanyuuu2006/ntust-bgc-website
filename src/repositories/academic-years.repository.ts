@@ -3,6 +3,16 @@ import "server-only";
 import { supabase } from "@/libs/supabase/server";
 import { AcademicYear } from "@/types/database";
 import { throwRepositoryError } from "./shared/errors";
+import {
+  buildPaginationResult,
+  normalizePaginationOptions,
+} from "./shared/pagination";
+import { buildIlikeSearch } from "./shared/search";
+import type { PaginationQuery } from "./shared/types";
+
+export type FindManyAcademicYearsOptions = PaginationQuery & {
+  search?: string;
+};
 
 export type CreateAcademicYearInput = Pick<
   AcademicYear,
@@ -15,13 +25,28 @@ export type UpdateAcademicYearInput = Partial<
 
 export const academicYearsRepository = {
   findMany: async (): Promise<AcademicYear[]> => {
-    const { data, error } = await supabase.from("academic_years").select("*");
+    const { data, error } = await supabase
+      .from("academic_years")
+      .select("*")
+      .order("year", { ascending: false });
 
     if (error) {
       throwRepositoryError("取得學年度列表失敗", error);
     }
 
     return data ?? [];
+  },
+
+  findManyForAdmin: async (options: FindManyAcademicYearsOptions = {}) => {
+    const { page, pageSize, from, to } = normalizePaginationOptions(options);
+    let query = supabase.from("academic_years").select("*", { count: "exact" });
+    const search = options.search?.trim();
+    if (search) query = query.or(buildIlikeSearch(["year"], search));
+    const { data, error, count } = await query
+      .order("year", { ascending: false })
+      .range(from, to);
+    if (error) throwRepositoryError("讀取學年度管理清單失敗", error);
+    return buildPaginationResult<AcademicYear>(data ?? [], count, page, pageSize);
   },
 
   findManyByIds: async (ids: string[]): Promise<AcademicYear[]> => {

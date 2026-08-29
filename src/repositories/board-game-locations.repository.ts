@@ -3,6 +3,11 @@ import "server-only";
 import { supabase } from "@/libs/supabase/server";
 import { throwRepositoryError } from "@/repositories/shared/errors";
 import { BoardGameLocation } from "@/types/database";
+import { buildPaginationResult, normalizePaginationOptions } from "./shared/pagination";
+import { buildIlikeSearch } from "./shared/search";
+import type { PaginationQuery } from "./shared/types";
+
+export type FindManyBoardGameLocationsOptions = PaginationQuery & { search?: string };
 
 export type CreateBoardGameLocationInput = Pick<BoardGameLocation, "name"> &
   Partial<Pick<BoardGameLocation, "description">>;
@@ -19,6 +24,15 @@ export const boardGameLocationsRepository = {
       .order("name", { ascending: true });
     if (error) throwRepositoryError("取得桌遊位置列表失敗", error);
     return data ?? [];
+  },
+
+  findMany: async (options: FindManyBoardGameLocationsOptions = {}) => {
+    const { page, pageSize, from, to } = normalizePaginationOptions(options);
+    let query = supabase.from("board_game_locations").select("*", { count: "exact" });
+    if (options.search?.trim()) query = query.or(buildIlikeSearch(["name", "description"], options.search));
+    const { data, error, count } = await query.order("name", { ascending: true }).range(from, to);
+    if (error) throwRepositoryError("取得桌遊位置管理清單失敗", error);
+    return buildPaginationResult<BoardGameLocation>(data ?? [], count, page, pageSize);
   },
 
   findById: async (id: string): Promise<BoardGameLocation | null> => {

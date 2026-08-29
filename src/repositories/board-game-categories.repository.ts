@@ -3,6 +3,11 @@ import "server-only";
 import { supabase } from "@/libs/supabase/server";
 import { throwRepositoryError } from "@/repositories/shared/errors";
 import { BoardGameCategory } from "@/types/database";
+import { buildPaginationResult, normalizePaginationOptions } from "./shared/pagination";
+import { buildIlikeSearch } from "./shared/search";
+import type { PaginationQuery } from "./shared/types";
+
+export type FindManyBoardGameCategoriesOptions = PaginationQuery & { search?: string };
 
 export type CreateBoardGameCategoryInput = Pick<BoardGameCategory, "name"> &
   Partial<Pick<BoardGameCategory, "description">>;
@@ -22,6 +27,15 @@ export const boardGameCategoriesRepository = {
       .order("name", { ascending: true });
     if (error) throwRepositoryError("取得桌遊分類列表失敗", error);
     return data ?? [];
+  },
+
+  findMany: async (options: FindManyBoardGameCategoriesOptions = {}) => {
+    const { page, pageSize, from, to } = normalizePaginationOptions(options);
+    let query = supabase.from("board_game_categories").select("*", { count: "exact" });
+    if (options.search?.trim()) query = query.or(buildIlikeSearch(["name", "description"], options.search));
+    const { data, error, count } = await query.order("name", { ascending: true }).range(from, to);
+    if (error) throwRepositoryError("取得桌遊分類管理清單失敗", error);
+    return buildPaginationResult<BoardGameCategory>(data ?? [], count, page, pageSize);
   },
 
   findById: async (id: string): Promise<BoardGameCategory | null> => {

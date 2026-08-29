@@ -1,36 +1,30 @@
 import type { BoardGameCategory, BoardGameLocation } from "@/types/database";
 import type { BoardGamesQuery } from "@/app/(admin)/admin/board-games/types";
+import { ClearableSearchInput } from "@/components/(admin)/admin/ClearableSearchInput";
 import { cn } from "@/utils/className";
 import { BoardGameFilterBar } from "@/components/(admin)/admin/board-games/BoardGameFilterBar";
-import { BASE_PATH } from "@/app/(admin)/admin/board-games/constants";
-import { Button, ButtonLink } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
 
 type BoardGameSearchFormProps = React.HTMLAttributes<HTMLDivElement> & {
   categories: BoardGameCategory[];
   locations: BoardGameLocation[];
   query: BoardGamesQuery;
+  clearSearchHref: string;
 };
 
 export function BoardGameSearchForm({
   categories,
   locations,
   query,
+  clearSearchHref,
   className,
   ...rest
 }: BoardGameSearchFormProps) {
-  const statusCount = query.status?.length ?? 0;
-  const categoryCount = query.category?.length ?? 0;
-  const locationCount = query.location?.length ?? 0;
-
-  const hasActiveFilters =
-    Boolean(query.search) || statusCount + categoryCount + locationCount > 0;
-
   return (
     <Card
       className={cn(
-        "sticky top-4 z-10 flex flex-wrap items-center gap-3 rounded-2xl p-4",
+        "sticky top-4 z-10 flex flex-col gap-3 rounded-2xl p-4 lg:flex-row lg:items-center",
         className,
       )}
       {...rest}
@@ -38,24 +32,24 @@ export function BoardGameSearchForm({
       <form
         key={query.search ?? ""}
         method="GET"
-        className="relative w-full shrink-0 sm:max-w-100"
+        className="flex w-full min-w-0 items-center gap-2 lg:flex-1"
       >
         <label className="sr-only" htmlFor="board-game-search">
           搜尋桌遊名稱、編號或相關描述
         </label>
-        <Input
+        <ClearableSearchInput
           id="board-game-search"
-          type="search"
+          initialValue={query.search}
+          clearHref={clearSearchHref}
           name="search"
-          autoComplete="off"
-          defaultValue={query.search}
           placeholder="搜尋桌遊名稱、編號或相關描述"
-          className="w-full py-2 pr-16 pl-3"
+          className="min-w-0 flex-1"
+          inputClassName="py-2 pl-3"
         />
         <Button
           type="submit"
           size="sm"
-          className="absolute top-1 right-1 bottom-1 rounded-md px-3"
+          className="shrink-0 rounded-md px-3"
         >
           搜尋
         </Button>
@@ -87,18 +81,13 @@ export function BoardGameSearchForm({
         ))}
       </form>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
         <BoardGameFilterBar
           categories={categories}
           locations={locations}
           query={query}
         />
 
-        {hasActiveFilters && (
-          <ButtonLink href={BASE_PATH} variant="outline" size="sm" className="rounded-full">
-            清除
-          </ButtonLink>
-        )}
       </div>
     </Card>
   );

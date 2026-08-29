@@ -1,0 +1,193 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { FormFeedback } from "@/components/FormFeedback";
+import { Modal } from "@/components/Modal";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Field } from "@/components/ui/Field";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { apiClient } from "@/libs/api/client";
+import type { BoardGameLocation } from "@/types/database";
+
+type LocationRecord = BoardGameLocation & { count: number };
+
+export function LocationRecords({ items }: { items: LocationRecord[] }) {
+  const router = useRouter();
+  const [editing, setEditing] = useState<LocationRecord | null>(null);
+  const [deleting, setDeleting] = useState<LocationRecord | null>(null);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  function openEdit(location: LocationRecord) {
+    setEditing(location);
+    setName(location.name);
+    setDescription(location.description ?? "");
+    setMessage(null);
+  }
+
+  function closeEdit() {
+    if (!busy) {
+      setEditing(null);
+      setMessage(null);
+    }
+  }
+
+  async function saveEdit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editing || busy) return;
+
+    setBusy(true);
+    setMessage(null);
+    try {
+      await apiClient("/api/admin/board-game-locations/" + editing.id, {
+        method: "PATCH",
+        body: { name, description: description || null },
+      });
+      setEditing(null);
+      router.refresh();
+    } catch (reason) {
+      setMessage(reason instanceof Error ? reason.message : "更新桌遊位置失敗，請稍後再試。");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function remove() {
+    if (!deleting || busy) return;
+
+    setBusy(true);
+    setMessage(null);
+    try {
+      await apiClient("/api/admin/board-game-locations/" + deleting.id, {
+        method: "DELETE",
+      });
+      setDeleting(null);
+      router.refresh();
+    } catch (reason) {
+      setMessage(reason instanceof Error ? reason.message : "刪除桌遊位置失敗，請稍後再試。");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <FormFeedback error={message} />
+
+      {items.length === 0 ? (
+        <EmptyState
+          title="目前沒有桌遊位置"
+          description="請從頁面標題旁的新增位置開始建立資料。"
+        />
+      ) : (
+        <>
+          <div className="grid gap-3 lg:hidden">
+            {items.map((location) => (
+              <Card key={location.id} className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="truncate font-semibold">{location.name}</h2>
+                    <p className="mt-1 break-words text-sm text-(--muted)">
+                      {location.description || "未填寫說明"}
+                    </p>
+                    <p className="mt-2 text-xs text-(--muted)">
+                      使用中的桌遊：{location.count}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <Button type="button" size="sm" variant="outline" onClick={() => openEdit(location)}>
+                      編輯
+                    </Button>
+                    <Button type="button" size="sm" variant="danger" onClick={() => setDeleting(location)}>
+                      刪除
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          <Card className="hidden overflow-x-auto p-0 lg:block">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr>
+                  <th className="px-4 py-3">名稱</th>
+                  <th className="px-4 py-3">說明</th>
+                  <th className="px-4 py-3">使用中的桌遊</th>
+                  <th className="px-4 py-3 text-right">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((location) => (
+                  <tr key={location.id} className="border-t border-(--border)">
+                    <td className="px-4 py-3 font-medium">{location.name}</td>
+                    <td className="max-w-md px-4 py-3 break-words text-(--muted)">
+                      {location.description || "未填寫說明"}
+                    </td>
+                    <td className="px-4 py-3">{location.count}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-2">
+                        <Button type="button" size="sm" variant="outline" onClick={() => openEdit(location)}>
+                          編輯
+                        </Button>
+                        <Button type="button" size="sm" variant="danger" onClick={() => setDeleting(location)}>
+                          刪除
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </>
+      )}
+
+      <Modal open={editing !== null} onClose={closeEdit} title="編輯桌遊位置">
+        <form onSubmit={saveEdit} className="space-y-4">
+          <Field label="名稱" htmlFor="location-name">
+            <Input
+              id="location-name"
+              className="w-full"
+              required
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+            />
+          </Field>
+          <Field label="說明" htmlFor="location-description">
+            <Textarea
+              id="location-description"
+              className="w-full"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+            />
+          </Field>
+          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" disabled={busy} onClick={closeEdit}>
+              取消
+            </Button>
+            <Button type="submit" isLoading={busy}>
+              {busy ? "儲存中…" : "儲存"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <ConfirmDialog
+        open={deleting !== null}
+        onClose={() => !busy && setDeleting(null)}
+        onConfirm={remove}
+        isSubmitting={busy}
+        title="刪除桌遊位置"
+        description={deleting ? "確定要刪除「" + deleting.name + "」嗎？" : ""}
+      />
+    </div>
+  );
+}

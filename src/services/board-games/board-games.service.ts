@@ -11,11 +11,13 @@ import {
 import {
   boardGameCategoriesRepository,
   CreateBoardGameCategoryInput,
+  type FindManyBoardGameCategoriesOptions,
   UpdateBoardGameCategoryInput,
 } from "@/repositories/board-game-categories.repository";
 import {
   boardGameLocationsRepository,
   CreateBoardGameLocationInput,
+  type FindManyBoardGameLocationsOptions,
   UpdateBoardGameLocationInput,
 } from "@/repositories/board-game-locations.repository";
 import { buildPaginationResult } from "@/repositories/shared/pagination";
@@ -64,6 +66,7 @@ export const boardGamesService = {
   listCategories: async (): Promise<BoardGameCategory[]> => {
     return boardGameCategoriesRepository.findAll();
   },
+  listCategoriesForAdmin: (options: FindManyBoardGameCategoriesOptions = {}) => boardGameCategoriesRepository.findMany(options),
 
   getCategoryById: async (id: string): Promise<BoardGameCategory> => {
     const category = await boardGameCategoriesRepository.findById(id);
@@ -117,6 +120,7 @@ export const boardGamesService = {
   listLocations: async (): Promise<BoardGameLocation[]> => {
     return boardGameLocationsRepository.findAll();
   },
+  listLocationsForAdmin: (options: FindManyBoardGameLocationsOptions = {}) => boardGameLocationsRepository.findMany(options),
 
   getLocationById: async (id: string): Promise<BoardGameLocation> => {
     const location = await boardGameLocationsRepository.findById(id);

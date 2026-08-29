@@ -20,7 +20,11 @@ type CreateOfficerPositionInput = Omit<
 type UpdateOfficerPositionInput = Partial<CreateOfficerPositionInput>;
 
 export type FindManyOfficerPositionsOptions = PaginationQuery &
-  OrderOptions<"created_at"> & { academicYearId?: UUID; userId?: UUID };
+  OrderOptions<"created_at"> & {
+    academicYearId?: UUID;
+    userId?: UUID;
+    titleSearch?: string;
+  };
 
 export const officerPositionsRepository = {
   findMany: async (options: FindManyOfficerPositionsOptions = {}) => {
@@ -28,6 +32,12 @@ export const officerPositionsRepository = {
     let query = supabase.from("officer_positions").select("*", { count: "exact" });
     if (options.academicYearId) query = query.eq("academic_year_id", options.academicYearId);
     if (options.userId) query = query.eq("user_id", options.userId);
+    if (options.titleSearch?.trim()) {
+      query = query.ilike(
+        "title",
+        `%${options.titleSearch.trim().replace(/[%,_]/g, "")}%`,
+      );
+    }
     const { data, error, count } = await query.order("created_at", { ascending: options.orderDirection === "asc" }).range(from, to);
     if (error) throwRepositoryError("讀取幹部職位失敗", error);
     return buildPaginationResult<OfficerPosition>(data ?? [], count, page, pageSize);

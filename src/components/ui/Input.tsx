@@ -15,10 +15,7 @@ export function Input({
 }: InputProps) {
   return (
     <input
-      className={cn(
-        formControlClassName,
-        className,
-      )}
+      className={cn(formControlClassName, className)}
       aria-invalid={invalid ?? ariaInvalid}
       {...props}
     />
