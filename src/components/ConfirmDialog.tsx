@@ -25,10 +25,10 @@ export function ConfirmDialog({
   return (
     <Modal open={open} onClose={onClose} title={title} description={description}>
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+        <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
           取消
         </Button>
-        <Button variant="danger" onClick={onConfirm} isLoading={isSubmitting}>
+        <Button type="button" variant="danger" onClick={onConfirm} isLoading={isSubmitting}>
           {confirmLabel}
         </Button>
       </div>
