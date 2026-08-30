@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import {
   Table,
   TableBody,
@@ -42,15 +43,6 @@ type BorrowingQuery = {
 };
 
 const BASE_PATH = "/admin/board-games/borrowings";
-const FILTERS: Array<{ label: string; value?: BorrowingStatus }> = [
-  { label: "全部" },
-  { label: "待審核", value: "pending" },
-  { label: "已核准", value: "approved" },
-  { label: "借出中", value: "borrowed" },
-  { label: "已歸還", value: "returned" },
-  { label: "已拒絕", value: "rejected" },
-];
-
 export function AdminBorrowingList({
   borrowings,
   query,
@@ -86,14 +78,6 @@ export function AdminBorrowingList({
 
   function close() {
     if (!busy) setSelected(null);
-  }
-
-  function changeStatus(status?: BorrowingStatus) {
-    router.push(
-      BASE_PATH +
-        "?" +
-        buildQueryString(toHeaderQuery(query), { status, page: "1" }),
-    );
   }
 
   async function run() {
@@ -138,21 +122,18 @@ export function AdminBorrowingList({
 
   return (
     <div className="space-y-4">
-      <AdminToolbar
-        aria-label="借用搜尋與篩選"
-        className="flex flex-col gap-3 md:flex-row md:items-center"
-      >
+      <AdminToolbar aria-label="借用搜尋與篩選">
         <form
-          className="flex w-full flex-col gap-2 md:flex-1 md:flex-row"
+          className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_10rem_auto] md:items-center"
           onSubmit={(event) => {
             event.preventDefault();
-            const search =
-              String(new FormData(event.currentTarget).get("search") ?? "").trim() ||
-              undefined;
+            const formData = new FormData(event.currentTarget);
+            const search = String(formData.get("search") ?? "").trim() || undefined;
+            const status = String(formData.get("status") ?? "").trim() || undefined;
             router.push(
               BASE_PATH +
                 "?" +
-                buildQueryString(toHeaderQuery(query), { search, page: "1" }),
+                buildQueryString(toHeaderQuery(query), { search, status, page: "1" }),
             );
           }}
         >
@@ -161,25 +142,25 @@ export function AdminBorrowingList({
             clearHref={clearSearchHref}
             name="search"
             placeholder="搜尋桌遊、社產編號或借用人"
-            className="w-full md:flex-1"
+            className="w-full"
           />
-          <Button type="submit" className="w-full md:w-auto">
+          <Button type="submit" className="order-2 w-full md:order-3 md:w-auto">
             搜尋
           </Button>
+          <Select
+            name="status"
+            aria-label="借用狀態"
+            defaultValue={query.status ?? ""}
+            className="order-3 w-full md:order-2"
+          >
+            <option value="">全部狀態</option>
+            <option value="pending">待審核</option>
+            <option value="approved">已核准</option>
+            <option value="borrowed">借出中</option>
+            <option value="returned">已歸還</option>
+            <option value="rejected">已拒絕</option>
+          </Select>
         </form>
-        <div className="flex w-full flex-wrap gap-2 md:w-auto">
-          {FILTERS.map((filter) => (
-            <Button
-              type="button"
-              key={filter.label}
-              variant={query.status === filter.value ? "primary" : "outline"}
-              className="px-3 py-2 text-sm"
-              onClick={() => changeStatus(filter.value)}
-            >
-              {filter.label}
-            </Button>
-          ))}
-        </div>
       </AdminToolbar>
 
       <FormFeedback error={feedback} />

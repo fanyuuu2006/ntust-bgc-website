@@ -1,9 +1,11 @@
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { BoardGameTable } from "@/components/(admin)/admin/board-games/BoardGameTable";
 import { BoardGameSearchForm } from "@/components/(admin)/admin/board-games/BoardGameSearchForm";
-import { FindManyBoardGamesOptions } from "@/repositories/board-games.repository";
+import type { FindManyBoardGamesOptions } from "@/repositories/board-games.repository";
+import { listAdminBoardGamesQuerySchema } from "@/services/board-games/board-games.schema";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import type { BoardGameStatus } from "@/types/database";
+import { buildQueryString } from "@/utils/url";
 import {
   BASE_PATH,
   DEFAULT_ORDER_BY,
@@ -11,7 +13,6 @@ import {
   DEFAULT_PAGE_SIZE,
   PAGE_SIZE_OPTIONS,
 } from "./constants";
-import { QuickStats } from "@/components/QuickStats";
 import { ButtonLink } from "@/components/ui/Button";
 import { Pagination } from "@/components/Pagination/Pagination";
 
@@ -21,9 +22,9 @@ type BoardGamesSearchParams = {
   orderBy?: FindManyBoardGamesOptions["orderBy"];
   orderDirection?: "asc" | "desc";
   search?: string;
-  status?: string | string[];
-  category?: string | string[];
-  location?: string | string[];
+  status?: string;
+  category?: string;
+  location?: string;
 };
 
 type BoardGamesAdminPageProps = {
@@ -33,7 +34,8 @@ type BoardGamesAdminPageProps = {
 export default async function BoardGamesAdminPage({
   searchParams,
 }: BoardGamesAdminPageProps) {
-  const params = await searchParams;
+  const parsed = listAdminBoardGamesQuerySchema.safeParse(await searchParams);
+  const params = parsed.success ? parsed.data : {};
 
   const page = Math.max(1, Number(params.page ?? 1) || 1);
   const pageSize = Math.max(
@@ -49,69 +51,46 @@ export default async function BoardGamesAdminPage({
       ? "asc"
       : "desc"
     : DEFAULT_ORDER_DIRECTION;
-  const statuses = (
-    Array.isArray(params.status)
-      ? params.status
-      : params.status
-        ? [params.status]
-        : []
-  ) as BoardGameStatus[];
-  const category_ids = Array.isArray(params.category)
-    ? params.category
-    : params.category
-      ? [params.category]
-      : [];
-
-  const location_ids = Array.isArray(params.location)
-    ? params.location
-    : params.location
-      ? [params.location]
-      : [];
-
   const [
     boardGames,
     category,
     location,
-    boardGamesCount,
-    availableBoardGamesCount,
-    borrowedBoardGamesCount,
-    pendingBoardGamesCount,
   ] = await Promise.all([
-    boardGamesService.listBoardGamesWithCategoryAndLocation({
+    boardGamesService.listAdminBoardGamesWithCategoryAndLocation({
       page,
       pageSize,
       orderBy,
       orderDirection,
       search: params.search,
-      status: statuses.length > 0 ? statuses : undefined,
-      category_ids: category_ids,
-      location_ids: location_ids,
+      status: params.status as BoardGameStatus | undefined,
+      categoryId: params.category,
+      locationId: params.location,
     }),
     boardGamesService.listCategories(),
     boardGamesService.listLocations(),
-    boardGamesService.countAllBoardGames(),
-    boardGamesService.countBoardGamesByStatus("available"),
-    boardGamesService.countBoardGamesByStatus("borrowed"),
-    boardGamesService.countBorrowingsByStatus("pending"),
   ]);
 
   const query = {
     search: params.search,
-    status: statuses.length > 0 ? statuses : undefined,
-    category: category_ids.length > 0 ? category_ids : undefined,
-    location: location_ids.length > 0 ? location_ids : undefined,
+    status: params.status as BoardGameStatus | undefined,
+    category: params.category,
+    location: params.location,
     orderBy,
     orderDirection,
     page,
+    pageSize,
   } as const;
-  const clearSearchParams = new URLSearchParams();
-  for (const status of statuses) clearSearchParams.append("status", status);
-  for (const categoryId of category_ids) clearSearchParams.append("category", categoryId);
-  for (const locationId of location_ids) clearSearchParams.append("location", locationId);
-  if (params.orderBy) clearSearchParams.set("orderBy", params.orderBy);
-  if (params.orderDirection) clearSearchParams.set("orderDirection", params.orderDirection);
-  if (params.pageSize) clearSearchParams.set("pageSize", params.pageSize);
-  const clearSearchHref = clearSearchParams.size ? `${BASE_PATH}?${clearSearchParams}` : BASE_PATH;
+  const clearSearchQuery = buildQueryString({
+    status: query.status,
+    category: query.category,
+    location: query.location,
+    orderBy: query.orderBy,
+    orderDirection: query.orderDirection,
+    pageSize: query.pageSize,
+  });
+  const clearSearchHref = clearSearchQuery
+    ? `${BASE_PATH}?${clearSearchQuery}`
+    : BASE_PATH;
 
   return (
     <>
@@ -133,33 +112,6 @@ export default async function BoardGamesAdminPage({
           clearSearchHref={clearSearchHref}
         />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {" "}
-          <QuickStats
-            stats={[
-              {
-                key: "boardGamesCount",
-                label: "桌遊總數",
-                value: boardGamesCount,
-              },
-              {
-                key: "availableBoardGamesCount",
-                label: "可借用桌遊",
-                value: availableBoardGamesCount,
-              },
-              {
-                key: "borrowedBoardGamesCount",
-                label: "借出中桌遊",
-                value: borrowedBoardGamesCount,
-              },
-              {
-                key: "pendingBoardGamesCount",
-                label: "待審核借用",
-                value: pendingBoardGamesCount,
-              },
-            ]}
-          />
-        </div>
         <BoardGameTable boardGames={boardGames.data} query={query} />
 
         <Pagination

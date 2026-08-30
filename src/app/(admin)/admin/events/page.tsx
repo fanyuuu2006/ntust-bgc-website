@@ -73,13 +73,13 @@ export default async function AdminEventsPage({
         <form>
           <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_10rem_auto] md:items-center">
             <ClearableSearchInput initialValue={params.search} clearHref={clearSearchHref} name="search" placeholder="搜尋活動名稱或說明" className="w-full" />
-            <Select name="status" defaultValue={status ?? ""} className="w-full">
+            <Button type="submit" className="order-2 w-full md:order-3 md:w-auto">搜尋</Button>
+            <Select name="status" defaultValue={status ?? ""} aria-label="活動狀態" className="order-3 w-full md:order-2">
               <option value="">全部狀態</option>
               <option value="upcoming">即將開始</option>
               <option value="ongoing">進行中</option>
               <option value="ended">已結束</option>
             </Select>
-            <Button type="submit" className="w-full md:w-auto">搜尋</Button>
           </AdminToolbar>
         </form>
         <EventRecords events={result.data} />

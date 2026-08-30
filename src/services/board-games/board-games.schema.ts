@@ -61,6 +61,19 @@ export const listBoardGamesQuerySchema = z.object({
   orderDirection: z.enum(["asc", "desc"]).optional(),
 });
 
+export const listAdminBoardGamesQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).optional(),
+  search: optionalText(100),
+  status: boardGameStatusSchema.optional(),
+  category: z.uuid().optional(),
+  location: z.uuid().optional(),
+  orderBy: z
+    .enum(["name", "created_at", "updated_at", "inventory_number"])
+    .optional(),
+  orderDirection: z.enum(["asc", "desc"]).optional(),
+});
+
 export const listBorrowingsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).optional(),
   pageSize: z.coerce.number().int().min(1).max(100).optional(),

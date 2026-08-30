@@ -65,11 +65,11 @@ export default async function OfficersPage({
         <form>
           <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_12rem_auto] md:items-center">
             <ClearableSearchInput initialValue={params.search} clearHref={clearSearchHref} name="search" placeholder="搜尋職位" aria-label="搜尋幹部職位" className="w-full" />
-            <Select name="academicYearId" defaultValue={params.academicYearId ?? ""} className="w-full">
+            <Button type="submit" className="order-2 w-full md:order-3 md:w-auto">搜尋</Button>
+            <Select name="academicYearId" defaultValue={params.academicYearId ?? ""} aria-label="學年度" className="order-3 w-full md:order-2">
               <option value="">全部學年度</option>
               {years.map((year) => <option key={year.id} value={year.id}>{year.year} 學年度</option>)}
             </Select>
-            <Button type="submit" className="w-full md:w-auto">搜尋</Button>
           </AdminToolbar>
         </form>
         <OfficerRecords officers={officers.data} years={years} users={users.data} />

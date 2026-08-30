@@ -40,6 +40,14 @@ export type FindManyBoardGamesOptions = PaginationQuery &
     location_ids?: string[];
   };
 
+export type FindManyAdminBoardGamesOptions = PaginationQuery &
+  OrderOptions<"name" | "created_at" | "updated_at" | "inventory_number"> & {
+    search?: string;
+    status?: BoardGameStatus;
+    categoryId?: string;
+    locationId?: string;
+  };
+
 export const boardGamesRepository = {
   findIdsBySearch: async (search: string): Promise<string[]> => {
     const keyword = search.trim();
@@ -96,6 +104,21 @@ export const boardGamesRepository = {
     if (error) throwRepositoryError("取得桌遊列表失敗", error);
 
     return buildPaginationResult<BoardGame>(data ?? [], count, page, pageSize);
+  },
+
+  findManyForAdmin: async (
+    options: FindManyAdminBoardGamesOptions = {},
+  ) => {
+    return boardGamesRepository.findMany({
+      page: options.page,
+      pageSize: options.pageSize,
+      search: options.search,
+      status: options.status,
+      category_ids: options.categoryId ? [options.categoryId] : undefined,
+      location_ids: options.locationId ? [options.locationId] : undefined,
+      orderBy: options.orderBy,
+      orderDirection: options.orderDirection,
+    });
   },
 
   findById: async (id: string): Promise<BoardGame | null> => {

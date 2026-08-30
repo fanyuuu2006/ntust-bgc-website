@@ -42,23 +42,20 @@ export function MemberFilterBar({ academicYears, query }: Props) {
   }
 
   return <form onSubmit={handleSubmit}>
-    <AdminToolbar className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_11rem_9rem_auto] md:items-end">
-      <label className="grid w-full gap-1.5 text-sm font-medium">
-        搜尋使用者
-        <ClearableSearchInput initialValue={query.search} clearHref={clearSearchHref} name="search" placeholder="姓名、學號或 Email" />
-      </label>
-      <FilterSelect name="academic_year_id" label="學年度" defaultValue={query.academic_year_id}>
+    <AdminToolbar className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_11rem_9rem_auto] md:items-center">
+      <ClearableSearchInput initialValue={query.search} clearHref={clearSearchHref} name="search" placeholder="搜尋使用者姓名、學號或 Email" aria-label="搜尋使用者" className="w-full md:col-span-2 lg:col-span-1" />
+      <Button type="submit" className="order-2 w-full md:order-4 md:col-span-2 md:justify-self-end md:w-auto lg:col-span-1">搜尋</Button>
+      <FilterSelect name="academic_year_id" ariaLabel="學年度" defaultValue={query.academic_year_id}>
         <option value="">全部學年度</option>
         {academicYears.map((year) => <option key={year.id} value={year.id}>{year.year} 學年度</option>)}
       </FilterSelect>
-      <FilterSelect name="status" label="狀態" defaultValue={query.status}>
+      <FilterSelect name="status" ariaLabel="狀態" defaultValue={query.status}>
         <option value="">全部狀態</option><option value="active">有效</option><option value="expired">已結束</option><option value="cancelled">已撤銷</option>
       </FilterSelect>
-      <Button type="submit" className="w-full md:w-auto">搜尋</Button>
     </AdminToolbar>
   </form>;
 }
 
-function FilterSelect({ name, label, defaultValue, children }: { name: string; label: string; defaultValue?: string; children: React.ReactNode }) {
-  return <label className="grid w-full gap-1.5 text-sm font-medium"><span>{label}</span><Select name={name} defaultValue={defaultValue ?? ""} className="w-full">{children}</Select></label>;
+function FilterSelect({ name, ariaLabel, defaultValue, children }: { name: string; ariaLabel: string; defaultValue?: string; children: React.ReactNode }) {
+  return <Select name={name} aria-label={ariaLabel} defaultValue={defaultValue ?? ""} className="order-3 w-full">{children}</Select>;
 }

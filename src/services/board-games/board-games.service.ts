@@ -6,6 +6,7 @@ import {
 } from "@/repositories/board-game-borrowings.repository";
 import {
   boardGamesRepository,
+  type FindManyAdminBoardGamesOptions,
   FindManyBoardGamesOptions,
 } from "@/repositories/board-games.repository";
 import {
@@ -179,6 +180,33 @@ export const boardGamesService = {
 
   listBoardGames: async (options: FindManyBoardGamesOptions = {}) => {
     return boardGamesRepository.findMany(options);
+  },
+
+  listAdminBoardGamesWithCategoryAndLocation: async (
+    options: FindManyAdminBoardGamesOptions = {},
+  ): Promise<
+    ReturnType<typeof buildPaginationResult<BoardGameWithCategoryAndLocation>>
+  > => {
+    const result = await boardGamesRepository.findManyForAdmin(options);
+
+    const categoryIds = [...new Set(result.data.map((game) => game.category_id))];
+    const locationIds = [...new Set(result.data.map((game) => game.location_id))];
+    const [categories, locations] = await Promise.all([
+      boardGameCategoriesRepository.findManyByIds(categoryIds),
+      boardGameLocationsRepository.findManyByIds(locationIds),
+    ]);
+
+    const categoriesById = new Map(categories.map((category) => [category.id, category]));
+    const locationsById = new Map(locations.map((location) => [location.id, location]));
+    const data = result.data.map((boardGame) => {
+      const category = categoriesById.get(boardGame.category_id);
+      const location = locationsById.get(boardGame.location_id);
+      if (!category) throw new BoardGameCategoryNotFoundError();
+      if (!location) throw new BoardGameLocationNotFoundError();
+      return { ...boardGame, category, location };
+    });
+
+    return { ...result, data };
   },
 
   /**

@@ -111,19 +111,19 @@ export default async function AdminAnnouncementsPage({
               aria-label="搜尋公告"
               className="w-full"
             />
+            <Button type="submit" className="order-2 w-full md:order-3 md:w-auto">
+              搜尋
+            </Button>
             <Select
               name="status"
               defaultValue={params.status ?? ""}
               aria-label="依發布狀態篩選"
-              className="w-full"
+              className="order-3 w-full md:order-2"
             >
               <option value="">全部狀態</option>
               <option value="draft">草稿</option>
               <option value="published">已發布</option>
             </Select>
-            <Button type="submit" className="w-full md:w-auto">
-              搜尋
-            </Button>
           </AdminToolbar>
         </form>
 
