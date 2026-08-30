@@ -1,9 +1,16 @@
 import { z } from "zod";
 
+const eventDescriptionSchema = z
+  .string()
+  .trim()
+  .max(2000, "活動說明過長")
+  .nullish()
+  .transform((value) => value?.trim() || null);
+
 export const createEventSchema = z
   .object({
     name: z.string().trim().min(1, "請輸入活動名稱").max(100, "活動名稱過長"),
-    description: z.string().trim().max(2000, "活動說明過長").optional(),
+    description: eventDescriptionSchema,
     start_time: z.iso.datetime({ message: "開始時間格式不正確" }),
     end_time: z.iso.datetime({ message: "結束時間格式不正確" }),
   })
@@ -15,7 +22,7 @@ export const createEventSchema = z
 export const updateEventSchema = z
   .object({
     name: z.string().trim().min(1, "請輸入活動名稱").max(100, "活動名稱過長"),
-    description: z.string().trim().max(2000, "活動說明過長").nullable(),
+    description: eventDescriptionSchema.optional(),
     start_time: z.iso.datetime({ message: "開始時間格式不正確" }),
     end_time: z.iso.datetime({ message: "結束時間格式不正確" }),
   })

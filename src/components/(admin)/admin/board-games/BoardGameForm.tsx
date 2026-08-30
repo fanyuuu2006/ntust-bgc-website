@@ -71,7 +71,7 @@ function getFieldErrors(
   const payload = {
     ...values,
     inventory_number: values.inventory_number === "" ? undefined : Number(values.inventory_number),
-    description: values.description.trim() === "" ? undefined : values.description,
+    description: values.description.trim() === "" ? null : values.description,
     image: values.image.trim() === "" ? null : values.image,
     status: values.status,
   };
@@ -151,7 +151,7 @@ export function BoardGameForm({
     const payload = {
       name: values.name.trim(),
       inventory_number: Number(values.inventory_number),
-      description: values.description.trim() === "" ? undefined : values.description.trim(),
+      description: values.description.trim() === "" ? null : values.description.trim(),
       image: values.image.trim() === "" ? null : values.image.trim(),
       category_id: values.category_id,
       location_id: values.location_id,

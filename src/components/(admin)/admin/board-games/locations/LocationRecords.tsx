@@ -88,7 +88,7 @@ export function LocationRecords({ items }: { items: LocationRecord[] }) {
         />
       ) : (
         <>
-          <div className="grid gap-3 lg:hidden">
+          <div className="grid gap-3 md:hidden">
             {items.map((location) => (
               <Card key={location.id} className="p-4">
                 <div className="flex items-start justify-between gap-3">
@@ -114,8 +114,8 @@ export function LocationRecords({ items }: { items: LocationRecord[] }) {
             ))}
           </div>
 
-          <Card className="hidden overflow-x-auto p-0 lg:block">
-            <table className="w-full text-left text-sm">
+          <Card className="hidden overflow-x-auto p-0 md:block">
+            <table className="min-w-[640px] w-full text-left text-sm">
               <thead>
                 <tr>
                   <th className="px-4 py-3">名稱</th>

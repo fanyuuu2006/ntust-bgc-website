@@ -38,8 +38,8 @@ export function AttendanceRecords({
 
   return (
     <>
-      <Card className="hidden overflow-x-auto p-0 md:block">
-        <Table>
+      <Card className="hidden overflow-x-auto p-0 lg:block">
+        <Table className="min-w-[720px]">
           <TableHeader>
             <TableRow>
               <TableHead>使用者</TableHead>
@@ -52,20 +52,20 @@ export function AttendanceRecords({
           <TableBody>
             {records.map((record) => (
               <TableRow key={record.id}>
-                <TableCell className="font-medium">
+                <TableCell className="min-w-40 font-medium">
                   {record.profile?.real_name || record.user.name}
                 </TableCell>
-                <TableCell>
+                <TableCell className="min-w-48">
                   {record.profile?.student_id || record.user.email}
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <AttendanceStatusBadge status={record.status} />
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   {formatAttendanceTime(record.attended_at)}
                 </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex flex-wrap justify-end gap-2">
+                <TableCell className="whitespace-nowrap text-right">
+                  <div className="flex shrink-0 justify-end gap-2">
                     <AttendanceActions
                       eventId={eventId}
                       users={users}
@@ -80,15 +80,15 @@ export function AttendanceRecords({
         </Table>
       </Card>
 
-      <div className="grid gap-3 md:hidden">
+      <div className="grid gap-3 lg:hidden">
         {records.map((record) => (
-          <Card key={record.id} className="p-4">
+          <Card key={record.id} className="w-full min-w-0 max-w-full p-4">
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="font-semibold">
                   {record.profile?.real_name || record.user.name}
                 </p>
-                <p className="break-all text-sm text-(--muted)">
+                <p className="truncate text-sm text-(--muted)">
                   {record.profile?.student_id || record.user.email}
                 </p>
               </div>

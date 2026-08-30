@@ -27,7 +27,7 @@ export function MembershipRecords({ memberships, years, query }: { memberships: 
 
   return <>
     <Card className="hidden overflow-x-auto p-0 lg:block">
-      <Table><TableHeader><TableRow>
+      <Table className="min-w-[820px]"><TableHeader><TableRow>
         <TableHead>使用者</TableHead><TableHead>類型</TableHead><TableHead>學年度</TableHead>
         <SortableTableHeader label="狀態" column="status" basePath="/admin/memberships" query={headerQuery} />
         <SortableTableHeader label="加入時間" column="joined_at" basePath="/admin/memberships" query={headerQuery} />

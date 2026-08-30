@@ -2,11 +2,18 @@ import { z } from "zod";
 
 const REAL_NAME_MAX_LENGTH = 50;
 
+const nullableAcademicField = z
+  .string()
+  .trim()
+  .nullish()
+  .transform((value) => value?.trim() || null)
+  .optional();
+
 const userAcademicFields = {
-  student_id: z.string().optional(),
-  school: z.string().optional(),
-  department: z.string().optional(),
-  grade: z.string().optional(),
+  student_id: nullableAcademicField,
+  school: nullableAcademicField,
+  department: nullableAcademicField,
+  grade: nullableAcademicField,
 };
 
 export const userContactFields = {

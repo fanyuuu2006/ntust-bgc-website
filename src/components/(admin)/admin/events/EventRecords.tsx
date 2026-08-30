@@ -23,8 +23,8 @@ export function EventRecords({ events }: { events: Event[] }) {
     );
   return (
     <>
-      <Card className="hidden overflow-x-auto p-0 md:block">
-        <Table>
+      <Card className="hidden overflow-x-auto p-0 lg:block">
+        <Table className="min-w-[720px]">
           <TableHeader>
             <TableRow>
               <TableHead>活動</TableHead>
@@ -37,7 +37,7 @@ export function EventRecords({ events }: { events: Event[] }) {
           <TableBody>
             {events.map((event) => (
               <TableRow key={event.id}>
-                <TableCell>
+                <TableCell className="min-w-64">
                   <Link
                     className="font-medium hover:underline"
                     href={`/admin/events/${event.id}`}
@@ -45,13 +45,13 @@ export function EventRecords({ events }: { events: Event[] }) {
                     {event.name}
                   </Link>
                 </TableCell>
-                <TableCell>{formatAdminDateTime(event.start_time)}</TableCell>
-                <TableCell>{formatAdminDateTime(event.end_time)}</TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">{formatAdminDateTime(event.start_time)}</TableCell>
+                <TableCell className="whitespace-nowrap">{formatAdminDateTime(event.end_time)}</TableCell>
+                <TableCell className="whitespace-nowrap">
                   <EventStatusBadge event={event} />
                 </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
+                <TableCell className="whitespace-nowrap">
+                  <div className="flex shrink-0 gap-2">
                     <EventActions event={event} />
                   </div>
                 </TableCell>
@@ -60,13 +60,13 @@ export function EventRecords({ events }: { events: Event[] }) {
           </TableBody>
         </Table>
       </Card>
-      <div className="grid gap-3 md:hidden">
+      <div className="grid gap-3 lg:hidden">
         {events.map((event) => (
-          <Card key={event.id} className="p-4">
+          <Card key={event.id} className="w-full min-w-0 max-w-full p-4">
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <Link
-                  className="font-semibold"
+                  className="block truncate font-semibold"
                   href={`/admin/events/${event.id}`}
                 >
                   {event.name}

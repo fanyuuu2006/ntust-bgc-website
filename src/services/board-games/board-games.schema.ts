@@ -27,6 +27,19 @@ const optionalText = (max: number) =>
     z.string().trim().max(max, `長度不可超過 ${max} 字`).optional(),
   );
 
+const nullableText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max, `長度不可超過 ${max} 字`)
+    .nullish()
+    .transform((value) => value?.trim() || null);
+
+export const boardGameMasterDataSchema = z.object({
+  name: z.string().trim().min(1, "請輸入名稱").max(100),
+  description: nullableText(500).optional(),
+});
+
 const optionalImage = z.preprocess(
   (value) => {
     if (value === null || value === undefined) return null;
@@ -41,7 +54,7 @@ export const createBoardGameSchema = z.object({
   inventory_number: z.number().int().min(1, "請輸入有效的社產編號"),
   category_id: z.uuid("請選擇分類"),
   location_id: z.uuid("請選擇位置"),
-  description: optionalText(2000),
+  description: nullableText(2000),
   image: optionalImage,
   status: boardGameStatusSchema.default("available"),
 });

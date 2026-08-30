@@ -172,8 +172,8 @@ export function AdminBorrowingList({
         />
       ) : (
         <>
-          <AdminListSection className="hidden md:block">
-            <Table>
+          <AdminListSection className="hidden xl:block">
+            <Table className="min-w-[1100px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>桌遊</TableHead>
@@ -209,15 +209,17 @@ export function AdminBorrowingList({
               <TableBody>
                 {borrowings.map((borrowing) => (
                   <TableRow key={borrowing.id}>
-                    <TableCell className="font-medium">
-                      {borrowing.board_game.name}
+                    <TableCell className="min-w-64">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{borrowing.board_game.name}</p>
                       <span className="ml-2 text-xs text-(--muted)">
                         #{String(borrowing.board_game.inventory_number).padStart(3, "0")}
                       </span>
+                      </div>
                     </TableCell>
-                    <TableCell>{getBorrowerName(borrowing)}</TableCell>
-                    <TableCell>
-                      <BorrowingStatusBadge status={borrowing.status} />
+                    <TableCell className="min-w-40"><span className="block truncate">{getBorrowerName(borrowing)}</span></TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <BorrowingStatusBadge status={borrowing.status} className="shrink-0 whitespace-nowrap" />
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       {formatAdminDateTime(borrowing.created_at)}
@@ -231,7 +233,7 @@ export function AdminBorrowingList({
                     <TableCell className="whitespace-nowrap">
                       {formatOptionalDate(borrowing.returned_at)}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="whitespace-nowrap text-right">
                       <BorrowingActions borrowing={borrowing} onAction={choose} />
                     </TableCell>
                   </TableRow>
@@ -240,7 +242,7 @@ export function AdminBorrowingList({
             </Table>
           </AdminListSection>
 
-          <div className="grid min-w-0 max-w-full gap-3 md:hidden">
+          <div className="grid min-w-0 max-w-full gap-3 xl:hidden">
             {borrowings.map((borrowing) => (
               <Card key={borrowing.id} className="w-full min-w-0 max-w-full space-y-3 p-4">
                 <div className="flex min-w-0 max-w-full items-start justify-between gap-2">

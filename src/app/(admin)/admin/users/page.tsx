@@ -134,7 +134,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
             </div>
 
             <AdminListSection className="hidden lg:block">
-              <Table>
+              <Table className="min-w-[900px]">
                 <TableHeader>
                   <TableRow>
                     <SortableTableHeader

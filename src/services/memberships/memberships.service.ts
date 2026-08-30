@@ -125,7 +125,7 @@ export const membershipService = {
     if (!year) throw new AcademicYearNotFoundError();
     if (existingLifetime) throw new UserAlreadyLifetimeMemberError();
     if (existing) throw new MembershipAlreadyExistsForAcademicYearError();
-    return membershipsRepository.create({ ...data, joined_at: data.joined_at ?? (data.status === "active" ? new Date().toISOString() : null), membership_register_key_id: null });
+    return membershipsRepository.create({ ...data, joined_at: data.joined_at ?? new Date().toISOString(), membership_register_key_id: null });
   },
 
   updateForAdmin: async (id: string, input: unknown) => {

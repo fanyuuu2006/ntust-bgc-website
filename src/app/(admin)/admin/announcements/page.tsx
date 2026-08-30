@@ -134,7 +134,7 @@ export default async function AdminAnnouncementsPage({
           />
         ) : (
           <>
-            <div className="grid gap-3 md:hidden">
+            <div className="grid gap-3 lg:hidden">
               {result.data.map((announcement) => (
                 <Card key={announcement.id} className="rounded-xl p-4">
                   <div className="flex items-start justify-between gap-3">
@@ -165,8 +165,8 @@ export default async function AdminAnnouncementsPage({
               ))}
             </div>
 
-            <Card className="hidden overflow-x-auto rounded-xl p-0 md:block">
-              <Table>
+            <Card className="hidden overflow-x-auto rounded-xl p-0 lg:block">
+              <Table className="min-w-[820px]">
                 <TableHeader>
                   <TableRow>
                     <SortableTableHeader
