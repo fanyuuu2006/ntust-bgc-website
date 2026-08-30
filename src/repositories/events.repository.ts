@@ -10,11 +10,22 @@ import { buildIlikeSearch } from "@/repositories/shared/search";
 import { OrderOptions, PaginationQuery } from "@/repositories/shared/types";
 import { Event } from "@/types/database";
 
-export type CreateEventInput = Pick<Event, "name" | "start_time" | "end_time"> &
+export type CreateEventInput = Pick<
+  Event,
+  "name" | "start_time" | "end_time" | "check_in_opens_at" | "check_in_closes_at"
+> &
   Partial<Pick<Event, "description">>;
 
 export type UpdateEventInput = Partial<
-  Pick<Event, "name" | "description" | "start_time" | "end_time">
+  Pick<
+    Event,
+    | "name"
+    | "description"
+    | "start_time"
+    | "end_time"
+    | "check_in_opens_at"
+    | "check_in_closes_at"
+  >
 >;
 
 export type FindManyEventsOptions = PaginationQuery &
@@ -99,6 +110,21 @@ export const eventsRepository = {
       .order("start_time", { ascending: true })
       .limit(limit);
     if (error) throwRepositoryError("取得即將舉行活動失敗", error);
+    return data ?? [];
+  },
+
+  findOpenForSelfCheckIn: async (now: string): Promise<Event[]> => {
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .not("check_in_opens_at", "is", null)
+      .not("check_in_closes_at", "is", null)
+      .lte("check_in_opens_at", now)
+      .gte("check_in_closes_at", now)
+      .order("check_in_closes_at", { ascending: true })
+      .limit(10);
+
+    if (error) throwRepositoryError("查詢可自助簽到活動失敗", error);
     return data ?? [];
   },
 

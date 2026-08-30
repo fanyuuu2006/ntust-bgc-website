@@ -238,6 +238,8 @@ export type Event = {
   description: string | null;
   start_time: Timestamp;
   end_time: Timestamp;
+  check_in_opens_at: Timestamp | null;
+  check_in_closes_at: Timestamp | null;
   created_at: Timestamp;
 };
 

@@ -15,6 +15,9 @@ type EventFormValues = {
   description: string;
   start_time: string;
   end_time: string;
+  selfCheckInEnabled: boolean;
+  check_in_opens_at: string;
+  check_in_closes_at: string;
 };
 
 const emptyFormValues = (): EventFormValues => ({
@@ -22,6 +25,9 @@ const emptyFormValues = (): EventFormValues => ({
   description: "",
   start_time: "",
   end_time: "",
+  selfCheckInEnabled: false,
+  check_in_opens_at: "",
+  check_in_closes_at: "",
 });
 
 export function EventActions() {
@@ -57,6 +63,12 @@ export function EventActions() {
           description: values.description || null,
           start_time: new Date(values.start_time).toISOString(),
           end_time: new Date(values.end_time).toISOString(),
+          check_in_opens_at: values.selfCheckInEnabled
+            ? new Date(values.check_in_opens_at).toISOString()
+            : null,
+          check_in_closes_at: values.selfCheckInEnabled
+            ? new Date(values.check_in_closes_at).toISOString()
+            : null,
         },
       });
       setOpen(false);
@@ -117,6 +129,64 @@ export function EventActions() {
               onChange={(event) => setValues((current) => ({ ...current, end_time: event.target.value }))}
             />
           </Field>
+          <div className="rounded-lg border border-(--border-default) p-3">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input
+                type="checkbox"
+                checked={values.selfCheckInEnabled}
+                disabled={busy}
+                onChange={(event) =>
+                  setValues((current) => ({
+                    ...current,
+                    selfCheckInEnabled: event.target.checked,
+                    check_in_opens_at: event.target.checked
+                      ? current.check_in_opens_at || current.start_time
+                      : "",
+                    check_in_closes_at: event.target.checked
+                      ? current.check_in_closes_at || current.end_time
+                      : "",
+                  }))
+                }
+              />
+              開放社員自助簽到
+            </label>
+            {values.selfCheckInEnabled ? (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <Field label="簽到開始" htmlFor="event-check-in-opens-at">
+                  <Input
+                    id="event-check-in-opens-at"
+                    className="w-full"
+                    required
+                    type="datetime-local"
+                    value={values.check_in_opens_at}
+                    disabled={busy}
+                    onChange={(event) =>
+                      setValues((current) => ({
+                        ...current,
+                        check_in_opens_at: event.target.value,
+                      }))
+                    }
+                  />
+                </Field>
+                <Field label="簽到截止" htmlFor="event-check-in-closes-at">
+                  <Input
+                    id="event-check-in-closes-at"
+                    className="w-full"
+                    required
+                    type="datetime-local"
+                    value={values.check_in_closes_at}
+                    disabled={busy}
+                    onChange={(event) =>
+                      setValues((current) => ({
+                        ...current,
+                        check_in_closes_at: event.target.value,
+                      }))
+                    }
+                  />
+                </Field>
+              </div>
+            ) : null}
+          </div>
           <FormFeedback error={error} />
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" disabled={busy} onClick={closeCreateDialog}>

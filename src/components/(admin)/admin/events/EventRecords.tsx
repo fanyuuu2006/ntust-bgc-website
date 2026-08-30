@@ -23,6 +23,9 @@ type EventFormValues = {
   description: string;
   start_time: string;
   end_time: string;
+  selfCheckInEnabled: boolean;
+  check_in_opens_at: string;
+  check_in_closes_at: string;
 };
 
 export function EventRecords({ events }: { events: Event[] }) {
@@ -33,6 +36,9 @@ export function EventRecords({ events }: { events: Event[] }) {
     description: "",
     start_time: "",
     end_time: "",
+    selfCheckInEnabled: false,
+    check_in_opens_at: "",
+    check_in_closes_at: "",
   });
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -49,6 +55,10 @@ export function EventRecords({ events }: { events: Event[] }) {
       description: event.description ?? "",
       start_time: event.start_time.slice(0, 16),
       end_time: event.end_time.slice(0, 16),
+      selfCheckInEnabled:
+        event.check_in_opens_at !== null && event.check_in_closes_at !== null,
+      check_in_opens_at: event.check_in_opens_at?.slice(0, 16) ?? "",
+      check_in_closes_at: event.check_in_closes_at?.slice(0, 16) ?? "",
     });
     setEditError(null);
   };
@@ -87,6 +97,12 @@ export function EventRecords({ events }: { events: Event[] }) {
           description: values.description || null,
           start_time: new Date(values.start_time).toISOString(),
           end_time: new Date(values.end_time).toISOString(),
+          check_in_opens_at: values.selfCheckInEnabled
+            ? new Date(values.check_in_opens_at).toISOString()
+            : null,
+          check_in_closes_at: values.selfCheckInEnabled
+            ? new Date(values.check_in_closes_at).toISOString()
+            : null,
         },
       });
       setSelectedEvent(null);
@@ -220,6 +236,64 @@ export function EventRecords({ events }: { events: Event[] }) {
               onChange={(event) => setValues((current) => ({ ...current, end_time: event.target.value }))}
             />
           </Field>
+          <div className="rounded-lg border border-(--border-default) p-3">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input
+                type="checkbox"
+                checked={values.selfCheckInEnabled}
+                disabled={isSaving}
+                onChange={(event) =>
+                  setValues((current) => ({
+                    ...current,
+                    selfCheckInEnabled: event.target.checked,
+                    check_in_opens_at: event.target.checked
+                      ? current.check_in_opens_at || current.start_time
+                      : "",
+                    check_in_closes_at: event.target.checked
+                      ? current.check_in_closes_at || current.end_time
+                      : "",
+                  }))
+                }
+              />
+              開放社員自助簽到
+            </label>
+            {values.selfCheckInEnabled ? (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <Field label="簽到開始" htmlFor="edit-event-check-in-opens-at">
+                  <Input
+                    id="edit-event-check-in-opens-at"
+                    className="w-full"
+                    required
+                    type="datetime-local"
+                    value={values.check_in_opens_at}
+                    disabled={isSaving}
+                    onChange={(event) =>
+                      setValues((current) => ({
+                        ...current,
+                        check_in_opens_at: event.target.value,
+                      }))
+                    }
+                  />
+                </Field>
+                <Field label="簽到截止" htmlFor="edit-event-check-in-closes-at">
+                  <Input
+                    id="edit-event-check-in-closes-at"
+                    className="w-full"
+                    required
+                    type="datetime-local"
+                    value={values.check_in_closes_at}
+                    disabled={isSaving}
+                    onChange={(event) =>
+                      setValues((current) => ({
+                        ...current,
+                        check_in_closes_at: event.target.value,
+                      }))
+                    }
+                  />
+                </Field>
+              </div>
+            ) : null}
+          </div>
           <FormFeedback error={editError} />
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" disabled={isSaving} onClick={closeEditDialog}>

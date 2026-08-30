@@ -105,6 +105,22 @@ export const eventAttendancesRepository = {
     return data;
   },
 
+  findManyByUserIdAndEventIds: async (
+    userId: string,
+    eventIds: string[],
+  ): Promise<EventAttendance[]> => {
+    if (eventIds.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from("event_attendances")
+      .select("*")
+      .eq("user_id", userId)
+      .in("event_id", eventIds);
+
+    if (error) throwRepositoryError("查詢使用者簽到紀錄失敗", error);
+    return data ?? [];
+  },
+
   /**
    * 計算使用者的活動出席次數。
    * @param statuses 篩選狀態（例如只算 "present"），不傳則計算所有狀態
