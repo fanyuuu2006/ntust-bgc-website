@@ -172,7 +172,7 @@ export function AdminBorrowingList({
         />
       ) : (
         <>
-          <AdminListSection className="hidden lg:block">
+          <AdminListSection className="hidden md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -240,15 +240,15 @@ export function AdminBorrowingList({
             </Table>
           </AdminListSection>
 
-          <div className="grid gap-3 lg:hidden">
+          <div className="grid min-w-0 max-w-full gap-3 md:hidden">
             {borrowings.map((borrowing) => (
-              <Card key={borrowing.id} className="space-y-3 p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
+              <Card key={borrowing.id} className="w-full min-w-0 max-w-full space-y-3 p-4">
+                <div className="flex min-w-0 max-w-full items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
                     <h2 className="truncate font-semibold">
                       {borrowing.board_game.name}
                     </h2>
-                    <p className="text-sm text-(--muted)">
+                    <p className="truncate text-sm text-(--muted)">
                       社產編號 #{String(borrowing.board_game.inventory_number).padStart(3, "0")}
                     </p>
                   </div>
@@ -256,7 +256,7 @@ export function AdminBorrowingList({
                     <BorrowingStatusBadge status={borrowing.status} />
                   </span>
                 </div>
-                <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+                <dl className="grid min-w-0 grid-cols-1 gap-x-3 gap-y-2 text-sm md:grid-cols-2">
                   <Detail label="借用人" value={getBorrowerName(borrowing)} />
                   <Detail label="申請時間" value={formatAdminDateTime(borrowing.created_at)} />
                   <Detail label="借出時間" value={formatOptionalDate(borrowing.borrowed_at)} />
@@ -326,7 +326,7 @@ function BorrowingActions({
   onAction: (borrowing: BoardGameBorrowingForAdmin, action: Action) => void;
 }) {
   return (
-    <div className="flex flex-wrap justify-end gap-2">
+    <div className="flex min-w-0 max-w-full flex-wrap justify-start gap-2 md:justify-end">
       {borrowing.status === "pending" ? (
         <>
           <Button className="px-3 py-2 text-sm" onClick={() => onAction(borrowing, "approve")}>
@@ -357,9 +357,9 @@ function BorrowingActions({
 
 function Detail({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div className="min-w-0">
       <dt className="text-xs text-(--muted)">{label}</dt>
-      <dd className="mt-0.5 break-words">{value}</dd>
+      <dd className="mt-0.5 min-w-0 break-words">{value}</dd>
     </div>
   );
 }
