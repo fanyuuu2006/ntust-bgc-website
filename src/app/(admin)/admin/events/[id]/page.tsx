@@ -39,7 +39,6 @@ export default async function AdminEventDetailPage({
         <AttendanceRecords
           eventId={event.id}
           records={records}
-          users={users.data}
         />
       </section>
     </>

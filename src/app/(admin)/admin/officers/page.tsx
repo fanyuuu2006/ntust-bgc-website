@@ -72,7 +72,7 @@ export default async function OfficersPage({
             </Select>
           </AdminToolbar>
         </form>
-        <OfficerRecords officers={officers.data} years={years} users={users.data} />
+        <OfficerRecords officers={officers.data} years={years} />
         <Pagination page={page} pageSize={pageSize} total={officers.total} totalPages={officers.totalPages} basePath="/admin/officers" pageSizeOptions={PAGE_SIZE_OPTIONS} query={{ search: params.search, academicYearId: params.academicYearId }} />
       </section>
     </>

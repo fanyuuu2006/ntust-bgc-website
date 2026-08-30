@@ -25,6 +25,42 @@ const sizeClassNames: Record<ModalSize, string> = {
   lg: "max-w-3xl",
 };
 
+let bodyScrollLockCount = 0;
+let initialBodyOverflow: string | null = null;
+
+function lockBodyScroll() {
+  if (bodyScrollLockCount === 0) {
+    initialBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+  }
+
+  bodyScrollLockCount += 1;
+}
+
+function unlockBodyScroll() {
+  if (bodyScrollLockCount === 0) return;
+
+  bodyScrollLockCount -= 1;
+
+  if (bodyScrollLockCount === 0) {
+    document.body.style.overflow = initialBodyOverflow ?? "";
+    initialBodyOverflow = null;
+  }
+}
+
+function synchronizeDialog(dialog: HTMLDialogElement, open: boolean) {
+  if (!dialog.isConnected) return;
+
+  try {
+    if (open && !dialog.open) dialog.showModal();
+    if (!open && dialog.open) dialog.close();
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "InvalidStateError") return;
+
+    throw error;
+  }
+}
+
 export function Modal({
   open,
   onClose,
@@ -37,6 +73,7 @@ export function Modal({
   closeLabel = "關閉對話框",
 }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const hasBodyScrollLock = useRef(false);
   const titleId = useId();
   const descriptionId = useId();
 
@@ -44,18 +81,20 @@ export function Modal({
     const dialog = ref.current;
     if (!dialog) return;
 
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
+    synchronizeDialog(dialog, open);
   }, [open]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || hasBodyScrollLock.current) return;
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    lockBodyScroll();
+    hasBodyScrollLock.current = true;
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      if (!hasBodyScrollLock.current) return;
+
+      unlockBodyScroll();
+      hasBodyScrollLock.current = false;
     };
   }, [open]);
 
