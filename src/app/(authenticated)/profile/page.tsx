@@ -185,14 +185,14 @@ export default async function ProfilePage() {
           {
             key: "board-game-borrowings",
             title: "桌遊借用紀錄",
-            // viewAllHref: "/borrowings",
+            viewAllHref: "/borrowings",
             emptyText: "尚無借用紀錄",
             items: boardGameBorrowingHistory.data.map(toBorrowingHistoryItem),
           },
           {
             key: "memberships",
             title: "社員資格紀錄",
-            // viewAllHref: "/memberships",
+            viewAllHref: "/memberships",
             emptyText: "尚無社員資格紀錄",
             items: membershipHistory.data.map(toMembershipHistoryItem),
           },

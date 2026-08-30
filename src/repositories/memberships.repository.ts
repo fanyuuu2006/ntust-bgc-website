@@ -22,7 +22,7 @@ type CreateMembershipInput = Pick<
 type UpdateMembershipInput = Partial<
   Pick<
     Membership,
-    "type" | "status" | "user_id" | "joined_at" | "membership_register_key_id"
+    "type" | "status" | "user_id" | "academic_year_id" | "joined_at" | "membership_register_key_id"
   >
 >;
 
@@ -149,6 +149,24 @@ export const membershipsRepository = {
     return data;
   },
 
+  findAnnualByUserIdAndAcademicYearId: async (
+    userId: string,
+    academicYearId: string,
+    excludeId?: string,
+  ): Promise<Membership | null> => {
+    let query = supabase
+      .from("memberships")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("academic_year_id", academicYearId)
+      .eq("type", "annual")
+      .limit(1);
+    if (excludeId) query = query.neq("id", excludeId);
+    const { data, error } = await query.maybeSingle();
+    if (error) throwRepositoryError("檢查年度社員資格是否重複失敗", error);
+    return data;
+  },
+
   findActiveOrSuspendedByUserIdAndAcademicYearId: async (
     userId: string,
     academicYearId: string,
@@ -170,20 +188,38 @@ export const membershipsRepository = {
 
   findActiveLifetimeByUserId: async (
     userId: string,
+    excludeId?: string,
   ): Promise<Membership | null> => {
-    const { data, error } = await supabase
+    let query = supabase
       .from("memberships")
       .select("*")
       .eq("user_id", userId)
       .eq("type", "lifetime")
-      .in("status", ["active", "suspended"])
-      .maybeSingle();
+      .in("status", ["pending", "active", "suspended"]);
+    if (excludeId) query = query.neq("id", excludeId);
+    const { data, error } = await query.maybeSingle();
 
     if (error) {
       throwRepositoryError("查詢永久社員資格失敗", error);
     }
 
     return data;
+  },
+
+  findManyActiveByUserIds: async (userIds: string[]): Promise<Membership[]> => {
+    if (userIds.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from("memberships")
+      .select("*")
+      .in("user_id", userIds)
+      .eq("status", "active");
+
+    if (error) {
+      throwRepositoryError("取得使用者有效社員資格失敗", error);
+    }
+
+    return data ?? [];
   },
 
   findManyByRegisterKeyIds: async (

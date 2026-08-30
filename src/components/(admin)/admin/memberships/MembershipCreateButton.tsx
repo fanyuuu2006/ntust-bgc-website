@@ -10,9 +10,15 @@ import { Select } from "@/components/ui/Select";
 import { apiClient } from "@/libs/api/client";
 import type { AcademicYear, MembershipStatus, MembershipType, User } from "@/types/database";
 
-type Props = { users: User[]; years: AcademicYear[] };
+type Props = {
+  users: User[];
+  years: AcademicYear[];
+};
 
-export function MembershipCreateButton({ users, years }: Props) {
+export function MembershipCreateButton({
+  users,
+  years,
+}: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -66,9 +72,9 @@ export function MembershipCreateButton({ users, years }: Props) {
               {years.map((year) => <option key={year.id} value={year.id}>{year.year} 學年度{year.is_current ? "（目前）" : ""}</option>)}
             </Select>
           </Field>
-          <Field label="資格類型" htmlFor="membership-type">
+          <Field label="類型" htmlFor="membership-type">
             <Select id="membership-type" value={values.type} disabled={busy} onChange={(event) => setValues((current) => ({ ...current, type: event.target.value as MembershipType }))}>
-              <option value="annual">年度社員</option><option value="lifetime">終身社員</option>
+              <option value="annual">年度社員</option><option value="lifetime">永久社員</option>
             </Select>
           </Field>
           <Field label="狀態" htmlFor="membership-status">

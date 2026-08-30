@@ -213,6 +213,7 @@ export const boardGameBorrowingsRepository = {
     return count ?? 0;
   },
 
+
   countByStatus: async (status: BorrowingStatus): Promise<number> => {
     const { count, error } = await supabase
       .from("board_game_borrowings")

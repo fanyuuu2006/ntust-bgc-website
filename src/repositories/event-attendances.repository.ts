@@ -127,6 +127,7 @@ export const eventAttendancesRepository = {
     return count ?? 0;
   },
 
+
   /**
    * 計算使用者在指定學年度的活動出席次數。
    *

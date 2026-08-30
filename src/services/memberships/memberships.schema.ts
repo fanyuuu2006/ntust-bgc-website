@@ -46,7 +46,6 @@ export const listAdminMembershipsQuerySchema = z.object({
   pageSize: optionalQueryString(z.coerce.number().int().min(1).max(100)),
   academic_year_id: optionalQueryString(z.uuid()),
   search: optionalQueryString(z.string().trim().max(100)),
-  type: optionalQueryString(z.enum(["annual", "lifetime"])),
   status: optionalQueryString(
     z.enum(["pending", "active", "expired", "suspended", "cancelled"]),
   ),
@@ -72,6 +71,7 @@ export const createAdminMembershipSchema = z.object({
 });
 
 export const updateAdminMembershipSchema = z.object({
+  academic_year_id: z.uuid(),
   type: z.enum(["annual", "lifetime"]),
   status: z.enum(["pending", "active", "expired", "suspended", "cancelled"]),
   joined_at: z.string().datetime().nullable().optional(),

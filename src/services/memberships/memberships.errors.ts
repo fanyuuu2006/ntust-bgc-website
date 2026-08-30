@@ -35,17 +35,25 @@ export class MembershipRegisterKeyNotCurrentYearError extends Error {
 
 export class UserAlreadyCurrentMemberError extends Error {
   constructor() {
-    super("你已具備本學年度社員資格");
+    super("此使用者已具有當前社員資格");
     this.name = "UserAlreadyCurrentMemberError";
   }
 }
 
 export class UserAlreadyLifetimeMemberError extends Error {
   constructor() {
-    super("你已具備永久社員資格");
+    super("此使用者已有未結束的永久社員資格，請編輯既有紀錄");
     this.name = "UserAlreadyLifetimeMemberError";
   }
 }
+
+export class MembershipAlreadyExistsForAcademicYearError extends Error {
+  constructor() {
+    super("此使用者在該學年度已有社員資格紀錄，請編輯既有紀錄");
+    this.name = "MembershipAlreadyExistsForAcademicYearError";
+  }
+}
+
 
 export class CurrentAcademicYearNotFoundError extends Error {
   constructor() {

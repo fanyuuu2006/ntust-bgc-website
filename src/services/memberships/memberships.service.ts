@@ -29,6 +29,7 @@ import {
   MembershipRegisterKeyNotCurrentYearError,
   MembershipRegisterKeyNotFoundError,
   MembershipRegisterKeyCannotBeRevokedError,
+  MembershipAlreadyExistsForAcademicYearError,
   RegisterKeySecretNotConfiguredError,
   UserAlreadyCurrentMemberError,
   UserAlreadyLifetimeMemberError,
@@ -37,7 +38,9 @@ import type {
   AdminMembership,
   MembershipRegisterKeyWithAcademicYear,
   MembershipWithAcademicYear,
+  UserMembershipEligibility,
 } from "./memberships.types";
+import { isCurrentActiveMembership } from "./memberships.types";
 
 async function attachAcademicYears(
   memberships: Membership[],
@@ -57,17 +60,71 @@ async function attachAcademicYears(
   }));
 }
 
+async function attachAdminMembershipDetails(
+  memberships: Membership[],
+): Promise<AdminMembership[]> {
+  const userIds = memberships
+    .map((membership) => membership.user_id)
+    .filter((userId): userId is string => Boolean(userId));
+  const academicYearIds = [
+    ...new Set(memberships.map((membership) => membership.academic_year_id)),
+  ];
+  const [users, profiles, academicYears] = await Promise.all([
+    usersRepository.findManyByIds(userIds),
+    userProfilesRepository.findManyByUserIds(userIds),
+    academicYearsRepository.findManyByIds(academicYearIds),
+  ]);
+  const usersById = new Map(users.map((user) => [user.id, user]));
+  const profilesByUserId = new Map(
+    profiles.map((profile) => [profile.user_id, profile]),
+  );
+  const academicYearsById = new Map(
+    academicYears.map((year) => [year.id, year]),
+  );
+
+  return memberships.flatMap((membership) => {
+    const user = membership.user_id
+      ? usersById.get(membership.user_id)
+      : undefined;
+    if (!user) return [];
+    return [{
+      ...membership,
+      user,
+      user_profile: profilesByUserId.get(user.id) ?? null,
+      academic_year: academicYearsById.get(membership.academic_year_id) ?? null,
+    }];
+  });
+}
+
+async function findMatchedUserIds(search?: string): Promise<string[] | undefined> {
+  if (!search) return undefined;
+  return [
+    ...new Set(
+      (
+        await Promise.all([
+          usersRepository.findIdsBySearch(search),
+          userProfilesRepository.findUserIdsBySearch(search),
+        ])
+      ).flat(),
+    ),
+  ];
+}
+
 export const membershipService = {
   createForAdmin: async (input: unknown) => {
     const data = createAdminMembershipSchema.parse(input);
-    const [user, year, existing] = await Promise.all([
+    const [user, year, existing, existingLifetime] = await Promise.all([
       usersRepository.findById(data.user_id),
       academicYearsRepository.findById(data.academic_year_id),
       membershipsRepository.findByUserIdAndAcademicYearId(data.user_id, data.academic_year_id),
+      data.type === "lifetime"
+        ? membershipsRepository.findActiveLifetimeByUserId(data.user_id)
+        : Promise.resolve(null),
     ]);
     if (!user) throw new Error("找不到此使用者");
     if (!year) throw new AcademicYearNotFoundError();
-    if (existing) throw new Error("此使用者在該學年度已有社員資格");
+    if (existingLifetime) throw new UserAlreadyLifetimeMemberError();
+    if (existing) throw new MembershipAlreadyExistsForAcademicYearError();
     return membershipsRepository.create({ ...data, joined_at: data.joined_at ?? (data.status === "active" ? new Date().toISOString() : null), membership_register_key_id: null });
   },
 
@@ -76,7 +133,27 @@ export const membershipService = {
     if (!current) throw new Error("找不到此社員資格");
     const data = updateAdminMembershipSchema.parse(input);
     if (!canTransitionMembershipStatus(current.status, data.status)) throw new Error(`不允許從 ${current.status} 變更為 ${data.status}`);
-    const updated = await membershipsRepository.updateById(id, { type: data.type, status: data.status, joined_at: data.joined_at ?? current.joined_at });
+    if (data.type === "annual" && current.user_id) {
+      const existingAnnual = await membershipsRepository.findAnnualByUserIdAndAcademicYearId(
+        current.user_id,
+        data.academic_year_id,
+        id,
+      );
+      if (existingAnnual) throw new MembershipAlreadyExistsForAcademicYearError();
+    }
+    if (data.type === "lifetime" && current.user_id) {
+      const existingLifetime = await membershipsRepository.findActiveLifetimeByUserId(
+        current.user_id,
+        id,
+      );
+      if (existingLifetime) throw new UserAlreadyLifetimeMemberError();
+    }
+    const updated = await membershipsRepository.updateById(id, {
+      academic_year_id: data.academic_year_id,
+      type: data.type,
+      status: data.status,
+      joined_at: data.joined_at ?? current.joined_at,
+    });
     if (!updated) throw new Error("更新社員資格失敗");
     return updated;
   },
@@ -87,23 +164,28 @@ export const membershipService = {
   getCurrentMembershipByUserId: async (
     userId: string,
   ): Promise<MembershipWithAcademicYear | null> => {
-    const currentYear = await academicYearsRepository.findCurrent();
-
-    if (!currentYear) {
-      return null;
-    }
-
+    const [currentYear, activeMemberships] = await Promise.all([
+      academicYearsRepository.findCurrent(),
+      membershipsRepository.findManyActiveByUserIds([userId]),
+    ]);
     const membership =
-      await membershipsRepository.findByUserIdAndAcademicYearId(
-        userId,
-        currentYear.id,
+      activeMemberships.find(
+        (item) =>
+          item.type === "lifetime" &&
+          isCurrentActiveMembership(item, currentYear?.id),
+      ) ??
+      activeMemberships.find((item) =>
+        isCurrentActiveMembership(item, currentYear?.id),
       );
 
-    if (!membership) {
-      return null;
-    }
+    if (!membership) return null;
 
-    return { ...membership, academic_year: currentYear };
+    const academicYear =
+      membership.academic_year_id === currentYear?.id
+        ? currentYear
+        : await academicYearsRepository.findById(membership.academic_year_id);
+
+    return { ...membership, academic_year: academicYear };
   },
 
   getMembershipsByUserId: async (
@@ -126,69 +208,60 @@ export const membershipService = {
     input: unknown,
   ): Promise<ReturnType<typeof buildPaginationResult<AdminMembership>>> => {
     const query = listAdminMembershipsQuerySchema.parse(input);
-    const search = query.search;
-    const matchedUserIds = search
-      ? [
-          ...new Set(
-            (
-              await Promise.all([
-                usersRepository.findIdsBySearch(search),
-                userProfilesRepository.findUserIdsBySearch(search),
-              ])
-            ).flat(),
-          ),
-        ]
-      : undefined;
+    const matchedUserIds = await findMatchedUserIds(query.search);
 
     const options: FindManyAdminMembershipsOptions = {
       page: query.page,
       pageSize: query.pageSize,
       academicYearId: query.academic_year_id,
       userIds: matchedUserIds,
-      type: query.type,
       status: query.status,
       orderBy: query.orderBy,
       orderDirection: query.orderDirection,
     };
     const result = await membershipsRepository.findManyForAdmin(options);
-    const userIds = result.data
-      .map((membership) => membership.user_id)
-      .filter((userId): userId is string => Boolean(userId));
-    const academicYearIds = [
-      ...new Set(result.data.map((item) => item.academic_year_id)),
-    ];
-
-    const [users, profiles, academicYears] = await Promise.all([
-      usersRepository.findManyByIds(userIds),
-      userProfilesRepository.findManyByUserIds(userIds),
-      academicYearsRepository.findManyByIds(academicYearIds),
-    ]);
-    const usersById = new Map(users.map((user) => [user.id, user]));
-    const profilesByUserId = new Map(
-      profiles.map((profile) => [profile.user_id, profile]),
-    );
-    const academicYearsById = new Map(
-      academicYears.map((year) => [year.id, year]),
-    );
-
-    const data = result.data.flatMap((membership) => {
-      const user = membership.user_id
-        ? usersById.get(membership.user_id)
-        : undefined;
-      if (!user) return [];
-
-      return [
-        {
-          ...membership,
-          user,
-          user_profile: profilesByUserId.get(user.id) ?? null,
-          academic_year:
-            academicYearsById.get(membership.academic_year_id) ?? null,
-        },
-      ];
-    });
+    const data = await attachAdminMembershipDetails(result.data);
 
     return { ...result, data };
+  },
+
+  getUserMembershipEligibility: async (
+    userIds: string[],
+  ): Promise<Record<string, UserMembershipEligibility>> => {
+    const [currentYear, activeMemberships] = await Promise.all([
+      academicYearsRepository.findCurrent(),
+      membershipsRepository.findManyActiveByUserIds(userIds),
+    ]);
+    const eligibilityByUserId: Record<string, UserMembershipEligibility> = {};
+
+    for (const userId of userIds) {
+      eligibilityByUserId[userId] = {
+        hasActiveLifetimeMembership: false,
+        hasCurrentAnnualMembership: false,
+      };
+    }
+
+    for (const membership of activeMemberships) {
+      if (!membership.user_id || !eligibilityByUserId[membership.user_id]) {
+        continue;
+      }
+
+      if (membership.type === "lifetime") {
+        eligibilityByUserId[membership.user_id].hasActiveLifetimeMembership =
+          true;
+      } else if (isCurrentActiveMembership(membership, currentYear?.id)) {
+        eligibilityByUserId[membership.user_id].hasCurrentAnnualMembership =
+          true;
+      }
+    }
+
+    return eligibilityByUserId;
+  },
+
+  deleteForAdmin: async (id: string) => {
+    const membership = await membershipsRepository.findById(id);
+    if (!membership) throw new Error("找不到此社員資格");
+    await membershipsRepository.deleteById(id);
   },
 
   listRegisterKeys: async (
@@ -335,21 +408,8 @@ export const membershipService = {
     }
   },
 
-  isCurrentActiveMember: async (userId: string): Promise<boolean> => {
-    const currentYear = await academicYearsRepository.findCurrent();
-
-    if (!currentYear) {
-      return false;
-    }
-
-    const membership =
-      await membershipsRepository.findByUserIdAndAcademicYearId(
-        userId,
-        currentYear.id,
-      );
-
-    return membership?.status === "active";
-  },
+  isCurrentActiveMember: async (userId: string): Promise<boolean> =>
+    (await membershipService.getCurrentMembershipByUserId(userId)) !== null,
 
   getJoinedYear: async (userId: string): Promise<string | null> => {
     const memberships = await membershipsRepository.findManyByUserId(userId, {

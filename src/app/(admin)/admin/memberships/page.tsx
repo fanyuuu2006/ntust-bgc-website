@@ -22,23 +22,28 @@ export default async function MembershipsPage({ searchParams }: Props) {
     membershipService.listAdminMemberships({ ...query, page, pageSize }),
     usersService.listForAdmin({ page: 1, pageSize: 100 }),
   ]);
-
   return (
     <>
       <HeadingSection
         title="社員資格管理"
-        description="管理使用者的社員資格與狀態。"
+        description="管理使用者的社員資格。"
         actions={
           <>
             <ButtonLink href="/admin/memberships/register-keys" variant="outline">
               社員註冊碼
             </ButtonLink>
-            <MembershipCreateButton users={users.data} years={years} />
+            <MembershipCreateButton
+              users={users.data}
+              years={years}
+            />
           </>
         }
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
-        <MemberFilterBar academicYears={years} query={query} />
+        <MemberFilterBar
+          academicYears={years}
+          query={query}
+        />
         <MembershipRecords
           memberships={memberships.data}
           years={years}
