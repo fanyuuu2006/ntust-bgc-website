@@ -7,6 +7,8 @@ type RegisterUserRepositoryInput = {
   email: string;
   name: string;
   passwordHash: string;
+  realName: string;
+  phone: string;
 };
 
 export const authRepository = {
@@ -14,11 +16,15 @@ export const authRepository = {
     email,
     name,
     passwordHash,
+    realName,
+    phone,
   }: RegisterUserRepositoryInput): Promise<User> => {
     const { data, error } = await supabase.rpc("register_user", {
       p_email: email,
       p_name: name,
       p_password_hash: passwordHash,
+      p_real_name: realName,
+      p_phone: phone,
     });
 
     if (error) {

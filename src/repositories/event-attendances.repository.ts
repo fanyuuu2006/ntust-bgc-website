@@ -7,7 +7,12 @@ import {
   normalizePaginationOptions,
 } from "@/repositories/shared/pagination";
 import { OrderOptions, PaginationQuery } from "@/repositories/shared/types";
-import { AttendanceStatus, Event, EventAttendance } from "@/types/database";
+import {
+  AttendanceStatus,
+  Event,
+  EventAttendance,
+  EventAttendanceId,
+} from "@/types/database";
 
 export type EventAttendanceWithEvent = EventAttendance & {
   event: Pick<Event, "id" | "name" | "start_time"> | null;
@@ -78,7 +83,7 @@ export const eventAttendancesRepository = {
     );
   },
 
-  findById: async (id: string): Promise<EventAttendance | null> => {
+  findById: async (id: EventAttendanceId): Promise<EventAttendance | null> => {
     const { data, error } = await supabase
       .from("event_attendances")
       .select("*")
@@ -195,7 +200,7 @@ export const eventAttendancesRepository = {
   },
 
   updateById: async (
-    id: string,
+    id: EventAttendanceId,
     payload: UpdateEventAttendanceInput,
   ): Promise<EventAttendance | null> => {
     if (Object.keys(payload).length === 0) {
@@ -212,7 +217,7 @@ export const eventAttendancesRepository = {
     return data;
   },
 
-  deleteById: async (id: string): Promise<void> => {
+  deleteById: async (id: EventAttendanceId): Promise<void> => {
     const { error } = await supabase
       .from("event_attendances")
       .delete()

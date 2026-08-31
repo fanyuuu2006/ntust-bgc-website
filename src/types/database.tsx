@@ -8,6 +8,12 @@
 
 export type UUID = string;
 
+/** PostgREST serializes PostgreSQL bigint identity values as JSON numbers. */
+export type UserProfileId = number;
+export type BoardGameBorrowingId = number;
+export type EventAttendanceId = number;
+export type AnnouncementId = number;
+
 export type ISODateString = string;
 
 export type Timestamp = string;
@@ -80,7 +86,7 @@ export type User = {
  * User Profiles
  * ========================================================= */
 export type UserProfile = {
-  id: UUID;
+  id: UserProfileId;
   user_id: UUID;
   real_name: string;
   phone: string;
@@ -212,7 +218,7 @@ export type BoardGame = {
  * ========================================================= */
 
 export type BoardGameBorrowing = {
-  id: UUID;
+  id: BoardGameBorrowingId;
   board_game_id: UUID;
   user_id: UUID;
   created_at: Timestamp;
@@ -248,7 +254,7 @@ export type Event = {
  * ========================================================= */
 
 export type EventAttendance = {
-  id: UUID;
+  id: EventAttendanceId;
 
   user_id: UUID;
 
@@ -264,7 +270,7 @@ export type EventAttendance = {
  * ========================================================= */
 
 export type Announcement = {
-  id: UUID;
+  id: AnnouncementId;
   title: string;
   content: string;
 

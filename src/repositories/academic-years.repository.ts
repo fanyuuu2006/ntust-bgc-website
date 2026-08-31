@@ -151,30 +151,12 @@ export const academicYearsRepository = {
   },
 
   setCurrent: async (id: string): Promise<AcademicYear> => {
-    const { error: unsetError } = await supabase
-      .from("academic_years")
-      .update({ is_current: false })
-      .eq("is_current", true);
+    const { data, error } = await supabase.rpc("set_current_academic_year", {
+      p_academic_year_id: id,
+    });
 
-    if (unsetError) {
-      throwRepositoryError(
-        "設定目前學年度失敗（取消舊的目前學年度）",
-        unsetError,
-      );
-    }
-
-    const { data, error: setError } = await supabase
-      .from("academic_years")
-      .update({ is_current: true })
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (setError) {
-      throwRepositoryError(
-        "設定目前學年度失敗（找不到指定學年度或寫入失敗）",
-        setError,
-      );
+    if (error) {
+      throwRepositoryError("設定目前學年度失敗", error);
     }
 
     return data;

@@ -11,7 +11,7 @@ export function AnnouncementEditor({
   announcement,
 }: {
   announcement?: {
-    id: string;
+    id: number;
     title: string;
     content: string;
     is_published: boolean;

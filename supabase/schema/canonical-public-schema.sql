@@ -1,9 +1,11 @@
 -- NTUST Board Game Club canonical public schema snapshot.
 --
--- Source: verified remote metadata exports 01-09.
+-- Source: verified current remote metadata exports 01-09.
 -- Purpose: readable handover reference and a schema-only starting point for a
 -- brand-new Supabase database. This is NOT a migration and must not be applied
 -- to an existing environment.
+-- Semantics: this is the current deployed remote baseline. Undeployed
+-- migrations are intentionally excluded until their remote rollout is verified.
 --
 -- This snapshot intentionally contains no data, seed records, credentials,
 -- sessions, secrets, or application migration-history assumptions.
@@ -88,7 +90,17 @@ create table public.events (
   start_time timestamptz not null,
   end_time timestamptz not null,
   name text not null,
-  description text
+  description text,
+  check_in_opens_at timestamptz,
+  check_in_closes_at timestamptz,
+  constraint events_check_in_window_check check (
+    (check_in_opens_at is null and check_in_closes_at is null)
+    or (
+      check_in_opens_at is not null
+      and check_in_closes_at is not null
+      and check_in_opens_at <= check_in_closes_at
+    )
+  )
 );
 
 create table public.user_profiles (
@@ -251,7 +263,8 @@ create table public.event_attendances (
     on delete no action on update no action,
   constraint event_attendances_event_id_fkey
     foreign key (event_id) references public.events(id)
-    on delete no action on update no action
+    on delete no action on update no action,
+  constraint event_attendances_event_id_user_id_key unique (event_id, user_id)
 );
 
 create table public.announcements (

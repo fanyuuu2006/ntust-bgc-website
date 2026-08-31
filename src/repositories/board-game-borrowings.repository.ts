@@ -7,7 +7,11 @@ import {
   normalizePaginationOptions,
 } from "@/repositories/shared/pagination";
 import { OrderOptions, PaginationQuery } from "@/repositories/shared/types";
-import { BoardGameBorrowing, BorrowingStatus } from "@/types/database";
+import {
+  BoardGameBorrowing,
+  BoardGameBorrowingId,
+  BorrowingStatus,
+} from "@/types/database";
 
 type CreateBoardGameBorrowingInput = Pick<
   BoardGameBorrowing,
@@ -43,7 +47,7 @@ export type FindManyBoardGameBorrowingsOptions = PaginationQuery &
   };
 
 export const boardGameBorrowingsRepository = {
-  findById: async (id: string): Promise<BoardGameBorrowing | null> => {
+  findById: async (id: BoardGameBorrowingId): Promise<BoardGameBorrowing | null> => {
     const { data, error } = await supabase
       .from("board_game_borrowings")
       .select("*")
@@ -236,8 +240,54 @@ export const boardGameBorrowingsRepository = {
     return data;
   },
 
+  checkout: async (
+    borrowingId: BoardGameBorrowingId,
+    dueAt: string,
+  ): Promise<BoardGameBorrowing> => {
+    const { data, error } = await supabase.rpc("checkout_borrowing", {
+      p_borrowing_id: borrowingId,
+      p_due_at: dueAt,
+    });
+
+    if (error) {
+      throwRepositoryError("以交易方式確認借出失敗", error);
+    }
+
+    const borrowing = Array.isArray(data) ? data[0] : data;
+    if (!borrowing) {
+      throwRepositoryError(
+        "以交易方式確認借出未回傳借用紀錄",
+        new Error("checkout_borrowing returned no row"),
+      );
+    }
+
+    return borrowing as BoardGameBorrowing;
+  },
+
+  returnBorrowing: async (
+    borrowingId: BoardGameBorrowingId,
+  ): Promise<BoardGameBorrowing> => {
+    const { data, error } = await supabase.rpc("return_borrowing", {
+      p_borrowing_id: borrowingId,
+    });
+
+    if (error) {
+      throwRepositoryError("以交易方式確認歸還失敗", error);
+    }
+
+    const borrowing = Array.isArray(data) ? data[0] : data;
+    if (!borrowing) {
+      throwRepositoryError(
+        "以交易方式確認歸還未回傳借用紀錄",
+        new Error("return_borrowing returned no row"),
+      );
+    }
+
+    return borrowing as BoardGameBorrowing;
+  },
+
   updateById: async (
-    id: string,
+    id: BoardGameBorrowingId,
     payload: UpdateBoardGameBorrowingInput,
   ): Promise<BoardGameBorrowing | null> => {
     if (Object.keys(payload).length === 0) {
@@ -254,7 +304,7 @@ export const boardGameBorrowingsRepository = {
     return data;
   },
 
-  deleteById: async (id: string): Promise<void> => {
+  deleteById: async (id: BoardGameBorrowingId): Promise<void> => {
     const { error } = await supabase
       .from("board_game_borrowings")
       .delete()

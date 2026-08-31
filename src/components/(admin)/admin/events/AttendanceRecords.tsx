@@ -13,11 +13,11 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
-import type { User, UserProfile } from "@/types/database";
+import type { EventAttendanceId, User, UserProfile } from "@/types/database";
 import { AttendanceStatusBadge, ATTENDANCE_STATUS_LABEL } from "./AttendanceStatusBadge";
 
 export type AttendanceRecord = {
-  id: string;
+  id: EventAttendanceId;
   user_id: string;
   status: "present" | "late" | "absent";
   attended_at: string | null;

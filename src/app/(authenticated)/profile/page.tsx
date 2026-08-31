@@ -55,7 +55,7 @@ function toBorrowingHistoryItem(
   const status = BORROWING_STATUS_MAP[borrowing.status];
 
   return {
-    key: borrowing.id,
+    key: String(borrowing.id),
     title: borrowing.board_game.name ?? "未知桌遊",
     subtitle: `編號:${borrowing.board_game.inventory_number}`,
     statusLabel: status?.label ?? borrowing.status,
@@ -87,7 +87,7 @@ function toAttendanceHistoryItem(
   const status = ATTENDANCE_STATUS_MAP[attendance.status];
 
   return {
-    key: attendance.id,
+    key: String(attendance.id),
     title: attendance.event?.name ?? "未知",
     statusLabel: status?.label ?? attendance.status,
     statusVariant: status?.variant ?? "muted",

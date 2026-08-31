@@ -18,7 +18,7 @@ import {
   FindManyEventAttendancesOptions,
   eventAttendancesRepository,
 } from "@/repositories/event-attendances.repository";
-import { AttendanceStatus } from "@/types/database";
+import { AttendanceStatus, EventAttendanceId } from "@/types/database";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { RepositoryError } from "@/repositories/shared/errors";
 import type { SelfCheckInEvent } from "./events.types";
@@ -240,7 +240,7 @@ export const eventsService = {
     return eventAttendancesRepository.create({ user_id: data.user_id, event_id: eventId, status: data.status, attended_at: data.status === "absent" ? null : data.attended_at ?? new Date().toISOString() });
   },
 
-  updateAttendanceForAdmin: async (attendanceId: string, input: unknown) => {
+  updateAttendanceForAdmin: async (attendanceId: EventAttendanceId, input: unknown) => {
     const data = attendanceUpdateSchema.parse(input);
     const current = await eventAttendancesRepository.findById(attendanceId);
     if (!current) throw new Error("找不到簽到紀錄");
@@ -249,7 +249,7 @@ export const eventsService = {
     return updated;
   },
 
-  deleteAttendanceForAdmin: async (attendanceId: string) => {
+  deleteAttendanceForAdmin: async (attendanceId: EventAttendanceId) => {
     if (!await eventAttendancesRepository.findById(attendanceId)) throw new Error("找不到簽到紀錄");
     await eventAttendancesRepository.deleteById(attendanceId);
   },

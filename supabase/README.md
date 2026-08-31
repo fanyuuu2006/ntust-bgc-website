@@ -9,7 +9,7 @@
 
 | 位置 | 用途 |
 | --- | --- |
-| `schema/canonical-public-schema.sql` | 目前資料表結構的完整參考。 |
+| `schema/canonical-public-schema.sql` | 已驗證的目前 remote public schema 完整參考；未部署 migration 不會預先混入。 |
 | `migrations/` | 未來資料庫結構有變動時，放新 migration 檔案的地方。 |
 | `verification/` | 確認資料表結構有沒有建立正確的檢查 SQL。 |
 

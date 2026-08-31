@@ -7,6 +7,7 @@ import {
 import { usersRepository } from "@/repositories/users.repository";
 import { hashPassword, verifyPassword } from "@/utils/auth/password";
 import { authRepository } from "@/repositories/auth.repository";
+import { RepositoryError } from "@/repositories/shared/errors";
 import {
   CannotRevokeCurrentSessionError,
   EmailAlreadyExistsError,
@@ -17,7 +18,6 @@ import {
 import { sessionRepository } from "@/repositories/sessions.repository";
 import { generateSessionToken } from "@/utils/auth/session";
 import { SessionSummary } from "./auth.types";
-import { usersService } from "../users/users.service";
 
 /** Session 有效期：7 天 */
 const SESSION_DURATION = 1000 * 60 * 60 * 24 * 7;
@@ -64,18 +64,18 @@ export const authService = {
     // hash 密碼
     const passwordHash = await hashPassword(data.password);
 
-    const user = await authRepository.registerUser({
-      email: data.email,
-      name: data.name,
-      passwordHash,
-    });
-
-    await usersService.createProfile(user.id, {
-      real_name: data.real_name,
-      phone: data.phone,
-    });
-
-    return user;
+    try {
+      return await authRepository.registerUser({
+        email: data.email,
+        name: data.name,
+        passwordHash,
+        realName: data.real_name,
+        phone: data.phone,
+      });
+    } catch (error) {
+      if (isUniqueViolation(error)) throw new EmailAlreadyExistsError();
+      throw error;
+    }
   },
 
   /**
@@ -216,3 +216,8 @@ export const authService = {
     );
   },
 };
+
+function isUniqueViolation(error: unknown): boolean {
+  if (!(error instanceof RepositoryError) || typeof error.cause !== "object" || error.cause === null) return false;
+  return (error.cause as { code?: unknown }).code === "23505";
+}
