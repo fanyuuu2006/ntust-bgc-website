@@ -10,7 +10,6 @@ import {
   MembershipRegisterKeyNotCurrentYearError,
   MembershipRegisterKeyNotFoundError,
   UserAlreadyCurrentMemberError,
-  UserAlreadyLifetimeMemberError,
 } from "@/services/memberships/memberships.errors";
 import { membershipService } from "@/services/memberships/memberships.service";
 
@@ -70,8 +69,7 @@ export async function POST(request: Request) {
     }
 
     if (
-      error instanceof UserAlreadyCurrentMemberError ||
-      error instanceof UserAlreadyLifetimeMemberError
+      error instanceof UserAlreadyCurrentMemberError
     ) {
       return NextResponse.json({ message: error.message }, { status: 409 });
     }

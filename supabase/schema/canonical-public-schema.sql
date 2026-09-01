@@ -1,11 +1,11 @@
 -- NTUST Board Game Club canonical public schema snapshot.
 --
--- Source: verified current remote metadata exports 01-09.
+-- Source: verified current remote metadata and Phase 1F deployment catalog.
 -- Purpose: readable handover reference and a schema-only starting point for a
 -- brand-new Supabase database. This is NOT a migration and must not be applied
 -- to an existing environment.
--- Semantics: this is the current deployed remote baseline. Undeployed
--- migrations are intentionally excluded until their remote rollout is verified.
+-- Semantics: this is the current deployed remote baseline, including verified
+-- migrations through 202609010006. It is not a repository target snapshot.
 --
 -- This snapshot intentionally contains no data, seed records, credentials,
 -- sessions, secrets, or application migration-history assumptions.
@@ -288,17 +288,21 @@ create index membership_register_keys_created_by_user_id_idx
 create index membership_register_keys_year_status_created_idx
   on public.membership_register_keys (academic_year_id, status, created_at desc);
 
-create unique index memberships_one_active_annual_per_year_idx
-  on public.memberships (user_id, academic_year_id)
-  where user_id is not null
-    and type = 'annual'
-    and status in ('pending', 'active', 'suspended');
+create unique index academic_years_one_current_year_idx
+  on public.academic_years (is_current)
+  where is_current = true;
 
-create unique index memberships_one_active_lifetime_idx
-  on public.memberships (user_id)
-  where user_id is not null
-    and type = 'lifetime'
-    and status in ('pending', 'active', 'suspended');
+create unique index board_game_borrowings_one_active_game_idx
+  on public.board_game_borrowings (board_game_id)
+  where status in ('approved', 'borrowed');
+
+create unique index board_game_borrowings_one_open_user_game_idx
+  on public.board_game_borrowings (user_id, board_game_id)
+  where status in ('pending', 'approved', 'borrowed');
+
+create unique index memberships_one_open_per_user_year_idx
+  on public.memberships (user_id, academic_year_id)
+  where status in ('pending', 'active', 'suspended');
 
 create unique index memberships_register_key_id_unique_idx
   on public.memberships (membership_register_key_id)
@@ -307,11 +311,14 @@ create unique index memberships_register_key_id_unique_idx
 create or replace function public.register_user(
   p_email text,
   p_name text,
-  p_password_hash text
+  p_password_hash text,
+  p_real_name text,
+  p_phone text
 )
 returns public.users
 language plpgsql
 security definer
+set search_path = ''
 as $$
 declare
   new_user public.users;
@@ -322,6 +329,9 @@ begin
 
   insert into public.auth_credentials (user_id, password_hash)
   values (new_user.id, p_password_hash);
+
+  insert into public.user_profiles (user_id, real_name, phone)
+  values (new_user.id, p_real_name, p_phone);
 
   return new_user;
 end;
@@ -543,6 +553,217 @@ begin
 end;
 $$;
 
+-- Final deployed RPC definitions (Phase 1A–1D). These definitions supersede
+-- the legacy declarations above and are retained here so this snapshot has the
+-- same resulting behavior as the verified remote database.
+create or replace function public.generate_membership_register_keys(
+  p_academic_year_id uuid,
+  p_count integer,
+  p_secret text,
+  p_created_by_user_id uuid
+)
+returns setof public.membership_register_keys
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_academic_year public.academic_years%rowtype;
+  v_start_sequence integer;
+  v_sequence integer;
+  v_register_key text;
+  v_digest text;
+  v_row public.membership_register_keys%rowtype;
+begin
+  if p_count < 1 or p_count > 100 then raise exception 'INVALID_COUNT'; end if;
+  if p_secret is null or length(trim(p_secret)) < 16 then raise exception 'REGISTER_KEY_SECRET_NOT_CONFIGURED'; end if;
+  select * into v_academic_year from public.academic_years where id = p_academic_year_id;
+  if not found then raise exception 'ACADEMIC_YEAR_NOT_FOUND'; end if;
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('membership_register_keys:' || p_academic_year_id::text));
+  select coalesce(max(sequence_number), 0) + 1 into v_start_sequence from public.membership_register_keys where academic_year_id = p_academic_year_id;
+  for v_sequence in v_start_sequence..(v_start_sequence + p_count - 1) loop
+    v_digest := upper(substring(encode(extensions.hmac(v_academic_year.year || 'NTUSTBGC' || lpad(v_sequence::text, 3, '0'), p_secret, 'sha256'::text), 'hex') from 1 for 8));
+    v_register_key := v_academic_year.year || 'NTUSTBGC' || lpad(v_sequence::text, 3, '0') || v_digest;
+    insert into public.membership_register_keys (academic_year_id, sequence_number, register_key, status, created_by_user_id)
+    values (p_academic_year_id, v_sequence, v_register_key, 'available'::public.membership_register_key_status, p_created_by_user_id)
+    returning * into v_row;
+    return next v_row;
+  end loop;
+end;
+$$;
+
+create or replace function public.claim_membership_register_key(p_register_key text, p_user_id uuid)
+returns table (result text, id uuid, user_id uuid, type text, academic_year_id uuid, status text, created_at timestamptz, updated_at timestamptz, joined_at timestamptz, membership_register_key_id uuid)
+language plpgsql security definer set search_path = ''
+as $$
+declare
+  v_key public.membership_register_keys%rowtype;
+  v_now timestamptz := now();
+  v_membership public.memberships%rowtype;
+  v_type public.merbership_type;
+begin
+  select * into v_key from public.membership_register_keys as membership_register_key where membership_register_key.register_key = upper(trim(p_register_key)) for update;
+  if not found then result := 'not_found'; return next; return; end if;
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('membership_officer:' || p_user_id::text));
+  if not exists (select 1 from public.academic_years as academic_year where academic_year.id = v_key.academic_year_id and academic_year.is_current = true) then result := 'not_current_year'; return next; return; end if;
+  if v_key.status <> 'available'::public.membership_register_key_status then result := 'unavailable'; return next; return; end if;
+  if exists (select 1 from public.memberships as membership where membership.user_id = p_user_id and membership.academic_year_id = v_key.academic_year_id and membership.status in ('pending'::public.merbership_status, 'active'::public.merbership_status, 'suspended'::public.merbership_status)) then result := 'already_current_member'; return next; return; end if;
+  select case when exists (
+    select 1 from public.officer_positions as officer
+    join public.academic_years as officer_year on officer_year.id = officer.academic_year_id
+    join public.academic_years as membership_year on membership_year.id = v_key.academic_year_id
+    where officer.user_id = p_user_id and officer_year.start_date <= membership_year.start_date
+  ) then 'lifetime'::public.merbership_type else 'annual'::public.merbership_type end into v_type;
+  begin
+    insert into public.memberships (user_id, type, academic_year_id, status, joined_at, membership_register_key_id)
+    values (p_user_id, v_type, v_key.academic_year_id, 'active'::public.merbership_status, v_now, v_key.id)
+    returning * into v_membership;
+    update public.membership_register_keys as membership_register_key set status = 'claimed'::public.membership_register_key_status, claimed_at = v_now where membership_register_key.id = v_key.id;
+  exception when unique_violation then result := 'already_current_member'; return next; return;
+  end;
+  result := 'claimed'; id := v_membership.id; user_id := v_membership.user_id; type := v_membership.type; academic_year_id := v_membership.academic_year_id; status := v_membership.status; created_at := v_membership.created_at; updated_at := v_membership.updated_at; joined_at := v_membership.joined_at; membership_register_key_id := v_membership.membership_register_key_id;
+  return next;
+end;
+$$;
+
+create function public.checkout_borrowing(p_borrowing_id bigint, p_due_at timestamptz)
+returns public.board_game_borrowings language plpgsql security definer set search_path = ''
+as $$
+declare v_borrowing public.board_game_borrowings%rowtype; v_board_game public.board_games%rowtype;
+begin
+  select * into v_borrowing from public.board_game_borrowings where id = p_borrowing_id for update;
+  if not found then raise exception using errcode = 'P0001', message = 'BORROWING_NOT_FOUND'; end if;
+  if v_borrowing.status <> 'approved'::public.borrowing_status then raise exception using errcode = 'P0001', message = 'BORROWING_NOT_APPROVED'; end if;
+  if p_due_at is null or p_due_at <= now() then raise exception using errcode = 'P0001', message = 'BORROWING_DUE_DATE_INVALID'; end if;
+  select * into v_board_game from public.board_games where id = v_borrowing.board_game_id for update;
+  if not found then raise exception using errcode = 'P0001', message = 'BOARD_GAME_NOT_FOUND'; end if;
+  if v_board_game.status <> 'available'::public.board_game_status then raise exception using errcode = 'P0001', message = 'BOARD_GAME_NOT_AVAILABLE'; end if;
+  update public.board_game_borrowings set status = 'borrowed'::public.borrowing_status, borrowed_at = now(), due_at = p_due_at where id = v_borrowing.id returning * into v_borrowing;
+  update public.board_games set status = 'borrowed'::public.board_game_status where id = v_board_game.id;
+  return v_borrowing;
+end;
+$$;
+
+create function public.return_borrowing(p_borrowing_id bigint)
+returns public.board_game_borrowings language plpgsql security definer set search_path = ''
+as $$
+declare v_borrowing public.board_game_borrowings%rowtype; v_board_game public.board_games%rowtype;
+begin
+  select * into v_borrowing from public.board_game_borrowings where id = p_borrowing_id for update;
+  if not found then raise exception using errcode = 'P0001', message = 'BORROWING_NOT_FOUND'; end if;
+  if v_borrowing.status <> 'borrowed'::public.borrowing_status then raise exception using errcode = 'P0001', message = 'BORROWING_NOT_BORROWED'; end if;
+  select * into v_board_game from public.board_games where id = v_borrowing.board_game_id for update;
+  if not found then raise exception using errcode = 'P0001', message = 'BOARD_GAME_NOT_FOUND'; end if;
+  if v_board_game.status <> 'borrowed'::public.board_game_status then raise exception using errcode = 'P0001', message = 'BOARD_GAME_STATUS_CONFLICT'; end if;
+  update public.board_game_borrowings set status = 'returned'::public.borrowing_status, returned_at = now() where id = v_borrowing.id returning * into v_borrowing;
+  update public.board_games set status = 'available'::public.board_game_status where id = v_board_game.id;
+  return v_borrowing;
+end;
+$$;
+
+create function public.set_current_academic_year(p_academic_year_id uuid)
+returns public.academic_years language plpgsql security definer set search_path = ''
+as $$
+declare target_year public.academic_years%rowtype;
+begin
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('academic_years:set_current'));
+  select * into target_year from public.academic_years where id = p_academic_year_id for update;
+  if not found then raise exception using errcode = 'P0001', message = 'ACADEMIC_YEAR_NOT_FOUND'; end if;
+  if target_year.is_current then return target_year; end if;
+  update public.academic_years set is_current = false where is_current = true;
+  update public.academic_years set is_current = true where id = target_year.id returning * into target_year;
+  return target_year;
+end;
+$$;
+
+create function public.recompute_membership_types_for_user(p_user_id uuid)
+returns void language plpgsql security definer set search_path = ''
+as $$
+begin
+  update public.memberships as membership set type = case when exists (
+    select 1 from public.officer_positions as officer
+    join public.academic_years as officer_year on officer_year.id = officer.academic_year_id
+    join public.academic_years as membership_year on membership_year.id = membership.academic_year_id
+    where officer.user_id = membership.user_id and officer_year.start_date <= membership_year.start_date
+  ) then 'lifetime'::public.merbership_type else 'annual'::public.merbership_type end
+  where membership.user_id = p_user_id;
+end;
+$$;
+
+create function public.create_admin_membership(p_user_id uuid, p_academic_year_id uuid, p_status public.merbership_status, p_joined_at timestamptz)
+returns public.memberships language plpgsql security definer set search_path = ''
+as $$
+declare v_membership public.memberships%rowtype; v_type public.merbership_type;
+begin
+  if not exists (select 1 from public.users where id = p_user_id) then raise exception using errcode = 'P0001', message = 'MEMBERSHIP_USER_NOT_FOUND'; end if;
+  if not exists (select 1 from public.academic_years where id = p_academic_year_id) then raise exception using errcode = 'P0001', message = 'MEMBERSHIP_ACADEMIC_YEAR_NOT_FOUND'; end if;
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('membership_officer:' || p_user_id::text));
+  select case when exists (select 1 from public.officer_positions o join public.academic_years oy on oy.id=o.academic_year_id join public.academic_years my on my.id=p_academic_year_id where o.user_id=p_user_id and oy.start_date <= my.start_date) then 'lifetime'::public.merbership_type else 'annual'::public.merbership_type end into v_type;
+  insert into public.memberships (user_id,type,academic_year_id,status,joined_at,membership_register_key_id) values (p_user_id,v_type,p_academic_year_id,p_status,coalesce(p_joined_at,now()),null) returning * into v_membership;
+  return v_membership;
+end;
+$$;
+
+create function public.update_admin_membership(p_membership_id uuid, p_academic_year_id uuid, p_status public.merbership_status, p_joined_at timestamptz)
+returns public.memberships language plpgsql security definer set search_path = ''
+as $$
+declare v_membership public.memberships%rowtype;
+begin
+  select * into v_membership from public.memberships where id = p_membership_id for update;
+  if not found then raise exception using errcode = 'P0001', message = 'MEMBERSHIP_NOT_FOUND'; end if;
+  if not exists (select 1 from public.academic_years where id = p_academic_year_id) then raise exception using errcode = 'P0001', message = 'MEMBERSHIP_ACADEMIC_YEAR_NOT_FOUND'; end if;
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('membership_officer:' || v_membership.user_id::text));
+  update public.memberships set academic_year_id=p_academic_year_id,status=p_status,joined_at=coalesce(p_joined_at,v_membership.joined_at) where id=p_membership_id returning * into v_membership;
+  perform public.recompute_membership_types_for_user(v_membership.user_id);
+  select * into v_membership from public.memberships where id=p_membership_id;
+  return v_membership;
+end;
+$$;
+
+create function public.create_officer_position(p_user_id uuid, p_academic_year_id uuid, p_title text)
+returns public.officer_positions language plpgsql security definer set search_path = ''
+as $$
+declare v_position public.officer_positions%rowtype;
+begin
+  if not exists (select 1 from public.users where id=p_user_id) then raise exception using errcode='P0001',message='OFFICER_USER_NOT_FOUND'; end if;
+  if not exists (select 1 from public.academic_years where id=p_academic_year_id) then raise exception using errcode='P0001',message='OFFICER_ACADEMIC_YEAR_NOT_FOUND'; end if;
+  if nullif(trim(p_title),'') is null then raise exception using errcode='P0001',message='OFFICER_TITLE_REQUIRED'; end if;
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('membership_officer:' || p_user_id::text));
+  insert into public.officer_positions(user_id,academic_year_id,title) values(p_user_id,p_academic_year_id,trim(p_title)) returning * into v_position;
+  perform public.recompute_membership_types_for_user(p_user_id);
+  return v_position;
+end;
+$$;
+
+create function public.update_officer_position(p_officer_position_id uuid, p_academic_year_id uuid, p_title text)
+returns public.officer_positions language plpgsql security definer set search_path = ''
+as $$
+declare v_position public.officer_positions%rowtype;
+begin
+  select * into v_position from public.officer_positions where id=p_officer_position_id for update;
+  if not found then raise exception using errcode='P0001',message='OFFICER_POSITION_NOT_FOUND'; end if;
+  if not exists (select 1 from public.academic_years where id=p_academic_year_id) then raise exception using errcode='P0001',message='OFFICER_ACADEMIC_YEAR_NOT_FOUND'; end if;
+  if nullif(trim(p_title),'') is null then raise exception using errcode='P0001',message='OFFICER_TITLE_REQUIRED'; end if;
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('membership_officer:' || v_position.user_id::text));
+  update public.officer_positions set academic_year_id=p_academic_year_id,title=trim(p_title) where id=p_officer_position_id returning * into v_position;
+  perform public.recompute_membership_types_for_user(v_position.user_id);
+  return v_position;
+end;
+$$;
+
+create function public.delete_officer_position(p_officer_position_id uuid)
+returns void language plpgsql security definer set search_path = ''
+as $$
+declare v_position public.officer_positions%rowtype;
+begin
+  select * into v_position from public.officer_positions where id=p_officer_position_id for update;
+  if not found then raise exception using errcode='P0001',message='OFFICER_POSITION_NOT_FOUND'; end if;
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('membership_officer:' || v_position.user_id::text));
+  delete from public.officer_positions where id=p_officer_position_id;
+  perform public.recompute_membership_types_for_user(v_position.user_id);
+end;
+$$;
+
 create trigger update_users_updated_at
 before update on public.users
 for each row execute function public.update_updated_at_column();
@@ -571,14 +792,44 @@ create trigger set_membership_register_keys_updated_at
 before update on public.membership_register_keys
 for each row execute function public.set_updated_at();
 
--- Verified remote ACLs are intentionally preserved. They are documented here as
--- current state, not as a security recommendation or hardening change.
-grant execute on function public.register_user(text, text, text)
-  to public, anon, authenticated, service_role;
-grant execute on function public.claim_membership_register_key(text, uuid)
-  to public, anon, authenticated, service_role;
-grant execute on function public.generate_membership_register_keys(uuid, integer, text, uuid)
-  to public, anon, authenticated, service_role;
+-- Privileged RPCs are callable only by the server-side service-role client.
+revoke all privileges on function public.register_user(text, text, text, text, text)
+  from public, anon, authenticated;
+revoke all privileges on function public.claim_membership_register_key(text, uuid)
+  from public, anon, authenticated;
+revoke all privileges on function public.generate_membership_register_keys(uuid, integer, text, uuid)
+  from public, anon, authenticated;
+revoke all privileges on function public.checkout_borrowing(bigint, timestamptz)
+  from public, anon, authenticated;
+revoke all privileges on function public.return_borrowing(bigint)
+  from public, anon, authenticated;
+revoke all privileges on function public.set_current_academic_year(uuid)
+  from public, anon, authenticated;
+revoke all privileges on function public.recompute_membership_types_for_user(uuid)
+  from public, anon, authenticated, service_role;
+revoke all privileges on function public.create_admin_membership(uuid, uuid, public.merbership_status, timestamptz)
+  from public, anon, authenticated;
+revoke all privileges on function public.update_admin_membership(uuid, uuid, public.merbership_status, timestamptz)
+  from public, anon, authenticated;
+revoke all privileges on function public.create_officer_position(uuid, uuid, text)
+  from public, anon, authenticated;
+revoke all privileges on function public.update_officer_position(uuid, uuid, text)
+  from public, anon, authenticated;
+revoke all privileges on function public.delete_officer_position(uuid)
+  from public, anon, authenticated;
+
+grant execute on function public.register_user(text, text, text, text, text) to service_role;
+grant execute on function public.claim_membership_register_key(text, uuid) to service_role;
+grant execute on function public.generate_membership_register_keys(uuid, integer, text, uuid) to service_role;
+grant execute on function public.checkout_borrowing(bigint, timestamptz) to service_role;
+grant execute on function public.return_borrowing(bigint) to service_role;
+grant execute on function public.set_current_academic_year(uuid) to service_role;
+grant execute on function public.create_admin_membership(uuid, uuid, public.merbership_status, timestamptz) to service_role;
+grant execute on function public.update_admin_membership(uuid, uuid, public.merbership_status, timestamptz) to service_role;
+grant execute on function public.create_officer_position(uuid, uuid, text) to service_role;
+grant execute on function public.update_officer_position(uuid, uuid, text) to service_role;
+grant execute on function public.delete_officer_position(uuid) to service_role;
+
 grant execute on function public.update_updated_at_column()
   to public, anon, authenticated, service_role;
 grant execute on function public.set_updated_at()

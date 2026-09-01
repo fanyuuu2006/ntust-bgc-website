@@ -29,7 +29,7 @@ export default async function DashboardPage() {
   );
   const membershipLabel = membership
     ? membership.type === "lifetime"
-      ? "永久社員"
+      ? "終生社員"
       : "當前社員"
     : "尚非社員";
 

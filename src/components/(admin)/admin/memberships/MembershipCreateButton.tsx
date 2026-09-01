@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import { apiClient } from "@/libs/api/client";
-import type { AcademicYear, MembershipStatus, MembershipType, User } from "@/types/database";
+import type { AcademicYear, MembershipStatus, User } from "@/types/database";
 
 type Props = {
   users: User[];
@@ -26,7 +26,6 @@ export function MembershipCreateButton({
   const [values, setValues] = useState({
     user_id: "",
     academic_year_id: years.find((year) => year.is_current)?.id ?? "",
-    type: "annual" as MembershipType,
     status: "active" as MembershipStatus,
   });
 
@@ -35,7 +34,6 @@ export function MembershipCreateButton({
     setValues({
       user_id: "",
       academic_year_id: years.find((year) => year.is_current)?.id ?? "",
-      type: "annual",
       status: "active",
     });
     setOpen(true);
@@ -72,11 +70,7 @@ export function MembershipCreateButton({
               {years.map((year) => <option key={year.id} value={year.id}>{year.year} 學年度{year.is_current ? "（目前）" : ""}</option>)}
             </Select>
           </Field>
-          <Field label="類型" htmlFor="membership-type">
-            <Select id="membership-type" value={values.type} disabled={busy} onChange={(event) => setValues((current) => ({ ...current, type: event.target.value as MembershipType }))}>
-              <option value="annual">年度社員</option><option value="lifetime">永久社員</option>
-            </Select>
-          </Field>
+          <p className="text-sm text-(--muted)">社員類型會依該使用者的幹部職位紀錄自動判定。</p>
           <Field label="狀態" htmlFor="membership-status">
             <Select id="membership-status" value={values.status} disabled={busy} onChange={(event) => setValues((current) => ({ ...current, status: event.target.value as MembershipStatus }))}>
               <option value="pending">待審核</option><option value="active">有效</option><option value="expired">已過期</option><option value="suspended">已停權</option><option value="cancelled">已取消</option>

@@ -15,7 +15,7 @@ import { Select } from "@/components/ui/Select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
 import type { AdminMembership } from "@/services/memberships/memberships.types";
-import type { AcademicYear, MembershipStatus, MembershipType } from "@/types/database";
+import type { AcademicYear, MembershipStatus } from "@/types/database";
 import { formatAdminDateTime } from "@/utils/date";
 import { MemberStatusBadge, MEMBERSHIP_STATUS_LABEL, MembershipTypeLabel } from "./MemberStatusBadge";
 
@@ -31,7 +31,6 @@ type Query = {
 
 type MembershipFormValues = {
   academic_year_id: string;
-  type: MembershipType;
   status: MembershipStatus;
   joined_at: string;
 };
@@ -51,7 +50,6 @@ export function MembershipRecords({
   >(null);
   const [values, setValues] = useState<MembershipFormValues>({
     academic_year_id: "",
-    type: "annual",
     status: "active",
     joined_at: "",
   });
@@ -72,7 +70,6 @@ export function MembershipRecords({
     setSelectedMembership({ membership, action: "edit" });
     setValues({
       academic_year_id: membership.academic_year_id,
-      type: membership.type,
       status: membership.status,
       joined_at: membership.joined_at?.slice(0, 16) ?? "",
     });
@@ -243,18 +240,7 @@ export function MembershipRecords({
               ))}
             </Select>
           </Field>
-          <Field label="類型" htmlFor="membership-type">
-            <Select
-              id="membership-type"
-              className="w-full"
-              value={values.type}
-              disabled={isSaving}
-              onChange={(event) => setValues((current) => ({ ...current, type: event.target.value as MembershipType }))}
-            >
-              <option value="annual">年度社員</option>
-              <option value="lifetime">永久社員</option>
-            </Select>
-          </Field>
+          <p className="text-sm text-(--muted)">社員類型會依幹部職位紀錄自動重新判定。</p>
           <Field label="狀態" htmlFor="membership-status">
             <Select
               id="membership-status"

@@ -23,20 +23,12 @@ export default async function MembershipsPage() {
     result.data.find(
       (membership) => membership.academic_year_id === currentAcademicYear?.id,
     ) ?? null;
-  const lifetimeMembership =
-    result.data.find(
-      (membership) =>
-        membership.type === "lifetime" &&
-        ["active", "suspended"].includes(membership.status),
-    ) ?? null;
   const displayedMembership =
-    lifetimeMembership ??
-    (currentYearMembership?.status === "active" ||
+    currentYearMembership?.status === "active" ||
     currentYearMembership?.status === "suspended"
       ? currentYearMembership
-      : null);
+      : null;
   const mayActivate =
-    !lifetimeMembership &&
     (!currentYearMembership ||
       ["expired", "cancelled"].includes(currentYearMembership.status));
   const blockedMessage =
@@ -44,9 +36,7 @@ export default async function MembershipsPage() {
       ? "本學年度資格正在處理中，暫時無法再次啟用。"
       : currentYearMembership?.status === "suspended"
         ? "本學年度社員資格已停權，請聯絡幹部協助處理。"
-        : lifetimeMembership?.status === "suspended"
-          ? "永久社員資格已停權，請聯絡幹部協助處理。"
-          : undefined;
+      : undefined;
 
   return (
     <section className="container space-y-6 py-8">
@@ -78,11 +68,9 @@ export default async function MembershipsPage() {
                 社員資格啟用
               </h2>
               <p className="mt-2 text-sm leading-6 text-(--text-muted)">
-                {lifetimeMembership
-                  ? "你已有永久社員資格，無需再啟用一般社員資格。"
-                  : currentYearMembership?.status === "active"
-                    ? "你已具備本學年度社員資格。"
-                    : blockedMessage ?? "目前無法啟用新的社員資格。"}
+                {currentYearMembership?.status === "active"
+                  ? "你已具備本學年度社員資格。"
+                  : blockedMessage ?? "目前無法啟用新的社員資格。"}
               </p>
             </section>
           )}

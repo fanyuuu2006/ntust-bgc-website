@@ -12,12 +12,15 @@ import type {
 } from "@/repositories/shared/types";
 import type { OfficerPosition, UUID } from "@/types/database";
 
-type CreateOfficerPositionInput = Omit<
+type CreateOfficerPositionInput = Pick<
   OfficerPosition,
-  "id" | "created_at" | "updated_at"
+  "user_id" | "academic_year_id" | "title"
 >;
 
-type UpdateOfficerPositionInput = Partial<CreateOfficerPositionInput>;
+type UpdateOfficerPositionInput = Pick<
+  OfficerPosition,
+  "academic_year_id" | "title"
+>;
 
 export type FindManyOfficerPositionsOptions = PaginationQuery &
   OrderOptions<"created_at"> & {
@@ -129,17 +132,24 @@ export const officerPositionsRepository = {
   create: async (
     payload: CreateOfficerPositionInput,
   ): Promise<OfficerPosition> => {
-    const { data, error } = await supabase
-      .from("officer_positions")
-      .insert(payload)
-      .select()
-      .single();
+    const { data, error } = await supabase.rpc("create_officer_position", {
+      p_user_id: payload.user_id,
+      p_academic_year_id: payload.academic_year_id,
+      p_title: payload.title,
+    });
 
     if (error) {
-      throwRepositoryError("建立幹部職位失敗", error);
+      throwRepositoryError("以交易方式建立幹部職位失敗", error);
     }
 
-    return data;
+    if (!data) {
+      throwRepositoryError(
+        "以交易方式建立幹部職位未回傳資料",
+        new Error("create_officer_position returned no row"),
+      );
+    }
+
+    return data as OfficerPosition;
   },
 
   /**
@@ -149,32 +159,26 @@ export const officerPositionsRepository = {
     id: UUID,
     payload: UpdateOfficerPositionInput,
   ): Promise<OfficerPosition | null> => {
-    if (Object.keys(payload).length === 0) {
-      return officerPositionsRepository.findById(id);
-    }
-
-    const { data, error } = await supabase
-      .from("officer_positions")
-      .update(payload)
-      .eq("id", id)
-      .select()
-      .maybeSingle();
+    const { data, error } = await supabase.rpc("update_officer_position", {
+      p_officer_position_id: id,
+      p_academic_year_id: payload.academic_year_id,
+      p_title: payload.title,
+    });
 
     if (error) {
-      throwRepositoryError("更新幹部職位失敗", error);
+      throwRepositoryError("以交易方式更新幹部職位失敗", error);
     }
 
-    return data;
+    return (data ?? null) as OfficerPosition | null;
   },
 
   deleteById: async (id: UUID): Promise<void> => {
-    const { error } = await supabase
-      .from("officer_positions")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.rpc("delete_officer_position", {
+      p_officer_position_id: id,
+    });
 
     if (error) {
-      throwRepositoryError("刪除幹部職位失敗", error);
+      throwRepositoryError("以交易方式刪除幹部職位失敗", error);
     }
   },
 

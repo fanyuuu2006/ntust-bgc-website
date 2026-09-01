@@ -34,7 +34,6 @@ export type ClaimMembershipRegisterKeyResult =
         | "not_found"
         | "not_current_year"
         | "unavailable"
-        | "already_lifetime_member"
         | "already_current_member";
       membership: null;
     };

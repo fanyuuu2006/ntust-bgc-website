@@ -34,7 +34,7 @@ export function MembershipHistory({
               <div className="min-w-0">
                 <p className="font-medium text-(--text-primary)">
                   {membership.type === "lifetime"
-                    ? "永久社員"
+                    ? `${membership.academic_year?.year ?? "-"} 學年度 · 終生社員`
                     : `${membership.academic_year?.year ?? "-"} 學年度 · 一般社員`}
                 </p>
                 <p className="mt-1 text-sm text-(--text-muted)">

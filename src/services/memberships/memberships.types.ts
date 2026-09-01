@@ -12,8 +12,7 @@ import type {
  */
 export type MembershipQualification =
   | "current_member"
-  | "lifetime_member"
-  | "historical_annual_member"
+  | "historical_member"
   | null;
 
 export function getMembershipQualification(
@@ -22,11 +21,9 @@ export function getMembershipQualification(
 ): MembershipQualification {
   if (membership.status !== "active") return null;
 
-  if (membership.type === "lifetime") return "lifetime_member";
-
   return membership.academic_year_id === currentAcademicYearId
     ? "current_member"
-    : "historical_annual_member";
+    : "historical_member";
 }
 
 export function isCurrentActiveMembership(
@@ -37,15 +34,11 @@ export function isCurrentActiveMembership(
     membership,
     currentAcademicYearId,
   );
-  return (
-    qualification === "current_member" ||
-    qualification === "lifetime_member"
-  );
+  return qualification === "current_member";
 }
 
 export type UserMembershipEligibility = {
-  hasActiveLifetimeMembership: boolean;
-  hasCurrentAnnualMembership: boolean;
+  hasCurrentMembership: boolean;
 };
 
 

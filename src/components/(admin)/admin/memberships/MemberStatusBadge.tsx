@@ -4,5 +4,5 @@ export {
 } from "@/components/MembershipStatusBadge";
 
 export function MembershipTypeLabel({ type }: { type: "annual" | "lifetime" }) {
-  return type === "annual" ? "年度社員" : "永久社員";
+  return type === "annual" ? "一般社員" : "終生社員";
 }

@@ -35,6 +35,9 @@ test("academic-year source uses the transactional RPC and blocks current-year de
   assert.match(repository, /supabase\.rpc\("set_current_academic_year"/);
   const setCurrentSection = repository.slice(repository.indexOf("setCurrent:"));
   assert.doesNotMatch(setCurrentSection, /\.update\(\{ is_current:/);
-  assert.match(service, /if \(existing\.is_current\) throw new AcademicYearCurrentDeleteForbiddenError\(\)/);
+  assert.match(
+    service,
+    /if \(existing\.is_current\)\s+throw new AcademicYearCurrentDeleteForbiddenError\(\)/,
+  );
   assert.match(route, /AcademicYearCurrentDeleteForbiddenError/);
 });

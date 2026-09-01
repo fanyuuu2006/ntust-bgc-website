@@ -71,7 +71,7 @@ function toMembershipHistoryItem(
 
   return {
     key: membership.id,
-    title: membership.type === "lifetime" ? "永久社員" : "一般社員",
+    title: membership.type === "lifetime" ? "終生社員" : "一般社員",
     subtitle: membership.academic_year?.year
       ? `${membership.academic_year.year} 學年度`
       : undefined,

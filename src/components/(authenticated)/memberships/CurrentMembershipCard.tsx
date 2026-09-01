@@ -24,10 +24,7 @@ export function CurrentMembershipCard({
     );
   }
 
-  const title =
-    membership.type === "lifetime"
-      ? "永久社員"
-      : `${membership.academic_year?.year ?? "目前"} 學年度`;
+  const title = `${membership.academic_year?.year ?? "目前"} 學年度`;
 
   return (
     <section className="card p-5">
@@ -38,7 +35,7 @@ export function CurrentMembershipCard({
             {title}
           </h2>
           <p className="mt-1 text-sm text-(--text-muted)">
-            {membership.type === "lifetime" ? "永久社員" : "一般社員"}
+            {membership.type === "lifetime" ? "終生社員" : "一般社員"}
           </p>
         </div>
         <MembershipStatusBadge status={membership.status} />

@@ -32,7 +32,6 @@ import {
   MembershipAlreadyExistsForAcademicYearError,
   RegisterKeySecretNotConfiguredError,
   UserAlreadyCurrentMemberError,
-  UserAlreadyLifetimeMemberError,
 } from "./memberships.errors";
 import type {
   AdminMembership,
@@ -113,19 +112,20 @@ async function findMatchedUserIds(search?: string): Promise<string[] | undefined
 export const membershipService = {
   createForAdmin: async (input: unknown) => {
     const data = createAdminMembershipSchema.parse(input);
-    const [user, year, existing, existingLifetime] = await Promise.all([
+    const [user, year] = await Promise.all([
       usersRepository.findById(data.user_id),
       academicYearsRepository.findById(data.academic_year_id),
-      membershipsRepository.findByUserIdAndAcademicYearId(data.user_id, data.academic_year_id),
-      data.type === "lifetime"
-        ? membershipsRepository.findActiveLifetimeByUserId(data.user_id)
-        : Promise.resolve(null),
     ]);
     if (!user) throw new Error("找不到此使用者");
     if (!year) throw new AcademicYearNotFoundError();
-    if (existingLifetime) throw new UserAlreadyLifetimeMemberError();
-    if (existing) throw new MembershipAlreadyExistsForAcademicYearError();
-    return membershipsRepository.create({ ...data, joined_at: data.joined_at ?? new Date().toISOString(), membership_register_key_id: null });
+    try {
+      return await membershipsRepository.createForAdmin(data);
+    } catch (error) {
+      if (isMembershipOpenConflict(error)) {
+        throw new MembershipAlreadyExistsForAcademicYearError();
+      }
+      throw error;
+    }
   },
 
   updateForAdmin: async (id: string, input: unknown) => {
@@ -133,27 +133,15 @@ export const membershipService = {
     if (!current) throw new Error("找不到此社員資格");
     const data = updateAdminMembershipSchema.parse(input);
     if (!canTransitionMembershipStatus(current.status, data.status)) throw new Error(`不允許從 ${current.status} 變更為 ${data.status}`);
-    if (data.type === "annual" && current.user_id) {
-      const existingAnnual = await membershipsRepository.findAnnualByUserIdAndAcademicYearId(
-        current.user_id,
-        data.academic_year_id,
-        id,
-      );
-      if (existingAnnual) throw new MembershipAlreadyExistsForAcademicYearError();
+    let updated: Membership | null;
+    try {
+      updated = await membershipsRepository.updateForAdmin(id, data);
+    } catch (error) {
+      if (isMembershipOpenConflict(error)) {
+        throw new MembershipAlreadyExistsForAcademicYearError();
+      }
+      throw error;
     }
-    if (data.type === "lifetime" && current.user_id) {
-      const existingLifetime = await membershipsRepository.findActiveLifetimeByUserId(
-        current.user_id,
-        id,
-      );
-      if (existingLifetime) throw new UserAlreadyLifetimeMemberError();
-    }
-    const updated = await membershipsRepository.updateById(id, {
-      academic_year_id: data.academic_year_id,
-      type: data.type,
-      status: data.status,
-      joined_at: data.joined_at ?? current.joined_at,
-    });
     if (!updated) throw new Error("更新社員資格失敗");
     return updated;
   },
@@ -168,15 +156,9 @@ export const membershipService = {
       academicYearsRepository.findCurrent(),
       membershipsRepository.findManyActiveByUserIds([userId]),
     ]);
-    const membership =
-      activeMemberships.find(
-        (item) =>
-          item.type === "lifetime" &&
-          isCurrentActiveMembership(item, currentYear?.id),
-      ) ??
-      activeMemberships.find((item) =>
-        isCurrentActiveMembership(item, currentYear?.id),
-      );
+    const membership = activeMemberships.find((item) =>
+      isCurrentActiveMembership(item, currentYear?.id),
+    );
 
     if (!membership) return null;
 
@@ -235,10 +217,7 @@ export const membershipService = {
     const eligibilityByUserId: Record<string, UserMembershipEligibility> = {};
 
     for (const userId of userIds) {
-      eligibilityByUserId[userId] = {
-        hasActiveLifetimeMembership: false,
-        hasCurrentAnnualMembership: false,
-      };
+      eligibilityByUserId[userId] = { hasCurrentMembership: false };
     }
 
     for (const membership of activeMemberships) {
@@ -246,12 +225,8 @@ export const membershipService = {
         continue;
       }
 
-      if (membership.type === "lifetime") {
-        eligibilityByUserId[membership.user_id].hasActiveLifetimeMembership =
-          true;
-      } else if (isCurrentActiveMembership(membership, currentYear?.id)) {
-        eligibilityByUserId[membership.user_id].hasCurrentAnnualMembership =
-          true;
+      if (isCurrentActiveMembership(membership, currentYear?.id)) {
+        eligibilityByUserId[membership.user_id].hasCurrentMembership = true;
       }
     }
 
@@ -401,8 +376,6 @@ export const membershipService = {
         throw new MembershipRegisterKeyNotCurrentYearError();
       case "unavailable":
         throw new MembershipRegisterKeyInactiveError();
-      case "already_lifetime_member":
-        throw new UserAlreadyLifetimeMemberError();
       case "already_current_member":
         throw new UserAlreadyCurrentMemberError();
     }
@@ -436,4 +409,16 @@ function canTransitionMembershipStatus(from: Membership["status"], to: Membershi
     pending: ["active", "cancelled"], active: ["suspended", "cancelled", "expired"], suspended: ["active", "cancelled"], expired: [], cancelled: [],
   };
   return transitions[from].includes(to);
+}
+
+function isMembershipOpenConflict(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const cause = "cause" in error ? error.cause : error;
+  return (
+    Boolean(cause) &&
+    typeof cause === "object" &&
+    (cause as { code?: unknown }).code === "23505" &&
+    (cause as { constraint?: unknown }).constraint ===
+      "memberships_one_open_per_user_year_idx"
+  );
 }

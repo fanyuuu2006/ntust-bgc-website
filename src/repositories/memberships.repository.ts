@@ -9,22 +9,15 @@ import {
 import { throwRepositoryError } from "./shared/errors";
 import type { OrderOptions, PaginationQuery } from "./shared/types";
 
-type CreateMembershipInput = Pick<
+type CreateAdminMembershipInput = Pick<
   Membership,
-  | "user_id"
-  | "type"
-  | "academic_year_id"
-  | "status"
-  | "joined_at"
-  | "membership_register_key_id"
->;
+  "user_id" | "academic_year_id" | "status"
+> & { joined_at?: Membership["joined_at"] | undefined };
 
-type UpdateMembershipInput = Partial<
-  Pick<
-    Membership,
-    "type" | "status" | "user_id" | "academic_year_id" | "joined_at" | "membership_register_key_id"
-  >
->;
+type UpdateAdminMembershipInput = Pick<
+  Membership,
+  "academic_year_id" | "status"
+> & { joined_at?: Membership["joined_at"] | undefined };
 
 export type FindManyMembershipsOptions = PaginationQuery &
   OrderOptions<"joined_at" | "created_at">;
@@ -131,81 +124,6 @@ export const membershipsRepository = {
     return data;
   },
 
-  findByUserIdAndAcademicYearId: async (
-    userId: string,
-    academicYearId: string,
-  ): Promise<Membership | null> => {
-    const { data, error } = await supabase
-      .from("memberships")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("academic_year_id", academicYearId)
-      .maybeSingle();
-
-    if (error) {
-      throwRepositoryError("依使用者與學年度尋找社員資格失敗", error);
-    }
-
-    return data;
-  },
-
-  findAnnualByUserIdAndAcademicYearId: async (
-    userId: string,
-    academicYearId: string,
-    excludeId?: string,
-  ): Promise<Membership | null> => {
-    let query = supabase
-      .from("memberships")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("academic_year_id", academicYearId)
-      .eq("type", "annual")
-      .limit(1);
-    if (excludeId) query = query.neq("id", excludeId);
-    const { data, error } = await query.maybeSingle();
-    if (error) throwRepositoryError("檢查年度社員資格是否重複失敗", error);
-    return data;
-  },
-
-  findActiveOrSuspendedByUserIdAndAcademicYearId: async (
-    userId: string,
-    academicYearId: string,
-  ): Promise<Membership | null> => {
-    const { data, error } = await supabase
-      .from("memberships")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("academic_year_id", academicYearId)
-      .in("status", ["active", "suspended"])
-      .maybeSingle();
-
-    if (error) {
-      throwRepositoryError("查詢目前有效或停權社員資格失敗", error);
-    }
-
-    return data;
-  },
-
-  findActiveLifetimeByUserId: async (
-    userId: string,
-    excludeId?: string,
-  ): Promise<Membership | null> => {
-    let query = supabase
-      .from("memberships")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("type", "lifetime")
-      .in("status", ["pending", "active", "suspended"]);
-    if (excludeId) query = query.neq("id", excludeId);
-    const { data, error } = await query.maybeSingle();
-
-    if (error) {
-      throwRepositoryError("查詢永久社員資格失敗", error);
-    }
-
-    return data;
-  },
-
   findManyActiveByUserIds: async (userIds: string[]): Promise<Membership[]> => {
     if (userIds.length === 0) return [];
 
@@ -239,40 +157,39 @@ export const membershipsRepository = {
     return data ?? [];
   },
 
-  create: async (payload: CreateMembershipInput): Promise<Membership> => {
-    const { data, error } = await supabase
-      .from("memberships")
-      .insert(payload)
-      .select()
-      .single();
+  createForAdmin: async (
+    payload: CreateAdminMembershipInput,
+  ): Promise<Membership> => {
+    const { data, error } = await supabase.rpc("create_admin_membership", {
+      p_user_id: payload.user_id,
+      p_academic_year_id: payload.academic_year_id,
+      p_status: payload.status,
+      p_joined_at: payload.joined_at ?? null,
+    });
 
-    if (error) {
-      throwRepositoryError("建立社員資格失敗", error);
+    if (error) throwRepositoryError("以交易方式建立社員資格失敗", error);
+    if (!data) {
+      throwRepositoryError(
+        "以交易方式建立社員資格未回傳資料",
+        new Error("create_admin_membership returned no row"),
+      );
     }
-
-    return data;
+    return data as Membership;
   },
 
-  updateById: async (
+  updateForAdmin: async (
     id: string,
-    payload: UpdateMembershipInput,
+    payload: UpdateAdminMembershipInput,
   ): Promise<Membership | null> => {
-    if (Object.keys(payload).length === 0) {
-      return membershipsRepository.findById(id);
-    }
+    const { data, error } = await supabase.rpc("update_admin_membership", {
+      p_membership_id: id,
+      p_academic_year_id: payload.academic_year_id,
+      p_status: payload.status,
+      p_joined_at: payload.joined_at ?? null,
+    });
 
-    const { data, error } = await supabase
-      .from("memberships")
-      .update(payload)
-      .eq("id", id)
-      .select()
-      .maybeSingle();
-
-    if (error) {
-      throwRepositoryError("更新社員資格失敗", error);
-    }
-
-    return data;
+    if (error) throwRepositoryError("以交易方式更新社員資格失敗", error);
+    return (data ?? null) as Membership | null;
   },
 
   deleteById: async (id: string): Promise<void> => {

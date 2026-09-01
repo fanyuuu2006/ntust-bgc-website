@@ -22,14 +22,14 @@ export const officerPositionsService = {
   },
 
   createForAdmin: async (input: unknown) => {
-    const data = parseOfficerInput(input);
+    const data = parseCreateOfficerInput(input);
     if (!await usersRepository.findById(data.user_id)) throw new Error("找不到此使用者");
     if (!await academicYearsRepository.findById(data.academic_year_id)) throw new Error("找不到此學年度");
     return officerPositionsRepository.create(data);
   },
 
   updateForAdmin: async (id: string, input: unknown) => {
-    const data = parseOfficerInput(input);
+    const data = parseUpdateOfficerInput(input);
     const updated = await officerPositionsRepository.updateById(id, data);
     if (!updated) throw new Error("找不到此幹部職位");
     return updated;
@@ -112,9 +112,16 @@ export const officerPositionsService = {
   },
 };
 
-function parseOfficerInput(input: unknown): { user_id: string; academic_year_id: string; title: string } {
+function parseCreateOfficerInput(input: unknown): { user_id: string; academic_year_id: string; title: string } {
   if (!input || typeof input !== "object") throw new Error("輸入資料格式不正確");
   const value = input as Record<string, unknown>;
   if (typeof value.user_id !== "string" || typeof value.academic_year_id !== "string" || typeof value.title !== "string" || !value.title.trim()) throw new Error("請完整填寫使用者、學年度與職位名稱");
   return { user_id: value.user_id, academic_year_id: value.academic_year_id, title: value.title.trim() };
+}
+
+function parseUpdateOfficerInput(input: unknown): { academic_year_id: string; title: string } {
+  if (!input || typeof input !== "object") throw new Error("輸入資料格式不正確");
+  const value = input as Record<string, unknown>;
+  if (typeof value.academic_year_id !== "string" || typeof value.title !== "string" || !value.title.trim()) throw new Error("請完整填寫學年度與職位名稱");
+  return { academic_year_id: value.academic_year_id, title: value.title.trim() };
 }
