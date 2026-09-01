@@ -13,7 +13,7 @@ export default async function HomePage() {
   });
 
   return (
-    <main>
+    <div>
       <section className="border-b border-(--border) bg-(--primary-background)">
         <div className="container grid gap-8 py-12 sm:py-16 lg:grid-cols-[1.3fr_0.7fr] lg:items-center">
           <div className="space-y-5">
@@ -31,6 +31,6 @@ export default async function HomePage() {
         <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-2xl font-bold">可借用桌遊</h2><p className="mt-1 text-sm text-(--muted)">看看社團目前可申請借用的社產。</p></div><Link href="/board-games" className="btn outline rounded-lg px-4 py-2 text-sm">查看全部</Link></div>
         <BoardGameGrid boardGames={featuredGames.data} hasActiveQuery={false} />
       </section>
-    </main>
+    </div>
   );
 }

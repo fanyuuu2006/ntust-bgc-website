@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SelfCheckInEvents } from "@/components/(authenticated)/dashboard/SelfCheckInEvents";
 import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
 import { QuickStats } from "@/components/QuickStats";
+import { ButtonLink } from "@/components/ui/Button";
 import { getCurrentUser } from "@/libs/auth";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { eventsService } from "@/services/events/events.service";
@@ -62,9 +63,9 @@ export default async function DashboardPage() {
         <section className="card rounded-2xl p-5">
           <div className="flex items-center justify-between">
             <h2 className="font-bold">我的借用</h2>
-            <Link href="/borrowings" className="text-sm font-medium text-(--primary)">
+            <ButtonLink href="/borrowings" variant="text" size="sm" className="px-0">
               查看全部
-            </Link>
+            </ButtonLink>
           </div>
           <div className="mt-4 space-y-3">
             {activeBorrowings.length ? (

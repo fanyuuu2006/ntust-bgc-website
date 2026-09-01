@@ -4,8 +4,10 @@ import {
   BorrowingStatusBadge,
 } from "@/components/BorrowingStatusBadge";
 import { Pagination } from "@/components/Pagination/Pagination";
-import { ButtonLink } from "@/components/ui/Button";
+import { PageHeader } from "@/components/PageHeader";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Select } from "@/components/ui/Select";
 import { getCurrentUser } from "@/libs/auth";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import type { BorrowingStatus } from "@/types/database";
@@ -67,23 +69,16 @@ export default async function BorrowingsPage({
   return (
     <section className="py-8">
       <div className="container space-y-6">
-        <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-(--interactive-primary)">
-              我的桌遊借用
-            </p>
-            <h1 className="text-2xl font-bold text-(--text-primary) sm:text-3xl">
-              借用紀錄
-            </h1>
-            <p className="text-sm text-(--text-muted)">
-              查看目前申請、借出與歷史借用紀錄。
-            </p>
-          </div>
-
-          <ButtonLink href="/board-games" variant="outline" className="rounded-xl">
-            瀏覽桌遊
-          </ButtonLink>
-        </header>
+        <PageHeader
+          eyebrow="我的桌遊借用"
+          title="借用紀錄"
+          description="查看目前申請、借出與歷史借用紀錄。"
+          actions={
+            <ButtonLink href="/board-games" variant="outline" className="rounded-xl">
+              瀏覽桌遊
+            </ButtonLink>
+          }
+        />
 
         <BorrowingStatusFilter status={status} pageSize={pageSize} />
 
@@ -134,10 +129,10 @@ function BorrowingStatusFilter({
 
       <label className="grid gap-1.5 text-sm font-medium text-(--text-primary)">
         借用狀態
-        <select
+        <Select
           name="status"
           defaultValue={status ?? ""}
-          className="min-h-11 rounded-xl border border-(--border) bg-(--primary-background) px-3 text-base text-(--text-primary) outline-none focus:border-(--primary) sm:min-w-48 sm:text-sm"
+          className="min-h-11 rounded-xl text-base sm:min-w-48 sm:text-sm"
         >
           <option value="">全部狀態</option>
           {STATUS_OPTIONS.map((option) => (
@@ -145,18 +140,18 @@ function BorrowingStatusFilter({
               {option.label}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
 
       <div className="flex flex-wrap gap-2">
-        <button type="submit" className="btn primary min-h-11 rounded-xl px-4">
+        <Button type="submit" className="min-h-11 rounded-xl px-4">
           套用篩選
-        </button>
+        </Button>
         {status ? (
           <ButtonLink
             href={`${BASE_PATH}?pageSize=${pageSize}`}
-            variant="outline"
-            className="min-h-11 rounded-xl px-4"
+            variant="text"
+            className="min-h-11 rounded-xl px-2"
           >
             清除篩選
           </ButtonLink>

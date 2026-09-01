@@ -2,50 +2,31 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
-import { adminNavigation, userNavigation } from "@/libs/navigation";
+
+import { adminNavigation, memberMenuNavigation, type NavigationItem } from "@/libs/navigation";
 import type { User } from "@/types/database";
 import { cn } from "@/utils/className";
+import { Button } from "@/components/ui/Button";
 import { LogoutButton } from "../LogoutButton";
 import { UserAvatar } from "../UserAvatar";
 
-type NavLinkItem = {
-  label: string;
-  href: string;
-};
-
-type MenuItemProps = NavLinkItem & {
+type MenuLinksProps = {
+  items: readonly NavigationItem[];
   onNavigate: () => void;
 };
 
-function MenuItem({ label, href, onNavigate }: MenuItemProps) {
+function MenuLinks({ items, onNavigate }: MenuLinksProps) {
   return (
-    <Link
-      href={href}
-      role="menuitem"
-      onClick={onNavigate}
-      className="truncate rounded-lg px-3 py-2 text-sm text-(--foreground)/70 hover:bg-(--secondary-background) hover:text-(--foreground)"
-    >
-      {label}
-    </Link>
-  );
-}
-
-type MenuGroupProps = {
-  label: string;
-  items: Readonly<NavLinkItem[]>;
-  onNavigate: () => void;
-};
-
-function MenuGroup({ label, items, onNavigate }: MenuGroupProps) {
-  if (items.length === 0) return null;
-
-  return (
-    <div className="flex flex-col gap-0.5">
-      <p className="px-3 pb-1 pt-2 text-[0.6875rem] font-semibold tracking-wide text-(--muted) uppercase">
-        {label}
-      </p>
+    <div className="grid gap-0.5">
       {items.map((item) => (
-        <MenuItem key={item.href} {...item} onNavigate={onNavigate} />
+        <Link
+          key={item.href}
+          href={item.href}
+          onClick={onNavigate}
+          className="flex min-h-10 items-center rounded-lg px-3 text-sm text-(--text-primary) transition-colors hover:bg-(--surface-subtle)"
+        >
+          {item.label}
+        </Link>
       ))}
     </div>
   );
@@ -56,123 +37,110 @@ type UserMenuProps = React.HTMLAttributes<HTMLDivElement> & {
   isAdmin: boolean;
 };
 
-export const UserMenu = ({
+export function UserMenu({
   user,
   isAdmin,
   className,
-  ...rest
-}: UserMenuProps) => {
+  ...props
+}: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const panelId = useId();
-  const buttonId = useId();
-  const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Esc 關閉並將焦點還給觸發按鈕 + 點擊外部關閉
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
       setIsOpen(false);
       triggerRef.current?.focus();
-    };
-    const handleClickOutside = (event: MouseEvent) => {
+    }
+
+    function handlePointerDown(event: PointerEvent) {
       if (!containerRef.current?.contains(event.target as Node)) {
         setIsOpen(false);
       }
-    };
+    }
 
     document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("pointerdown", handlePointerDown);
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("pointerdown", handlePointerDown);
     };
   }, [isOpen]);
 
   const closeMenu = () => setIsOpen(false);
 
   return (
-    <div
-      ref={containerRef}
-      className={cn("relative flex items-center justify-center", className)}
-      {...rest}
-    >
-      <button
-        id={buttonId}
+    <div ref={containerRef} className={cn("relative", className)} {...props}>
+      <Button
         ref={triggerRef}
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        aria-haspopup="menu"
+        variant="ghost"
+        size="none"
+        iconOnly
         aria-expanded={isOpen}
         aria-controls={panelId}
-        aria-label={`使用者選單，${user.name}`}
-        className="rounded-full p-0.5"
+        aria-label={`帳號選單，${user.name}`}
+        onClick={() => setIsOpen((open) => !open)}
+        className="size-11 rounded-full p-0.5"
       >
         <UserAvatar
           user={user}
-          className="size-9 rounded-full border border-(--border)"
+          className="size-9 rounded-full border border-(--border-default)"
         />
-      </button>
+      </Button>
 
-      {isOpen && (
+      {isOpen ? (
         <div
           id={panelId}
-          role="menu"
-          aria-labelledby={buttonId}
-          className={cn(
-            "card absolute top-[calc(100%+0.5rem)] right-0 z-50",
-            "flex max-h-[70vh] w-64 max-w-[calc(100vw-2rem)] flex-col gap-1",
-            "overflow-y-auto rounded-xl p-1.5",
-          )}
+          aria-label="帳號選單"
+          className="card absolute right-0 top-[calc(100%+0.5rem)] z-50 flex max-h-[min(70dvh,32rem)] w-72 max-w-[calc(100vw-2rem)] flex-col gap-1 overflow-y-auto rounded-2xl p-1.5 shadow-(--shadow-card)"
         >
           <Link
             href="/profile"
             onClick={closeMenu}
-            className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-(--secondary-background)"
+            className="flex min-h-12 items-center gap-2.5 rounded-xl px-2 py-1.5 transition-colors hover:bg-(--surface-subtle)"
           >
             <UserAvatar user={user} className="size-8 shrink-0 rounded-full" />
-            <div className="flex min-w-0 flex-col leading-tight">
-              <span className="truncate font-medium text-(--foreground)">
+            <span className="min-w-0">
+              <span className="block truncate font-medium text-(--text-primary)">
                 {user.name}
               </span>
-              <span className="truncate text-xs text-(--muted)">
+              <span className="block truncate text-xs text-(--text-muted)">
                 {user.email}
               </span>
-            </div>
+            </span>
           </Link>
 
-          <hr role="separator" className="my-0.5 border-(--border)" />
+          <hr className="my-0.5 border-(--border-muted)" />
+          <MenuLinks items={memberMenuNavigation} onNavigate={closeMenu} />
 
-          <MenuGroup
-            label="使用者"
-            items={userNavigation}
-            onNavigate={closeMenu}
-          />
-
-          {isAdmin && (
+          {isAdmin ? (
             <>
-              <hr role="separator" className="my-0.5 border-(--border)" />
-              <MenuGroup
-                label="幹部"
-                items={adminNavigation}
-                onNavigate={closeMenu}
-              />
+              <hr className="my-0.5 border-(--border-muted)" />
+              <MenuLinks items={adminNavigation} onNavigate={closeMenu} />
             </>
-          )}
+          ) : null}
 
-          <hr role="separator" className="my-0.5 border-(--border)" />
-
+          <hr className="my-0.5 border-(--border-muted)" />
           <LogoutButton
-            className="btn danger w-full rounded-lg py-2 text-sm"
+            variant="ghost"
+            className="w-full justify-start px-3 text-(--status-danger) hover:text-(--status-danger)"
             onClick={closeMenu}
           >
             登出
           </LogoutButton>
         </div>
-      )}
+      ) : null}
     </div>
   );
-};
+}

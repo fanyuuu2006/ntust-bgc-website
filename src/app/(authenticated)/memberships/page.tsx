@@ -1,6 +1,7 @@
 import { CurrentMembershipCard } from "@/components/(authenticated)/memberships/CurrentMembershipCard";
 import { MembershipActivationForm } from "@/components/(authenticated)/memberships/MembershipActivationForm";
 import { MembershipHistory } from "@/components/(authenticated)/memberships/MembershipHistory";
+import { PageHeader } from "@/components/PageHeader";
 import { getCurrentUser } from "@/libs/auth";
 import { membershipService } from "@/services/memberships/memberships.service";
 
@@ -40,15 +41,11 @@ export default async function MembershipsPage() {
 
   return (
     <section className="container space-y-6 py-8">
-      <header className="space-y-2">
-        <p className="text-sm font-medium text-(--interactive-primary)">我的帳號</p>
-        <h1 className="text-2xl font-semibold text-(--text-primary)">
-          我的社員資格
-        </h1>
-        <p className="max-w-2xl text-sm leading-6 text-(--text-muted)">
-          查看目前資格與歷年社員紀錄；完成線下繳費後，可在此啟用新的學年度資格。
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="我的帳號"
+        title="我的社員資格"
+        description="查看目前資格與歷年社員紀錄；完成線下繳費後，可在此啟用新的學年度資格。"
+      />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="space-y-6">

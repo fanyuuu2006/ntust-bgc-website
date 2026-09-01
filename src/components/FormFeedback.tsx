@@ -4,6 +4,8 @@ import React from "react";
 type FormFeedbackProps = React.HTMLAttributes<HTMLDivElement> & {
   error?: string | null;
   success?: string | null;
+  warning?: string | null;
+  info?: string | null;
 };
 
 /**
@@ -13,10 +15,12 @@ type FormFeedbackProps = React.HTMLAttributes<HTMLDivElement> & {
 export const FormFeedback = ({
   error,
   success,
+  warning,
+  info,
   className,
   ...props
 }: FormFeedbackProps) => {
-  if (!error && !success) {
+  if (!error && !success && !warning && !info) {
     return null;
   }
   return (
@@ -29,6 +33,16 @@ export const FormFeedback = ({
       {success && (
         <p role="status" className="text-sm text-(--status-success)">
           {success}
+        </p>
+      )}
+      {warning && (
+        <p role="status" className="text-sm text-(--status-warning)">
+          {warning}
+        </p>
+      )}
+      {info && (
+        <p role="status" className="text-sm text-(--status-info)">
+          {info}
         </p>
       )}
     </div>

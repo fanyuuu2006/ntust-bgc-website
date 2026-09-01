@@ -70,7 +70,7 @@ export function BoardGameActiveFilters({
           key={chip.key}
           href={chip.href}
           aria-label={`移除${chip.label}${chip.value}篩選`}
-          variant="secondary"
+          variant="outline"
           size="sm"
           className="min-h-8 shrink-0 rounded-full text-xs"
         >

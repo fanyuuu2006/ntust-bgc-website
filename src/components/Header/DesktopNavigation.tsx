@@ -1,14 +1,20 @@
 "use client";
 
-import { mainNavigation } from "@/libs/navigation";
+import {
+  isNavigationItemActive,
+  type NavigationItem,
+} from "@/libs/navigation";
 import { cn } from "@/utils/className";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-type DesktopNavigationProps = React.HTMLAttributes<HTMLElement>;
+type DesktopNavigationProps = React.HTMLAttributes<HTMLElement> & {
+  items: readonly NavigationItem[];
+};
 
 export const DesktopNavigation = ({
   className,
+  items,
   ...rest
 }: DesktopNavigationProps) => {
   const pathname = usePathname();
@@ -19,9 +25,8 @@ export const DesktopNavigation = ({
       className={cn("hidden items-center gap-1 md:flex", className)}
       {...rest}
     >
-      {mainNavigation.map((item) => {
-        const isActive =
-          pathname === item.href || pathname.startsWith(`${item.href}/`);
+      {items.map((item) => {
+        const isActive = isNavigationItemActive(pathname, item);
 
         return (
           <Link

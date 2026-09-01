@@ -1,110 +1,104 @@
 "use client";
-import { mainNavigation } from "@/libs/navigation";
-import { cn } from "@/utils/className";
-import { Button } from "@/components/ui/Button";
+
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
-type MobileNavigationProps = React.HTMLAttributes<HTMLDivElement>;
+import { Button } from "@/components/ui/Button";
+import {
+  isNavigationItemActive,
+  type NavigationItem,
+} from "@/libs/navigation";
+import { cn } from "@/utils/className";
 
-export const MobileNavigation = ({
+type MobileNavigationProps = React.HTMLAttributes<HTMLDivElement> & {
+  items: readonly NavigationItem[];
+};
+
+export function MobileNavigation({
+  items,
   className,
-  ...rest
-}: MobileNavigationProps) => {
+  ...props
+}: MobileNavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const panelId = useId();
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Esc 關閉 + 點擊外部關閉
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
-    };
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        triggerRef.current?.focus();
+      }
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) {
         setIsOpen(false);
       }
-    };
+    }
 
     document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("pointerdown", handlePointerDown);
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("pointerdown", handlePointerDown);
     };
   }, [isOpen]);
 
+  const closeNavigation = () => setIsOpen(false);
+
   return (
-    <div
-      ref={containerRef}
-      className={cn("relative md:hidden", className)}
-      {...rest}
-    >
+    <div ref={containerRef} className={cn("relative md:hidden", className)} {...props}>
       <Button
+        ref={triggerRef}
         type="button"
-        aria-label={isOpen ? "關閉主選單" : "開啟主選單"}
+        variant="ghost"
+        iconOnly
+        aria-label={isOpen ? "關閉導覽選單" : "開啟導覽選單"}
         aria-expanded={isOpen}
         aria-controls={panelId}
-        onClick={() => setIsOpen((prev) => !prev)}
-        variant="secondary"
-        size="none"
-        iconOnly
-        className={cn("size-10 shrink-0 rounded-xl")}
+        onClick={() => setIsOpen((open) => !open)}
+        className="size-11 rounded-xl"
       >
-        <span>{isOpen ? "✕" : "☰"}</span>
+        <span aria-hidden="true">{isOpen ? "×" : "☰"}</span>
       </Button>
 
-      {isOpen && (
-        <nav
+      {isOpen ? (
+        <div
           id={panelId}
-          aria-label="行動裝置主導覽"
-          className={cn("absolute left-0 top-[calc(100%+0.5rem)] z-999")}
+          className="card absolute left-0 top-[calc(100%+0.5rem)] z-50 w-72 max-w-[calc(100vw-2rem)] rounded-2xl p-2 shadow-(--shadow-card)"
         >
-          <div
-            className={cn(
-              "min-w-48 max-w-[calc(100vw-2rem)] max-h-[80vh] overflow-y-auto",
-              "card rounded-xl p-1 flex flex-col gap-1",
-            )}
-          >
-            {mainNavigation.map((item) => {
-              const isActive =
-                pathname === item.href || pathname.startsWith(`${item.href}/`);
+          <nav aria-label="主要導覽" className="grid gap-1">
+            {items.map((item) => {
+              const isActive = isNavigationItemActive(pathname, item);
 
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeNavigation}
                   className={cn(
-                    // 基礎樣式
-                    "relative flex items-center rounded-lg px-4 py-2",
-                    "text-sm font-medium text-(--foreground)/70",
-                    "transition-all duration-300",
-                    // hover(與 desktop 一致)
-                    "hover:bg-(--secondary-background) hover:text-(--primary)",
-                    {
-                      // 當前頁面樣式
-                      "text-(--primary) bg-(--secondary-background) font-semibold before:scale-y-100":
-                        isActive,
-                    },
+                    "flex min-h-11 items-center rounded-xl px-3 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-(--surface-subtle) text-(--action)"
+                      : "text-(--text-primary) hover:bg-(--surface-subtle)",
                   )}
                 >
-                  <span>{item.label}</span>
+                  {item.label}
                 </Link>
               );
             })}
-          </div>
-        </nav>
-      )}
+          </nav>
+
+        </div>
+      ) : null}
     </div>
   );
-};
+}

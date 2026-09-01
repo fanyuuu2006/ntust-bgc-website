@@ -71,7 +71,7 @@ export function BoardGameFilterPanel({
             type="button"
             aria-expanded={open}
             onClick={() => setOpen((prev) => !prev)}
-            variant={filterCount > 0 || open ? "outline" : "secondary"}
+            variant={filterCount > 0 || open ? "outline" : "ghost"}
             className={cn(
               "min-h-9 shrink-0 rounded-full px-3",
             )}
@@ -182,7 +182,7 @@ function FilterPill({ label, title, checked, onChange }: FilterPillProps) {
       aria-pressed={checked}
       title={title}
       onClick={() => onChange(!checked)}
-      variant={checked ? "primary" : "secondary"}
+      variant={checked ? "primary" : "outline"}
       className="min-h-9 shrink-0 rounded-full px-3 sm:min-h-8 sm:text-xs"
     >
       {label}

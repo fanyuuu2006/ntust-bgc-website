@@ -19,7 +19,7 @@ export function Card({
         "card rounded-2xl",
         surface === "subtle" && "bg-(--surface-subtle) shadow-none",
         surface === "elevated" && "bg-(--surface-elevated) shadow-(--shadow-card)",
-        interactive && "interactive",
+        interactive && "interactive focus-within:border-(--border-strong) focus-within:shadow-(--shadow-hover)",
         selected && "selected",
         className,
       )}

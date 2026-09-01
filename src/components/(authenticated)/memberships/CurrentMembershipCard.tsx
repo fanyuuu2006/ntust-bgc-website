@@ -1,6 +1,6 @@
 import type { MembershipWithAcademicYear } from "@/services/memberships/memberships.types";
 import { formatDate } from "@/utils/date";
-import { MembershipStatusBadge } from "./MembershipStatusBadge";
+import { MembershipStatusBadge } from "@/components/MembershipStatusBadge";
 
 export function CurrentMembershipCard({
   membership,

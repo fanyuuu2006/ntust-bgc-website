@@ -15,19 +15,14 @@
     --muted: #64748b;
 
     /* === 背景 === */
-    --background: #f5f8fc;
+    --background: #f7f9fc;
     --primary-background: #ffffff;
-    --secondary-background: #eef4fa;
-    --tertiary-background: #e3edf7;
+    --secondary-background: #f0f4f8;
+    --tertiary-background: #e6edf5;
 
     /* === 品牌主色：NTUST 藍 === */
     --primary: #005bac;
-    --primary-light: #2f80c9;
     --primary-dark: #00427d;
-
-    /* === 品牌輔色 === */
-    --secondary: #20a849;
-    --tertiary: #ffbf00;
 
     /* === 桌遊積木色 === */
     --game-red: #e52d46;
@@ -36,7 +31,7 @@
     --game-blue: #1683d8;
 
     /* === 邊框 === */
-    --border: rgba(0, 91, 172, 0.28);
+    --border: rgba(71, 85, 105, 0.24);
 
     /* =====================================================
        Semantic tokens
@@ -67,6 +62,12 @@
     --interactive-primary-active: var(--primary-dark);
     --interactive-muted: var(--secondary-background);
 
+    /* === Action === */
+    --action: var(--primary);
+    --action-hover: var(--primary-dark);
+    --action-active: var(--primary-dark);
+    --action-foreground: var(--text-inverse);
+
     /* === Status === */
     --status-success: var(--game-green);
     --status-warning: var(--game-yellow);
@@ -79,11 +80,11 @@
     --focus-ring-danger: color-mix(in oklab, var(--status-danger) 28%, transparent);
 
     /* === 陰影 === */
-    --shadow-base: 0 0.25rem 1rem rgba(15, 23, 42, 0.06);
+    --shadow-base: 0 1px 2px rgba(15, 23, 42, 0.05);
 
     --shadow-card: 0 0.5rem 1.5rem rgba(15, 23, 42, 0.08);
 
-    --shadow-hover: 0 0.75rem 2rem rgba(0, 91, 172, 0.14);
+    --shadow-hover: 0 0.5rem 1.5rem rgba(15, 23, 42, 0.1);
 
     --shadow-card-hover: 0 var(--move-y) 1.5rem rgba(0, 91, 172, 0.16);
 
@@ -97,8 +98,6 @@
 
     --transition-timing: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
-    --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-
     /* =====================================================
        📐 Layout
        ===================================================== */
@@ -110,8 +109,9 @@
     --border-radius-2xl: 2rem;
 
     --container-max-width: 1280px;
+    --page-padding-inline: 1.5rem;
     --scroll-margin: 8rem;
-    --move-y: 0.35rem;
+    --move-y: 0.125rem;
 
     /* =====================================================
        🧱 Other
@@ -246,7 +246,7 @@
    ===================================================== */
 
   .btn {
-    background: var(--interactive-muted);
+    background: transparent;
   }
 
   /* =====================================================
@@ -254,42 +254,19 @@
    ===================================================== */
 
   .btn.primary {
-    background: linear-gradient(
-      135deg,
-      var(--interactive-primary),
-      var(--primary-light)
-    );
-    color: var(--text-inverse);
-    border-color: var(--interactive-primary);
+    background: var(--action);
+    color: var(--action-foreground);
+    border-color: var(--action);
   }
 
   .btn.primary:hover {
-    background: linear-gradient(
-      135deg,
-      var(--interactive-primary-hover),
-      var(--interactive-primary)
-    );
-    border-color: var(--interactive-primary-hover);
+    background: var(--action-hover);
+    border-color: var(--action-hover);
   }
 
   .btn.primary:not(:disabled):active {
-    background: var(--interactive-primary-active);
-    border-color: var(--interactive-primary-active);
-  }
-
-  /* =====================================================
-   Secondary
-   ===================================================== */
-
-  .btn.secondary {
-    background: var(--surface-subtle);
-    color: var(--status-success);
-    border-color: var(--status-success);
-  }
-
-  .btn.secondary:hover {
-    background: var(--status-success);
-    color: var(--text-inverse);
+    background: var(--action-active);
+    border-color: var(--action-active);
   }
 
   /* =====================================================
@@ -297,14 +274,15 @@
    ===================================================== */
 
   .btn.outline {
-    background: transparent;
-    color: var(--interactive-primary);
-    border-color: var(--interactive-primary);
+    background: var(--surface-default);
+    color: var(--text-primary);
+    border-color: var(--border-default);
   }
 
   .btn.outline:hover {
-    background: var(--interactive-primary);
-    color: var(--text-inverse);
+    background: var(--surface-subtle);
+    border-color: var(--border-strong);
+    color: var(--text-primary);
   }
 
   .btn.ghost {
@@ -315,7 +293,26 @@
 
   .btn.ghost:hover {
     background: var(--surface-subtle);
-    border-color: var(--border-muted);
+    border-color: transparent;
+  }
+
+  .btn.text {
+    border-color: transparent;
+    background: transparent;
+    color: var(--action);
+  }
+
+  .btn.text:hover {
+    border-color: transparent;
+    background: transparent;
+    color: var(--action-hover);
+    text-decoration: underline;
+    text-underline-offset: 0.25rem;
+  }
+
+  .btn.text:disabled {
+    border-color: transparent;
+    background: transparent;
   }
 
   .btn.danger {
@@ -337,12 +334,14 @@
     width: 100%;
     max-width: var(--container-max-width) !important;
     margin-inline: auto;
-    padding: 1.5rem;
+    padding-block: 1.5rem;
+    padding-inline: var(--page-padding-inline);
   }
 
   @media (max-width: 768px) {
     .container {
-      padding: 1rem;
+      --page-padding-inline: 1rem;
+      padding-block: 1rem;
     }
   }
 
@@ -373,6 +372,12 @@
   .card.interactive:hover,
   a.card:hover {
     transform: translateY(calc(-1 * var(--move-y)));
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .card.interactive:focus-within,
+  a.card:focus-visible {
     border-color: var(--border-strong);
     box-shadow: var(--shadow-hover);
   }
@@ -415,97 +420,6 @@
 
   .card.accent.contrast {
     border-top-color: var(--game-red);
-  }
-
-  /* =====================================================
-     🧩 Game Block Decoration
-     ===================================================== */
-
-  .game-block {
-    border-radius: var(--border-radius-md);
-
-    box-shadow: 0 0.25rem 0 rgba(0, 0, 0, 0.12);
-
-    transition:
-      transform var(--transition-normal) var(--transition-bounce),
-      box-shadow var(--transition-normal) var(--transition-timing);
-  }
-
-  .game-block:hover {
-    transform: translateY(-0.25rem);
-
-    box-shadow: 0 0.5rem 0 rgba(0, 0, 0, 0.12);
-  }
-
-  .game-block.blue {
-    background: var(--game-blue);
-  }
-
-  .game-block.green {
-    background: var(--game-green);
-  }
-
-  .game-block.yellow {
-    background: var(--game-yellow);
-  }
-
-  .game-block.red {
-    background: var(--game-red);
-  }
-
-  /* =====================================================
-     💬 Tooltip
-     ===================================================== */
-
-  .tooltip,
-  .overlay-wrapper {
-    position: relative;
-  }
-
-  .tooltip::before,
-  .overlay-wrapper .overlay-content {
-    position: absolute;
-    left: 50%;
-    z-index: 9999;
-    transform: translateX(-50%);
-    bottom: 70%;
-    opacity: 0;
-    visibility: hidden;
-
-    transition:
-      opacity var(--transition-normal) var(--transition-timing),
-      transform var(--transition-normal) var(--transition-timing),
-      bottom var(--transition-normal) var(--transition-timing);
-  }
-
-  .tooltip:hover::before,
-  .tooltip:focus-visible::before,
-  .tooltip:focus-within::before,
-  .overlay-wrapper:hover .overlay-content,
-  .overlay-wrapper:focus-within .overlay-content {
-    bottom: 120%;
-    opacity: 1;
-    visibility: visible;
-  }
-
-  .tooltip::before {
-    content: attr(data-tooltip);
-
-    width: max-content;
-    max-width: 200px;
-
-    padding: 0.4rem 0.75rem;
-    background: var(--text-primary);
-    color: var(--text-inverse);
-    border-radius: var(--border-radius-md);
-    white-space: nowrap;
-
-    font-size: 0.8125rem;
-    font-weight: 500;
-
-    box-shadow: var(--shadow-hover);
-
-    pointer-events: none;
   }
 
   /* =====================================================

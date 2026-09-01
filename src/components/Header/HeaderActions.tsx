@@ -1,7 +1,7 @@
 import { cn } from "@/utils/className";
-import Link from "next/link";
 import { UserMenu } from "./UserMenu";
 import { User } from "@/types/database";
+import { ButtonLink } from "@/components/ui/Button";
 
 type HeaderActionsProps = React.HTMLAttributes<HTMLDivElement> & {
   user: User | null;
@@ -22,9 +22,9 @@ export const HeaderActions = ({
       {user ? (
         <UserMenu user={user} isAdmin={isAdmin} />
       ) : (
-        <Link href="/login" className="btn primary py-1.5 px-4 rounded-full">
+        <ButtonLink href="/login" variant="primary" size="sm">
           登入
-        </Link>
+        </ButtonLink>
       )}
     </div>
   );

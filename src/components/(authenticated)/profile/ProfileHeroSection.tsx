@@ -1,5 +1,5 @@
 import { UserAvatar } from "@/components/UserAvatar";
-import { MembershipStatusBadge } from "@/components/(authenticated)/memberships/MembershipStatusBadge";
+import { MembershipStatusBadge } from "@/components/MembershipStatusBadge";
 import { Badge } from "@/components/ui/Badge";
 import { MembershipWithAcademicYear } from "@/services/memberships/memberships.types";
 import { OfficerPositionWithAcademicYear } from "@/services/officer-positions/officer-positions.types";

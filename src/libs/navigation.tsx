@@ -1,18 +1,31 @@
-export const mainNavigation = [
+export type NavigationItem = {
+  label: string;
+  href: string;
+  activePaths?: readonly string[];
+};
+
+export const publicNavigation = [
   { label: "首頁", href: "/" },
   { label: "公告", href: "/announcements" },
   { label: "桌遊", href: "/board-games" },
-] as const;
+] as const satisfies readonly NavigationItem[];
 
-export const userNavigation = [
-  { label: "儀表板", href: "/dashboard" },
-  { label: "我的借用", href: "/borrowings" },
-  { label: "社員資格", href: "/memberships" },
+export const memberMenuNavigation = [
   { label: "個人資料", href: "/profile" },
+  { label: "社員資格", href: "/memberships" },
+  { label: "借用紀錄", href: "/borrowings" },
   { label: "設定", href: "/settings" },
-] as const;
+] as const satisfies readonly NavigationItem[];
 
 export const adminNavigation = [{ label: "管理後台", href: "/admin" }] as const;
+
+export function isNavigationItemActive(pathname: string, item: NavigationItem) {
+  const paths = [item.href, ...(item.activePaths ?? [])];
+
+  return paths.some((path) =>
+    path === "/" ? pathname === path : pathname === path || pathname.startsWith(`${path}/`),
+  );
+}
 
 type AdminNavigationItem = { label: string; href: string };
 type AdminNavigationGroup = { label: string; items: readonly AdminNavigationItem[] };

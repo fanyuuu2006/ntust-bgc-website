@@ -31,7 +31,7 @@ export function BoardGameSortMenu({ query }: BoardGameSortMenuProps) {
         aria-label="選擇桌遊排序方式"
         aria-expanded={open}
         onClick={() => setOpen((prev) => !prev)}
-        variant="secondary"
+        variant="ghost"
         className="min-h-9 shrink-0 rounded-full px-3"
       >
         排序：{activeOption.label}

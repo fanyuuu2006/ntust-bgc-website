@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ButtonLink } from "@/components/ui/Button";
 import { cn } from "@/utils/className";
 
 export type HistoryStatusVariant = "success" | "warning" | "danger" | "muted";
@@ -81,12 +81,14 @@ function HistoryGroupCard({ group }: { group: HistoryGroup }) {
         </h3>
         {hasItems &&
           (group.viewAllHref ? (
-            <Link
+            <ButtonLink
               href={group.viewAllHref}
-              className="shrink-0 rounded-sm text-xs font-medium text-(--primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+              variant="text"
+              size="sm"
+              className="shrink-0 px-0"
             >
               查看全部
-            </Link>
+            </ButtonLink>
           ) : (
             <span className="shrink-0 text-xs text-(--muted)">
               共 {group.items.length} 筆

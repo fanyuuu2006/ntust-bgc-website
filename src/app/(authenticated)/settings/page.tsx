@@ -15,7 +15,7 @@ export default async function SettingsPage() {
   if (!profile) return null;
 
   return (
-    <main className="pb-8 sm:pb-12">
+    <section className="pb-8 sm:pb-12">
       <div className="container py-6 sm:py-8">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 sm:gap-6">
           <div>
@@ -40,6 +40,6 @@ export default async function SettingsPage() {
           </div>
         </div>
       </div>
-    </main>
+    </section>
   );
 }
