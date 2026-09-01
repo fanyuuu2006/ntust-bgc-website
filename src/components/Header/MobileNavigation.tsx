@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { Menu, X } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import {
@@ -66,7 +67,11 @@ export function MobileNavigation({
         onClick={() => setIsOpen((open) => !open)}
         className="size-11 rounded-xl"
       >
-        <span aria-hidden="true">{isOpen ? "×" : "☰"}</span>
+        {isOpen ? (
+          <X aria-hidden="true" className="size-5" />
+        ) : (
+          <Menu aria-hidden="true" className="size-5" />
+        )}
       </Button>
 
       {isOpen ? (

@@ -27,6 +27,7 @@ const fields: FieldInputField[] = [
     type: "email",
     required: true,
     autoComplete: "email",
+    inputMode: "email",
     placeholder: "請輸入 Email",
   },
   {
@@ -85,6 +86,7 @@ export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
     <form
       onSubmit={handleSubmit}
       noValidate
+      aria-busy={isLoading || undefined}
       className={cn("flex flex-col gap-6", className)}
       {...rest}
     >
@@ -107,6 +109,7 @@ export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
       <div className="flex flex-col gap-4">
         <Button
           type="submit"
+          variant="primary"
           disabled={isLoading}
           isLoading={isLoading}
           className="w-full py-2.5 sm:text-base"

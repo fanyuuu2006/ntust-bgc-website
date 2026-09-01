@@ -33,7 +33,7 @@
 | Password hashing | argon2 |
 | Validation | Zod 4 |
 | Utilities | clsx、tailwind-merge、next/font/google |
-| Icons / widgets | @ant-design/icons、@marsidev/react-turnstile |
+| Icons / widgets | lucide-react、@marsidev/react-turnstile |
 | Lint | ESLint 9 + eslint-config-next |
 | Formatting | 未設定 Prettier |
 | Tests | 目前尚未導入測試框架 |

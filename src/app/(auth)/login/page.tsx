@@ -3,11 +3,11 @@ import { LoginForm } from "@/components/(auth)/login/LoginForm";
 
 export default function LoginPage() {
   return (
-    <section className="h-full">
-      <div className="container h-full flex items-center justify-center">
+    <section className="py-4 sm:py-8">
+      <div className="container flex justify-center">
         <AuthCard
           title="登入"
-          description="請使用您的帳號密碼登入。"
+          description="登入你的網站帳號。"
           className="w-full max-w-md rounded-2xl"
         >
           <LoginForm />

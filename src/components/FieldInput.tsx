@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
+import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/utils/className";
 import { Input } from "@/components/ui/Input";
 import { Field, getFieldDescribedBy } from "@/components/ui/Field";
@@ -16,6 +16,7 @@ export type FieldInputField = {
   placeholder?: string;
   disabled?: boolean;
   autoComplete?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   error?: string;
 };
 
@@ -73,6 +74,7 @@ export const FieldInput = ({
           required={field.required}
           placeholder={field.placeholder}
           autoComplete={field.autoComplete}
+          inputMode={field.inputMode}
           aria-required={field.required}
           invalid={Boolean(field.error)}
           aria-describedby={describedBy}
@@ -85,14 +87,18 @@ export const FieldInput = ({
 
         {isPasswordField && (
           <Button
-            variant="ghost"
+            variant='text'
             size="none"
             onClick={togglePasswordVisibility}
             aria-label={isPasswordVisible ? "隱藏密碼" : "顯示密碼"}
             aria-pressed={isPasswordVisible}
             className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-2 text-(--text-muted) hover:text-(--text-primary)"
           >
-            {isPasswordVisible ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+            {isPasswordVisible ? (
+              <EyeOff aria-hidden="true" className="size-4" />
+            ) : (
+              <Eye aria-hidden="true" className="size-4" />
+            )}
           </Button>
         )}
       </div>
