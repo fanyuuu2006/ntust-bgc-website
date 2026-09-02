@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { UserRound } from "lucide-react";
 
@@ -81,11 +82,13 @@ export function AdminBorrowingList({
     : BASE_PATH;
 
   function choose(borrowing: BoardGameBorrowingForAdmin, action: Action) {
-    setDueAt(action === "checkout"
-      ? getFutureTaipeiDateTimeLocal(borrowingConfig.defaultDurationDays)
-      : action === "edit" && borrowing.due_at
-        ? formatTaipeiDateTimeLocal(new Date(borrowing.due_at))
-        : "");
+    setDueAt(
+      action === "checkout"
+        ? getFutureTaipeiDateTimeLocal(borrowingConfig.defaultDurationDays)
+        : action === "edit" && borrowing.due_at
+          ? formatTaipeiDateTimeLocal(new Date(borrowing.due_at))
+          : "",
+    );
     setFeedback(null);
     setSelected({ borrowing, action });
   }
@@ -97,10 +100,14 @@ export function AdminBorrowingList({
   async function run() {
     if (!selected) return;
 
-    const editedDueAt = selected.action === "checkout" || selected.action === "edit"
-      ? parseTaipeiDateTimeLocal(dueAt)
-      : null;
-    if ((selected.action === "checkout" || selected.action === "edit") && !editedDueAt) {
+    const editedDueAt =
+      selected.action === "checkout" || selected.action === "edit"
+        ? parseTaipeiDateTimeLocal(dueAt)
+        : null;
+    if (
+      (selected.action === "checkout" || selected.action === "edit") &&
+      !editedDueAt
+    ) {
       setFeedback("請輸入有效的預計歸還時間。");
       return;
     }
@@ -115,18 +122,23 @@ export function AdminBorrowingList({
       } else {
         await apiClient(`/api/admin/borrowings/${selected.borrowing.id}`, {
           method: "PATCH",
-          body: selected.action === "edit"
-            ? { due_at: editedDueAt }
-            : {
-                action: selected.action,
-                ...(selected.action === "checkout" ? { due_at: editedDueAt } : {}),
-              },
+          body:
+            selected.action === "edit"
+              ? { due_at: editedDueAt }
+              : {
+                  action: selected.action,
+                  ...(selected.action === "checkout"
+                    ? { due_at: editedDueAt }
+                    : {}),
+                },
         });
       }
       setSelected(null);
       router.refresh();
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "操作失敗，請稍後再試。");
+      setFeedback(
+        error instanceof Error ? error.message : "操作失敗，請稍後再試。",
+      );
     } finally {
       setBusy(false);
     }
@@ -136,7 +148,7 @@ export function AdminBorrowingList({
   const actionDescription = selected
     ? selected.action === "delete"
       ? `確定要永久刪除「${selected.borrowing.board_game.name}」的借用紀錄嗎？借用人：${getBorrowerName(selected.borrowing)}。刪除後將無法復原。`
-      : `桌遊「${selected.borrowing.board_game.name}」的借用人為 ${getBorrowerName(selected.borrowing)}。`
+      : `桌遊「${selected.borrowing.board_game.name}」的借用。`
     : "";
 
   return (
@@ -147,9 +159,12 @@ export function AdminBorrowingList({
           onSubmit={(event) => {
             event.preventDefault();
             const formData = new FormData(event.currentTarget);
-            const search = String(formData.get("search") ?? "").trim() || undefined;
-            const status = String(formData.get("status") ?? "").trim() || undefined;
-            const orderBy = String(formData.get("orderBy") ?? "").trim() || undefined;
+            const search =
+              String(formData.get("search") ?? "").trim() || undefined;
+            const status =
+              String(formData.get("status") ?? "").trim() || undefined;
+            const orderBy =
+              String(formData.get("orderBy") ?? "").trim() || undefined;
             router.push(
               `${BASE_PATH}?${buildQueryString(toHeaderQuery(query), {
                 search,
@@ -196,7 +211,7 @@ export function AdminBorrowingList({
       ) : (
         <>
           <AdminListSection className="hidden xl:block">
-            <Table className="min-w-[760px]">
+            <Table className="min-w-190">
               <TableHeader>
                 <TableRow>
                   <TableHead>桌遊</TableHead>
@@ -209,11 +224,24 @@ export function AdminBorrowingList({
               <TableBody>
                 {borrowings.map((borrowing) => (
                   <TableRow key={borrowing.id}>
-                    <TableCell className="min-w-56"><BoardGameSummary borrowing={borrowing} /></TableCell>
-                    <TableCell className="min-w-56"><BorrowerSummary borrowing={borrowing} /></TableCell>
-                    <TableCell className="whitespace-nowrap"><BorrowingStatusBadge status={borrowing.status} /></TableCell>
-                    <TableCell className="min-w-52"><BorrowingTimeline borrowing={borrowing} /></TableCell>
-                    <TableCell className="whitespace-nowrap text-right"><BorrowingActions borrowing={borrowing} onAction={choose} /></TableCell>
+                    <TableCell className="min-w-56">
+                      <BoardGameSummary borrowing={borrowing} />
+                    </TableCell>
+                    <TableCell className="min-w-56">
+                      <BorrowerSummary borrowing={borrowing} />
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <BorrowingStatusBadge status={borrowing.status} />
+                    </TableCell>
+                    <TableCell className="min-w-52">
+                      <BorrowingTimeline borrowing={borrowing} />
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-right">
+                      <BorrowingActions
+                        borrowing={borrowing}
+                        onAction={choose}
+                      />
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -222,19 +250,24 @@ export function AdminBorrowingList({
 
           <div className="grid min-w-0 max-w-full gap-3 xl:hidden">
             {borrowings.map((borrowing) => (
-              <Card key={borrowing.id} className="w-full min-w-0 max-w-full space-y-4 p-4">
+              <Card
+                key={borrowing.id}
+                className="w-full min-w-0 max-w-full space-y-3 p-4"
+              >
                 <div className="flex min-w-0 items-start justify-between gap-3">
-                  <BoardGameSummary borrowing={borrowing} />
-                  <BorrowingStatusBadge status={borrowing.status} className="shrink-0" />
+                  <BoardGameSummary
+                    borrowing={borrowing}
+                    titleClassName="line-clamp-2"
+                  />
+                  <BorrowingStatusBadge
+                    status={borrowing.status}
+                    className="shrink-0"
+                  />
                 </div>
-                <div className="border-t border-(--border-muted) pt-3"><BorrowerSummary borrowing={borrowing} /></div>
-                <dl className="grid min-w-0 grid-cols-1 gap-x-3 gap-y-2 text-sm sm:grid-cols-2">
-                  <Detail label="申請時間" value={formatAdminDateTime(borrowing.created_at)} />
-                  <Detail label="借出時間" value={formatOptionalDate(borrowing.borrowed_at)} />
-                  <Detail label="預計歸還" value={formatOptionalDate(borrowing.due_at)} />
-                  <Detail label="歸還時間" value={formatOptionalDate(borrowing.returned_at)} />
-                  {getApprovalActor(borrowing) ? <Detail label={getApprovalActor(borrowing)?.label ?? "核准人"} value={getApprovalActor(borrowing)?.name ?? "尚未記錄核准人"} /> : null}
-                </dl>
+                <div className="border-t border-(--border-muted) pt-3">
+                  <BorrowerSummary borrowing={borrowing} />
+                </div>
+                <MobileBorrowingMetadata borrowing={borrowing} />
                 <BorrowingActions borrowing={borrowing} onAction={choose} />
               </Card>
             ))}
@@ -265,16 +298,33 @@ export function AdminBorrowingList({
               ? "已套用預設歸還時間，可依實際情況調整。"
               : "僅能調整借出中的預計歸還時間。"}
           </p>
-          {selected?.action === "checkout" && selected && !selected.borrowing.is_current_academic_year_member ? (
+          {selected?.action === "checkout" &&
+          selected &&
+          !selected.borrowing.is_current_academic_year_member ? (
             <p className="flex items-start gap-2 rounded-lg border border-(--border-default) bg-(--surface-subtle) p-3 text-sm leading-6 text-(--text-secondary)">
-              <UserRound aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-(--status-info)" />
+              <UserRound
+                aria-hidden="true"
+                className="mt-0.5 size-4 shrink-0 text-(--status-info)"
+              />
               {clubPolicies.adminNonCurrentAcademicYearMemberBorrowingNotice}
             </p>
           ) : null}
           <FormFeedback error={feedback} />
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" onClick={close} disabled={busy}>取消</Button>
-            <Button type="button" onClick={run} disabled={busy} isLoading={busy}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={close}
+              disabled={busy}
+            >
+              取消
+            </Button>
+            <Button
+              type="button"
+              onClick={run}
+              disabled={busy}
+              isLoading={busy}
+            >
               {selected?.action === "edit" ? "儲存變更" : "確認借出"}
             </Button>
           </div>
@@ -282,14 +332,22 @@ export function AdminBorrowingList({
       </Modal>
 
       <ConfirmDialog
-        open={Boolean(selected && selected.action !== "checkout" && selected.action !== "edit")}
+        open={Boolean(
+          selected &&
+          selected.action !== "checkout" &&
+          selected.action !== "edit",
+        )}
         onClose={close}
         onConfirm={run}
         isSubmitting={busy}
         title={actionTitle}
         description={actionDescription}
         confirmLabel={selected ? actionConfirmLabels[selected.action] : "確認"}
-        confirmVariant={selected?.action === "reject" || selected?.action === "delete" ? "danger" : "primary"}
+        confirmVariant={
+          selected?.action === "reject" || selected?.action === "delete"
+            ? "danger"
+            : "primary"
+        }
       />
     </div>
   );
@@ -313,57 +371,310 @@ const actionConfirmLabels: Record<Action, string> = {
   delete: "刪除借用紀錄",
 };
 
-function BorrowingActions({ borrowing, onAction }: { borrowing: BoardGameBorrowingForAdmin; onAction: (borrowing: BoardGameBorrowingForAdmin, action: Action) => void }) {
+function BorrowingActions({
+  borrowing,
+  onAction,
+}: {
+  borrowing: BoardGameBorrowingForAdmin;
+  onAction: (borrowing: BoardGameBorrowingForAdmin, action: Action) => void;
+}) {
   return (
     <div className="flex min-w-0 flex-wrap gap-2 md:justify-end">
-      {borrowing.status === "pending" ? <><Button size="sm" onClick={() => onAction(borrowing, "approve")}>核准借用</Button><Button size="sm" variant="danger" onClick={() => onAction(borrowing, "reject")}>拒絕申請</Button></> : null}
-      {borrowing.status === "approved" ? <Button size="sm" onClick={() => onAction(borrowing, "checkout")}>確認借出</Button> : null}
-      {borrowing.status === "borrowed" ? <Button size="sm" onClick={() => onAction(borrowing, "return")}>確認歸還</Button> : null}
-      {borrowing.status === "borrowed" ? <Button size="sm" variant="outline" onClick={() => onAction(borrowing, "edit")}>編輯</Button> : null}
-      <Button size="sm" variant="danger" onClick={() => onAction(borrowing, "delete")}>刪除</Button>
+      {borrowing.status === "pending" ? (
+        <>
+          <Button size="sm" onClick={() => onAction(borrowing, "approve")}>
+            核准借用
+          </Button>
+          <Button
+            size="sm"
+            variant="danger"
+            onClick={() => onAction(borrowing, "reject")}
+          >
+            拒絕申請
+          </Button>
+        </>
+      ) : null}
+      {borrowing.status === "approved" ? (
+        <Button size="sm" onClick={() => onAction(borrowing, "checkout")}>
+          確認借出
+        </Button>
+      ) : null}
+      {borrowing.status === "borrowed" ? (
+        <Button size="sm" onClick={() => onAction(borrowing, "return")}>
+          確認歸還
+        </Button>
+      ) : null}
+      {borrowing.status === "borrowed" ? (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onAction(borrowing, "edit")}
+        >
+          編輯
+        </Button>
+      ) : null}
+      <Button
+        size="sm"
+        variant="danger"
+        onClick={() => onAction(borrowing, "delete")}
+      >
+        刪除
+      </Button>
     </div>
   );
 }
 
-function BoardGameSummary({ borrowing }: { borrowing: BoardGameBorrowingForAdmin }) {
-  return <div className="min-w-0"><p className="truncate font-medium text-(--text-primary)">{borrowing.board_game.name}</p><p className="mt-1 text-xs text-(--text-muted)">社產編號 #{String(borrowing.board_game.inventory_number).padStart(3, "0")}</p></div>;
+function BoardGameSummary({
+  borrowing,
+  titleClassName = "truncate",
+}: {
+  borrowing: BoardGameBorrowingForAdmin;
+  titleClassName?: string;
+}) {
+  return (
+    <div className="min-w-0">
+      <p className={`${titleClassName} font-medium text-(--text-primary)`}>
+        {borrowing.board_game.name}
+      </p>
+      <p className="mt-1 text-xs text-(--text-muted)">
+        社產編號 #
+        {String(borrowing.board_game.inventory_number).padStart(3, "0")}
+      </p>
+    </div>
+  );
 }
 
-function BorrowerSummary({ borrowing }: { borrowing: BoardGameBorrowingForAdmin }) {
-  return <div className="min-w-0"><p className="truncate font-medium text-(--text-primary)">{getBorrowerName(borrowing)}</p><p className="truncate text-xs text-(--text-muted)">{borrowing.user.email}</p><div className="mt-1"><BorrowerMembershipContext borrowing={borrowing} /></div></div>;
+function BorrowerSummary({
+  borrowing,
+}: {
+  borrowing: BoardGameBorrowingForAdmin;
+}) {
+  return (
+    <div className="min-w-0">
+      <p className="truncate font-medium text-(--text-primary)">
+        {getBorrowerName(borrowing)}
+      </p>
+      <p className="truncate text-xs text-(--text-muted)">
+        {borrowing.user.email}
+      </p>
+      <div className="mt-1">
+        <BorrowerMembershipContext borrowing={borrowing} />
+      </div>
+    </div>
+  );
 }
 
-function BorrowerMembershipContext({ borrowing }: { borrowing: BoardGameBorrowingForAdmin }) {
-  return <Badge tone={borrowing.is_current_academic_year_member ? "success" : "info"}>{borrowing.is_current_academic_year_member ? "本學年度社員" : "非本學年度社員"}</Badge>;
+function BorrowerMembershipContext({
+  borrowing,
+}: {
+  borrowing: BoardGameBorrowingForAdmin;
+}) {
+  return (
+    <Badge
+      tone={borrowing.is_current_academic_year_member ? "success" : "info"}
+    >
+      {borrowing.is_current_academic_year_member
+        ? "本學年度社員"
+        : "非本學年度社員"}
+    </Badge>
+  );
 }
 
-function BorrowingTimeline({ borrowing }: { borrowing: BoardGameBorrowingForAdmin }) {
+function BorrowingTimeline({
+  borrowing,
+}: {
+  borrowing: BoardGameBorrowingForAdmin;
+}) {
   const actorLine = getApprovalActorLine(borrowing);
   if (borrowing.status === "borrowed") {
-    return <Timeline label="預計歸還" value={formatOptionalDate(borrowing.due_at)} details={[borrowing.borrowed_at ? `借出：${formatAdminDateTime(borrowing.borrowed_at)}` : undefined, actorLine]} />;
+    return (
+      <Timeline
+        label="預計歸還"
+        value={formatOptionalDate(borrowing.due_at)}
+        details={[
+          borrowing.borrowed_at
+            ? `借出：${formatAdminDateTime(borrowing.borrowed_at)}`
+            : undefined,
+          actorLine,
+        ]}
+      />
+    );
   }
   if (borrowing.status === "returned") {
-    return <Timeline label="已歸還" value={formatOptionalDate(borrowing.returned_at)} details={[borrowing.borrowed_at ? `借出：${formatAdminDateTime(borrowing.borrowed_at)}` : undefined, actorLine]} />;
+    return (
+      <Timeline
+        label="已歸還"
+        value={formatOptionalDate(borrowing.returned_at)}
+        details={[
+          borrowing.borrowed_at
+            ? `借出：${formatAdminDateTime(borrowing.borrowed_at)}`
+            : undefined,
+          actorLine,
+        ]}
+      />
+    );
   }
   if (borrowing.status === "approved") {
-    return <Timeline label="申請時間" value={formatAdminDateTime(borrowing.created_at)} details={[actorLine, "等待確認借出"]} />;
+    return (
+      <Timeline
+        label="申請時間"
+        value={formatAdminDateTime(borrowing.created_at)}
+        details={[actorLine, "等待確認借出"]}
+      />
+    );
   }
   if (borrowing.status === "rejected") {
-    return <Timeline label="申請時間" value={formatAdminDateTime(borrowing.created_at)} details={[actorLine]} />;
+    return (
+      <Timeline
+        label="申請時間"
+        value={formatAdminDateTime(borrowing.created_at)}
+        details={[actorLine]}
+      />
+    );
   }
-  return <Timeline label="申請時間" value={formatAdminDateTime(borrowing.created_at)} />;
+  return (
+    <Timeline
+      label="申請時間"
+      value={formatAdminDateTime(borrowing.created_at)}
+    />
+  );
 }
 
-function Timeline({ label, value, details = [] }: { label: string; value: string; details?: Array<string | undefined> }) {
-  return <div className="min-w-0"><p className="text-xs text-(--text-muted)">{label}</p><p className="mt-0.5 break-words text-sm text-(--text-primary)">{value}</p>{details.filter(Boolean).map((detail) => <p key={detail} className="mt-0.5 text-xs text-(--text-muted)">{detail}</p>)}</div>;
+function Timeline({
+  label,
+  value,
+  details = [],
+}: {
+  label: string;
+  value: string;
+  details?: Array<string | undefined>;
+}) {
+  return (
+    <div className="min-w-0">
+      <p className="text-xs text-(--text-muted)">{label}</p>
+      <p className="mt-0.5 wrap-break-word text-sm text-(--text-primary)">
+        {value}
+      </p>
+      {details.filter(Boolean).map((detail) => (
+        <p key={detail} className="mt-0.5 text-xs text-(--text-muted)">
+          {detail}
+        </p>
+      ))}
+    </div>
+  );
 }
 
-function CheckoutContext({ borrowing }: { borrowing: BoardGameBorrowingForAdmin }) {
-  return <div className="space-y-3 rounded-lg border border-(--border-default) bg-(--surface-subtle) p-3 text-sm"><div><p className="text-xs font-medium text-(--text-muted)">借用人</p><div className="mt-1"><BorrowerSummary borrowing={borrowing} /></div></div><div><p className="text-xs font-medium text-(--text-muted)">桌遊</p><div className="mt-1"><BoardGameSummary borrowing={borrowing} /></div></div></div>;
+function CheckoutContext({
+  borrowing,
+}: {
+  borrowing: BoardGameBorrowingForAdmin;
+}) {
+  return (
+    <div className="space-y-3 rounded-lg border border-(--border-default) bg-(--surface-subtle) p-3 text-sm">
+      <div>
+        <p className="text-xs font-medium text-(--text-muted)">借用人</p>
+        <div className="mt-1">
+          <BorrowerSummary borrowing={borrowing} />
+        </div>
+      </div>
+      <div>
+        <p className="text-xs font-medium text-(--text-muted)">桌遊</p>
+        <div className="mt-1">
+          <BoardGameSummary borrowing={borrowing} />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function Detail({ label, value }: { label: string; value: string }) {
-  return <div className="min-w-0"><dt className="text-xs text-(--text-muted)">{label}</dt><dd className="mt-0.5 break-words text-(--text-primary)">{value}</dd></div>;
+  return (
+    <div className="min-w-0">
+      <dt className="text-xs text-(--text-muted)">{label}</dt>
+      <dd className="mt-0.5 wrap-break-word text-(--text-primary)">{value}</dd>
+    </div>
+  );
+}
+
+function MobileBorrowingMetadata({
+  borrowing,
+}: {
+  borrowing: BoardGameBorrowingForAdmin;
+}) {
+  const applicationTime = (
+    <Detail
+      label="申請時間"
+      value={formatAdminDateTime(borrowing.created_at)}
+    />
+  );
+  const approver = (
+    <Detail
+      label="核准人"
+      value={getApprovalActor(borrowing)?.name ?? "尚未記錄核准人"}
+    />
+  );
+
+  if (borrowing.status === "pending") {
+    return <MobileMetadataGrid>{applicationTime}</MobileMetadataGrid>;
+  }
+
+  if (borrowing.status === "rejected") {
+    return (
+      <MobileMetadataGrid>
+        {applicationTime}
+        <Detail
+          label="拒絕人"
+          value={getApprovalActor(borrowing)?.name ?? "尚未記錄拒絕人"}
+        />
+      </MobileMetadataGrid>
+    );
+  }
+
+  if (borrowing.status === "approved") {
+    return (
+      <MobileMetadataGrid>
+        {applicationTime}
+        {approver}
+      </MobileMetadataGrid>
+    );
+  }
+
+  if (borrowing.status === "borrowed") {
+    return (
+      <MobileMetadataGrid>
+        {applicationTime}
+        <Detail
+          label="借出時間"
+          value={formatOptionalDate(borrowing.borrowed_at)}
+        />
+        <Detail label="預計歸還" value={formatOptionalDate(borrowing.due_at)} />
+        {approver}
+      </MobileMetadataGrid>
+    );
+  }
+
+  return (
+    <MobileMetadataGrid>
+      <Detail
+        label="借出時間"
+        value={formatOptionalDate(borrowing.borrowed_at)}
+      />
+      <Detail label="預計歸還" value={formatOptionalDate(borrowing.due_at)} />
+      <Detail
+        label="歸還時間"
+        value={formatOptionalDate(borrowing.returned_at)}
+      />
+      {approver}
+    </MobileMetadataGrid>
+  );
+}
+
+function MobileMetadataGrid({ children }: { children: ReactNode }) {
+  return (
+    <dl className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-3 text-sm">
+      {children}
+    </dl>
+  );
 }
 
 function getBorrowerName(borrowing: BoardGameBorrowingForAdmin) {
@@ -374,9 +685,10 @@ function getApprovalActor(borrowing: BoardGameBorrowingForAdmin) {
   if (!borrowing.approved_by_user_id) return null;
 
   const label = borrowing.status === "rejected" ? "拒絕人" : "核准人";
-  const name = borrowing.approved_by_user_profile?.real_name
-    || borrowing.approved_by_user?.name
-    || `尚未記錄${label}`;
+  const name =
+    borrowing.approved_by_user_profile?.real_name ||
+    borrowing.approved_by_user?.name ||
+    `尚未記錄${label}`;
 
   return { label, name };
 }
@@ -392,6 +704,12 @@ function formatOptionalDate(value: string | null) {
   return value ? formatAdminDateTime(value) : "—";
 }
 
-function toHeaderQuery(query: BorrowingQuery): Record<string, string | undefined> {
-  return Object.fromEntries(Object.entries(query).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)]));
+function toHeaderQuery(
+  query: BorrowingQuery,
+): Record<string, string | undefined> {
+  return Object.fromEntries(
+    Object.entries(query)
+      .filter(([, value]) => value !== undefined)
+      .map(([key, value]) => [key, String(value)]),
+  );
 }

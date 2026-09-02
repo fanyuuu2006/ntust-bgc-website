@@ -51,3 +51,16 @@ test("admin borrowing deletion uses a hardened transaction for the borrowed asse
   assert.match(list, /刪除借用紀錄/);
   assert.match(list, /variant="danger"/);
 });
+
+test("mobile borrowing cards keep lifecycle metadata state-aware and compact", async () => {
+  const list = await readSource("src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx");
+
+  assert.match(list, /<MobileBorrowingMetadata borrowing=\{borrowing\} \/>/);
+  assert.match(list, /function MobileBorrowingMetadata/);
+  assert.match(list, /grid-cols-2/);
+  assert.match(list, /if \(borrowing\.status === "rejected"\)/);
+  assert.match(list, /label="拒絕人"/);
+  assert.match(list, /if \(borrowing\.status === "borrowed"\)/);
+  assert.match(list, /label="預計歸還"/);
+  assert.match(list, /if \(borrowing\.status === "pending"\)/);
+});
