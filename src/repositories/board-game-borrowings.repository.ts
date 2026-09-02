@@ -304,6 +304,30 @@ export const boardGameBorrowingsRepository = {
     return data;
   },
 
+  updateDueAtIfBorrowed: async (
+    id: BoardGameBorrowingId,
+    dueAt: string,
+  ): Promise<BoardGameBorrowing | null> => {
+    const { data, error } = await supabase
+      .from("board_game_borrowings")
+      .update({ due_at: dueAt })
+      .eq("id", id)
+      .eq("status", "borrowed")
+      .select()
+      .maybeSingle();
+
+    if (error) throwRepositoryError("更新借用預計歸還時間失敗", error);
+    return data;
+  },
+
+  deleteTransactionally: async (id: BoardGameBorrowingId): Promise<void> => {
+    const { error } = await supabase.rpc("delete_board_game_borrowing", {
+      p_borrowing_id: id,
+    });
+
+    if (error) throwRepositoryError("刪除借用紀錄失敗", error);
+  },
+
   deleteById: async (id: BoardGameBorrowingId): Promise<void> => {
     const { error } = await supabase
       .from("board_game_borrowings")

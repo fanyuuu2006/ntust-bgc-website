@@ -108,4 +108,8 @@ export const createBorrowingRequestSchema = z.object({
 export const updateBorrowingActionSchema = z.object({
   action: z.enum(["approve", "reject", "checkout", "return"]),
   due_at: z.iso.datetime({ local: false }).optional(),
-});
+}).strict();
+
+export const updateBorrowingDueDateSchema = z.object({
+  due_at: z.iso.datetime({ local: false }),
+}).strict();

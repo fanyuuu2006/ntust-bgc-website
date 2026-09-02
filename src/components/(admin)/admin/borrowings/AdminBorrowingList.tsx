@@ -33,12 +33,13 @@ import type { BoardGameBorrowingForAdmin } from "@/services/board-games/board-ga
 import type { BorrowingStatus } from "@/types/database";
 import {
   formatAdminDateTime,
+  formatTaipeiDateTimeLocal,
   getFutureTaipeiDateTimeLocal,
   parseTaipeiDateTimeLocal,
 } from "@/utils/date";
 import { buildQueryString } from "@/utils/url";
 
-type Action = "approve" | "reject" | "checkout" | "return";
+type Action = "approve" | "reject" | "checkout" | "return" | "edit" | "delete";
 type BorrowingQuery = {
   search?: string;
   status?: BorrowingStatus;
@@ -80,11 +81,11 @@ export function AdminBorrowingList({
     : BASE_PATH;
 
   function choose(borrowing: BoardGameBorrowingForAdmin, action: Action) {
-    setDueAt(
-      action === "checkout"
-        ? getFutureTaipeiDateTimeLocal(borrowingConfig.defaultDurationDays)
-        : "",
-    );
+    setDueAt(action === "checkout"
+      ? getFutureTaipeiDateTimeLocal(borrowingConfig.defaultDurationDays)
+      : action === "edit" && borrowing.due_at
+        ? formatTaipeiDateTimeLocal(new Date(borrowing.due_at))
+        : "");
     setFeedback(null);
     setSelected({ borrowing, action });
   }
@@ -96,10 +97,10 @@ export function AdminBorrowingList({
   async function run() {
     if (!selected) return;
 
-    const checkoutDueAt = selected.action === "checkout"
+    const editedDueAt = selected.action === "checkout" || selected.action === "edit"
       ? parseTaipeiDateTimeLocal(dueAt)
       : null;
-    if (selected.action === "checkout" && !checkoutDueAt) {
+    if ((selected.action === "checkout" || selected.action === "edit") && !editedDueAt) {
       setFeedback("請輸入有效的預計歸還時間。");
       return;
     }
@@ -107,13 +108,21 @@ export function AdminBorrowingList({
     setBusy(true);
     setFeedback(null);
     try {
-      await apiClient(`/api/admin/borrowings/${selected.borrowing.id}`, {
-        method: "PATCH",
-        body: {
-          action: selected.action,
-          ...(selected.action === "checkout" ? { due_at: checkoutDueAt } : {}),
-        },
-      });
+      if (selected.action === "delete") {
+        await apiClient(`/api/admin/borrowings/${selected.borrowing.id}`, {
+          method: "DELETE",
+        });
+      } else {
+        await apiClient(`/api/admin/borrowings/${selected.borrowing.id}`, {
+          method: "PATCH",
+          body: selected.action === "edit"
+            ? { due_at: editedDueAt }
+            : {
+                action: selected.action,
+                ...(selected.action === "checkout" ? { due_at: editedDueAt } : {}),
+              },
+        });
+      }
       setSelected(null);
       router.refresh();
     } catch (error) {
@@ -125,7 +134,9 @@ export function AdminBorrowingList({
 
   const actionTitle = selected ? actionTitles[selected.action] : "";
   const actionDescription = selected
-    ? `桌遊「${selected.borrowing.board_game.name}」將進行此操作。`
+    ? selected.action === "delete"
+      ? `確定要永久刪除「${selected.borrowing.board_game.name}」的借用紀錄嗎？借用人：${getBorrowerName(selected.borrowing)}。刪除後將無法復原。`
+      : `桌遊「${selected.borrowing.board_game.name}」的借用人為 ${getBorrowerName(selected.borrowing)}。`
     : "";
 
   return (
@@ -232,7 +243,7 @@ export function AdminBorrowingList({
       )}
 
       <Modal
-        open={selected?.action === "checkout"}
+        open={selected?.action === "checkout" || selected?.action === "edit"}
         onClose={close}
         title={actionTitle}
         description={actionDescription}
@@ -249,8 +260,12 @@ export function AdminBorrowingList({
               onChange={(event) => setDueAt(event.target.value)}
             />
           </Field>
-          <p className="text-sm leading-6 text-(--text-muted)">已套用預設歸還時間，可依實際情況調整。</p>
-          {selected && !selected.borrowing.is_current_academic_year_member ? (
+          <p className="text-sm leading-6 text-(--text-muted)">
+            {selected?.action === "checkout"
+              ? "已套用預設歸還時間，可依實際情況調整。"
+              : "僅能調整借出中的預計歸還時間。"}
+          </p>
+          {selected?.action === "checkout" && selected && !selected.borrowing.is_current_academic_year_member ? (
             <p className="flex items-start gap-2 rounded-lg border border-(--border-default) bg-(--surface-subtle) p-3 text-sm leading-6 text-(--text-secondary)">
               <UserRound aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-(--status-info)" />
               {clubPolicies.adminNonCurrentAcademicYearMemberBorrowingNotice}
@@ -259,20 +274,22 @@ export function AdminBorrowingList({
           <FormFeedback error={feedback} />
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={close} disabled={busy}>取消</Button>
-            <Button type="button" onClick={run} disabled={busy} isLoading={busy}>確認借出</Button>
+            <Button type="button" onClick={run} disabled={busy} isLoading={busy}>
+              {selected?.action === "edit" ? "儲存變更" : "確認借出"}
+            </Button>
           </div>
         </div>
       </Modal>
 
       <ConfirmDialog
-        open={Boolean(selected && selected.action !== "checkout")}
+        open={Boolean(selected && selected.action !== "checkout" && selected.action !== "edit")}
         onClose={close}
         onConfirm={run}
         isSubmitting={busy}
         title={actionTitle}
         description={actionDescription}
         confirmLabel={selected ? actionConfirmLabels[selected.action] : "確認"}
-        confirmVariant={selected?.action === "reject" ? "danger" : "primary"}
+        confirmVariant={selected?.action === "reject" || selected?.action === "delete" ? "danger" : "primary"}
       />
     </div>
   );
@@ -283,6 +300,8 @@ const actionTitles: Record<Action, string> = {
   reject: "拒絕申請",
   checkout: "確認借出",
   return: "確認歸還",
+  edit: "編輯借用紀錄",
+  delete: "刪除借用紀錄",
 };
 
 const actionConfirmLabels: Record<Action, string> = {
@@ -290,6 +309,8 @@ const actionConfirmLabels: Record<Action, string> = {
   reject: "確認拒絕",
   checkout: "確認借出",
   return: "確認歸還",
+  edit: "儲存變更",
+  delete: "刪除借用紀錄",
 };
 
 function BorrowingActions({ borrowing, onAction }: { borrowing: BoardGameBorrowingForAdmin; onAction: (borrowing: BoardGameBorrowingForAdmin, action: Action) => void }) {
@@ -298,6 +319,8 @@ function BorrowingActions({ borrowing, onAction }: { borrowing: BoardGameBorrowi
       {borrowing.status === "pending" ? <><Button size="sm" onClick={() => onAction(borrowing, "approve")}>核准借用</Button><Button size="sm" variant="danger" onClick={() => onAction(borrowing, "reject")}>拒絕申請</Button></> : null}
       {borrowing.status === "approved" ? <Button size="sm" onClick={() => onAction(borrowing, "checkout")}>確認借出</Button> : null}
       {borrowing.status === "borrowed" ? <Button size="sm" onClick={() => onAction(borrowing, "return")}>確認歸還</Button> : null}
+      {borrowing.status === "borrowed" ? <Button size="sm" variant="outline" onClick={() => onAction(borrowing, "edit")}>編輯</Button> : null}
+      <Button size="sm" variant="danger" onClick={() => onAction(borrowing, "delete")}>刪除</Button>
     </div>
   );
 }

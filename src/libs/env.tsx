@@ -4,3 +4,5 @@ export const NEXT_PUBLIC_TURNSTILE_SITE_KEY =
   process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!;
 export const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY!;
 export const REGISTER_KEY_SECRET = process.env.REGISTER_KEY_SECRET;
+export const DATABASE_URL = process.env.DATABASE_URL!;
+export const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY!;

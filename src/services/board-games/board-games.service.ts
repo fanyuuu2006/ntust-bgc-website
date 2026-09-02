@@ -722,6 +722,34 @@ export const boardGamesService = {
     }
   },
 
+  updateBorrowingDueDate: async (
+    borrowingId: BoardGameBorrowingId,
+    dueAt: string,
+  ) => {
+    const dueAtDate = new Date(dueAt);
+    if (Number.isNaN(dueAtDate.getTime()) || dueAtDate <= new Date()) {
+      throw new BorrowingDueDateError();
+    }
+
+    const updated = await boardGameBorrowingsRepository.updateDueAtIfBorrowed(
+      borrowingId,
+      dueAt,
+    );
+    if (updated) return updated;
+
+    const borrowing = await boardGameBorrowingsRepository.findById(borrowingId);
+    if (!borrowing) throw new BorrowingNotFoundError();
+    throw new BorrowingStatusTransitionError("borrowed", borrowing.status);
+  },
+
+  deleteBorrowing: async (borrowingId: BoardGameBorrowingId): Promise<void> => {
+    try {
+      await boardGameBorrowingsRepository.deleteTransactionally(borrowingId);
+    } catch (error) {
+      return rethrowBorrowingTransactionError(error);
+    }
+  },
+
   countAllBoardGames: async (): Promise<number> => {
     return boardGamesRepository.countAll();
   },
