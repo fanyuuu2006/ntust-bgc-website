@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/(admin)/admin/ClearableSearchInput";
 import { EventActions } from "@/components/(admin)/admin/events/EventActions";
 import { EventRecords } from "@/components/(admin)/admin/events/EventRecords";
@@ -71,15 +72,22 @@ export default async function AdminEventsPage({
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
-          <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_10rem_auto] md:items-center">
+          <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_10rem_10rem_auto] md:items-center">
             <ClearableSearchInput initialValue={params.search} clearHref={clearSearchHref} name="search" placeholder="搜尋活動名稱或說明" className="w-full" />
-            <Button type="submit" className="order-2 w-full md:order-3 md:w-auto">搜尋</Button>
+            <Button type="submit" variant="primary" className="order-2 w-full md:order-4 md:w-auto">搜尋</Button>
             <Select name="status" defaultValue={status ?? ""} aria-label="活動狀態" className="order-3 w-full md:order-2">
               <option value="">全部狀態</option>
               <option value="upcoming">即將開始</option>
               <option value="ongoing">進行中</option>
               <option value="ended">已結束</option>
             </Select>
+            <Select name="orderBy" defaultValue={orderBy} aria-label="活動排序" className="order-4 w-full md:order-3">
+              <option value="start_time">開始時間</option>
+              <option value="end_time">結束時間</option>
+              <option value="name">活動名稱</option>
+              <option value="created_at">建立時間</option>
+            </Select>
+            <input type="hidden" name="orderDirection" value={orderDirection} />
           </AdminToolbar>
         </form>
         <EventRecords events={result.data} />
@@ -96,4 +104,3 @@ export default async function AdminEventsPage({
     </>
   );
 }
-import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";

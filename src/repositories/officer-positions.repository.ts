@@ -30,6 +30,20 @@ export type FindManyOfficerPositionsOptions = PaginationQuery &
   };
 
 export const officerPositionsRepository = {
+  findUserIdsByUserIds: async (userIds: UUID[]): Promise<UUID[]> => {
+    if (userIds.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from("officer_positions")
+      .select("user_id")
+      .in("user_id", userIds);
+
+    if (error) {
+      throwRepositoryError("批次讀取使用者幹部紀錄失敗", error);
+    }
+
+    return [...new Set((data ?? []).map((position) => position.user_id))];
+  },
   findMany: async (options: FindManyOfficerPositionsOptions = {}) => {
     const { page, pageSize, from, to } = normalizePaginationOptions(options);
     let query = supabase.from("officer_positions").select("*", { count: "exact" });

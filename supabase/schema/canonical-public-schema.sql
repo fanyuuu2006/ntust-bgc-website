@@ -676,6 +676,64 @@ begin
 end;
 $$;
 
+create function public.update_academic_year(
+  p_academic_year_id uuid,
+  p_year text,
+  p_start_date timestamptz,
+  p_end_date timestamptz
+)
+returns public.academic_years
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_academic_year public.academic_years%rowtype;
+  v_user_id uuid;
+begin
+  if p_start_date >= p_end_date then
+    raise exception using errcode = 'P0001', message = 'ACADEMIC_YEAR_DATE_RANGE_INVALID';
+  end if;
+
+  select * into v_academic_year
+  from public.academic_years
+  where id = p_academic_year_id
+  for update;
+  if not found then
+    raise exception using errcode = 'P0001', message = 'ACADEMIC_YEAR_NOT_FOUND';
+  end if;
+
+  if exists (
+    select 1 from public.academic_years
+    where year = trim(p_year) and id <> p_academic_year_id
+  ) then
+    raise exception using errcode = 'P0001', message = 'ACADEMIC_YEAR_DUPLICATE';
+  end if;
+
+  update public.academic_years
+  set year = trim(p_year), start_date = p_start_date, end_date = p_end_date
+  where id = p_academic_year_id
+  returning * into v_academic_year;
+
+  for v_user_id in
+    select distinct affected.user_id
+    from (
+      select user_id from public.officer_positions where academic_year_id = p_academic_year_id
+      union
+      select user_id from public.memberships where academic_year_id = p_academic_year_id
+    ) as affected
+    order by affected.user_id
+  loop
+    perform pg_catalog.pg_advisory_xact_lock(
+      pg_catalog.hashtext('membership_officer:' || v_user_id::text)
+    );
+    perform public.recompute_membership_types_for_user(v_user_id);
+  end loop;
+
+  return v_academic_year;
+end;
+$$;
+
 create function public.recompute_membership_types_for_user(p_user_id uuid)
 returns void language plpgsql security definer set search_path = ''
 as $$
@@ -805,6 +863,8 @@ revoke all privileges on function public.return_borrowing(bigint)
   from public, anon, authenticated;
 revoke all privileges on function public.set_current_academic_year(uuid)
   from public, anon, authenticated;
+revoke all privileges on function public.update_academic_year(uuid, text, timestamptz, timestamptz)
+  from public, anon, authenticated;
 revoke all privileges on function public.recompute_membership_types_for_user(uuid)
   from public, anon, authenticated, service_role;
 revoke all privileges on function public.create_admin_membership(uuid, uuid, public.merbership_status, timestamptz)
@@ -824,6 +884,7 @@ grant execute on function public.generate_membership_register_keys(uuid, integer
 grant execute on function public.checkout_borrowing(bigint, timestamptz) to service_role;
 grant execute on function public.return_borrowing(bigint) to service_role;
 grant execute on function public.set_current_academic_year(uuid) to service_role;
+grant execute on function public.update_academic_year(uuid, text, timestamptz, timestamptz) to service_role;
 grant execute on function public.create_admin_membership(uuid, uuid, public.merbership_status, timestamptz) to service_role;
 grant execute on function public.update_admin_membership(uuid, uuid, public.merbership_status, timestamptz) to service_role;
 grant execute on function public.create_officer_position(uuid, uuid, text) to service_role;

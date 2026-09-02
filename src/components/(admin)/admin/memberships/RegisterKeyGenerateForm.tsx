@@ -57,7 +57,7 @@ export function RegisterKeyGenerateForm({
       setError(
         caught instanceof Error
           ? caught.message
-          : "產生社員註冊碼失敗，請稍後再試。",
+          : "產生社員註冊序號失敗，請稍後再試。",
       );
     } finally {
       setBusy(false);
@@ -75,14 +75,14 @@ export function RegisterKeyGenerateForm({
           setOpen(true);
         }}
       >
-        + 產生社員註冊碼
+        產生社員註冊序號
       </Button>
 
       <Modal
         open={open}
         onClose={close}
-        title="產生社員註冊碼"
-        description="選擇學年度與數量後，系統會產生僅能使用一次的社員註冊碼。"
+        title="產生社員註冊序號"
+        description="選擇學年度與數量後，系統會產生僅能使用一次的社員註冊序號。"
       >
         <form onSubmit={submit} className="space-y-4">
           <Field label="學年度" htmlFor="register-key-year">
@@ -127,7 +127,7 @@ export function RegisterKeyGenerateForm({
         <div className="rounded-xl border border-(--border-default) bg-(--surface-subtle) p-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm font-semibold text-(--text-primary)">
-              本次產生的社員註冊碼
+              本次產生的社員註冊序號
             </p>
             <Button
               type="button"

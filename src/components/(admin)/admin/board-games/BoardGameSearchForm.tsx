@@ -66,7 +66,7 @@ export function BoardGameSearchForm({
             aria-label="搜尋桌遊名稱、社產編號或描述"
             className="w-full"
           />
-          <Button type="submit" className="w-full md:w-auto">搜尋</Button>
+          <Button type="submit" variant="primary" className="w-full md:w-auto">搜尋</Button>
         </div>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <FilterSelect name="status" ariaLabel="狀態" value={query.status}>

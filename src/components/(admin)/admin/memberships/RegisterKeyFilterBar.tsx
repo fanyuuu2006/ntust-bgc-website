@@ -58,11 +58,11 @@ export function RegisterKeyFilterBar({
           initialValue={query.search}
           clearHref={clearSearchHref}
           name="search"
-          placeholder="搜尋註冊碼"
-          aria-label="搜尋註冊碼"
+          placeholder="搜尋社員註冊序號"
+          aria-label="搜尋社員註冊序號"
           className="w-full md:col-span-2 lg:col-span-1"
         />
-        <Button type="submit" className="order-2 w-full md:order-4 md:col-span-2 md:justify-self-end md:w-auto lg:col-span-1">
+        <Button type="submit" variant="primary" className="order-2 w-full md:order-4 md:col-span-2 md:justify-self-end md:w-auto lg:col-span-1">
           搜尋
         </Button>
         <Select

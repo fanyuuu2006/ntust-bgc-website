@@ -52,6 +52,15 @@ type ClaimMembershipRegisterKeyRpcRow = {
 };
 
 export const membershipRegisterKeysRepository = {
+  countByAcademicYearId: async (academicYearId: string): Promise<number> => {
+    const { count, error } = await supabase
+      .from("membership_register_keys")
+      .select("*", { count: "exact", head: true })
+      .eq("academic_year_id", academicYearId);
+    if (error) throwRepositoryError("統計社員註冊序號失敗", error);
+    return count ?? 0;
+  },
+
   revokeAvailableById: async (id: string): Promise<MembershipRegisterKey | null> => {
     const { data, error } = await supabase
       .from("membership_register_keys")

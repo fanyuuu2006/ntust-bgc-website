@@ -6,6 +6,7 @@ import {
 } from "@/repositories/academic-years.repository";
 import { membershipsRepository } from "@/repositories/memberships.repository";
 import { officerPositionsRepository } from "@/repositories/officer-positions.repository";
+import { membershipRegisterKeysRepository } from "@/repositories/membership-register-keys.repository";
 import { RepositoryError } from "@/repositories/shared/errors";
 import type { AcademicYear } from "@/types/database";
 import {
@@ -74,11 +75,12 @@ export const academicYearsService = {
     if (!existing) throw new AcademicYearNotFoundError();
     if (existing.is_current)
       throw new AcademicYearCurrentDeleteForbiddenError();
-    const [membershipCount, officerCount] = await Promise.all([
+    const [membershipCount, officerCount, registerKeyCount] = await Promise.all([
       membershipsRepository.countByAcademicYearId(id),
       officerPositionsRepository.countByAcademicYearId(id),
+      membershipRegisterKeysRepository.countByAcademicYearId(id),
     ]);
-    if (membershipCount + officerCount > 0) throw new AcademicYearInUseError();
+    if (membershipCount + officerCount + registerKeyCount > 0) throw new AcademicYearInUseError();
     await academicYearsRepository.deleteById(id);
   },
 };

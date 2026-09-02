@@ -48,7 +48,6 @@ import {
   BoardGameNotAvailableForBorrowingError,
   BoardGameBorrowingConflictError,
   BorrowingStatusTransitionError,
-  BorrowingPermissionError,
   BorrowingDueDateError,
   BorrowingWorkflowConflictError,
 } from "./board-games.errors";
@@ -571,11 +570,13 @@ export const boardGamesService = {
           .filter((id): id is string => Boolean(id)),
       ),
     ];
-    const [boardGames, users, profiles, approvers] = await Promise.all([
+    const identityUserIds = [...new Set([...userIds, ...approverIds])];
+    const [boardGames, users, profiles, approvers, membershipEligibility] = await Promise.all([
       boardGamesRepository.findManyByIds(boardGameIds),
       usersRepository.findManyByIds(userIds),
-      userProfilesRepository.findManyByUserIds(userIds),
+      userProfilesRepository.findManyByUserIds(identityUserIds),
       usersRepository.findManyByIds(approverIds),
+      membershipService.getUserMembershipEligibility(userIds),
     ]);
     const usersById = new Map(users.map((user) => [user.id, user]));
     const profilesByUserId = new Map(
@@ -599,6 +600,11 @@ export const boardGamesService = {
         approved_by_user: borrowing.approved_by_user_id
           ? approversById.get(borrowing.approved_by_user_id) ?? null
           : null,
+        approved_by_user_profile: borrowing.approved_by_user_id
+          ? profilesByUserId.get(borrowing.approved_by_user_id) ?? null
+          : null,
+        is_current_academic_year_member:
+          membershipEligibility[user.id]?.hasCurrentMembership ?? false,
       };
     });
 
@@ -612,20 +618,13 @@ export const boardGamesService = {
   /**
    * 提出借用申請。
    * - 桌遊必須存在且狀態為 available
-   * - 使用者必須為目前學年度的 active 社員
+   * - 使用者必須已登入（身份由 Route Handler 取得）
    * - 使用者對同一桌遊不可有尚未結束的借閱流程（pending/approved/borrowed）
    */
   requestBorrowing: async (userId: string, boardGameId: string) => {
     const boardGame = await boardGamesService.getBoardGameById(boardGameId);
     if (boardGame.status !== "available") {
       throw new BoardGameNotAvailableForBorrowingError();
-    }
-
-    const isCurrentActiveMember = await membershipService.isCurrentActiveMember(
-      userId,
-    );
-    if (!isCurrentActiveMember) {
-      throw new BorrowingPermissionError();
     }
 
     const existing =
@@ -738,8 +737,16 @@ export const boardGamesService = {
     return boardGamesRepository.countByCategoryId(categoryId);
   },
 
+  countBoardGamesByCategoryIds: async (categoryIds: string[]): Promise<Record<string, number>> => {
+    return boardGamesRepository.countByCategoryIds(categoryIds);
+  },
+
   countBoardGamesByLocationId: async (locationId: string): Promise<number> => {
     return boardGamesRepository.countByLocationId(locationId);
+  },
+
+  countBoardGamesByLocationIds: async (locationIds: string[]): Promise<Record<string, number>> => {
+    return boardGamesRepository.countByLocationIds(locationIds);
   },
 
   /**

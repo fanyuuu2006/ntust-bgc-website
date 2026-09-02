@@ -13,7 +13,7 @@ export default async function NewBoardGamePage() {
     <>
       <HeadingSection
         title="新增桌遊"
-        description="新增桌遊資料後，將立即出現在管理列表中"
+        description="填寫桌遊、社產編號與存放資訊。"
         actions={
           <ButtonLink href="/admin/board-games" variant="outline">
             返回列表
@@ -21,7 +21,7 @@ export default async function NewBoardGamePage() {
         }
       />
 
-      <section className="px-4 pb-8">
+      <section className="mx-auto w-full max-w-3xl px-4 pb-8 sm:px-6 lg:px-8">
         <BoardGameForm mode="create" categories={categories} locations={locations} />
       </section>
     </>

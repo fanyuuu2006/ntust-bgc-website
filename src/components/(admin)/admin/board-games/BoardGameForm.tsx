@@ -14,6 +14,7 @@ import type {
 } from "@/types/database";
 import { BOARD_GAME_STATUS_LABEL } from "@/components/(admin)/admin/board-games/BoardGameStatusBadge";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
@@ -186,153 +187,56 @@ export function BoardGameForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="card rounded-2xl p-4 sm:p-6">
-      <div className="flex flex-col gap-6">
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between gap-2 border-b border-(--border-default) pb-2">
-              <h2 className="text-base font-semibold text-(--text-primary)">基本資訊</h2>
-            </div>
-
-            <FieldInput
-              field={{
-                id: "name",
-                label: "名稱",
-                type: "text",
-                required: true,
-                placeholder: "請輸入桌遊名稱",
-                error: errors.name,
-              }}
-              value={values.name}
-              onChange={handleChange}
-            />
-
-            <FieldInput
-              field={{
-                id: "inventory_number",
-                label: "編號",
-                type: "number",
-                required: true,
-                placeholder: "例如：101",
-                error: errors.inventory_number,
-              }}
-              value={values.inventory_number}
-              onChange={handleChange}
-            />
-
-            <Field label="描述" htmlFor="description" error={errors.description}>
-              <Textarea
-                id="description"
-                name="description"
-                value={values.description}
-                onChange={handleChange}
-                placeholder="請輸入桌遊簡介或說明"
-                rows={6}
-                invalid={!!errors.description}
-              />
-            </Field>
-
-            <FieldInput
-              field={{
-                id: "image",
-                label: "圖片連結",
-                type: "url",
-                placeholder: "https://example.com/board-game.jpg",
-                error: errors.image,
-              }}
-              value={values.image}
-              onChange={handleChange}
-            />
+    <Card className="p-4 sm:p-6">
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
+        <section className="space-y-4" aria-labelledby="board-game-basics">
+          <h2 id="board-game-basics" className="border-b border-(--border-default) pb-2 text-base font-semibold text-(--text-primary)">基本資料</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FieldInput field={{ id: "name", label: "桌遊名稱", type: "text", required: true, placeholder: "請輸入桌遊名稱", error: errors.name }} value={values.name} onChange={handleChange} />
+            <FieldInput field={{ id: "inventory_number", label: "社產編號", type: "number", required: true, placeholder: "例如：101", error: errors.inventory_number }} value={values.inventory_number} onChange={handleChange} />
           </div>
+          <Field label="狀態" htmlFor="status" error={errors.status}>
+            <Select id="status" name="status" value={values.status} onChange={handleChange} required invalid={!!errors.status}>
+              {statusOptions.map((status) => <option key={status} value={status}>{BOARD_GAME_STATUS_LABEL[status]}</option>)}
+            </Select>
+          </Field>
+        </section>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between gap-2 border-b border-(--border-default) pb-2">
-              <h2 className="text-base font-semibold text-(--text-primary)">管理資訊</h2>
-            </div>
-
-            <Field label="分類" htmlFor="category_id" error={errors.category_id}>
-              <Select
-                id="category_id"
-                name="category_id"
-                value={values.category_id}
-                onChange={handleChange}
-                required
-                invalid={!!errors.category_id}
-              >
-                <option value="">請選擇分類</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
+        <section className="space-y-4" aria-labelledby="board-game-classification">
+          <h2 id="board-game-classification" className="border-b border-(--border-default) pb-2 text-base font-semibold text-(--text-primary)">種類與位置</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="種類" htmlFor="category_id" error={errors.category_id}>
+              <Select id="category_id" name="category_id" value={values.category_id} onChange={handleChange} required invalid={!!errors.category_id}>
+                <option value="">請選擇種類</option>
+                {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
               </Select>
             </Field>
-
             <Field label="位置" htmlFor="location_id" error={errors.location_id}>
-              <Select
-                id="location_id"
-                name="location_id"
-                value={values.location_id}
-                onChange={handleChange}
-                required
-                invalid={!!errors.location_id}
-              >
+              <Select id="location_id" name="location_id" value={values.location_id} onChange={handleChange} required invalid={!!errors.location_id}>
                 <option value="">請選擇位置</option>
-                {locations.map((location) => (
-                  <option key={location.id} value={location.id}>
-                    {location.name}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-
-            <Field label="狀態" htmlFor="status" error={errors.status}>
-              <Select
-                id="status"
-                name="status"
-                value={values.status}
-                onChange={handleChange}
-                required
-                invalid={!!errors.status}
-              >
-                {statusOptions.map((status) => (
-                  <option key={status} value={status}>
-                    {BOARD_GAME_STATUS_LABEL[status]}
-                  </option>
-                ))}
+                {locations.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}
               </Select>
             </Field>
           </div>
-        </div>
+        </section>
+
+        <section className="space-y-4" aria-labelledby="board-game-content">
+          <h2 id="board-game-content" className="border-b border-(--border-default) pb-2 text-base font-semibold text-(--text-primary)">介紹與圖片</h2>
+          <Field label="描述" htmlFor="description" error={errors.description}>
+            <Textarea id="description" name="description" value={values.description} onChange={handleChange} placeholder="請輸入桌遊簡介或說明" rows={6} invalid={!!errors.description} />
+          </Field>
+          <FieldInput field={{ id: "image", label: "圖片連結", type: "url", placeholder: "https://example.com/board-game.jpg", error: errors.image }} value={values.image} onChange={handleChange} />
+        </section>
 
         <FormFeedback error={formError} />
 
         <div className="flex flex-col gap-3 border-t border-(--border-default) pt-4 sm:flex-row sm:justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            className="rounded-lg"
-            onClick={() => router.push("/admin/board-games")}
-            disabled={isSubmitting}
-          >
-            取消
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            isLoading={isSubmitting}
-            className="rounded-lg"
-          >
-            {isSubmitting
-              ? mode === "create"
-                ? "新增中..."
-                : "更新中..."
-              : mode === "create"
-                ? "新增桌遊"
-                : "更新桌遊"}
+          <Button type="button" variant="outline" onClick={() => router.push("/admin/board-games")} disabled={isSubmitting}>取消</Button>
+          <Button type="submit" disabled={isSubmitting} isLoading={isSubmitting}>
+            {isSubmitting ? mode === "create" ? "新增中..." : "儲存中..." : mode === "create" ? "新增桌遊" : "儲存變更"}
           </Button>
         </div>
-      </div>
-    </form>
+      </form>
+    </Card>
   );
 }

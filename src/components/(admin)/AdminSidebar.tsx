@@ -4,6 +4,7 @@ import { siteConfigs } from "@/libs/siteConfigs";
 import { cn } from "@/utils/className";
 import { AdminSidebarNav } from "./AdminSidebarNav";
 import { Button } from "@/components/ui/Button";
+import { X } from "lucide-react";
 
 type AdminSidebarProps = React.HTMLAttributes<HTMLElement> & {
   id: string;
@@ -40,9 +41,10 @@ function AdminSidebarHeader({ onClose }: { onClose: () => void }) {
         aria-label="關閉管理選單"
         variant="ghost"
         size="sm"
+        iconOnly
         className="shrink-0 rounded-lg lg:hidden"
       >
-        關閉
+        <X aria-hidden="true" className="size-4" />
       </Button>
     </div>
   );
@@ -55,7 +57,7 @@ function AdminSidebarFooter({ onNavigate }: { onNavigate: () => void }) {
       <Link
         href="/"
         onClick={onNavigate}
-        className="block truncate rounded-lg px-3 py-2 text-sm text-(--text-muted) transition-colors hover:bg-(--surface-subtle) hover:text-(--text-primary)"
+        className="block rounded-lg px-3 py-2 text-sm text-(--text-muted) transition-colors hover:bg-(--surface-subtle) hover:text-(--text-primary)"
       >
         回網站
       </Link>

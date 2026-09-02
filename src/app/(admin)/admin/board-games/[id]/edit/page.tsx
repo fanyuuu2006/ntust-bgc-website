@@ -34,7 +34,7 @@ export default async function BoardGameEditPage({
     <>
       <HeadingSection
         title="編輯桌遊"
-        description={`更新「${boardGame.name}」的資訊`}
+        description={`更新「${boardGame.name}」的基本與管理資訊。`}
         actions={
           <ButtonLink href="/admin/board-games" variant="outline">
             返回列表
@@ -42,7 +42,7 @@ export default async function BoardGameEditPage({
         }
       />
 
-      <section className="px-4 pb-8">
+      <section className="mx-auto w-full max-w-3xl px-4 pb-8 sm:px-6 lg:px-8">
         <BoardGameForm
           mode="edit"
           boardGameId={id}

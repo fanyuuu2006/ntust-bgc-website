@@ -9,6 +9,7 @@ import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { apiClient } from "@/libs/api/client";
+import { Plus } from "lucide-react";
 
 export function LocationCreateAction() {
   const router = useRouter();
@@ -55,6 +56,7 @@ export function LocationCreateAction() {
   return (
     <>
       <Button type="button" onClick={openDialog}>
+        <Plus aria-hidden="true" className="size-4" />
         新增位置
       </Button>
 

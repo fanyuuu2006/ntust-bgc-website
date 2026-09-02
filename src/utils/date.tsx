@@ -1,5 +1,62 @@
 export const CLUB_TIME_ZONE = "Asia/Taipei";
 
+type DateTimeParts = Record<string, string>;
+
+function getDateTimeParts(date: Date, timeZone = CLUB_TIME_ZONE): DateTimeParts {
+  return new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone,
+  })
+    .formatToParts(date)
+    .reduce<DateTimeParts>(
+      (result, part) => ({ ...result, [part.type]: part.value }),
+      {},
+    );
+}
+
+export function formatTaipeiDateTimeLocal(value: Date): string {
+  const parts = getDateTimeParts(value);
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+}
+
+export function getFutureTaipeiDateTimeLocal(
+  durationDays: number,
+  now = new Date(),
+): string {
+  return formatTaipeiDateTimeLocal(
+    new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000),
+  );
+}
+
+export function parseTaipeiDateTimeLocal(value: string): string | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(value);
+  if (!match) return null;
+
+  const [, year, month, day, hour, minute] = match;
+  const wallTimeAsUtc = Date.UTC(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+  );
+  const referenceParts = getDateTimeParts(new Date(wallTimeAsUtc));
+  const offset = Date.UTC(
+    Number(referenceParts.year),
+    Number(referenceParts.month) - 1,
+    Number(referenceParts.day),
+    Number(referenceParts.hour),
+    Number(referenceParts.minute),
+  ) - wallTimeAsUtc;
+
+  return new Date(wallTimeAsUtc - offset).toISOString();
+}
+
 function toValidDate(value: string | null | undefined): Date | null {
   if (!value) return null;
   const date = new Date(value);

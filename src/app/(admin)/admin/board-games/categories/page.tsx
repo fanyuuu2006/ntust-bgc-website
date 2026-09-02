@@ -22,12 +22,13 @@ export default async function BoardGameCategoriesPage({
     page,
     pageSize,
   });
-  const items = await Promise.all(
-    categories.data.map(async (category) => ({
-      ...category,
-      count: await boardGamesService.countBoardGamesByCategoryId(category.id),
-    })),
+  const usageCounts = await boardGamesService.countBoardGamesByCategoryIds(
+    categories.data.map((category) => category.id),
   );
+  const items = categories.data.map((category) => ({
+    ...category,
+    count: usageCounts[category.id] ?? 0,
+  }));
   const clearSearchHref = params.pageSize
     ? "/admin/board-games/categories?pageSize=" + params.pageSize
     : "/admin/board-games/categories";
@@ -41,17 +42,15 @@ export default async function BoardGameCategoriesPage({
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
-          <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+          <AdminToolbar className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <ClearableSearchInput
               initialValue={params.search}
               clearHref={clearSearchHref}
               name="search"
               placeholder="搜尋桌遊分類"
-              className="w-full"
+              className="w-full sm:flex-1"
             />
-            <Button type="submit" className="w-full md:w-auto">
-              搜尋
-            </Button>
+            <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
           </AdminToolbar>
         </form>
         <CategoryRecords items={items} />

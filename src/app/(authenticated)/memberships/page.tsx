@@ -43,33 +43,36 @@ export default async function MembershipsPage({
     search: firstValue(params.search),
     type: isMembershipType(type) ? type : undefined,
     status: isMembershipStatus(status) ? status : undefined,
-    orderBy: orderBy === "academic_year"
-      ? "academic_year"
-      : undefined,
-    orderDirection: orderDirection === "asc"
-      ? "asc"
-      : orderDirection === "desc"
-        ? "desc"
-        : undefined,
+    orderBy: orderBy === "academic_year" ? "academic_year" : undefined,
+    orderDirection:
+      orderDirection === "asc"
+        ? "asc"
+        : orderDirection === "desc"
+          ? "desc"
+          : undefined,
   };
   const academicYears = await membershipService.listAcademicYears();
   const currentAcademicYear = academicYears.find((year) => year.is_current);
   const [currentYearMembership, membershipRecords] = await Promise.all([
     currentAcademicYear
       ? membershipService.getMembershipByUserIdAndAcademicYearId(
-        user.id,
-        currentAcademicYear.id,
-      )
+          user.id,
+          currentAcademicYear.id,
+        )
       : Promise.resolve(null),
     membershipService.listMembershipRecordsByUserId(user.id, queryInput),
   ]);
-  const mayActivate = !currentYearMembership
-    || ["expired", "cancelled"].includes(currentYearMembership.status);
+  const mayActivate =
+    !currentYearMembership ||
+    ["expired", "cancelled"].includes(currentYearMembership.status);
   const query = {
     search: queryInput.search?.trim() || undefined,
     type: queryInput.type,
     status: queryInput.status,
-    orderDirection: queryInput.orderDirection === "asc" ? "asc" as const : "desc" as const,
+    orderDirection:
+      queryInput.orderDirection === "asc"
+        ? ("asc" as const)
+        : ("desc" as const),
   };
 
   return (
@@ -85,7 +88,9 @@ export default async function MembershipsPage({
       ) : null}
 
       {mayActivate ? (
-        <MembershipActivationForm academicYearLabel={currentAcademicYear?.year} />
+        <MembershipActivationForm
+          academicYearLabel={currentAcademicYear?.year}
+        />
       ) : null}
 
       <MembershipHistory
@@ -118,7 +123,9 @@ function isMembershipType(value: string | undefined): value is MembershipType {
   return value === "annual" || value === "lifetime";
 }
 
-function isMembershipStatus(value: string | undefined): value is MembershipStatus {
+function isMembershipStatus(
+  value: string | undefined,
+): value is MembershipStatus {
   return ["pending", "active", "expired", "suspended", "cancelled"].includes(
     value ?? "",
   );

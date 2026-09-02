@@ -12,23 +12,42 @@ import {
   UserProfileNotFoundError,
 } from "./users.errors";
 import { usersRepository } from "@/repositories/users.repository";
+import { officerPositionsService } from "@/services/officer-positions/officer-positions.service";
+import { membershipService } from "@/services/memberships/memberships.service";
 
 export const usersService = {
   listForAdmin: async (options: { page?: number; pageSize?: number; search?: string; orderBy?: "name" | "email" | "created_at" | "updated_at"; orderDirection?: "asc" | "desc" } = {}) => {
-    const result = await usersRepository.findMany(options);
-    const profiles = await userProfilesRepository.findManyByUserIds(
-      result.data.map((user) => user.id),
-    );
+    const keyword = options.search?.trim();
+    const matchedUserIds = keyword
+      ? [...new Set((await Promise.all([
+          usersRepository.findIdsBySearch(keyword),
+          userProfilesRepository.findUserIdsBySearch(keyword),
+        ])).flat())]
+      : undefined;
+    const result = await usersRepository.findMany({
+      ...options,
+      ...(keyword ? { userIds: matchedUserIds } : {}),
+    });
+    const userIds = result.data.map((user) => user.id);
+    const profiles = await userProfilesRepository.findManyByUserIds(userIds);
     const profilesByUserId = new Map(profiles.map((profile) => [profile.user_id, profile]));
-    return { ...result, data: result.data.map((user) => ({ ...user, profile: profilesByUserId.get(user.id) ?? null })) };
+    return {
+      ...result,
+      data: result.data.map((user) => ({
+        ...user,
+        profile: profilesByUserId.get(user.id) ?? null,
+      })),
+    };
   },
 
   getUserForAdmin: async (userId: string) => {
-    const [user, profile] = await Promise.all([
+    const [user, profile, memberships, officerPositions] = await Promise.all([
       usersRepository.findById(userId),
       userProfilesRepository.findByUserId(userId),
+      membershipService.getMembershipsByUserId(userId, { page: 1, pageSize: 100 }),
+      officerPositionsService.getPositionsByUserId(userId, { page: 1, pageSize: 100 }),
     ]);
-    return user ? { ...user, profile } : null;
+    return user ? { ...user, profile, memberships: memberships.data, officer_positions: officerPositions.data } : null;
   },
 
   getProfile: async (userId: string): Promise<UserProfile | null> => {

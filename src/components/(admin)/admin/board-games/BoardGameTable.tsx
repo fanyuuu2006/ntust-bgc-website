@@ -22,16 +22,19 @@ import {
 } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
 import type { BoardGameWithCategoryAndLocation } from "@/services/board-games/board-games.types";
-import { formatAdminDateTime } from "@/utils/date";
+import { formatDateTime } from "@/utils/date";
+import { Pencil } from "lucide-react";
 
 type Props = React.HTMLAttributes<HTMLDivElement> & {
   boardGames: BoardGameWithCategoryAndLocation[];
   query: BoardGamesQuery;
+  hasFilters?: boolean;
 };
 
 export function BoardGameTable({
   boardGames,
   query,
+  hasFilters = false,
   className,
   ...props
 }: Props) {
@@ -78,8 +81,8 @@ export function BoardGameTable({
     return (
       <EmptyState
         className={className}
-        title="找不到桌遊"
-        description="請調整搜尋或篩選條件後再試。"
+        title={hasFilters ? "找不到符合條件的桌遊" : "目前還沒有桌遊"}
+        description={hasFilters ? "請調整搜尋或篩選條件後再試。" : "可從頁面標題旁新增第一款桌遊。"}
         {...props}
       />
     );
@@ -146,7 +149,7 @@ export function BoardGameTable({
                   {game.category.name}
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
-                  {formatAdminDateTime(game.updated_at)}
+                  {formatDateTime(game.updated_at)}
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-right">
                   <BoardGameRowActions
@@ -174,9 +177,11 @@ export function BoardGameTable({
                 />
                 <div className="min-w-0 flex-1">
                   <h2 className="truncate font-semibold">{game.name}</h2>
-                  <p className="mt-1 truncate text-sm text-(--muted)">
-                    #{game.inventory_number} · {game.category.name} ·{" "}
-                    {game.location.name}
+                  <p className="mt-1 text-sm text-(--muted)">
+                    社產編號 #{game.inventory_number}
+                  </p>
+                  <p className="mt-1 text-sm text-(--muted)">
+                    {game.category.name} · {game.location.name}
                   </p>
                 </div>
               </div>
@@ -185,7 +190,7 @@ export function BoardGameTable({
               </span>
             </div>
             <p className="text-xs text-(--muted)">
-              更新：{formatAdminDateTime(game.updated_at)}
+              更新：{formatDateTime(game.updated_at)}
             </p>
             <BoardGameRowActions boardGame={game} onDelete={openDeleteDialog} />
           </Card>
@@ -223,6 +228,7 @@ function BoardGameRowActions({
         size="sm"
         className="rounded-lg"
       >
+        <Pencil aria-hidden="true" className="size-4" />
         編輯
       </ButtonLink>
       <Button

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef } from "react";
+import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/utils/className";
@@ -74,6 +75,7 @@ export function Modal({
 }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const hasBodyScrollLock = useRef(false);
+  const previouslyFocusedElement = useRef<HTMLElement | null>(null);
   const titleId = useId();
   const descriptionId = useId();
 
@@ -81,7 +83,19 @@ export function Modal({
     const dialog = ref.current;
     if (!dialog) return;
 
+    if (open) {
+      const activeElement = document.activeElement;
+      previouslyFocusedElement.current =
+        activeElement instanceof HTMLElement ? activeElement : null;
+    }
+
     synchronizeDialog(dialog, open);
+
+    if (!open && previouslyFocusedElement.current?.isConnected) {
+      const trigger = previouslyFocusedElement.current;
+      requestAnimationFrame(() => trigger.focus());
+      previouslyFocusedElement.current = null;
+    }
   }, [open]);
 
   useEffect(() => {
@@ -136,7 +150,7 @@ export function Modal({
           aria-label={closeLabel}
           className="shrink-0"
         >
-          <span aria-hidden="true">×</span>
+          <X aria-hidden="true" className="size-4" />
         </Button>
       </div>
       <div className={cn("max-h-[75dvh] overflow-y-auto p-5", contentClassName)}>

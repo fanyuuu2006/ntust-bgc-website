@@ -26,11 +26,11 @@ export default async function MembershipsPage({ searchParams }: Props) {
     <>
       <HeadingSection
         title="社員資格管理"
-        description="管理使用者的社員資格。"
+        description="管理使用者各學年度的社員資格。"
         actions={
           <>
             <ButtonLink href="/admin/memberships/register-keys" variant="outline">
-              社員註冊碼
+              社員註冊序號管理
             </ButtonLink>
             <MembershipCreateButton
               users={users.data}

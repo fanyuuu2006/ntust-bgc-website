@@ -94,8 +94,8 @@ export function MembershipRecordsToolbar({
           </Select>
         </label>
 
-        <Button type="submit" variant="outline" size="md">
-          套用
+        <Button type="submit" variant='primary' size="md">
+          搜詢
         </Button>
       </div>
 

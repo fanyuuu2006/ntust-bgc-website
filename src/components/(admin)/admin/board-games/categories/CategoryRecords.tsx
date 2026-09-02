@@ -32,6 +32,14 @@ export function CategoryRecords({ items }: { items: CategoryRecord[] }) {
     setMessage(null);
   }
 
+  function openDelete(category: CategoryRecord) {
+    if (category.count > 0) {
+      setMessage(`「${category.name}」目前仍有 ${category.count} 款桌遊使用，無法刪除。`);
+      return;
+    }
+    setDeleting(category);
+  }
+
   function closeEdit() {
     if (!busy) {
       setEditing(null);
@@ -98,14 +106,14 @@ export function CategoryRecords({ items }: { items: CategoryRecord[] }) {
                       {category.description || "未填寫說明"}
                     </p>
                     <p className="mt-2 text-xs text-(--muted)">
-                      使用中的桌遊：{category.count}
+                      使用中的桌遊：{category.count} 款
                     </p>
                   </div>
                   <div className="flex shrink-0 gap-2">
                     <Button type="button" size="sm" variant="outline" onClick={() => openEdit(category)}>
                       編輯
                     </Button>
-                    <Button type="button" size="sm" variant="danger" onClick={() => setDeleting(category)}>
+                    <Button type="button" size="sm" variant="danger" onClick={() => openDelete(category)}>
                       刪除
                     </Button>
                   </div>
@@ -131,13 +139,13 @@ export function CategoryRecords({ items }: { items: CategoryRecord[] }) {
                     <td className="max-w-md px-4 py-3 break-words text-(--muted)">
                       {category.description || "未填寫說明"}
                     </td>
-                    <td className="px-4 py-3">{category.count}</td>
+                    <td className="px-4 py-3">{category.count} 款</td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-2">
                         <Button type="button" size="sm" variant="outline" onClick={() => openEdit(category)}>
                           編輯
                         </Button>
-                        <Button type="button" size="sm" variant="danger" onClick={() => setDeleting(category)}>
+                        <Button type="button" size="sm" variant="danger" onClick={() => openDelete(category)}>
                           刪除
                         </Button>
                       </div>

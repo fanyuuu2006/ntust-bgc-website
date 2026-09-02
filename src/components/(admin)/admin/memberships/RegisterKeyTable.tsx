@@ -1,10 +1,231 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { formatAdminDateTime } from "@/utils/date";
+import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
 import type { MembershipRegisterKeyWithAcademicYear } from "@/services/memberships/memberships.types";
+import { formatAdminDateTime } from "@/utils/date";
 import { RegisterKeyStatusBadge } from "./RegisterKeyStatusBadge";
-export function RegisterKeyTable({ registerKeys, hasFilters = false }: { registerKeys: MembershipRegisterKeyWithAcademicYear[]; hasFilters?: boolean }) { const router = useRouter(); const [message, setMessage] = useState<string | null>(null); const [pending, setPending] = useState<MembershipRegisterKeyWithAcademicYear | null>(null); const [busy, setBusy] = useState(false); const copy = async (key: string) => { await navigator.clipboard.writeText(key); setMessage("社員註冊碼已複製。"); }; const revoke = async () => { if (!pending) return; setBusy(true); try { const response = await fetch(`/api/admin/members/register-keys/${pending.id}`, { method: "PATCH" }); const data = await response.json() as { message?: string }; if (!response.ok) throw new Error(data.message ?? "撤銷失敗"); setMessage("社員註冊碼已撤銷。"); setPending(null); router.refresh(); } catch (error) { setMessage(error instanceof Error ? error.message : "撤銷失敗"); } finally { setBusy(false); } }; if (!registerKeys.length) return <Card className="p-8 text-center text-sm text-(--muted)">{hasFilters ? "沒有符合條件的社員註冊碼。" : "尚未產生社員註冊碼。"}</Card>; return <div className="space-y-3">{message && <p role="status" className="rounded-lg bg-(--secondary-background) px-3 py-2 text-sm">{message}</p>}<div className="grid gap-3 lg:hidden">{registerKeys.map((item) => <Card key={item.id} className="p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="break-all font-mono text-xs">{item.register_key}</p><p className="mt-1 text-xs text-(--muted)">{item.academic_year?.year ?? "—"} 學年度 · 序號 #{item.sequence_number}</p></div><RegisterKeyStatusBadge status={item.status} /></div><p className="mt-3 text-xs text-(--muted)">建立：{formatAdminDateTime(item.created_at)}</p><div className="mt-4 flex flex-wrap gap-2"><Button variant="outline" onClick={() => copy(item.register_key)} className="flex-1">複製</Button>{item.status === "available" && <Button variant="danger" disabled={busy} onClick={() => setPending(item)} className="flex-1">撤銷</Button>}</div></Card>)}</div><Card className="hidden overflow-x-auto lg:block"><table className="w-full text-left text-sm"><thead className="bg-(--secondary-background)"><tr>{["註冊碼", "學年度", "狀態", "建立時間", "領取時間", "操作"].map((label) => <th key={label} className="px-3 py-2 text-xs font-semibold">{label}</th>)}</tr></thead><tbody>{registerKeys.map((item) => <tr className="border-t border-(--border) hover:bg-(--secondary-background)" key={item.id}><td className="px-3 py-2 font-mono text-xs">{item.register_key}<p className="mt-1 text-(--muted)">序號 #{item.sequence_number}</p></td><td className="px-3 py-2">{item.academic_year?.year ?? "—"}</td><td className="px-3 py-2"><RegisterKeyStatusBadge status={item.status} /></td><td className="px-3 py-2 whitespace-nowrap text-xs">{formatAdminDateTime(item.created_at)}</td><td className="px-3 py-2 whitespace-nowrap text-xs">{formatAdminDateTime(item.claimed_at)}</td><td className="px-3 py-2"><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => copy(item.register_key)} className="px-3 py-1.5 text-xs">複製</Button>{item.status === "available" && <Button variant="danger" disabled={busy} onClick={() => setPending(item)} className="px-3 py-1.5 text-xs">撤銷</Button>}</div></td></tr>)}</tbody></table></Card><ConfirmDialog open={pending !== null} onClose={() => !busy && setPending(null)} onConfirm={revoke} isSubmitting={busy} title="撤銷社員註冊碼？" description={pending ? `確定要撤銷「${pending.register_key}」嗎？此操作無法復原。` : ""} confirmLabel="確認撤銷" /></div>; }
+
+type RegisterKeyTableProps = {
+  registerKeys: MembershipRegisterKeyWithAcademicYear[];
+  hasFilters?: boolean;
+};
+
+export function RegisterKeyTable({
+  registerKeys,
+  hasFilters = false,
+}: RegisterKeyTableProps) {
+  const router = useRouter();
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [pendingRevocation, setPendingRevocation] =
+    useState<MembershipRegisterKeyWithAcademicYear | null>(null);
+  const [isRevoking, setIsRevoking] = useState(false);
+
+  async function copyRegisterKey(registerKey: string) {
+    try {
+      await navigator.clipboard.writeText(registerKey);
+      setFeedback("社員註冊序號已複製。");
+    } catch {
+      setFeedback("無法複製社員註冊序號，請手動複製。");
+    }
+  }
+
+  async function revokeRegisterKey() {
+    if (!pendingRevocation) return;
+
+    setIsRevoking(true);
+    setFeedback(null);
+
+    try {
+      const response = await fetch(
+        `/api/admin/members/register-keys/${pendingRevocation.id}`,
+        { method: "PATCH" },
+      );
+      const body = (await response.json()) as { message?: string };
+
+      if (!response.ok) {
+        throw new Error(body.message ?? "撤銷社員註冊序號失敗，請稍後再試。");
+      }
+
+      setFeedback("社員註冊序號已撤銷。");
+      setPendingRevocation(null);
+      router.refresh();
+    } catch (error) {
+      setFeedback(
+        error instanceof Error
+          ? error.message
+          : "撤銷社員註冊序號失敗，請稍後再試。",
+      );
+    } finally {
+      setIsRevoking(false);
+    }
+  }
+
+  if (!registerKeys.length) {
+    return (
+      <EmptyState
+        title={
+          hasFilters
+            ? "沒有符合條件的社員註冊序號"
+            : "目前沒有社員註冊序號"
+        }
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {feedback ? (
+        <p
+          role="status"
+          className="rounded-lg border border-(--border) bg-(--surface-subtle) px-3 py-2 text-sm text-(--text-primary)"
+        >
+          {feedback}
+        </p>
+      ) : null}
+
+      <div className="grid gap-3 lg:hidden">
+        {registerKeys.map((registerKey) => (
+          <Card key={registerKey.id} className="min-w-0 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="break-all font-mono text-xs text-(--text-primary)">
+                  {registerKey.register_key}
+                </p>
+                <p className="mt-1 text-xs text-(--text-muted)">
+                  {registerKey.academic_year?.year ?? "未知"} 學年度 · 序號 #
+                  {registerKey.sequence_number}
+                </p>
+              </div>
+              <RegisterKeyStatusBadge status={registerKey.status} />
+            </div>
+            <p className="mt-3 text-xs text-(--text-muted)">
+              建立於 {formatAdminDateTime(registerKey.created_at)}
+            </p>
+            <RegisterKeyActions
+              registerKey={registerKey}
+              isRevoking={isRevoking}
+              onCopy={copyRegisterKey}
+              onRevoke={setPendingRevocation}
+              className="mt-4"
+            />
+          </Card>
+        ))}
+      </div>
+
+      <Card className="hidden overflow-x-auto p-0 lg:block">
+        <Table className="min-w-[760px]">
+          <TableHeader>
+            <TableRow>
+              <TableHead>社員註冊序號</TableHead>
+              <TableHead>學年度</TableHead>
+              <TableHead>狀態</TableHead>
+              <TableHead>建立時間</TableHead>
+              <TableHead>使用時間</TableHead>
+              <TableHead className="text-right">操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {registerKeys.map((registerKey) => (
+              <TableRow key={registerKey.id}>
+                <TableCell className="min-w-64">
+                  <p className="break-all font-mono text-xs text-(--text-primary)">
+                    {registerKey.register_key}
+                  </p>
+                  <p className="mt-1 text-xs text-(--text-muted)">
+                    序號 #{registerKey.sequence_number}
+                  </p>
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {registerKey.academic_year?.year ?? "未知"} 學年度
+                </TableCell>
+                <TableCell>
+                  <RegisterKeyStatusBadge status={registerKey.status} />
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-sm">
+                  {formatAdminDateTime(registerKey.created_at)}
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-sm">
+                  {formatAdminDateTime(registerKey.claimed_at)}
+                </TableCell>
+                <TableCell className="text-right">
+                  <RegisterKeyActions
+                    registerKey={registerKey}
+                    isRevoking={isRevoking}
+                    onCopy={copyRegisterKey}
+                    onRevoke={setPendingRevocation}
+                    className="justify-end"
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
+
+      <ConfirmDialog
+        open={pendingRevocation !== null}
+        onClose={() => !isRevoking && setPendingRevocation(null)}
+        onConfirm={revokeRegisterKey}
+        isSubmitting={isRevoking}
+        title="撤銷社員註冊序號"
+        description={
+          pendingRevocation
+            ? `確定要撤銷「${pendingRevocation.register_key}」嗎？撤銷後無法再用於建立社員資格。`
+            : ""
+        }
+        confirmLabel="撤銷序號"
+      />
+    </div>
+  );
+}
+
+function RegisterKeyActions({
+  registerKey,
+  isRevoking,
+  onCopy,
+  onRevoke,
+  className,
+}: {
+  registerKey: MembershipRegisterKeyWithAcademicYear;
+  isRevoking: boolean;
+  onCopy: (registerKey: string) => void;
+  onRevoke: (registerKey: MembershipRegisterKeyWithAcademicYear) => void;
+  className?: string;
+}) {
+  return (
+    <div className={`flex flex-wrap gap-2 ${className ?? ""}`}>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => onCopy(registerKey.register_key)}
+      >
+        複製
+      </Button>
+      {registerKey.status === "available" ? (
+        <Button
+          type="button"
+          variant="danger"
+          size="sm"
+          disabled={isRevoking}
+          onClick={() => onRevoke(registerKey)}
+        >
+          撤銷
+        </Button>
+      ) : null}
+    </div>
+  );
+}

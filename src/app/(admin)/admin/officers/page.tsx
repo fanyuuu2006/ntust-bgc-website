@@ -58,14 +58,14 @@ export default async function OfficersPage({
     <>
       <HeadingSection
         title="幹部管理"
-        description="依學年度管理職位；曾任幹部的使用者保有管理權限。"
+        description="管理各學年度的幹部紀錄。"
         actions={<OfficerActions users={users.data} years={years} />}
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
           <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_12rem_auto] md:items-center">
             <ClearableSearchInput initialValue={params.search} clearHref={clearSearchHref} name="search" placeholder="搜尋職位" aria-label="搜尋幹部職位" className="w-full" />
-            <Button type="submit" className="order-2 w-full md:order-3 md:w-auto">搜尋</Button>
+            <Button type="submit" variant="primary" className="order-2 w-full md:order-3 md:w-auto">搜尋</Button>
             <Select name="academicYearId" defaultValue={params.academicYearId ?? ""} aria-label="學年度" className="order-3 w-full md:order-2">
               <option value="">全部學年度</option>
               {years.map((year) => <option key={year.id} value={year.id}>{year.year} 學年度</option>)}

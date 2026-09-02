@@ -10,6 +10,7 @@ type ConfirmDialogProps = {
   title: string;
   description: string;
   confirmLabel?: string;
+  confirmVariant?: "primary" | "danger";
   isSubmitting?: boolean;
 };
 
@@ -20,6 +21,7 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel = "刪除",
+  confirmVariant = "danger",
   isSubmitting = false,
 }: ConfirmDialogProps) {
   return (
@@ -28,7 +30,7 @@ export function ConfirmDialog({
         <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
           取消
         </Button>
-        <Button type="button" variant="danger" onClick={onConfirm} isLoading={isSubmitting}>
+        <Button type="button" variant={confirmVariant} onClick={onConfirm} isLoading={isSubmitting}>
           {confirmLabel}
         </Button>
       </div>

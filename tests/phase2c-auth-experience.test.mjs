@@ -35,8 +35,8 @@ test("auth forms expose primary submits, busy states, and password-manager seman
 
   assert.match(login, /autoComplete: "current-password"/);
   assert.match(register, /autoComplete: "new-password"/);
-  assert.match(login, /href="\/register"/);
-  assert.match(register, /href="\/login"/);
+  assert.match(login, /registerHref/);
+  assert.match(register, /loginHref/);
 });
 
 test("password reveal uses explicit Lucide icons without an icon registry", async () => {

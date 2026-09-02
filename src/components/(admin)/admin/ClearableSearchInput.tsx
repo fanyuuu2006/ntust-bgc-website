@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { X } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { cn } from "@/utils/className";
 
@@ -39,6 +41,10 @@ function ClearableSearchInputControl({
 
   return (
     <div className={cn("relative w-full", className)}>
+      <Search
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-(--text-muted)"
+      />
       <Input
         name={hasValue ? name : undefined}
         id={id}
@@ -46,7 +52,7 @@ function ClearableSearchInputControl({
         onChange={(event) => setValue(event.target.value)}
         placeholder={placeholder}
         aria-label={ariaLabel}
-        className={cn(hasValue && "pr-10", inputClassName)}
+        className={cn("pl-9", hasValue && "pr-10", inputClassName)}
       />
       {hasValue && (
         <button
@@ -56,9 +62,9 @@ function ClearableSearchInputControl({
             setValue("");
             router.replace(clearHref);
           }}
-          className="absolute top-1/2 right-2 grid size-7 -translate-y-1/2 place-items-center rounded-full text-lg leading-none text-(--text-muted) transition-colors hover:bg-(--surface-subtle) hover:text-(--text-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+          className="absolute top-1/2 right-2 grid size-7 -translate-y-1/2 place-items-center rounded-full text-(--text-muted) transition-colors hover:bg-(--surface-subtle) hover:text-(--text-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
         >
-          ×
+          <X aria-hidden="true" className="size-4" />
         </button>
       )}
     </div>

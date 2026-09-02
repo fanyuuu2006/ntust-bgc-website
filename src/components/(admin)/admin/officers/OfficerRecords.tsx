@@ -206,10 +206,10 @@ export function OfficerRecords({
         onClose={closeDeleteDialog}
         onConfirm={removeOfficer}
         isSubmitting={isDeleting}
-        title="刪除幹部職位"
+        title="刪除幹部紀錄"
         description={
           deletingOfficer
-            ? `確定要刪除「${deletingOfficer.title}」嗎？${deleteError ? ` ${deleteError}` : ""}`
+            ? `確定要刪除「${deletingOfficer.title}」這筆幹部紀錄嗎？這會重新計算相關社員資格類型。${deleteError ? ` ${deleteError}` : ""}`
             : ""
         }
       />

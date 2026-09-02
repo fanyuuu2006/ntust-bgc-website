@@ -10,7 +10,6 @@ export class BoardGameLocationInUseError extends Error { constructor() { super("
 export class BoardGameHasOpenBorrowingError extends Error { constructor() { super("此桌遊仍有未結束的借用流程，無法執行此操作。"); this.name = "BoardGameHasOpenBorrowingError"; } }
 export class BoardGameNotAvailableForBorrowingError extends Error { constructor() { super("此桌遊目前不可借用。"); this.name = "BoardGameNotAvailableForBorrowingError"; } }
 export class BoardGameBorrowingConflictError extends Error { constructor() { super("您已對此桌遊提出尚未結束的借用申請。"); this.name = "BoardGameBorrowingConflictError"; } }
-export class BorrowingPermissionError extends Error { constructor() { super("只有本學年度有效社員可以申請借用桌遊。"); this.name = "BorrowingPermissionError"; } }
 export class BorrowingDueDateError extends Error { constructor() { super("應還時間必須是未來的有效日期。"); this.name = "BorrowingDueDateError"; } }
 export class BorrowingStatusTransitionError extends Error { constructor(expectedStatus: string, actualStatus: string) { super(`此操作需要「${expectedStatus}」狀態，目前為「${actualStatus}」。`); this.name = "BorrowingStatusTransitionError"; } }
 export class BorrowingWorkflowConflictError extends Error { constructor(message: string) { super(message); this.name = "BorrowingWorkflowConflictError"; } }

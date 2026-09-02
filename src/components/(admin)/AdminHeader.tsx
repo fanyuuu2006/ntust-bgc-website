@@ -2,6 +2,7 @@ import { UserMenu } from "@/components/Header/UserMenu";
 import type { User } from "@/types/database";
 import { cn } from "@/utils/className";
 import { Button, ButtonLink } from "@/components/ui/Button";
+import { Menu } from "lucide-react";
 
 const DEFAULT_SECTION_LABEL = "總覽";
 
@@ -42,7 +43,7 @@ export function AdminHeader({
             size="none"
             className="size-10 shrink-0 rounded-xl p-0 lg:hidden"
           >
-            <span aria-hidden="true">☰</span>
+            <Menu aria-hidden="true" className="size-5" />
             <span className="sr-only">開啟管理選單</span>
           </Button>
 

@@ -6,7 +6,6 @@ import {
   BoardGameBorrowingConflictError,
   BoardGameNotAvailableForBorrowingError,
   BoardNotFoundError,
-  BorrowingPermissionError,
 } from "@/services/board-games/board-games.errors";
 import { createBorrowingRequestSchema } from "@/services/board-games/board-games.schema";
 import { boardGamesService } from "@/services/board-games/board-games.service";
@@ -28,7 +27,6 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
   } catch (error) {
     if (error instanceof ZodError) return NextResponse.json({ message: "輸入資料格式不正確", errors: z.treeifyError(error) }, { status: 400 });
     if (error instanceof BoardNotFoundError) return NextResponse.json({ message: error.message }, { status: 404 });
-    if (error instanceof BorrowingPermissionError) return NextResponse.json({ message: error.message }, { status: 403 });
     if (error instanceof BoardGameNotAvailableForBorrowingError || error instanceof BoardGameBorrowingConflictError) return NextResponse.json({ message: error.message }, { status: 409 });
     console.error("[POST /api/board-games/[id]/borrow]", error);
     return NextResponse.json({ message: "提出借用申請失敗，請稍後再試" }, { status: 500 });

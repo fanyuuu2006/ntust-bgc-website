@@ -136,12 +136,12 @@ export const academicYearsRepository = {
       return academicYearsRepository.findById(id);
     }
 
-    const { data, error } = await supabase
-      .from("academic_years")
-      .update(payload)
-      .eq("id", id)
-      .select()
-      .maybeSingle();
+    const { data, error } = await supabase.rpc("update_academic_year", {
+      p_academic_year_id: id,
+      p_year: payload.year,
+      p_start_date: payload.start_date,
+      p_end_date: payload.end_date,
+    });
 
     if (error) {
       throwRepositoryError("更新學年度資料失敗", error);

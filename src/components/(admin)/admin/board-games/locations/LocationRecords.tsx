@@ -32,6 +32,14 @@ export function LocationRecords({ items }: { items: LocationRecord[] }) {
     setMessage(null);
   }
 
+  function openDelete(location: LocationRecord) {
+    if (location.count > 0) {
+      setMessage(`「${location.name}」目前仍有 ${location.count} 款桌遊使用，無法刪除。`);
+      return;
+    }
+    setDeleting(location);
+  }
+
   function closeEdit() {
     if (!busy) {
       setEditing(null);
@@ -98,14 +106,14 @@ export function LocationRecords({ items }: { items: LocationRecord[] }) {
                       {location.description || "未填寫說明"}
                     </p>
                     <p className="mt-2 text-xs text-(--muted)">
-                      使用中的桌遊：{location.count}
+                      使用中的桌遊：{location.count} 款
                     </p>
                   </div>
                   <div className="flex shrink-0 gap-2">
                     <Button type="button" size="sm" variant="outline" onClick={() => openEdit(location)}>
                       編輯
                     </Button>
-                    <Button type="button" size="sm" variant="danger" onClick={() => setDeleting(location)}>
+                    <Button type="button" size="sm" variant="danger" onClick={() => openDelete(location)}>
                       刪除
                     </Button>
                   </div>
@@ -131,13 +139,13 @@ export function LocationRecords({ items }: { items: LocationRecord[] }) {
                     <td className="max-w-md px-4 py-3 break-words text-(--muted)">
                       {location.description || "未填寫說明"}
                     </td>
-                    <td className="px-4 py-3">{location.count}</td>
+                    <td className="px-4 py-3">{location.count} 款</td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-2">
                         <Button type="button" size="sm" variant="outline" onClick={() => openEdit(location)}>
                           編輯
                         </Button>
-                        <Button type="button" size="sm" variant="danger" onClick={() => setDeleting(location)}>
+                        <Button type="button" size="sm" variant="danger" onClick={() => openDelete(location)}>
                           刪除
                         </Button>
                       </div>

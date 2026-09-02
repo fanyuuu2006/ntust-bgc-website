@@ -39,6 +39,16 @@ const EVENT_ATTENDANCE_WITH_EVENT_SELECT =
   "*, event:events(id, name, start_time)";
 
 export const eventAttendancesRepository = {
+  countByEventId: async (eventId: string): Promise<number> => {
+    const { count, error } = await supabase
+      .from("event_attendances")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", eventId);
+
+    if (error) throwRepositoryError("統計活動簽到紀錄失敗", error);
+    return count ?? 0;
+  },
+
   /**
    * 通用列表查詢，供管理後台（跨使用者、跨活動）使用。
    */

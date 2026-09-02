@@ -15,6 +15,7 @@ type UpdateUserInput = Partial<Pick<User, "name" | "avatar">>;
 type FindManyUsersOptions = PaginationQuery &
   OrderOptions<"name" | "email" | "created_at" | "updated_at"> & {
     search?: string;
+    userIds?: string[];
   };
 
 export const usersRepository = {
@@ -39,11 +40,19 @@ export const usersRepository = {
     const orderBy = options.orderBy ?? "created_at";
     const orderDirection = options.orderDirection ?? "desc";
 
+    if (options.userIds && options.userIds.length === 0) {
+      return buildPaginationResult<User>([], 0, page, pageSize);
+    }
+
     let query = supabase.from("users").select("*", { count: "exact" });
 
-    const keyword = options.search?.trim();
-    if (keyword) {
-      query = query.or(buildIlikeSearch(["name", "email"], keyword));
+    if (options.userIds) {
+      query = query.in("id", options.userIds);
+    } else {
+      const keyword = options.search?.trim();
+      if (keyword) {
+        query = query.or(buildIlikeSearch(["name", "email"], keyword));
+      }
     }
     query = query
       .order(orderBy, { ascending: orderDirection === "asc" })

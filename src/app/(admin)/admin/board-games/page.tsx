@@ -15,6 +15,7 @@ import {
 } from "./constants";
 import { ButtonLink } from "@/components/ui/Button";
 import { Pagination } from "@/components/Pagination/Pagination";
+import { Plus } from "lucide-react";
 
 type BoardGamesSearchParams = {
   page?: string;
@@ -96,9 +97,10 @@ export default async function BoardGamesAdminPage({
     <>
       <HeadingSection
         title="桌遊管理"
-        description="管理所有桌遊資訊"
+        description="管理社團桌遊、社產編號與基本資訊。"
         actions={
           <ButtonLink href="/admin/board-games/new">
+            <Plus aria-hidden="true" className="size-4" />
             新增桌遊
           </ButtonLink>
         }
@@ -112,7 +114,11 @@ export default async function BoardGamesAdminPage({
           clearSearchHref={clearSearchHref}
         />
 
-        <BoardGameTable boardGames={boardGames.data} query={query} />
+        <BoardGameTable
+          boardGames={boardGames.data}
+          query={query}
+          hasFilters={Boolean(query.search || query.status || query.category || query.location)}
+        />
 
         <Pagination
           className="p-4"

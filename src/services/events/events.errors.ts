@@ -5,6 +5,13 @@ export class EventNotFoundError extends Error {
   }
 }
 
+export class EventHasAttendanceRecordsError extends Error {
+  constructor() {
+    super("此活動已有簽到紀錄，請先處理簽到紀錄後再刪除活動");
+    this.name = "EventHasAttendanceRecordsError";
+  }
+}
+
 export class SelfCheckInMembershipRequiredError extends Error {
   constructor() {
     super("僅限目前社員自行簽到");

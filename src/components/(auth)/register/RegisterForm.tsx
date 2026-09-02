@@ -1,7 +1,7 @@
 "use client";
 import { Turnstile, TurnstileInstance } from "@marsidev/react-turnstile";
 import { useId, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/utils/className";
 import { apiClient } from "@/libs/api/client";
@@ -9,6 +9,7 @@ import { ApiError } from "@/libs/api/errors";
 import { FieldInput, type FieldInputField } from "@/components/FieldInput";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Button } from "@/components/ui/Button";
+import { getSafeReturnPath } from "@/utils/redirect";
 import { NEXT_PUBLIC_TURNSTILE_SITE_KEY } from "@/libs/env";
 
 const fields = [
@@ -88,6 +89,12 @@ type RegisterFormProps = Omit<
 
 export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const rawReturnTo = searchParams.get("returnTo");
+  const returnTo = getSafeReturnPath(rawReturnTo);
+  const loginHref = rawReturnTo === returnTo
+    ? `/login?returnTo=${encodeURIComponent(returnTo)}`
+    : "/login";
   const acceptTermsId = useId();
 
   const [values, setValues] = useState<RegisterFormValues>(INITIAL_VALUES);
@@ -158,7 +165,7 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
           phone: values.phone,
         },
       });
-      router.push("/login");
+      router.push(loginHref);
     } catch (err) {
       turnstileRef.current?.reset();
       setTurnstileToken("");
@@ -268,7 +275,7 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
 
         <p className="text-center text-sm text-(--text-muted)">
           已經有帳號？
-          <Link href="/login" className="ml-1 text-(--interactive-primary) hover:underline">
+          <Link href={loginHref} className="ml-1 text-(--interactive-primary) hover:underline">
             前往登入
           </Link>
         </p>

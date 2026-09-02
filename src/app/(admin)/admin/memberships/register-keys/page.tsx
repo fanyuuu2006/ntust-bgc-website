@@ -26,12 +26,12 @@ export default async function MembershipRegisterKeysPage({ searchParams }: Props
   return (
     <>
       <HeadingSection
-        title="社員註冊碼"
-        description="建立並管理社員註冊碼；註冊碼可用於社員資格申請。"
+        title="社員註冊序號管理"
+        description="產生序號，供已完成入社流程的使用者建立社員資格。"
         actions={
           <>
             <ButtonLink href="/admin/memberships" variant="outline">
-              返回社員資格
+              返回社員資格管理
             </ButtonLink>
             <RegisterKeyGenerateForm
               academicYears={academicYears}

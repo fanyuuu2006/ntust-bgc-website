@@ -191,10 +191,36 @@ export const boardGamesRepository = {
     return count ?? 0;
   },
 
+  countByCategoryIds: async (categoryIds: string[]): Promise<Record<string, number>> => {
+    if (categoryIds.length === 0) return {};
+    const { data, error } = await supabase
+      .from("board_games")
+      .select("category_id")
+      .in("category_id", categoryIds);
+    if (error) throwRepositoryError("批次統計桌遊種類社產數量失敗", error);
+    return (data ?? []).reduce<Record<string, number>>((counts, game) => {
+      counts[game.category_id] = (counts[game.category_id] ?? 0) + 1;
+      return counts;
+    }, {});
+  },
+
   countByLocationId: async (locationId: string): Promise<number> => {
     const { count, error } = await supabase.from("board_games").select("id", { count: "exact", head: true }).eq("location_id", locationId);
     if (error) throwRepositoryError("統計桌遊位置社產數量失敗", error);
     return count ?? 0;
+  },
+
+  countByLocationIds: async (locationIds: string[]): Promise<Record<string, number>> => {
+    if (locationIds.length === 0) return {};
+    const { data, error } = await supabase
+      .from("board_games")
+      .select("location_id")
+      .in("location_id", locationIds);
+    if (error) throwRepositoryError("批次統計桌遊位置社產數量失敗", error);
+    return (data ?? []).reduce<Record<string, number>>((counts, game) => {
+      counts[game.location_id] = (counts[game.location_id] ?? 0) + 1;
+      return counts;
+    }, {});
   },
 
   create: async (payload: CreateBoardGameInput): Promise<BoardGame> => {

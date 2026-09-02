@@ -9,6 +9,7 @@ import { usersRepository } from "@/repositories/users.repository";
 import { userProfilesRepository } from "@/repositories/user-profiles.repository";
 import {
   EventNotFoundError,
+  EventHasAttendanceRecordsError,
   SelfCheckInAlreadyCompletedError,
   SelfCheckInClosedError,
   SelfCheckInMembershipRequiredError,
@@ -111,11 +112,15 @@ export const eventsService = {
   },
 
   deleteEvent: async (id: string) => {
-    const existing = await eventsRepository.findById(id);
+    const [existing, attendanceCount] = await Promise.all([
+      eventsRepository.findById(id),
+      eventAttendancesRepository.countByEventId(id),
+    ]);
 
     if (!existing) {
       throw new EventNotFoundError();
     }
+    if (attendanceCount > 0) throw new EventHasAttendanceRecordsError();
 
     await eventsRepository.deleteById(id);
   },

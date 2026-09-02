@@ -32,8 +32,8 @@ test("HeaderActions owns the single primary login action and registration remain
   assert.match(actions, /variant="primary"/);
   assert.doesNotMatch(actions, /href="\/register"/);
   assert.doesNotMatch(mobile, /href="\/login"|href="\/register"/);
-  assert.match(login, /href="\/register"/);
-  assert.match(register, /href="\/login"/);
+  assert.match(login, /registerHref/);
+  assert.match(register, /loginHref/);
 });
 
 test("UserMenu uses a flat member-first link list with secondary admin and a menu-row logout action", async () => {

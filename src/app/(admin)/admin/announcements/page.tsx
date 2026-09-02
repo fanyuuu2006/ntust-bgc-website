@@ -102,16 +102,16 @@ export default async function AdminAnnouncementsPage({
 
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
-          <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_10rem_auto] md:items-center">
+          <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_10rem_10rem_auto] md:items-center">
             <ClearableSearchInput
               initialValue={params.search}
               clearHref={clearSearchHref}
               name="search"
-              placeholder="搜尋公告"
-              aria-label="搜尋公告"
+              placeholder="搜尋公告標題或內容"
+              aria-label="搜尋公告標題或內容"
               className="w-full"
             />
-            <Button type="submit" className="order-2 w-full md:order-3 md:w-auto">
+            <Button type="submit" variant="primary" className="order-2 w-full md:order-4 md:w-auto">
               搜尋
             </Button>
             <Select
@@ -124,6 +124,13 @@ export default async function AdminAnnouncementsPage({
               <option value="draft">草稿</option>
               <option value="published">已發布</option>
             </Select>
+            <Select name="orderBy" defaultValue={orderBy} aria-label="公告排序" className="order-4 w-full md:order-3">
+              <option value="created_at">最近建立</option>
+              <option value="updated_at">最近更新</option>
+              <option value="published_at">最近發布</option>
+              <option value="title">標題</option>
+            </Select>
+            <input type="hidden" name="orderDirection" value={orderDirection} />
           </AdminToolbar>
         </form>
 

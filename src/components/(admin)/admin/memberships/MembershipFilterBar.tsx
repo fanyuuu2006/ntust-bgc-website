@@ -44,7 +44,7 @@ export function MemberFilterBar({ academicYears, query }: Props) {
   return <form onSubmit={handleSubmit}>
     <AdminToolbar className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_11rem_9rem_auto] md:items-center">
       <ClearableSearchInput initialValue={query.search} clearHref={clearSearchHref} name="search" placeholder="搜尋使用者姓名、學號或 Email" aria-label="搜尋使用者" className="w-full md:col-span-2 lg:col-span-1" />
-      <Button type="submit" className="order-2 w-full md:order-4 md:col-span-2 md:justify-self-end md:w-auto lg:col-span-1">搜尋</Button>
+      <Button type="submit" variant="primary" className="order-2 w-full md:order-4 md:col-span-2 md:justify-self-end md:w-auto lg:col-span-1">搜尋</Button>
       <FilterSelect name="academic_year_id" ariaLabel="學年度" defaultValue={query.academic_year_id}>
         <option value="">全部學年度</option>
         {academicYears.map((year) => <option key={year.id} value={year.id}>{year.year} 學年度</option>)}

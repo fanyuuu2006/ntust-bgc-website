@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/Table";
 import { usersService } from "@/services/users/users.service";
-import { formatAdminDateTime } from "@/utils/date";
+import { formatDateTime } from "@/utils/date";
 
 type Props = {
   searchParams: Promise<{
@@ -29,7 +29,8 @@ type Props = {
 };
 
 const BASE_PATH = "/admin/users";
-const SORT_FIELDS = ["name", "created_at", "updated_at"] as const;
+const SORT_FIELDS = ["name", "created_at"] as const;
+const MISSING_VALUE = "尚未填寫";
 
 export default async function AdminUsersPage({ searchParams }: Props) {
   const params = await searchParams;
@@ -69,21 +70,21 @@ export default async function AdminUsersPage({ searchParams }: Props) {
     <>
       <HeadingSection
         title="使用者管理"
-        description="管理所有已註冊帳號；可查看個人資料與帳號基本資訊。"
+        description="管理網站帳號與個人基本資料。"
       />
 
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
-          <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+          <AdminToolbar className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <ClearableSearchInput
               initialValue={params.search}
               clearHref={clearSearchHref}
               name="search"
-              placeholder="搜尋姓名或 Email"
+              placeholder="搜尋使用者名稱、姓名、Email 或學號"
               aria-label="搜尋使用者"
-              className="w-full"
+              className="w-full sm:flex-1"
             />
-            <Button type="submit" className="w-full md:w-auto">
+            <Button type="submit" variant="primary" className="w-full sm:w-auto">
               搜尋
             </Button>
           </AdminToolbar>
@@ -100,27 +101,24 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               {users.data.map((user) => (
                 <Card key={user.id} className="space-y-3 p-4">
                   <div className="min-w-0">
-                    <p className="font-semibold">
-                      {user.profile?.real_name || user.name}
-                    </p>
-                    <p className="mt-1 break-all text-sm text-(--text-muted)">
+                    <p className="text-xs text-(--text-muted)">使用者名稱</p>
+                    <p className="mt-0.5 font-semibold">{user.name}</p>
+                    <p className="mt-2 text-xs text-(--text-muted)">真實姓名</p>
+                    <p className="mt-0.5">{user.profile?.real_name || MISSING_VALUE}</p>
+                    <p className="mt-2 break-all text-sm text-(--text-muted)">
                       {user.email}
                     </p>
                   </div>
                   <dl className="grid grid-cols-2 gap-3 text-sm">
-                    <Info label="學號" value={user.profile?.student_id || "未填"} />
+                    <Info label="學號" value={user.profile?.student_id || MISSING_VALUE} />
                     <Info
                       label="系所／年級"
-                      value={
-                        [user.profile?.department, user.profile?.grade]
-                          .filter(Boolean)
-                          .join(" ／ ") || "未填"
-                      }
+                      value={formatDepartmentGrade(
+                        user.profile?.department,
+                        user.profile?.grade,
+                      )}
                     />
-                    <Info
-                      label="建立時間"
-                      value={formatAdminDateTime(user.created_at)}
-                    />
+                    <Info label="建立時間" value={formatDateTime(user.created_at)} />
                   </dl>
                   <ButtonLink
                     href={"/admin/users/" + user.id}
@@ -134,26 +132,22 @@ export default async function AdminUsersPage({ searchParams }: Props) {
             </div>
 
             <AdminListSection className="hidden lg:block">
-              <Table className="min-w-[900px]">
+              <Table className="min-w-272">
                 <TableHeader>
                   <TableRow>
                     <SortableTableHeader
-                      label="使用者"
+                      label="使用者名稱"
                       column="name"
                       basePath={BASE_PATH}
                       query={query}
                     />
+                    <TableHead>真實姓名</TableHead>
+                    <TableHead>Email</TableHead>
                     <TableHead>學號</TableHead>
                     <TableHead>系所／年級</TableHead>
                     <SortableTableHeader
                       label="建立時間"
                       column="created_at"
-                      basePath={BASE_PATH}
-                      query={query}
-                    />
-                    <SortableTableHeader
-                      label="更新時間"
-                      column="updated_at"
                       basePath={BASE_PATH}
                       query={query}
                     />
@@ -163,25 +157,20 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                 <TableBody>
                   {users.data.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell>
-                        <p className="font-medium">
-                          {user.profile?.real_name || user.name}
-                        </p>
-                        <p className="text-xs text-(--text-muted)">
-                          {user.email}
-                        </p>
+                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell>{user.profile?.real_name || MISSING_VALUE}</TableCell>
+                      <TableCell className="max-w-56 break-all text-(--text-muted)">
+                        {user.email}
                       </TableCell>
-                      <TableCell>{user.profile?.student_id || "未填"}</TableCell>
+                      <TableCell>{user.profile?.student_id || MISSING_VALUE}</TableCell>
                       <TableCell>
-                        {[user.profile?.department, user.profile?.grade]
-                          .filter(Boolean)
-                          .join(" ／ ") || "未填"}
+                        {formatDepartmentGrade(
+                          user.profile?.department,
+                          user.profile?.grade,
+                        )}
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
-                        {formatAdminDateTime(user.created_at)}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        {formatAdminDateTime(user.updated_at)}
+                        {formatDateTime(user.created_at)}
                       </TableCell>
                       <TableCell className="text-right">
                         <ButtonLink
@@ -215,11 +204,18 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   );
 }
 
+function formatDepartmentGrade(
+  department: string | null | undefined,
+  grade: string | null | undefined,
+) {
+  return [department, grade].filter(Boolean).join(" ／ ") || MISSING_VALUE;
+}
+
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <dt className="text-xs text-(--text-muted)">{label}</dt>
-      <dd className="mt-0.5 break-words">{value}</dd>
+      <dd className="mt-0.5 wrap-break-word">{value}</dd>
     </div>
   );
 }
