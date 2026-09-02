@@ -15,12 +15,14 @@ import { buildPaginationResult } from "@/repositories/shared/pagination";
 import { userProfilesRepository } from "@/repositories/user-profiles.repository";
 import { usersRepository } from "@/repositories/users.repository";
 import type { Membership } from "@/types/database";
+import { matchesMembershipRecordSearch } from "@/utils/membership";
 import {
   activateMembershipSchema,
   generateMembershipRegisterKeysSchema,
   createAdminMembershipSchema,
   updateAdminMembershipSchema,
   listAdminMembershipsQuerySchema,
+  listMemberMembershipRecordsQuerySchema,
   listMembershipRegisterKeysQuerySchema,
 } from "./memberships.schema";
 import {
@@ -57,6 +59,54 @@ async function attachAcademicYears(
     ...membership,
     academic_year: academicYearsById.get(membership.academic_year_id) ?? null,
   }));
+}
+
+async function findAllMembershipsByUserId(
+  userId: string,
+  options: Pick<FindManyMembershipsOptions, "type" | "status">,
+) {
+  const pageSize = 100;
+  const firstPage = await membershipsRepository.findManyByUserId(userId, {
+    ...options,
+    page: 1,
+    pageSize,
+  });
+  const remainingPages = Array.from(
+    { length: Math.max(0, firstPage.totalPages - 1) },
+    (_, index) =>
+      membershipsRepository.findManyByUserId(userId, {
+        ...options,
+        page: index + 2,
+        pageSize,
+      }),
+  );
+  const remainingResults = await Promise.all(remainingPages);
+
+  return [
+    ...firstPage.data,
+    ...remainingResults.flatMap((result) => result.data),
+  ];
+}
+
+function compareMembershipRecords(
+  left: MembershipWithAcademicYear,
+  right: MembershipWithAcademicYear,
+  orderDirection: "asc" | "desc",
+) {
+  const leftStart = left.academic_year
+    ? new Date(left.academic_year.start_date).getTime()
+    : Number.NEGATIVE_INFINITY;
+  const rightStart = right.academic_year
+    ? new Date(right.academic_year.start_date).getTime()
+    : Number.NEGATIVE_INFINITY;
+  const academicYearOrder = leftStart - rightStart;
+
+  if (academicYearOrder !== 0) {
+    return orderDirection === "asc" ? academicYearOrder : -academicYearOrder;
+  }
+
+  return new Date(right.joined_at ?? right.created_at).getTime()
+    - new Date(left.joined_at ?? left.created_at).getTime();
 }
 
 async function attachAdminMembershipDetails(
@@ -184,6 +234,43 @@ export const membershipService = {
     const data = await attachAcademicYears(result.data);
 
     return { ...result, data };
+  },
+
+  getMembershipByUserIdAndAcademicYearId: async (
+    userId: string,
+    academicYearId: string,
+  ): Promise<MembershipWithAcademicYear | null> => {
+    const membership = await membershipsRepository.findByUserIdAndAcademicYearId(
+      userId,
+      academicYearId,
+    );
+
+    if (!membership) return null;
+
+    const academicYear = await academicYearsRepository.findById(academicYearId);
+    return { ...membership, academic_year: academicYear };
+  },
+
+  listMembershipRecordsByUserId: async (userId: string, input: unknown) => {
+    const query = listMemberMembershipRecordsQuerySchema.parse(input);
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 12;
+    const orderDirection = query.orderDirection ?? "desc";
+    const memberships = await findAllMembershipsByUserId(userId, {
+      type: query.type,
+      status: query.status,
+    });
+    const records = (await attachAcademicYears(memberships))
+      .filter((membership) => matchesMembershipRecordSearch(membership, query.search))
+      .sort((left, right) => compareMembershipRecords(left, right, orderDirection));
+    const start = (page - 1) * pageSize;
+
+    return buildPaginationResult(
+      records.slice(start, start + pageSize),
+      records.length,
+      page,
+      pageSize,
+    );
   },
 
   listAdminMemberships: async (

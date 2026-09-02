@@ -20,7 +20,10 @@ type UpdateAdminMembershipInput = Pick<
 > & { joined_at?: Membership["joined_at"] | undefined };
 
 export type FindManyMembershipsOptions = PaginationQuery &
-  OrderOptions<"joined_at" | "created_at">;
+  OrderOptions<"joined_at" | "created_at"> & {
+    type?: MembershipType;
+    status?: MembershipStatus;
+  };
 
 export type FindManyAdminMembershipsOptions = PaginationQuery &
   OrderOptions<"joined_at" | "created_at" | "status"> & {
@@ -96,10 +99,20 @@ export const membershipsRepository = {
     const orderBy = options.orderBy ?? "joined_at";
     const orderDirection = options.orderDirection ?? "desc";
 
-    const { data, error, count } = await supabase
+    let query = supabase
       .from("memberships")
       .select("*", { count: "exact" })
-      .eq("user_id", userId)
+      .eq("user_id", userId);
+
+    if (options.type) {
+      query = query.eq("type", options.type);
+    }
+
+    if (options.status) {
+      query = query.eq("status", options.status);
+    }
+
+    const { data, error, count } = await query
       .order(orderBy, { ascending: orderDirection === "asc" })
       .range(from, to);
 
@@ -108,6 +121,24 @@ export const membershipsRepository = {
     }
 
     return buildPaginationResult<Membership>(data ?? [], count, page, pageSize);
+  },
+
+  findByUserIdAndAcademicYearId: async (
+    userId: string,
+    academicYearId: string,
+  ): Promise<Membership | null> => {
+    const { data, error } = await supabase
+      .from("memberships")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("academic_year_id", academicYearId)
+      .maybeSingle();
+
+    if (error) {
+      throwRepositoryError("取得本學年度社員資格失敗", error);
+    }
+
+    return data;
   },
 
   findById: async (id: string): Promise<Membership | null> => {

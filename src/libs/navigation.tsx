@@ -11,7 +11,7 @@ export const publicNavigation = [
 ] as const satisfies readonly NavigationItem[];
 
 export const memberMenuNavigation = [
-  { label: "個人資料", href: "/profile" },
+  { label: "儀表板", href: "/dashboard" },
   { label: "社員資格", href: "/memberships" },
   { label: "借用紀錄", href: "/borrowings" },
   { label: "設定", href: "/settings" },

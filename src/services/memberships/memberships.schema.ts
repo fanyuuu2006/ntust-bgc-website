@@ -53,6 +53,18 @@ export const listAdminMembershipsQuerySchema = z.object({
   orderDirection: optionalQueryString(z.enum(["asc", "desc"])),
 });
 
+export const listMemberMembershipRecordsQuerySchema = z.object({
+  page: optionalQueryString(z.coerce.number().int().min(1)),
+  pageSize: optionalQueryString(z.coerce.number().int().min(1).max(100)),
+  search: optionalQueryString(z.string().trim().max(40)),
+  type: optionalQueryString(z.enum(["annual", "lifetime"])),
+  status: optionalQueryString(
+    z.enum(["pending", "active", "expired", "suspended", "cancelled"]),
+  ),
+  orderBy: optionalQueryString(z.literal("academic_year")),
+  orderDirection: optionalQueryString(z.enum(["asc", "desc"])),
+});
+
 export const generateMembershipRegisterKeysSchema = z.object({
   academic_year_id: z.uuid("請選擇有效的學年度"),
   count: z.coerce

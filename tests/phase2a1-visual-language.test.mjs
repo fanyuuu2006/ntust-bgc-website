@@ -18,13 +18,13 @@ test("button variants express bounded visual emphasis rather than logo palette r
 });
 
 test("text actions keep navigation semantics without boxed button treatment", async () => {
-  const [borrowings, history, dashboard] = await Promise.all([
+  const [borrowings, history, dashboardMembership] = await Promise.all([
     readSource("src/app/(authenticated)/borrowings/page.tsx"),
     readSource("src/components/(authenticated)/profile/HistorySection.tsx"),
-    readSource("src/app/(authenticated)/dashboard/page.tsx"),
+    readSource("src/components/(authenticated)/dashboard/DashboardMembershipSummary.tsx"),
   ]);
 
-  for (const source of [borrowings, history, dashboard]) {
+  for (const source of [borrowings, history, dashboardMembership]) {
     assert.match(source, /ButtonLink/);
     assert.match(source, /variant="text"/);
   }

@@ -1,78 +1,130 @@
-import { CurrentMembershipCard } from "@/components/(authenticated)/memberships/CurrentMembershipCard";
 import { MembershipActivationForm } from "@/components/(authenticated)/memberships/MembershipActivationForm";
+import { CurrentMembershipCard } from "@/components/(authenticated)/memberships/CurrentMembershipCard";
 import { MembershipHistory } from "@/components/(authenticated)/memberships/MembershipHistory";
+import { MembershipRecordsToolbar } from "@/components/(authenticated)/memberships/MembershipRecordsToolbar";
+import { Pagination } from "@/components/Pagination/Pagination";
 import { PageHeader } from "@/components/PageHeader";
 import { getCurrentUser } from "@/libs/auth";
 import { membershipService } from "@/services/memberships/memberships.service";
+import type { MembershipStatus, MembershipType } from "@/types/database";
 
-export default async function MembershipsPage() {
+type MembershipSearchParams = {
+  page?: string | string[];
+  pageSize?: string | string[];
+  search?: string | string[];
+  type?: string | string[];
+  status?: string | string[];
+  orderBy?: string | string[];
+  orderDirection?: string | string[];
+};
+
+type MembershipsPageProps = {
+  searchParams: Promise<MembershipSearchParams>;
+};
+
+function firstValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function MembershipsPage({
+  searchParams,
+}: MembershipsPageProps) {
   const user = await getCurrentUser();
+  if (!user) return null;
 
-  if (!user) {
-    return null;
-  }
-
-  const [academicYears, result] = await Promise.all([
-    membershipService.listAcademicYears(),
-    membershipService.getMembershipsByUserId(user.id, {
-      page: 1,
-      pageSize: 100,
-    }),
-  ]);
+  const params = await searchParams;
+  const type = firstValue(params.type);
+  const status = firstValue(params.status);
+  const orderBy = firstValue(params.orderBy);
+  const orderDirection = firstValue(params.orderDirection);
+  const queryInput = {
+    page: normalizePositiveInteger(firstValue(params.page)),
+    pageSize: normalizePositiveInteger(firstValue(params.pageSize)),
+    search: firstValue(params.search),
+    type: isMembershipType(type) ? type : undefined,
+    status: isMembershipStatus(status) ? status : undefined,
+    orderBy: orderBy === "academic_year"
+      ? "academic_year"
+      : undefined,
+    orderDirection: orderDirection === "asc"
+      ? "asc"
+      : orderDirection === "desc"
+        ? "desc"
+        : undefined,
+  };
+  const academicYears = await membershipService.listAcademicYears();
   const currentAcademicYear = academicYears.find((year) => year.is_current);
-  const currentYearMembership =
-    result.data.find(
-      (membership) => membership.academic_year_id === currentAcademicYear?.id,
-    ) ?? null;
-  const displayedMembership =
-    currentYearMembership?.status === "active" ||
-    currentYearMembership?.status === "suspended"
-      ? currentYearMembership
-      : null;
-  const mayActivate =
-    (!currentYearMembership ||
-      ["expired", "cancelled"].includes(currentYearMembership.status));
-  const blockedMessage =
-    currentYearMembership?.status === "pending"
-      ? "本學年度資格正在處理中，暫時無法再次啟用。"
-      : currentYearMembership?.status === "suspended"
-        ? "本學年度社員資格已停權，請聯絡幹部協助處理。"
-      : undefined;
+  const [currentYearMembership, membershipRecords] = await Promise.all([
+    currentAcademicYear
+      ? membershipService.getMembershipByUserIdAndAcademicYearId(
+        user.id,
+        currentAcademicYear.id,
+      )
+      : Promise.resolve(null),
+    membershipService.listMembershipRecordsByUserId(user.id, queryInput),
+  ]);
+  const mayActivate = !currentYearMembership
+    || ["expired", "cancelled"].includes(currentYearMembership.status);
+  const query = {
+    search: queryInput.search?.trim() || undefined,
+    type: queryInput.type,
+    status: queryInput.status,
+    orderDirection: queryInput.orderDirection === "asc" ? "asc" as const : "desc" as const,
+  };
 
   return (
-    <section className="container space-y-6 py-8">
+    <section className="container max-w-5xl space-y-8 py-8">
       <PageHeader
-        eyebrow="我的帳號"
-        title="我的社員資格"
-        description="查看目前資格與歷年社員紀錄；完成線下繳費後，可在此啟用新的學年度資格。"
+        eyebrow="社員"
+        title="社員資格"
+        description="查看本學年度的社員資格與完整社員紀錄。"
       />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <div className="space-y-6">
-          <CurrentMembershipCard
-            membership={displayedMembership}
-            emptyMessage={blockedMessage}
-          />
-          <MembershipHistory memberships={result.data} />
-        </div>
+      {currentYearMembership ? (
+        <CurrentMembershipCard membership={currentYearMembership} />
+      ) : null}
 
-        <aside className="space-y-4">
-          {mayActivate ? (
-            <MembershipActivationForm />
-          ) : (
-            <section className="card p-5">
-              <h2 className="text-lg font-semibold text-(--text-primary)">
-                社員資格啟用
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-(--text-muted)">
-                {currentYearMembership?.status === "active"
-                  ? "你已具備本學年度社員資格。"
-                  : blockedMessage ?? "目前無法啟用新的社員資格。"}
-              </p>
-            </section>
-          )}
-        </aside>
-      </div>
+      {mayActivate ? (
+        <MembershipActivationForm academicYearLabel={currentAcademicYear?.year} />
+      ) : null}
+
+      <MembershipHistory
+        memberships={membershipRecords.data}
+        currentMembershipId={currentYearMembership?.id}
+        controls={<MembershipRecordsToolbar query={query} />}
+        pagination={
+          <Pagination
+            page={membershipRecords.page}
+            pageSize={membershipRecords.pageSize}
+            total={membershipRecords.total}
+            totalPages={membershipRecords.totalPages}
+            basePath="/memberships"
+            query={{
+              search: query.search,
+              type: query.type,
+              status: query.status,
+              orderBy: "academic_year",
+              orderDirection: query.orderDirection,
+            }}
+            showPageSize={false}
+          />
+        }
+      />
     </section>
   );
+}
+
+function isMembershipType(value: string | undefined): value is MembershipType {
+  return value === "annual" || value === "lifetime";
+}
+
+function isMembershipStatus(value: string | undefined): value is MembershipStatus {
+  return ["pending", "active", "expired", "suspended", "cancelled"].includes(
+    value ?? "",
+  );
+}
+
+function normalizePositiveInteger(value: string | undefined) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? String(parsed) : undefined;
 }

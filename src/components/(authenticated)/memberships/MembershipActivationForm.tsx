@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { KeyRound } from "lucide-react";
 
 import { FieldInput } from "@/components/FieldInput";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { apiClient } from "@/libs/api/client";
 import type { MembershipWithAcademicYear } from "@/services/memberships/memberships.types";
 
@@ -13,7 +15,11 @@ type ActivateMembershipResponse = {
   data: MembershipWithAcademicYear;
 };
 
-export function MembershipActivationForm() {
+export function MembershipActivationForm({
+  academicYearLabel,
+}: {
+  academicYearLabel?: string;
+}) {
   const router = useRouter();
   const [registerKey, setRegisterKey] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -37,14 +43,14 @@ export function MembershipActivationForm() {
 
       setRegisterKey("");
       setSuccess(
-        `${response.data.academic_year?.year ?? ""} 學年度社員資格啟用成功`,
+        `已完成 ${response.data.academic_year?.year ?? "本"} 學年度入社。`,
       );
       router.refresh();
     } catch (submitError) {
       setError(
         submitError instanceof Error
           ? submitError.message
-          : "啟用社員資格失敗，請稍後再試",
+          : "完成入社失敗，請稍後再試。",
       );
     } finally {
       setIsSubmitting(false);
@@ -52,40 +58,51 @@ export function MembershipActivationForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="card flex flex-col gap-4 p-5">
-      <div className="space-y-1">
-        <h2 className="text-lg font-semibold text-(--text-primary)">
-          啟用社員資格
-        </h2>
-        <p className="text-sm leading-6 text-(--text-muted)">
-          如果你已完成本學年度社費繳交，請輸入幹部提供的社員註冊序號。
-        </p>
-      </div>
-
-      <FieldInput
-        field={{
-          id: "register_key",
-          label: "社員註冊序號",
-          type: "text",
-          required: true,
-          placeholder: "114NTUSTBGC001A1B2C3D4",
-          autoComplete: "off",
-          disabled: isSubmitting,
-        }}
-        value={registerKey}
-        onChange={(event) => setRegisterKey(event.target.value.toUpperCase())}
-      />
-
-      <FormFeedback error={error} success={success} />
-
-      <Button
-        type="submit"
-        disabled={isSubmitting}
-        isLoading={isSubmitting}
-        className="self-start rounded-md"
+    <Card surface="elevated" className="p-5 sm:p-6">
+      <form
+        onSubmit={handleSubmit}
+        aria-busy={isSubmitting || undefined}
+        className="flex flex-col gap-4"
       >
-        {isSubmitting ? "啟用中..." : "啟用社員資格"}
-      </Button>
-    </form>
+        <div className="space-y-2">
+          <p className="flex items-center gap-2 text-sm font-medium text-(--interactive-primary)">
+            <KeyRound aria-hidden="true" className="size-4" />
+            社員資格
+          </p>
+          <h2 className="text-xl font-semibold text-(--text-primary)">
+            尚未完成 {academicYearLabel ?? "本"} 學年度入社
+          </h2>
+          <p className="text-sm leading-6 text-(--text-muted)">
+            取得社員註冊序號後，在此輸入即可完成入社。
+          </p>
+        </div>
+
+        <FieldInput
+          field={{
+            id: "register_key",
+            label: "社員註冊序號",
+            type: "text",
+            required: true,
+            placeholder: "114NTUSTBGC001A1B2C3D4",
+            autoComplete: "off",
+            disabled: isSubmitting,
+          }}
+          value={registerKey}
+          onChange={(event) => setRegisterKey(event.target.value.toUpperCase())}
+        />
+
+        <FormFeedback error={error} success={success} />
+
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={isSubmitting}
+          isLoading={isSubmitting}
+          className="self-start"
+        >
+          {isSubmitting ? "完成入社中" : "完成入社"}
+        </Button>
+      </form>
+    </Card>
   );
 }

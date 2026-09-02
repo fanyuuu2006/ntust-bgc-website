@@ -1,98 +1,48 @@
-"use client";
+import { ClipboardCheck, Clock3 } from "lucide-react";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-
-import { FormFeedback } from "@/components/FormFeedback";
-import { Button } from "@/components/ui/Button";
-import { apiClient } from "@/libs/api/client";
-import type { EventAttendance } from "@/types/database";
+import { CheckInButton } from "@/components/(authenticated)/dashboard/CheckInButton";
+import { Card } from "@/components/ui/Card";
 import type { SelfCheckInEvent } from "@/services/events/events.types";
-import { formatAdminDateTime } from "@/utils/date";
-
-type CheckInResponse = { data: EventAttendance };
+import { formatDateTime } from "@/utils/date";
 
 export function SelfCheckInEvents({ events }: { events: SelfCheckInEvent[] }) {
-  const router = useRouter();
-  const [attendances, setAttendances] = useState(() =>
-    new Map(
-      events.flatMap((item) =>
-        item.attendance ? [[item.event.id, item.attendance] as const] : [],
-      ),
-    ),
-  );
-  const [busyEventId, setBusyEventId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-
   if (events.length === 0) return null;
 
-  const checkIn = async (eventId: string) => {
-    setBusyEventId(eventId);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const response = await apiClient<CheckInResponse>(
-        `/api/events/${eventId}/check-in`,
-        { method: "POST" },
-      );
-      setAttendances((current) => {
-        const next = new Map(current);
-        next.set(eventId, response.data);
-        return next;
-      });
-      setSuccess("簽到成功");
-      router.refresh();
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "簽到失敗，請稍後再試");
-    } finally {
-      setBusyEventId(null);
-    }
-  };
-
   return (
-    <section className="card rounded-2xl p-5">
-      <h2 className="font-bold">可簽到活動</h2>
-      <div className="mt-4 space-y-3">
-        {events.map(({ event, attendance }) => {
-          const localAttendance = attendances.get(event.id) ?? attendance;
-          const isAbsent = localAttendance?.status === "absent";
+    <section aria-labelledby="self-check-in-title">
+      <h2
+        id="self-check-in-title"
+        className="flex items-center gap-2 text-xl font-semibold text-(--text-primary)"
+      >
+        <ClipboardCheck aria-hidden="true" className="size-5 text-(--interactive-primary)" />
+        活動簽到
+      </h2>
 
-          return (
-            <article
-              key={event.id}
-              className="flex min-w-0 flex-col gap-3 rounded-xl bg-(--secondary-background) p-4 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-medium">{event.name}</p>
-                <p className="mt-1 text-xs text-(--muted)">
-                  簽到截止：{formatAdminDateTime(event.check_in_closes_at)}
-                </p>
-                {localAttendance ? (
-                  <p className="mt-1 text-sm text-(--status-success)">
-                    {isAbsent
-                      ? "簽到紀錄已由幹部登錄"
-                      : `已簽到：${formatAdminDateTime(localAttendance.attended_at)}`}
+      <ul className="mt-4 grid gap-3">
+        {events.map(({ event, attendance }) => (
+          <li key={event.id}>
+            <Card surface="subtle" className="p-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="font-semibold text-(--text-primary)">{event.name}</p>
+                  <p className="mt-2 text-sm text-(--text-muted)">
+                    活動時間：{formatDateTime(event.start_time)}–{formatDateTime(event.end_time)}
                   </p>
-                ) : null}
+                  <p className="mt-1 flex items-center gap-2 text-sm text-(--text-muted)">
+                    <Clock3 aria-hidden="true" className="size-4 shrink-0" />
+                    簽到開放至 {formatDateTime(event.check_in_closes_at)}
+                  </p>
+                </div>
+                {attendance ? (
+                  <p className="text-sm font-medium text-(--status-success)">已簽到</p>
+                ) : (
+                  <CheckInButton eventId={event.id} />
+                )}
               </div>
-              {!localAttendance ? (
-                <Button
-                  type="button"
-                  className="w-full shrink-0 sm:w-auto"
-                  isLoading={busyEventId === event.id}
-                  disabled={busyEventId !== null}
-                  onClick={() => checkIn(event.id)}
-                >
-                  簽到
-                </Button>
-              ) : null}
-            </article>
-          );
-        })}
-      </div>
-      <FormFeedback className="mt-3" error={error} success={success} />
+            </Card>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

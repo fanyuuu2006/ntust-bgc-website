@@ -13,6 +13,7 @@ type PaginationProps = React.HTMLAttributes<HTMLDivElement> & {
   basePath: string;
   query: Record<string, QueryValue>;
   pageSizeOptions?: readonly number[];
+  showPageSize?: boolean;
 };
 
 export function Pagination({
@@ -23,6 +24,7 @@ export function Pagination({
   basePath,
   query,
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
+  showPageSize = true,
   className,
   ...rest
 }: PaginationProps) {
@@ -43,12 +45,14 @@ export function Pagination({
       </p>
 
       <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-        <PaginationPageSizeSelect
-          pageSize={pageSize}
-          options={pageSizeOptions}
-          basePath={basePath}
-          query={query}
-        />
+        {showPageSize ? (
+          <PaginationPageSizeSelect
+            pageSize={pageSize}
+            options={pageSizeOptions}
+            basePath={basePath}
+            query={query}
+          />
+        ) : null}
 
         {totalPages > 1 && (
           <>
