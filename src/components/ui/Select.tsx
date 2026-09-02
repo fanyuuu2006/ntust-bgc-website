@@ -3,17 +3,20 @@ import { formControlClassName } from "./Input";
 
 type SelectProps = React.ComponentProps<"select"> & {
   invalid?: boolean;
+  focusOwner?: "self" | "parent";
 };
 
 export function Select({
   className,
   invalid,
+  focusOwner = "self",
   "aria-invalid": ariaInvalid,
   ...props
 }: SelectProps) {
   return (
     <select
-      className={cn(formControlClassName, className)}
+      data-focus-owner={focusOwner}
+      className={cn("ui-select", formControlClassName, className)}
       aria-invalid={invalid ?? ariaInvalid}
       {...props}
     />

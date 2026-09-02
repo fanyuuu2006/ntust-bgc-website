@@ -52,7 +52,7 @@ export default async function DashboardPage() {
             id="dashboard-announcements-title"
             className="flex items-center gap-2 text-xl font-semibold text-(--text-primary)"
           >
-            <Megaphone aria-hidden="true" className="size-5 text-(--interactive-primary)" />
+            <Megaphone aria-hidden="true" className="size-5 text-(--status-warning)" />
             最新公告
           </h2>
           <Link

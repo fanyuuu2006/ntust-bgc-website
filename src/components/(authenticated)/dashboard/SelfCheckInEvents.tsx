@@ -21,7 +21,7 @@ export function SelfCheckInEvents({ events }: { events: SelfCheckInEvent[] }) {
       <ul className="mt-4 grid gap-3">
         {events.map(({ event, attendance }) => (
           <li key={event.id}>
-            <Card surface="subtle" className="p-4">
+            <Card className="p-4">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <p className="font-semibold text-(--text-primary)">{event.name}</p>

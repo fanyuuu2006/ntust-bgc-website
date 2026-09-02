@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGameStatusBadge";
 import type { BoardGameWithCategoryAndLocation } from "@/services/board-games/board-games.types";
@@ -13,7 +14,7 @@ export function BoardGameCard({ boardGame }: BoardGameCardProps) {
   return (
     <Link
       href={`/board-games/${boardGame.id}`}
-      className="card interactive group grid grid-cols-[6.5rem_1fr] overflow-hidden rounded-xl p-0 text-left sm:flex sm:h-full sm:flex-col"
+      className="card interactive group grid min-w-0 grid-cols-[6rem_minmax(0,1fr)] overflow-hidden rounded-2xl p-0 text-left sm:flex sm:h-full sm:flex-col"
     >
       <div className="overflow-hidden border-r border-(--border-default) bg-(--surface-subtle) sm:border-r-0 sm:border-b">
         <BoardGameImage
@@ -26,7 +27,7 @@ export function BoardGameCard({ boardGame }: BoardGameCardProps) {
       <div className="flex min-w-0 flex-1 flex-col gap-2 p-3">
         <div className="flex min-w-0 items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="truncate text-base font-bold text-(--text-primary)">
+            <p className="line-clamp-2 text-base font-bold leading-snug text-(--text-primary)">
               {boardGame.name}
             </p>
             <p className="mt-0.5 text-xs font-medium text-(--text-muted)">
@@ -61,8 +62,9 @@ export function BoardGameCard({ boardGame }: BoardGameCardProps) {
           </p>
         )}
 
-        <span className="mt-auto text-sm font-semibold text-(--interactive-primary)">
+        <span className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-(--interactive-primary)">
           查看詳情
+          <ArrowRight aria-hidden="true" className="size-4" />
         </span>
       </div>
     </Link>

@@ -20,6 +20,7 @@ type BoardGamesSearchParams = {
   status?: string | string[];
   category?: string | string[];
   location?: string | string[];
+  sort?: string;
   orderBy?: string;
   orderDirection?: string;
 };
@@ -54,11 +55,16 @@ function normalizeStatuses(value?: string | string[]) {
   );
 }
 
-function normalizeSortOption(orderBy?: string, orderDirection?: string) {
+function normalizeSortOption(
+  sort?: string,
+  orderBy?: string,
+  orderDirection?: string,
+) {
   return (
     SORT_OPTIONS.find(
       (option) =>
-        option.orderBy === orderBy && option.orderDirection === orderDirection,
+        option.key === sort ||
+        (option.orderBy === orderBy && option.orderDirection === orderDirection),
     ) ?? SORT_OPTIONS[0]
   );
 }
@@ -74,7 +80,11 @@ export default async function BoardGamesPage({
   const statuses = normalizeStatuses(params.status);
   const categoryIds = getArrayParam(params.category);
   const locationIds = getArrayParam(params.location);
-  const sortOption = normalizeSortOption(params.orderBy, params.orderDirection);
+  const sortOption = normalizeSortOption(
+    params.sort,
+    params.orderBy,
+    params.orderDirection,
+  );
 
   const query: BoardGamesQuery = {
     search,
@@ -139,7 +149,13 @@ export default async function BoardGamesPage({
           totalPages={boardGames.totalPages}
           basePath={BASE_PATH}
           pageSizeOptions={PAGE_SIZE_OPTIONS}
-          query={query}
+          query={{
+            search,
+            status: query.status,
+            category: query.category,
+            location: query.location,
+            sort: sortOption.key,
+          }}
         />
       </div>
     </section>

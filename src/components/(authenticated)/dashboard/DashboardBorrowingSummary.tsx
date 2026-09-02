@@ -77,7 +77,7 @@ function BorrowingSurface({
 
   return (
     <li>
-      <Card surface="subtle" className="p-4">
+      <Card className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate font-semibold text-(--text-primary)">

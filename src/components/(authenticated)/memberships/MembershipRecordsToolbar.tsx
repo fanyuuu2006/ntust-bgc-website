@@ -80,17 +80,18 @@ export function MembershipRecordsToolbar({
           </div>
         </details>
 
-        <label className="flex min-h-10 items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-default) px-3 text-sm font-medium text-(--text-primary)">
+        <label className="flex min-h-10 items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-default) px-3 text-sm font-medium text-(--text-primary) focus-within:border-(--interactive-primary) focus-within:outline-2 focus-within:outline-(--focus-ring)">
           <ArrowUpDown aria-hidden="true" className="size-4 text-(--text-muted)" />
           <span className="sr-only">排序</span>
-          <select
+          <Select
             name="orderDirection"
             defaultValue={query.orderDirection}
-            className="min-w-0 bg-transparent outline-none"
+            focusOwner="parent"
+            className="min-h-0 min-w-0 border-0 bg-transparent px-0 py-0"
           >
             <option value="desc">最新學年度</option>
             <option value="asc">最早學年度</option>
-          </select>
+          </Select>
         </label>
 
         <Button type="submit" variant="outline" size="md">

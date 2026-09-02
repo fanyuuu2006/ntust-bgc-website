@@ -45,7 +45,7 @@ export function DashboardMembershipSummary({
           id="dashboard-membership-title"
           className="flex items-center gap-2 text-xl font-semibold text-(--text-primary)"
         >
-          <BadgeCheck aria-hidden="true" className="size-5 text-(--interactive-primary)" />
+          <BadgeCheck aria-hidden="true" className="size-5 text-(--status-success)" />
           社員資格
         </h2>
         <ButtonLink href="/memberships" variant="text" size="sm" className="px-0">

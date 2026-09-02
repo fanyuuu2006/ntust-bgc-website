@@ -440,13 +440,25 @@ export const boardGamesService = {
    */
   getBorrowingsByUserId: async (
     userId: string,
-    options: Omit<FindManyBoardGameBorrowingsOptions, "user_id"> = {},
+    options: Omit<FindManyBoardGameBorrowingsOptions, "user_id"> & {
+      search?: string;
+    } = {},
   ): Promise<
     ReturnType<typeof buildPaginationResult<BoardGameBorrowingWithBoardGame>>
   > => {
+    const { search, ...repositoryOptions } = options;
+    const matchingBoardGameIds = search?.trim()
+      ? await boardGamesRepository.findIdsBySearch(search)
+      : undefined;
+
     const result = await boardGameBorrowingsRepository.findManyByUserId(
       userId,
-      { orderBy: "created_at", orderDirection: "desc", ...options },
+      {
+        orderBy: "created_at",
+        orderDirection: "desc",
+        ...repositoryOptions,
+        board_game_ids: matchingBoardGameIds,
+      },
     );
 
     const boardGameIds = [...new Set(result.data.map((b) => b.board_game_id))];
@@ -461,6 +473,16 @@ export const boardGamesService = {
     });
 
     return { ...result, data };
+  },
+
+  getOpenBorrowingForUserAndBoardGame: async (
+    userId: string,
+    boardGameId: string,
+  ) => {
+    return boardGameBorrowingsRepository.findOpenByUserIdAndBoardGameId(
+      userId,
+      boardGameId,
+    );
   },
 
   getDashboardOpenBorrowingsByUserId: async (

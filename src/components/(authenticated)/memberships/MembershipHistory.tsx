@@ -51,14 +51,14 @@ export function MembershipHistory({
 
             return (
               <li key={membership.id}>
-                <Card surface="subtle" className="p-4">
+                <Card className="p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="font-semibold text-(--text-primary)">
                           {academicYear} 學年度
                         </p>
-                        {isCurrent ? <Badge tone="neutral">目前</Badge> : null}
+                        {isCurrent ? <Badge tone="info">目前</Badge> : null}
                       </div>
                       <p className="mt-1 text-sm text-(--text-secondary)">
                         {MEMBERSHIP_TYPE_LABEL[membership.type]}

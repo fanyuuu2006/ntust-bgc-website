@@ -19,10 +19,10 @@ test("dashboard keeps a greeting-only header and separates content from entity s
   assert.match(page, /Megaphone/);
   assert.match(page, /ArrowRight/);
   assert.match(borrowing, /PackageOpen|CalendarClock|TriangleAlert/);
-  assert.match(borrowing, /Card surface="subtle"/);
+  assert.match(borrowing, /<Card className="p-4">/);
   assert.doesNotMatch(borrowing, /divide-y/);
   assert.match(checkIn, /ClipboardCheck|Clock3/);
-  assert.match(checkIn, /Card surface="subtle"/);
+  assert.match(checkIn, /<Card className="p-4">/);
   assert.doesNotMatch(checkIn, /"use client"|divide-y/);
   assert.match(membership, /BadgeCheck/);
   assert.match(membership, /surface="elevated"/);
@@ -67,7 +67,7 @@ test("membership records are complete, URL-driven, and paginated without a clien
   assert.match(toolbar, /name="search"|name="type"|name="status"|name="orderDirection"/);
   assert.match(toolbar, /Search|ListFilter|ArrowUpDown/);
   assert.match(history, /History/);
-  assert.match(history, /Card surface="subtle"/);
+  assert.match(history, /<Card className="p-4">/);
   assert.match(history, /currentMembershipId/);
   assert.match(service, /findAllMembershipsByUserId/);
   assert.match(service, /firstPage\.totalPages/);

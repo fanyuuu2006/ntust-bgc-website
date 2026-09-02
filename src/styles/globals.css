@@ -485,13 +485,27 @@
    ========================================================= */
 
 @layer utilities {
-  :is(a, button, .btn, input, select, textarea, summary):focus-visible {
+  :is(a, button, .btn, input, textarea, summary):focus-visible {
     outline: 2px solid var(--focus-ring);
     outline-offset: 0;
   }
 
-  :is(input, select, textarea)[aria-invalid="true"]:focus-visible {
+  :is(input, textarea)[aria-invalid="true"]:focus-visible {
     outline-color: var(--focus-ring-danger);
+  }
+
+  .ui-select:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 0;
+  }
+
+  .ui-select[aria-invalid="true"]:focus-visible {
+    outline-color: var(--focus-ring-danger);
+  }
+
+  .ui-select[data-focus-owner="parent"]:focus-visible {
+    outline: none;
+    border-color: transparent;
   }
 
   @keyframes shimmer {
