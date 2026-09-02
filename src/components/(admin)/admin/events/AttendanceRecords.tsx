@@ -14,6 +14,7 @@ import { Select } from "@/components/ui/Select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
 import type { EventAttendanceId, User, UserProfile } from "@/types/database";
+import { formatDateTime, formatTaipeiDateTimeLocal, parseTaipeiDateTimeLocal } from "@/utils/date";
 import { AttendanceStatusBadge, ATTENDANCE_STATUS_LABEL } from "./AttendanceStatusBadge";
 
 export type AttendanceRecord = {
@@ -30,17 +31,19 @@ type AttendanceFormValues = {
   attended_at: string;
 };
 
+const emptyValue = (value: string | null | undefined) => value || "尚未填寫";
+
 export function AttendanceRecords({
   eventId,
+  eventName,
   records,
 }: {
   eventId: string;
+  eventName: string;
   records: AttendanceRecord[];
 }) {
   const router = useRouter();
-  const [selectedAttendance, setSelectedAttendance] = useState<
-    { record: AttendanceRecord; action: "edit" | "delete" } | null
-  >(null);
+  const [selectedAttendance, setSelectedAttendance] = useState<{ record: AttendanceRecord; action: "edit" | "delete" } | null>(null);
   const [values, setValues] = useState<AttendanceFormValues>({ status: "present", attended_at: "" });
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -54,14 +57,13 @@ export function AttendanceRecords({
     setSelectedAttendance({ record, action: "edit" });
     setValues({
       status: record.status,
-      attended_at: record.attended_at?.slice(0, 16) ?? "",
+      attended_at: record.attended_at ? formatTaipeiDateTimeLocal(new Date(record.attended_at)) : "",
     });
     setEditError(null);
   };
 
   const closeEditDialog = () => {
     if (isSaving) return;
-
     setSelectedAttendance(null);
     setEditError(null);
   };
@@ -73,7 +75,6 @@ export function AttendanceRecords({
 
   const closeDeleteDialog = () => {
     if (isDeleting) return;
-
     setSelectedAttendance(null);
     setDeleteError(null);
   };
@@ -84,18 +85,12 @@ export function AttendanceRecords({
 
     setIsSaving(true);
     setEditError(null);
-
     try {
       await apiClient(`/api/admin/events/${eventId}/attendances/${editingAttendance.id}`, {
         method: "PATCH",
         body: {
           status: values.status,
-          attended_at:
-            values.status === "absent"
-              ? null
-              : values.attended_at
-                ? new Date(values.attended_at).toISOString()
-                : null,
+          attended_at: values.status === "absent" ? null : values.attended_at ? parseTaipeiDateTimeLocal(values.attended_at) : null,
         },
       });
       setSelectedAttendance(null);
@@ -112,11 +107,8 @@ export function AttendanceRecords({
 
     setIsDeleting(true);
     setDeleteError(null);
-
     try {
-      await apiClient(`/api/admin/events/${eventId}/attendances/${deletingAttendance.id}`, {
-        method: "DELETE",
-      });
+      await apiClient(`/api/admin/events/${eventId}/attendances/${deletingAttendance.id}`, { method: "DELETE" });
       setSelectedAttendance(null);
       router.refresh();
     } catch (caught) {
@@ -127,16 +119,18 @@ export function AttendanceRecords({
   };
 
   if (!records.length) {
-    return <EmptyState title="目前沒有簽到紀錄" description="可由上方按鈕手動新增簽到紀錄。" />;
+    return <EmptyState title="目前還沒有簽到紀錄" description="可由上方按鈕手動新增簽到紀錄。" />;
   }
 
   return (
     <>
       <Card className="hidden overflow-x-auto p-0 lg:block">
-        <Table className="min-w-[720px]">
+        <Table className="min-w-[960px]">
           <TableHeader>
             <TableRow>
-              <TableHead>使用者</TableHead>
+              <TableHead>使用者名稱</TableHead>
+              <TableHead>真實姓名</TableHead>
+              <TableHead>Email</TableHead>
               <TableHead>學號</TableHead>
               <TableHead>狀態</TableHead>
               <TableHead>簽到時間</TableHead>
@@ -146,15 +140,13 @@ export function AttendanceRecords({
           <TableBody>
             {records.map((record) => (
               <TableRow key={record.id}>
-                <TableCell className="min-w-40 font-medium">{record.profile?.real_name || record.user.name}</TableCell>
-                <TableCell className="min-w-48">{record.profile?.student_id || record.user.email}</TableCell>
-                <TableCell className="whitespace-nowrap">
-                  <AttendanceStatusBadge status={record.status} />
-                </TableCell>
-                <TableCell className="whitespace-nowrap">{formatAttendanceTime(record.attended_at)}</TableCell>
-                <TableCell className="whitespace-nowrap text-right">
-                  <AttendanceRowActions record={record} onEdit={openEditDialog} onDelete={openDeleteDialog} />
-                </TableCell>
+                <TableCell className="min-w-32 font-medium">{record.user.name}</TableCell>
+                <TableCell className="min-w-32">{emptyValue(record.profile?.real_name)}</TableCell>
+                <TableCell className="min-w-52 break-all">{record.user.email}</TableCell>
+                <TableCell className="min-w-28">{emptyValue(record.profile?.student_id)}</TableCell>
+                <TableCell className="whitespace-nowrap"><AttendanceStatusBadge status={record.status} /></TableCell>
+                <TableCell className="whitespace-nowrap">{formatDateTime(record.attended_at)}</TableCell>
+                <TableCell className="whitespace-nowrap text-right"><AttendanceRowActions record={record} onEdit={openEditDialog} onDelete={openDeleteDialog} /></TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -166,17 +158,17 @@ export function AttendanceRecords({
           <Card key={record.id} className="w-full min-w-0 max-w-full p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="font-semibold">{record.profile?.real_name || record.user.name}</p>
-                <p className="truncate text-sm text-(--muted)">{record.profile?.student_id || record.user.email}</p>
+                <p className="font-semibold">使用者名稱：{record.user.name}</p>
+                <p className="text-sm">真實姓名：{emptyValue(record.profile?.real_name)}</p>
+                <p className="break-all text-sm text-(--muted)">{record.user.email}</p>
               </div>
-              <span className="shrink-0">
-                <AttendanceStatusBadge status={record.status} />
-              </span>
+              <span className="shrink-0"><AttendanceStatusBadge status={record.status} /></span>
             </div>
-            <p className="mt-2 text-sm">簽到時間：{formatAttendanceTime(record.attended_at)}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <AttendanceRowActions record={record} onEdit={openEditDialog} onDelete={openDeleteDialog} />
+            <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+              <p className="min-w-0"><span className="block text-(--muted)">學號</span>{emptyValue(record.profile?.student_id)}</p>
+              <p className="min-w-0"><span className="block text-(--muted)">簽到時間</span>{formatDateTime(record.attended_at)}</p>
             </div>
+            <div className="mt-3 flex flex-wrap gap-2"><AttendanceRowActions record={record} onEdit={openEditDialog} onDelete={openDeleteDialog} /></div>
           </Card>
         ))}
       </div>
@@ -184,83 +176,24 @@ export function AttendanceRecords({
       <Modal open={editingAttendance !== null} onClose={closeEditDialog} title="編輯簽到紀錄">
         <form onSubmit={saveAttendance} className="space-y-4">
           <Field label="狀態" htmlFor="attendance-status">
-            <Select
-              id="attendance-status"
-              className="w-full"
-              value={values.status}
-              disabled={isSaving}
-              onChange={(event) =>
-                setValues((current) => ({ ...current, status: event.target.value as AttendanceRecord["status"] }))
-              }
-            >
-              {Object.entries(ATTENDANCE_STATUS_LABEL).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
+            <Select id="attendance-status" className="w-full" value={values.status} disabled={isSaving} onChange={(event) => setValues((current) => ({ ...current, status: event.target.value as AttendanceRecord["status"] }))}>
+              {Object.entries(ATTENDANCE_STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             </Select>
           </Field>
-          {values.status !== "absent" ? (
-            <Field label="簽到時間" htmlFor="attendance-time">
-              <Input
-                id="attendance-time"
-                className="w-full"
-                type="datetime-local"
-                value={values.attended_at}
-                disabled={isSaving}
-                onChange={(event) => setValues((current) => ({ ...current, attended_at: event.target.value }))}
-              />
-            </Field>
-          ) : null}
+          {values.status !== "absent" ? <Field label="簽到時間" htmlFor="attendance-time"><Input id="attendance-time" className="w-full" type="datetime-local" value={values.attended_at} disabled={isSaving} onChange={(event) => setValues((current) => ({ ...current, attended_at: event.target.value }))} /></Field> : null}
           <FormFeedback error={editError} />
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" disabled={isSaving} onClick={closeEditDialog}>
-              取消
-            </Button>
-            <Button type="submit" isLoading={isSaving}>
-              {isSaving ? "儲存中…" : "儲存"}
-            </Button>
+            <Button type="button" variant="outline" disabled={isSaving} onClick={closeEditDialog}>取消</Button>
+            <Button type="submit" isLoading={isSaving}>{isSaving ? "儲存中…" : "儲存變更"}</Button>
           </div>
         </form>
       </Modal>
 
-      <ConfirmDialog
-        open={deletingAttendance !== null}
-        onClose={closeDeleteDialog}
-        onConfirm={removeAttendance}
-        isSubmitting={isDeleting}
-        title="刪除簽到紀錄"
-        description={
-          deletingAttendance
-            ? `確定要刪除這筆簽到紀錄嗎？${deleteError ? ` ${deleteError}` : ""}`
-            : ""
-        }
-      />
+      <ConfirmDialog open={deletingAttendance !== null} onClose={closeDeleteDialog} onConfirm={removeAttendance} isSubmitting={isDeleting} title="刪除簽到紀錄" description={deletingAttendance ? `確定要刪除這筆簽到紀錄嗎？\n使用者名稱：${deletingAttendance.user.name}\n真實姓名：${emptyValue(deletingAttendance.profile?.real_name)}\n活動：${eventName}\n刪除後將無法復原。${deleteError ? ` ${deleteError}` : ""}` : ""} />
     </>
   );
 }
 
-function AttendanceRowActions({
-  record,
-  onEdit,
-  onDelete,
-}: {
-  record: AttendanceRecord;
-  onEdit: (record: AttendanceRecord) => void;
-  onDelete: (record: AttendanceRecord) => void;
-}) {
-  return (
-    <div className="flex shrink-0 gap-2">
-      <Button type="button" size="sm" variant="outline" onClick={() => onEdit(record)}>
-        編輯
-      </Button>
-      <Button type="button" size="sm" variant="danger" onClick={() => onDelete(record)}>
-        刪除
-      </Button>
-    </div>
-  );
-}
-
-function formatAttendanceTime(value: string | null) {
-  return value ? new Date(value).toLocaleString("zh-TW") : "未簽到";
+function AttendanceRowActions({ record, onEdit, onDelete }: { record: AttendanceRecord; onEdit: (record: AttendanceRecord) => void; onDelete: (record: AttendanceRecord) => void; }) {
+  return <div className="flex shrink-0 gap-2"><Button type="button" size="sm" variant="outline" onClick={() => onEdit(record)}>編輯</Button><Button type="button" size="sm" variant="danger" onClick={() => onDelete(record)}>刪除</Button></div>;
 }

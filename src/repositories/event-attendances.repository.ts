@@ -31,7 +31,7 @@ type UpdateEventAttendanceInput = Partial<
 export type FindManyEventAttendancesOptions = PaginationQuery &
   OrderOptions<"attended_at"> & {
     status?: AttendanceStatus | AttendanceStatus[];
-    user_id?: string;
+    user_id?: string | string[];
     event_id?: string;
   };
 
@@ -60,6 +60,10 @@ export const eventAttendancesRepository = {
     const orderBy = options.orderBy ?? "attended_at";
     const orderDirection = options.orderDirection ?? "desc";
 
+    if (Array.isArray(options.user_id) && options.user_id.length === 0) {
+      return buildPaginationResult<EventAttendanceWithEvent>([], 0, page, pageSize);
+    }
+
     let query = supabase
       .from("event_attendances")
       .select(EVENT_ATTENDANCE_WITH_EVENT_SELECT, { count: "exact" });
@@ -71,7 +75,9 @@ export const eventAttendancesRepository = {
     }
 
     if (options.user_id) {
-      query = query.eq("user_id", options.user_id);
+      query = Array.isArray(options.user_id)
+        ? query.in("user_id", options.user_id)
+        : query.eq("user_id", options.user_id);
     }
 
     if (options.event_id) {

@@ -12,6 +12,27 @@ export class EventHasAttendanceRecordsError extends Error {
   }
 }
 
+export class AttendanceNotFoundError extends Error {
+  constructor() {
+    super("找不到簽到紀錄");
+    this.name = "AttendanceNotFoundError";
+  }
+}
+
+export class AttendanceUserNotFoundError extends Error {
+  constructor() {
+    super("找不到使用者");
+    this.name = "AttendanceUserNotFoundError";
+  }
+}
+
+export class AttendanceAlreadyExistsError extends Error {
+  constructor() {
+    super("此使用者已完成此活動簽到");
+    this.name = "AttendanceAlreadyExistsError";
+  }
+}
+
 export class SelfCheckInMembershipRequiredError extends Error {
   constructor() {
     super("僅限目前社員自行簽到");

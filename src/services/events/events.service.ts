@@ -10,6 +10,9 @@ import { userProfilesRepository } from "@/repositories/user-profiles.repository"
 import {
   EventNotFoundError,
   EventHasAttendanceRecordsError,
+  AttendanceAlreadyExistsError,
+  AttendanceNotFoundError,
+  AttendanceUserNotFoundError,
   SelfCheckInAlreadyCompletedError,
   SelfCheckInClosedError,
   SelfCheckInMembershipRequiredError,
@@ -227,35 +230,68 @@ export const eventsService = {
     });
   },
 
-  listAttendancesForAdmin: async (eventId: string) => {
-    const result = await eventAttendancesRepository.findMany({ event_id: eventId, pageSize: 100, orderDirection: "asc" });
+  listAttendancesForAdmin: async (eventId: string, options: Omit<FindManyEventAttendancesOptions, "event_id" | "user_id"> & { search?: string } = {}) => {
+    const keyword = options.search?.trim();
+    const matchedUserIds = keyword
+      ? [...new Set((await Promise.all([
+          usersRepository.findIdsBySearch(keyword),
+          userProfilesRepository.findUserIdsBySearch(keyword),
+        ])).flat())]
+      : undefined;
+    const result = await eventAttendancesRepository.findMany({
+      ...options,
+      event_id: eventId,
+      ...(keyword ? { user_id: matchedUserIds } : {}),
+    });
     const userIds = result.data.map((item) => item.user_id);
     const [users, profiles] = await Promise.all([usersRepository.findManyByIds(userIds), userProfilesRepository.findManyByUserIds(userIds)]);
     const usersById = new Map(users.map((user) => [user.id, user]));
     const profilesById = new Map(profiles.map((profile) => [profile.user_id, profile]));
-    return result.data.flatMap((item) => { const user = usersById.get(item.user_id); return user ? [{ ...item, user, profile: profilesById.get(user.id) ?? null }] : []; });
+    return {
+      ...result,
+      data: result.data.flatMap((item) => {
+        const user = usersById.get(item.user_id);
+        return user ? [{ ...item, user, profile: profilesById.get(user.id) ?? null }] : [];
+      }),
+    };
+  },
+
+  searchAttendanceUsersForAdmin: async (eventId: string, search: string) => {
+    const keyword = search.trim();
+    if (!await eventsRepository.findById(eventId)) throw new EventNotFoundError();
+    if (!keyword) return [];
+
+    const userIds = [...new Set((await Promise.all([
+      usersRepository.findIdsBySearch(keyword),
+      userProfilesRepository.findUserIdsBySearch(keyword),
+    ])).flat())];
+    const users = await usersRepository.findMany({ userIds, pageSize: 20, orderBy: "name", orderDirection: "asc" });
+    const profiles = await userProfilesRepository.findManyByUserIds(users.data.map((user) => user.id));
+    const profilesByUserId = new Map(profiles.map((profile) => [profile.user_id, profile]));
+    return users.data.map((user) => ({ ...user, profile: profilesByUserId.get(user.id) ?? null }));
   },
 
   createAttendanceForAdmin: async (eventId: string, input: unknown) => {
     const data = attendanceInputSchema.parse(input);
     const [event, user, existing] = await Promise.all([eventsRepository.findById(eventId), usersRepository.findById(data.user_id), eventAttendancesRepository.findByUserIdAndEventId(data.user_id, eventId)]);
     if (!event) throw new EventNotFoundError();
-    if (!user) throw new Error("找不到使用者");
-    if (existing) throw new Error("此使用者已有該活動的簽到紀錄");
+    if (!user) throw new AttendanceUserNotFoundError();
+    if (existing) throw new AttendanceAlreadyExistsError();
     return eventAttendancesRepository.create({ user_id: data.user_id, event_id: eventId, status: data.status, attended_at: data.status === "absent" ? null : data.attended_at ?? new Date().toISOString() });
   },
 
-  updateAttendanceForAdmin: async (attendanceId: EventAttendanceId, input: unknown) => {
+  updateAttendanceForAdmin: async (eventId: string, attendanceId: EventAttendanceId, input: unknown) => {
     const data = attendanceUpdateSchema.parse(input);
     const current = await eventAttendancesRepository.findById(attendanceId);
-    if (!current) throw new Error("找不到簽到紀錄");
+    if (!current || current.event_id !== eventId) throw new AttendanceNotFoundError();
     const updated = await eventAttendancesRepository.updateById(attendanceId, { status: data.status, attended_at: data.status === "absent" ? null : data.attended_at ?? current.attended_at ?? new Date().toISOString() });
-    if (!updated) throw new Error("更新簽到紀錄失敗");
+    if (!updated) throw new AttendanceNotFoundError();
     return updated;
   },
 
-  deleteAttendanceForAdmin: async (attendanceId: EventAttendanceId) => {
-    if (!await eventAttendancesRepository.findById(attendanceId)) throw new Error("找不到簽到紀錄");
+  deleteAttendanceForAdmin: async (eventId: string, attendanceId: EventAttendanceId) => {
+    const current = await eventAttendancesRepository.findById(attendanceId);
+    if (!current || current.event_id !== eventId) throw new AttendanceNotFoundError();
     await eventAttendancesRepository.deleteById(attendanceId);
   },
 };

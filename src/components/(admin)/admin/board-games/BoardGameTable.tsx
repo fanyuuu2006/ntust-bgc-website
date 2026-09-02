@@ -23,7 +23,6 @@ import {
 import { apiClient } from "@/libs/api/client";
 import type { BoardGameWithCategoryAndLocation } from "@/services/board-games/board-games.types";
 import { formatDateTime } from "@/utils/date";
-import { Pencil } from "lucide-react";
 
 type Props = React.HTMLAttributes<HTMLDivElement> & {
   boardGames: BoardGameWithCategoryAndLocation[];
@@ -82,7 +81,11 @@ export function BoardGameTable({
       <EmptyState
         className={className}
         title={hasFilters ? "找不到符合條件的桌遊" : "目前還沒有桌遊"}
-        description={hasFilters ? "請調整搜尋或篩選條件後再試。" : "可從頁面標題旁新增第一款桌遊。"}
+        description={
+          hasFilters
+            ? "請調整搜尋或篩選條件後再試。"
+            : "可從頁面標題旁新增第一款桌遊。"
+        }
         {...props}
       />
     );
@@ -228,7 +231,6 @@ function BoardGameRowActions({
         size="sm"
         className="rounded-lg"
       >
-        <Pencil aria-hidden="true" className="size-4" />
         編輯
       </ButtonLink>
       <Button

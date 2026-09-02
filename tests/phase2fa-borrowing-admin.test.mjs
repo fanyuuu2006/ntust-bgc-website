@@ -76,7 +76,7 @@ test("admin borrowing shows borrower identity and membership only as operating c
 test("workflow confirmations distinguish destructive rejection from normal operations", () => {
   assert.match(confirmDialog, /confirmVariant\?: "primary" \| "danger"/);
   assert.match(confirmDialog, /variant=\{confirmVariant\}/);
-  assert.match(adminBorrowings, /confirmVariant=\{selected\?\.action === "reject" \|\| selected\?\.action === "delete" \? "danger" : "primary"\}/);
+  assert.match(adminBorrowings, /confirmVariant=\{\s*selected\?\.action === "reject" \|\| selected\?\.action === "delete"\s*\? "danger"\s*:\s*"primary"\s*\}/s);
   assert.match(adminBorrowings, /onAction\(borrowing, "approve"\).*?核准借用/s);
   assert.match(adminBorrowings, /variant="danger".*?onAction\(borrowing, "reject"\).*?拒絕申請/s);
   assert.match(adminBorrowings, /onAction\(borrowing, "checkout"\).*?確認借出/s);

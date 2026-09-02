@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Modal } from "@/components/Modal";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Field } from "@/components/ui/Field";
@@ -332,7 +332,10 @@ function EventRowActions({
   onDelete: (event: Event) => void;
 }) {
   return (
-    <div className="flex shrink-0 gap-2">
+    <div className="flex shrink-0 flex-wrap gap-2">
+      <ButtonLink href={`/admin/events/${event.id}`} size="sm" variant="outline">
+        簽到管理
+      </ButtonLink>
       <Button type="button" size="sm" variant="outline" onClick={() => onEdit(event)}>
         編輯
       </Button>
