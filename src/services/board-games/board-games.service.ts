@@ -50,6 +50,7 @@ import {
   BorrowingStatusTransitionError,
   BorrowingDueDateError,
   BorrowingWorkflowConflictError,
+  BorrowingCancellationConflictError,
 } from "./board-games.errors";
 import { RepositoryError } from "@/repositories/shared/errors";
 import {
@@ -653,6 +654,23 @@ export const boardGamesService = {
     }
   },
 
+  cancelPendingBorrowingByUserId: async (
+    userId: string,
+    borrowingId: BoardGameBorrowingId,
+  ) => {
+    const cancelled = await boardGameBorrowingsRepository.cancelPendingByIdAndUserId(
+      borrowingId,
+      userId,
+    );
+    if (cancelled) return cancelled;
+
+    const borrowing = await boardGameBorrowingsRepository.findById(borrowingId);
+    if (!borrowing || borrowing.user_id !== userId) {
+      throw new BorrowingNotFoundError();
+    }
+    throw new BorrowingCancellationConflictError();
+  },
+
   /**
    * 核准借用申請（不代表已實際借出，實際借出請呼叫 checkOutBorrowing）。
    */
@@ -664,10 +682,15 @@ export const boardGamesService = {
     }
 
     try {
-      return await boardGameBorrowingsRepository.updateById(borrowingId, {
+      const approved = await boardGameBorrowingsRepository.updateByIdIfCurrentStatus(borrowingId, "pending", {
         status: "approved",
         approved_by_user_id: approverUserId,
       });
+      if (approved) return approved;
+
+      const latest = await boardGameBorrowingsRepository.findById(borrowingId);
+      if (!latest) throw new BorrowingNotFoundError();
+      throw new BorrowingStatusTransitionError("pending", latest.status);
     } catch (error) {
       return rethrowBorrowingApprovalConflict(error);
     }
@@ -683,10 +706,15 @@ export const boardGamesService = {
       throw new BorrowingStatusTransitionError("pending", borrowing.status);
     }
 
-    return boardGameBorrowingsRepository.updateById(borrowingId, {
+    const rejected = await boardGameBorrowingsRepository.updateByIdIfCurrentStatus(borrowingId, "pending", {
       status: "rejected",
       approved_by_user_id: approverUserId,
     });
+    if (rejected) return rejected;
+
+    const latest = await boardGameBorrowingsRepository.findById(borrowingId);
+    if (!latest) throw new BorrowingNotFoundError();
+    throw new BorrowingStatusTransitionError("pending", latest.status);
   },
 
   /**

@@ -15,6 +15,7 @@ export const borrowingStatusSchema = z.enum([
   "rejected",
   "borrowed",
   "returned",
+  "cancelled",
 ]);
 
 const optionalText = (max: number) =>

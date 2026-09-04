@@ -194,6 +194,7 @@ export function AdminBorrowingList({
             <option value="borrowed">借出中</option>
             <option value="returned">已歸還</option>
             <option value="rejected">已拒絕</option>
+            <option value="cancelled">已取消</option>
           </Select>
           <Button type="submit" variant="primary" className="w-full sm:w-auto">
             搜尋
@@ -618,6 +619,10 @@ function MobileBorrowingMetadata({
     return <MobileMetadataGrid>{applicationTime}</MobileMetadataGrid>;
   }
 
+  if (borrowing.status === "cancelled") {
+    return <MobileMetadataGrid>{applicationTime}</MobileMetadataGrid>;
+  }
+
   if (borrowing.status === "rejected") {
     return (
       <MobileMetadataGrid>
@@ -682,6 +687,7 @@ function getBorrowerName(borrowing: BoardGameBorrowingForAdmin) {
 }
 
 function getApprovalActor(borrowing: BoardGameBorrowingForAdmin) {
+  if (borrowing.status === "cancelled") return null;
   if (!borrowing.approved_by_user_id) return null;
 
   const label = borrowing.status === "rejected" ? "拒絕人" : "核准人";

@@ -14,7 +14,7 @@ test("dashboard keeps a greeting-only header and separates content from entity s
 
   assert.match(page, /PageHeader title=\{`/);
   assert.doesNotMatch(page, /eyebrow=|description=|今天想做些什麼/);
-  assert.match(page, /max-w-\[72rem\] space-y-6/);
+  assert.match(page, /<section className="container py-8">[\s\S]*?<div className="space-y-6">/);
   assert.match(page, /lg:grid-cols-\[minmax\(0,3fr\)_minmax\(0,2fr\)\]/);
   assert.doesNotMatch(page, /grid items-start gap-5 lg:grid-cols-2/);
   assert.match(page, /import \{ Card \}/);

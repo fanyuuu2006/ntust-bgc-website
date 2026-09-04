@@ -23,6 +23,7 @@ const STATUS_OPTIONS: Array<{ value: BorrowingStatus; label: string }> = [
   { value: "borrowed", label: BORROWING_STATUS_LABEL.borrowed },
   { value: "returned", label: BORROWING_STATUS_LABEL.returned },
   { value: "rejected", label: BORROWING_STATUS_LABEL.rejected },
+  { value: "cancelled", label: BORROWING_STATUS_LABEL.cancelled },
 ];
 
 const SORT_OPTIONS = [

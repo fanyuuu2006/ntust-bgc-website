@@ -33,7 +33,8 @@ create type public.borrowing_status as enum (
   'approved',
   'rejected',
   'borrowed',
-  'returned'
+  'returned',
+  'cancelled'
 );
 create type public.membership_register_key_status as enum (
   'available',

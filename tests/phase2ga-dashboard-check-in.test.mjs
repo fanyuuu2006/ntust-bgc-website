@@ -65,7 +65,7 @@ test("dashboard current-record surfaces stay compact, responsive, and domain-spe
     readSource("src/components/(authenticated)/dashboard/DashboardMembershipSummary.tsx"),
   ]);
 
-  assert.match(page, /max-w-\[72rem\] space-y-6/);
+  assert.match(page, /<section className="container py-8">[\s\S]*?<div className="space-y-6">/);
   assert.match(page, /lg:grid-cols-\[minmax\(0,3fr\)_minmax\(0,2fr\)\]/);
   assert.doesNotMatch(page, /grid items-start gap-5 lg:grid-cols-2/);
   assert.doesNotMatch(page, /xl:grid-cols-|justify-self-end|xl:max-w-/);

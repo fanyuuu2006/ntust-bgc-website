@@ -26,17 +26,18 @@ export default async function DashboardPage() {
   const currentAcademicYear = academicYears.find((year) => year.is_current);
   const currentYearMembership = currentAcademicYear
     ? await membershipService.getMembershipByUserIdAndAcademicYearId(
-      user.id,
-      currentAcademicYear.id,
-    )
+        user.id,
+        currentAcademicYear.id,
+      )
     : null;
-  const selfCheckInEvents = currentYearMembership?.status === "active"
-    ? await eventsService.getSelfCheckInEventsForUser(user.id)
-    : [];
+  const selfCheckInEvents =
+    currentYearMembership?.status === "active"
+      ? await eventsService.getSelfCheckInEventsForUser(user.id)
+      : [];
 
   return (
     <section className="container py-8">
-      <div className="max-w-[72rem] space-y-6">
+      <div className="space-y-6">
         <PageHeader title={`歡迎回來，${user.name}`} />
 
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
@@ -55,7 +56,12 @@ export default async function DashboardPage() {
               <section aria-labelledby="dashboard-announcements-title">
                 <DashboardSectionHeader
                   id="dashboard-announcements-title"
-                  icon={<Megaphone aria-hidden="true" className="size-5 text-(--status-warning)" />}
+                  icon={
+                    <Megaphone
+                      aria-hidden="true"
+                      className="size-5 text-(--status-warning)"
+                    />
+                  }
                   title="最新公告"
                   action={
                     <Link
@@ -74,18 +80,25 @@ export default async function DashboardPage() {
                       <li key={announcement.id}>
                         <Link
                           href={`/announcements/${announcement.id}`}
-                          className="block rounded-lg py-2.5 transition-colors hover:bg-(--surface-subtle) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--interactive-primary)"
+                          className="block rounded-lg p-2 transition-colors hover:bg-(--surface-subtle) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--interactive-primary)"
                         >
-                          <p className="break-words font-medium text-(--text-primary)">{announcement.title}</p>
+                          <p className="wrap-break-word font-medium text-(--text-primary)">
+                            {announcement.title}
+                          </p>
                           <p className="mt-1 text-xs text-(--text-muted)">
-                            {formatDate(announcement.published_at ?? announcement.created_at)}
+                            {formatDate(
+                              announcement.published_at ??
+                                announcement.created_at,
+                            )}
                           </p>
                         </Link>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="mt-3 text-sm text-(--text-muted)">目前還沒有已發布的公告。</p>
+                  <p className="mt-3 text-sm text-(--text-muted)">
+                    目前還沒有已發布的公告。
+                  </p>
                 )}
               </section>
             </Card>

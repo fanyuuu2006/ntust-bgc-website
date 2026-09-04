@@ -62,7 +62,8 @@ export type BorrowingStatus =
   | "approved"
   | "rejected"
   | "borrowed"
-  | "returned";
+  | "returned"
+  | "cancelled";
 
 /**
  * 出席狀態

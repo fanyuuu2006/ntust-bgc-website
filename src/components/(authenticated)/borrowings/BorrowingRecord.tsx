@@ -2,6 +2,7 @@ import { CalendarClock, CircleCheck, Clock3, TriangleAlert } from "lucide-react"
 
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
+import { CancelBorrowingAction } from "@/components/(authenticated)/borrowings/CancelBorrowingAction";
 import { Card } from "@/components/ui/Card";
 import type { BoardGameBorrowingWithBoardGame } from "@/services/board-games/board-games.types";
 import { formatDateTime, getDueTimePresentation } from "@/utils/date";
@@ -46,13 +47,16 @@ function BorrowingStateDetails({ borrowing, due }: { borrowing: BoardGameBorrowi
   }
 
   if (borrowing.status === "pending") {
-    return <RecordMessage icon={Clock3} message="等待幹部確認" dateLabel="提出申請" date={borrowing.created_at} />;
+    return <div className="space-y-3"><RecordMessage icon={Clock3} message="等待幹部確認" dateLabel="提出申請" date={borrowing.created_at} /><CancelBorrowingAction borrowingId={borrowing.id} boardGameName={borrowing.board_game.name} /></div>;
   }
   if (borrowing.status === "approved") {
     return <RecordMessage icon={CircleCheck} message="借用已核准，等待借出" dateLabel="提出申請" date={borrowing.created_at} />;
   }
   if (borrowing.status === "returned") {
     return <RecordMessage icon={CircleCheck} message="已完成歸還" dateLabel="歸還時間" date={borrowing.returned_at} extra={borrowing.borrowed_at ? `借出：${formatDateTime(borrowing.borrowed_at)}` : undefined} />;
+  }
+  if (borrowing.status === "cancelled") {
+    return <RecordMessage icon={Clock3} message="借用申請已取消" dateLabel="提出申請" date={borrowing.created_at} />;
   }
   return <RecordMessage icon={Clock3} message="這筆借用申請未獲核准" dateLabel="提出申請" date={borrowing.created_at} />;
 }

@@ -304,6 +304,23 @@ export const boardGameBorrowingsRepository = {
     return data;
   },
 
+  updateByIdIfCurrentStatus: async (
+    id: BoardGameBorrowingId,
+    currentStatus: BorrowingStatus,
+    payload: UpdateBoardGameBorrowingInput,
+  ): Promise<BoardGameBorrowing | null> => {
+    const { data, error } = await supabase
+      .from("board_game_borrowings")
+      .update(payload)
+      .eq("id", id)
+      .eq("status", currentStatus)
+      .select()
+      .maybeSingle();
+
+    if (error) throwRepositoryError("更新借用工作流程狀態失敗", error);
+    return data;
+  },
+
   updateDueAtIfBorrowed: async (
     id: BoardGameBorrowingId,
     dueAt: string,
@@ -317,6 +334,23 @@ export const boardGameBorrowingsRepository = {
       .maybeSingle();
 
     if (error) throwRepositoryError("更新借用預計歸還時間失敗", error);
+    return data;
+  },
+
+  cancelPendingByIdAndUserId: async (
+    id: BoardGameBorrowingId,
+    userId: string,
+  ): Promise<BoardGameBorrowing | null> => {
+    const { data, error } = await supabase
+      .from("board_game_borrowings")
+      .update({ status: "cancelled" })
+      .eq("id", id)
+      .eq("user_id", userId)
+      .eq("status", "pending")
+      .select()
+      .maybeSingle();
+
+    if (error) throwRepositoryError("取消待處理借用申請失敗", error);
     return data;
   },
 

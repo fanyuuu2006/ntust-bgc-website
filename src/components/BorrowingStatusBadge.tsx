@@ -7,6 +7,7 @@ export const BORROWING_STATUS_LABEL: Record<BorrowingStatus, string> = {
   rejected: "已拒絕",
   borrowed: "借出中",
   returned: "已歸還",
+  cancelled: "已取消",
 };
 
 const BORROWING_STATUS_TONE: Record<BorrowingStatus, BadgeTone> = {
@@ -15,6 +16,7 @@ const BORROWING_STATUS_TONE: Record<BorrowingStatus, BadgeTone> = {
   rejected: "danger",
   borrowed: "success",
   returned: "neutral",
+  cancelled: "neutral",
 };
 
 export function BorrowingStatusBadge({ status, className }: { status: BorrowingStatus; className?: string }) {
