@@ -51,7 +51,34 @@ test("borrowings remain server-rendered, queryable, and time-aware", async () =>
   assert.match(page, /getBorrowingsByUserId/);
   assert.match(record, /getDueTimePresentation/);
   assert.match(record, /CalendarClock|TriangleAlert/);
-  assert.match(record, /<Card className="p-4 sm:p-5">/);
+  assert.match(page, /<ul className="flex flex-col gap-2\.5">/);
+  assert.match(page, /<li key=\{borrowing\.id\}>/);
+  assert.match(page, /container max-w-3xl space-y-6/);
+  assert.match(record, /<Card className="p-3 md:p-4">/);
+  assert.match(record, /className="size-12 shrink-0 rounded-lg/);
+  assert.match(record, /className="flex min-w-0 items-start gap-2\.5"/);
+  assert.doesNotMatch(record, /aspect-\[4\/3\] w-full/);
+  assert.match(record, /line-clamp-2 text-sm font-semibold leading-snug[\s\S]*?md:text-base/);
+  assert.match(record, /title=\{borrowing\.board_game\.name\}/);
+  assert.doesNotMatch(record, /md:grid-cols/);
   assert.match(service, /findIdsBySearch\(search\)/);
   assert.match(service, /board_game_ids: matchingBoardGameIds/);
+});
+
+test("borrowing records use state-aware compact metadata without a membership gate", async () => {
+  const [record, action, page] = await Promise.all([
+    readSource("src/components/(authenticated)/borrowings/BorrowingRecord.tsx"),
+    readSource("src/components/(authenticated)/borrowings/CancelBorrowingAction.tsx"),
+    readSource("src/app/(authenticated)/borrowings/page.tsx"),
+  ]);
+
+  assert.match(record, /borrowing\.status === "pending"[\s\S]*?<CancelBorrowingAction/);
+  assert.match(record, /borrowing\.status === "borrowed"[\s\S]*?due\.relative/);
+  assert.match(record, /borrowing\.status === "returned"[\s\S]*?returned_at/);
+  assert.match(record, /borrowing\.status === "cancelled"[\s\S]*?created_at/);
+  assert.doesNotMatch(record, /membershipService|currentMembership/);
+  assert.match(record, /<div className="min-w-0 flex-1">[\s\S]*?<h2[\s\S]*?<BorrowingStatusBadge/);
+  assert.match(record, /className="shrink-0 self-start"/);
+  assert.match(action, /variant="danger"/);
+  assert.match(page, /grid gap-2 md:grid-cols-\[minmax\(0,1fr\)_auto_auto_auto\]/);
 });

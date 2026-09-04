@@ -86,7 +86,7 @@ export default async function BorrowingsPage({
 
   return (
     <section className="py-8">
-      <div className="container max-w-5xl space-y-6">
+      <div className="container max-w-3xl space-y-6">
         <PageHeader
           eyebrow="我的桌遊"
           title="借用紀錄"
@@ -126,11 +126,13 @@ export default async function BorrowingsPage({
             }
           />
         ) : (
-          <div className="space-y-3">
+          <ul className="flex flex-col gap-2.5">
             {borrowings.data.map((borrowing) => (
-              <BorrowingRecord key={borrowing.id} borrowing={borrowing} />
+              <li key={borrowing.id}>
+                <BorrowingRecord borrowing={borrowing} />
+              </li>
             ))}
-          </div>
+          </ul>
         )}
 
         <Pagination
@@ -161,11 +163,11 @@ function BorrowingsToolbar({
   const hasFilters = Boolean(status || search || sort !== SORT_OPTIONS[0].value);
 
   return (
-    <form action={BASE_PATH} className="space-y-3">
+    <form action={BASE_PATH} className="space-y-2.5">
       <input type="hidden" name="page" value="1" />
       <input type="hidden" name="pageSize" value={pageSize} />
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:items-center">
         <label className="relative min-w-0 flex-1">
           <span className="sr-only">搜尋借用紀錄</span>
           <Search
@@ -177,16 +179,16 @@ function BorrowingsToolbar({
             type="search"
             defaultValue={search}
             placeholder="搜尋桌遊或社產編號"
-            className="pl-9 text-base sm:text-sm"
+            className="pl-9 text-base md:text-sm"
           />
         </label>
 
-        <details className="group sm:relative">
+        <details className="group md:relative">
           <summary className="btn outline flex min-h-10 cursor-pointer list-none items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium marker:content-none">
             <ListFilter aria-hidden="true" className="size-4" />
             篩選
           </summary>
-          <div className="mt-2 rounded-xl border border-(--border-default) bg-(--surface-default) p-3 sm:absolute sm:right-0 sm:z-10 sm:min-w-56 sm:shadow-(--shadow-card)">
+          <div className="mt-2 rounded-xl border border-(--border-default) bg-(--surface-default) p-3 md:absolute md:right-0 md:z-10 md:min-w-56 md:shadow-(--shadow-card)">
             <label className="grid gap-1.5 text-sm font-medium text-(--text-primary)">
               借用狀態
               <Select name="status" defaultValue={status ?? ""}>
@@ -201,29 +203,31 @@ function BorrowingsToolbar({
           </div>
         </details>
 
-        <label className="flex min-h-10 items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-default) px-3 text-sm font-medium text-(--text-primary) focus-within:border-(--interactive-primary) focus-within:outline-2 focus-within:outline-(--focus-ring)">
-          <ArrowUpDown
-            aria-hidden="true"
-            className="size-4 shrink-0 text-(--text-muted)"
-          />
-          <span className="sr-only">排序</span>
-          <Select
-            name="sort"
-            defaultValue={sort}
-            focusOwner="parent"
-            className="min-h-0 min-w-0 border-0 bg-transparent px-0 py-0"
-          >
-            {SORT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
-        </label>
+        <div className="flex min-w-0 gap-2 md:contents">
+          <label className="flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-default) px-3 text-sm font-medium text-(--text-primary) focus-within:border-(--interactive-primary) focus-within:outline-2 focus-within:outline-(--focus-ring) md:flex-none md:min-w-40">
+            <ArrowUpDown
+              aria-hidden="true"
+              className="size-4 shrink-0 text-(--text-muted)"
+            />
+            <span className="sr-only">排序</span>
+            <Select
+              name="sort"
+              defaultValue={sort}
+              focusOwner="parent"
+              className="min-h-0 min-w-0 border-0 bg-transparent px-0 py-0"
+            >
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+          </label>
 
-        <Button type="submit" variant="outline">
-          套用
-        </Button>
+          <Button type="submit" variant="outline">
+            套用
+          </Button>
+        </div>
       </div>
 
       {hasFilters ? (

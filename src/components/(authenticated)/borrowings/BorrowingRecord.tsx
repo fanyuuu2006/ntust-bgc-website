@@ -1,66 +1,138 @@
-import { CalendarClock, CircleCheck, Clock3, TriangleAlert } from "lucide-react";
+import { CalendarClock, TriangleAlert } from "lucide-react";
 
+import { CancelBorrowingAction } from "@/components/(authenticated)/borrowings/CancelBorrowingAction";
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
-import { CancelBorrowingAction } from "@/components/(authenticated)/borrowings/CancelBorrowingAction";
 import { Card } from "@/components/ui/Card";
 import type { BoardGameBorrowingWithBoardGame } from "@/services/board-games/board-games.types";
 import { formatDateTime, getDueTimePresentation } from "@/utils/date";
 
-export function BorrowingRecord({ borrowing }: { borrowing: BoardGameBorrowingWithBoardGame }) {
-  const due = borrowing.status === "borrowed" ? getDueTimePresentation(borrowing.due_at) : null;
+export function BorrowingRecord({
+  borrowing,
+}: {
+  borrowing: BoardGameBorrowingWithBoardGame;
+}) {
+  const due = borrowing.status === "borrowed"
+    ? getDueTimePresentation(borrowing.due_at)
+    : null;
 
   return (
-    <article>
-      <Card className="p-4 sm:p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-          <BoardGameImage boardGame={borrowing.board_game} className="aspect-[4/3] w-full shrink-0 rounded-xl border border-(--border-default) object-cover sm:h-24 sm:w-32" />
+    <Card className="p-3 md:p-4">
+      <div className="flex min-w-0 items-start gap-2.5">
+        <BoardGameImage
+          boardGame={borrowing.board_game}
+          className="size-12 shrink-0 rounded-lg border border-(--border-default) object-cover md:size-14"
+          loading="lazy"
+        />
 
-          <div className="min-w-0 flex-1 space-y-3">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                <h2 className="text-lg font-semibold text-(--text-primary)">{borrowing.board_game.name}</h2>
-                <p className="mt-1 text-sm text-(--text-muted)">社產編號 #{borrowing.board_game.inventory_number}</p>
-              </div>
-              <BorrowingStatusBadge status={borrowing.status} className="shrink-0 self-start" />
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-start gap-2">
+            <div className="min-w-0 flex-1">
+              <h2
+                title={borrowing.board_game.name}
+                className="min-w-0 flex-1 line-clamp-2 text-sm font-semibold leading-snug text-(--text-primary) md:text-base"
+              >
+                {borrowing.board_game.name}
+              </h2>
+              <p className="mt-0.5 text-xs text-(--text-muted)">
+                社產編號 #{borrowing.board_game.inventory_number}
+              </p>
             </div>
+            <BorrowingStatusBadge
+              status={borrowing.status}
+              className="shrink-0 self-start"
+            />
+          </div>
 
-            <BorrowingStateDetails borrowing={borrowing} due={due} />
+          <div className="mt-2 border-t border-(--border-muted) pt-2">
+            <div className="md:flex md:items-end md:justify-between md:gap-4">
+              <BorrowingLifecycle borrowing={borrowing} due={due} />
+
+              {borrowing.status === "pending" ? (
+                <div className="mt-1.5 md:mt-0">
+                  <CancelBorrowingAction
+                    borrowingId={borrowing.id}
+                    boardGameName={borrowing.board_game.name}
+                  />
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
-      </Card>
-    </article>
+      </div>
+    </Card>
   );
 }
 
-function BorrowingStateDetails({ borrowing, due }: { borrowing: BoardGameBorrowingWithBoardGame; due: ReturnType<typeof getDueTimePresentation> | null }) {
+function BorrowingLifecycle({
+  borrowing,
+  due,
+}: {
+  borrowing: BoardGameBorrowingWithBoardGame;
+  due: ReturnType<typeof getDueTimePresentation> | null;
+}) {
   if (borrowing.status === "borrowed" && due) {
     const isOverdue = due.state === "overdue";
-    const Icon = isOverdue ? TriangleAlert : CalendarClock;
-    const dueTone = isOverdue
+    const isDueSoon = due.state === "due-soon";
+    const dueClassName = isOverdue
       ? "text-(--status-danger)"
-      : due.state === "due-soon"
+      : isDueSoon
         ? "text-(--status-warning)"
         : "text-(--status-info)";
 
-    return <div className="space-y-1.5 text-sm"><p className={`flex items-center gap-2 font-medium ${dueTone}`}><Icon aria-hidden="true" className="size-4 shrink-0" />{due.relative}</p><p className="text-(--text-muted)">{due.absolute ? `${isOverdue ? "應於" : "預計歸還："} ${due.absolute}${isOverdue ? " 前歸還" : ""}` : "歸還期限待確認"}</p></div>;
+    return (
+      <div className="min-w-0 space-y-1.5">
+        <p className={`flex min-w-0 items-center gap-1.5 text-sm font-medium ${dueClassName}`}>
+          {isOverdue ? (
+            <TriangleAlert aria-hidden="true" className="size-4 shrink-0" />
+          ) : (
+            <CalendarClock aria-hidden="true" className="size-4 shrink-0" />
+          )}
+          <span className="break-words">{due.relative}</span>
+        </p>
+        <p className="break-words text-xs leading-5 text-(--text-muted)">
+          {due.absolute ? `歸還期限：${due.absolute}` : "尚未設定歸還期限"}
+        </p>
+      </div>
+    );
   }
 
   if (borrowing.status === "pending") {
-    return <div className="space-y-3"><RecordMessage icon={Clock3} message="等待幹部確認" dateLabel="提出申請" date={borrowing.created_at} /><CancelBorrowingAction borrowingId={borrowing.id} boardGameName={borrowing.board_game.name} /></div>;
+    return <LifecycleMessage message="等待幹部確認" timestampLabel="提出申請" timestamp={borrowing.created_at} />;
   }
+
   if (borrowing.status === "approved") {
-    return <RecordMessage icon={CircleCheck} message="借用已核准，等待借出" dateLabel="提出申請" date={borrowing.created_at} />;
+    return <LifecycleMessage message="已核准，等待領取" timestampLabel="提出申請" timestamp={borrowing.created_at} />;
   }
+
   if (borrowing.status === "returned") {
-    return <RecordMessage icon={CircleCheck} message="已完成歸還" dateLabel="歸還時間" date={borrowing.returned_at} extra={borrowing.borrowed_at ? `借出：${formatDateTime(borrowing.borrowed_at)}` : undefined} />;
+    return <LifecycleMessage message="已完成歸還" timestampLabel="歸還時間" timestamp={borrowing.returned_at} />;
   }
+
   if (borrowing.status === "cancelled") {
-    return <RecordMessage icon={Clock3} message="借用申請已取消" dateLabel="提出申請" date={borrowing.created_at} />;
+    return <LifecycleMessage message="借用申請已取消" timestampLabel="提出申請" timestamp={borrowing.created_at} />;
   }
-  return <RecordMessage icon={Clock3} message="這筆借用申請未獲核准" dateLabel="提出申請" date={borrowing.created_at} />;
+
+  return <LifecycleMessage message="申請未獲核准" timestampLabel="提出申請" timestamp={borrowing.created_at} />;
 }
 
-function RecordMessage({ icon: Icon, message, dateLabel, date, extra }: { icon: typeof Clock3; message: string; dateLabel: string; date: string | null; extra?: string }) {
-  return <div className="space-y-1.5 text-sm"><p className="flex items-center gap-2 font-medium text-(--text-primary)"><Icon aria-hidden="true" className="size-4 shrink-0 text-(--text-muted)" />{message}</p><p className="text-(--text-muted)">{dateLabel}：{formatDateTime(date)}</p>{extra ? <p className="text-(--text-muted)">{extra}</p> : null}</div>;
+function LifecycleMessage({
+  message,
+  timestampLabel,
+  timestamp,
+}: {
+  message: string;
+  timestampLabel: string;
+  timestamp: string | null;
+}) {
+  return (
+    <div className="min-w-0 space-y-1">
+      <p className="break-words text-sm font-medium text-(--text-secondary)">{message}</p>
+      {timestamp ? (
+        <p className="break-words text-xs leading-5 text-(--text-muted)">
+          {timestampLabel}：{formatDateTime(timestamp)}
+        </p>
+      ) : null}
+    </div>
+  );
 }

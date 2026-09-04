@@ -211,7 +211,7 @@ export function AdminBorrowingList({
         />
       ) : (
         <>
-          <AdminListSection className="hidden xl:block">
+          <AdminListSection className="hidden lg:block">
             <Table className="min-w-190">
               <TableHeader>
                 <TableRow>
@@ -249,7 +249,7 @@ export function AdminBorrowingList({
             </Table>
           </AdminListSection>
 
-          <div className="grid min-w-0 max-w-full gap-3 xl:hidden">
+          <div className="grid min-w-0 max-w-full gap-3 lg:hidden">
             {borrowings.map((borrowing) => (
               <Card
                 key={borrowing.id}
