@@ -14,8 +14,10 @@ test("dashboard keeps a greeting-only header and separates content from entity s
 
   assert.match(page, /PageHeader title=\{`/);
   assert.doesNotMatch(page, /eyebrow=|description=|今天想做些什麼/);
-  assert.match(page, /lg:grid-cols-\[minmax\(0,2fr\)_minmax\(16rem,1fr\)\]/);
-  assert.doesNotMatch(page, /import \{ Card \}/);
+  assert.match(page, /max-w-\[72rem\] space-y-6/);
+  assert.match(page, /lg:grid-cols-\[minmax\(0,3fr\)_minmax\(0,2fr\)\]/);
+  assert.doesNotMatch(page, /grid items-start gap-5 lg:grid-cols-2/);
+  assert.match(page, /import \{ Card \}/);
   assert.match(page, /Megaphone/);
   assert.match(page, /ArrowRight/);
   assert.match(borrowing, /PackageOpen|CalendarClock|TriangleAlert/);
@@ -25,11 +27,11 @@ test("dashboard keeps a greeting-only header and separates content from entity s
   assert.match(checkIn, /<Card className="p-4">/);
   assert.doesNotMatch(checkIn, /"use client"|divide-y/);
   assert.match(membership, /BadgeCheck/);
-  assert.match(membership, /surface="elevated"/);
-  assert.doesNotMatch(membership, /<Card className="p-5"/);
+  assert.match(membership, /surface=\{hasCurrentMembership \? "default" : "elevated"\}/);
+  assert.match(membership, /<Card/);
 });
 
-test("dashboard borrowing retains complete open-record priority and server-rendered due time", async () => {
+test("dashboard borrowing uses a bounded urgency-first server summary and server-rendered due time", async () => {
   const [service, summary, date] = await Promise.all([
     readSource("src/services/board-games/board-games.service.ts"),
     readSource("src/components/(authenticated)/dashboard/DashboardBorrowingSummary.tsx"),
@@ -37,10 +39,14 @@ test("dashboard borrowing retains complete open-record priority and server-rende
   ]);
 
   assert.match(service, /getDashboardOpenBorrowingsByUserId/);
-  assert.match(service, /"pending",\s*"approved",\s*"borrowed"/);
-  assert.match(service, /firstPage\.totalPages/);
-  assert.match(service, /compareDashboardBorrowings/);
-  assert.match(summary, /DASHBOARD_BORROWING_LIMIT/);
+  assert.match(service, /const DASHBOARD_BORROWING_LIMIT = 3/);
+  assert.match(service, /status: "borrowed"[\s\S]*?orderBy: "due_at"[\s\S]*?orderDirection: "asc"/);
+  assert.match(service, /status: "approved"[\s\S]*?orderBy: "created_at"[\s\S]*?orderDirection: "asc"/);
+  assert.match(service, /status: "pending"[\s\S]*?orderBy: "created_at"[\s\S]*?orderDirection: "asc"/);
+  assert.match(service, /takeDashboardBorrowings/);
+  assert.doesNotMatch(service, /firstPage\.totalPages|pageSize = 100/);
+  assert.match(summary, /flex flex-col gap-1\.5/);
+  assert.doesNotMatch(summary, /borrowings\.slice/);
   assert.match(summary, /getDueTimePresentation/);
   assert.match(summary, /CalendarClock/);
   assert.match(summary, /TriangleAlert/);

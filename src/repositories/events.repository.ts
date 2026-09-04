@@ -121,8 +121,7 @@ export const eventsRepository = {
       .not("check_in_closes_at", "is", null)
       .lte("check_in_opens_at", now)
       .gte("check_in_closes_at", now)
-      .order("check_in_closes_at", { ascending: true })
-      .limit(10);
+      .order("check_in_closes_at", { ascending: true });
 
     if (error) throwRepositoryError("查詢可自助簽到活動失敗", error);
     return data ?? [];

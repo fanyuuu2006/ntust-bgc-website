@@ -4,9 +4,11 @@ import { announcementsRepository, type FindPublishedAnnouncementsOptions } from 
 import type { AnnouncementId } from "@/types/database";
 import { z } from "zod";
 const inputSchema = z.object({ title: z.string().trim().min(1).max(160), content: z.string().trim().min(1).max(20000), is_published: z.boolean() });
+const DASHBOARD_ANNOUNCEMENT_LIMIT = 3;
 
 export const announcementsService = {
   listPublished: (options: FindPublishedAnnouncementsOptions = {}) => announcementsRepository.findPublished(options),
+  getDashboardLatestPublished: () => announcementsRepository.findPublished({ page: 1, pageSize: DASHBOARD_ANNOUNCEMENT_LIMIT }),
   getPublishedById: (id: AnnouncementId) => announcementsRepository.findPublishedById(id),
   listForAdmin: (options: FindPublishedAnnouncementsOptions & { published?: boolean } = {}) => announcementsRepository.findManyForAdmin(options),
   getForAdmin: (id: AnnouncementId) => announcementsRepository.findById(id),

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Button } from "@/components/ui/Button";
 import { apiClient } from "@/libs/api/client";
+import { ApiError } from "@/libs/api/errors";
 import type { EventAttendance } from "@/types/database";
 
 type CheckInResponse = { data: EventAttendance };
@@ -16,6 +17,8 @@ export function CheckInButton({ eventId }: { eventId: string }) {
   const [error, setError] = useState<string | null>(null);
 
   async function checkIn() {
+    if (isSubmitting) return;
+
     setIsSubmitting(true);
     setError(null);
 
@@ -25,6 +28,10 @@ export function CheckInButton({ eventId }: { eventId: string }) {
       });
       router.refresh();
     } catch (caught) {
+      if (caught instanceof ApiError && caught.status === 409) {
+        router.refresh();
+        return;
+      }
       setError(caught instanceof Error ? caught.message : "簽到失敗，請稍後再試。");
     } finally {
       setIsSubmitting(false);
@@ -32,17 +39,11 @@ export function CheckInButton({ eventId }: { eventId: string }) {
   }
 
   return (
-    <div className="shrink-0 sm:text-right">
-      <Button
-        type="button"
-        className="w-full sm:w-auto"
-        isLoading={isSubmitting}
-        disabled={isSubmitting}
-        onClick={checkIn}
-      >
+    <div className="shrink-0">
+      <Button type="button" isLoading={isSubmitting} disabled={isSubmitting} onClick={checkIn}>
         簽到
       </Button>
-      <FormFeedback className="mt-2 text-left" error={error} />
+      <FormFeedback className="mt-2" error={error} />
     </div>
   );
 }

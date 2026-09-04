@@ -67,6 +67,8 @@ type PostgrestErrorLike = {
   message?: string;
 };
 
+const DASHBOARD_BORROWING_LIMIT = 3;
+
 function getRepositoryDatabaseError(error: unknown): PostgrestErrorLike | null {
   if (!(error instanceof RepositoryError) || !error.cause || typeof error.cause !== "object") {
     return null;
@@ -487,41 +489,45 @@ export const boardGamesService = {
   getDashboardOpenBorrowingsByUserId: async (
     userId: string,
   ): Promise<BoardGameBorrowingWithBoardGame[]> => {
-    const openStatuses: BorrowingStatus[] = [
-      "pending",
-      "approved",
-      "borrowed",
-    ];
-    const pageSize = 100;
-    const firstPage = await boardGameBorrowingsRepository.findManyByUserId(
-      userId,
-      { status: openStatuses, page: 1, pageSize },
+    // Dashboard attention order: overdue/due-soon borrowed records first,
+    // then other borrowed records, approved records, and pending requests.
+    const [borrowed, approved, pending] = await Promise.all([
+      boardGameBorrowingsRepository.findManyByUserId(userId, {
+        status: "borrowed",
+        orderBy: "due_at",
+        orderDirection: "asc",
+        page: 1,
+        pageSize: DASHBOARD_BORROWING_LIMIT,
+      }),
+      boardGameBorrowingsRepository.findManyByUserId(userId, {
+        status: "approved",
+        orderBy: "created_at",
+        orderDirection: "asc",
+        page: 1,
+        pageSize: DASHBOARD_BORROWING_LIMIT,
+      }),
+      boardGameBorrowingsRepository.findManyByUserId(userId, {
+        status: "pending",
+        orderBy: "created_at",
+        orderDirection: "asc",
+        page: 1,
+        pageSize: DASHBOARD_BORROWING_LIMIT,
+      }),
+    ]);
+    const borrowings = takeDashboardBorrowings(
+      [borrowed.data, approved.data, pending.data],
+      DASHBOARD_BORROWING_LIMIT,
     );
-    const remainingPages = Array.from(
-      { length: Math.max(0, firstPage.totalPages - 1) },
-      (_, index) =>
-        boardGameBorrowingsRepository.findManyByUserId(userId, {
-          status: openStatuses,
-          page: index + 2,
-          pageSize,
-        }),
-    );
-    const remainingResults = await Promise.all(remainingPages);
-    const borrowings = [
-      ...firstPage.data,
-      ...remainingResults.flatMap((result) => result.data),
-    ];
     const boardGameIds = [...new Set(borrowings.map((borrowing) => borrowing.board_game_id))];
-    const boardGames = await boardGamesRepository.findManyByIds(boardGameIds);
+    const boardGames = boardGameIds.length
+      ? await boardGamesRepository.findManyByIds(boardGameIds)
+      : [];
     const boardGamesById = new Map(boardGames.map((boardGame) => [boardGame.id, boardGame]));
-    const now = Date.now();
-
     return borrowings
       .flatMap((borrowing) => {
         const boardGame = boardGamesById.get(borrowing.board_game_id);
         return boardGame ? [{ ...borrowing, board_game: boardGame }] : [];
-      })
-      .sort((left, right) => compareDashboardBorrowings(left, right, now));
+      });
   },
 
   getBorrowingById: async (
@@ -785,33 +791,15 @@ export const boardGamesService = {
   },
 };
 
-function compareDashboardBorrowings(
-  left: BoardGameBorrowingWithBoardGame,
-  right: BoardGameBorrowingWithBoardGame,
-  now: number,
-) {
-  const leftPriority = getDashboardBorrowingPriority(left, now);
-  const rightPriority = getDashboardBorrowingPriority(right, now);
+function takeDashboardBorrowings<T>(groups: T[][], limit: number) {
+  const selected: T[] = [];
 
-  if (leftPriority !== rightPriority) return leftPriority - rightPriority;
-
-  if (left.status === "borrowed" && right.status === "borrowed") {
-    const leftDueAt = left.due_at ? new Date(left.due_at).getTime() : Number.POSITIVE_INFINITY;
-    const rightDueAt = right.due_at ? new Date(right.due_at).getTime() : Number.POSITIVE_INFINITY;
-    if (leftDueAt !== rightDueAt) return leftDueAt - rightDueAt;
+  for (const group of groups) {
+    for (const borrowing of group) {
+      if (selected.length === limit) return selected;
+      selected.push(borrowing);
+    }
   }
 
-  return new Date(left.created_at).getTime() - new Date(right.created_at).getTime();
-}
-
-function getDashboardBorrowingPriority(
-  borrowing: BoardGameBorrowingWithBoardGame,
-  now: number,
-) {
-  if (borrowing.status === "borrowed") {
-    if (!borrowing.due_at) return 5;
-    return new Date(borrowing.due_at).getTime() <= now ? 0 : 1;
-  }
-
-  return borrowing.status === "approved" ? 3 : 4;
+  return selected;
 }
