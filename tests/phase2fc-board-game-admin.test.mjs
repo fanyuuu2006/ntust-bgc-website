@@ -27,7 +27,8 @@ test("board-game records preserve strong entity identity on desktop and mobile",
   assert.match(table, /BoardGameStatusBadge/);
   assert.match(table, /AdminListSection/);
   assert.match(table, /<Card/);
-  assert.match(table, /<Pencil/);
+  assert.match(table, /BoardGameRowActions/);
+  assert.match(table, /variant="outline"/);
   assert.doesNotMatch(table, /館藏|借閱/);
 });
 

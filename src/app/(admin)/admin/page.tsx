@@ -1,9 +1,81 @@
-import Link from "next/link";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
-import { QuickStats } from "@/components/QuickStats";
+import { ButtonLink } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 
 export default async function AdminPage() {
-  const [totalGames, availableGames, borrowedGames, pendingBorrowings] = await Promise.all([boardGamesService.countAllBoardGames(), boardGamesService.countBoardGamesByStatus("available"), boardGamesService.countBoardGamesByStatus("borrowed"), boardGamesService.countBorrowingsByStatus("pending")]);
-  return <><HeadingSection title="管理後台" description="掌握社產與借用流程，快速前往日常管理工作。" /><section className="space-y-6 px-4 pb-6"><div className="grid grid-cols-2 gap-3 md:grid-cols-4"><QuickStats stats={[{ key: "total", label: "社產總數", value: totalGames }, { key: "available", label: "可借用桌遊", value: availableGames, accent: "supporting" }, { key: "borrowed", label: "借出中", value: borrowedGames, accent: "primary" }, { key: "pending", label: "待審核申請", value: pendingBorrowings, accent: "highlight" }]} /></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[["桌遊管理", "新增、編輯社產與查詢狀態", "/admin/board-games"], ["借用管理", "審核申請、確認借出與歸還", "/admin/board-games/borrowings"], ["社員資格管理", "查看社員資格與註冊碼", "/admin/memberships"] as const].map(([title, description, href]) => <Link key={href} href={href} className="card rounded-2xl p-5"><h2 className="font-bold">{title}</h2><p className="mt-2 text-sm text-(--muted)">{description}</p><span className="mt-4 inline-block text-sm font-semibold text-(--primary)">前往管理 →</span></Link>)}</div></section></>;
+  const [totalGames, pendingBorrowings, approvedBorrowings, borrowedGames] = await Promise.all([
+    boardGamesService.countAllBoardGames(),
+    boardGamesService.countBorrowingsByStatus("pending"),
+    boardGamesService.countBorrowingsByStatus("approved"),
+    boardGamesService.countBorrowingsByStatus("borrowed"),
+  ]);
+
+  return (
+    <>
+      <HeadingSection
+        title="管理後台"
+        description="優先處理借用流程與社團日常管理工作。"
+        actions={<ButtonLink href="/admin/board-games/borrowings">桌遊借用管理</ButtonLink>}
+      />
+      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+        <h2 className="text-base font-semibold text-(--text-primary)">今日優先處理</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <OperationalSummary
+            label="待處理借用申請"
+            value={pendingBorrowings}
+            description="確認是否核准新的借用申請。"
+            href="/admin/board-games/borrowings?status=pending"
+            action="查看申請"
+          />
+          <OperationalSummary
+            label="已核准待借出"
+            value={approvedBorrowings}
+            description="確認現場交付桌遊與預計歸還時間。"
+            href="/admin/board-games/borrowings?status=approved"
+            action="確認借出"
+          />
+          <OperationalSummary
+            label="借出中"
+            value={borrowedGames}
+            description="追蹤尚未歸還的桌遊。"
+            href="/admin/board-games/borrowings?status=borrowed"
+            action="查看借用"
+          />
+        </div>
+        <Card className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-semibold">桌遊社產</h2>
+            <p className="mt-1 text-sm text-(--text-muted)">目前共 {totalGames} 款桌遊可供維護與查詢。</p>
+          </div>
+          <ButtonLink href="/admin/board-games" variant="outline" size="sm">前往桌遊管理</ButtonLink>
+        </Card>
+      </section>
+    </>
+  );
+}
+
+function OperationalSummary({
+  label,
+  value,
+  description,
+  href,
+  action,
+}: {
+  label: string;
+  value: number;
+  description: string;
+  href: string;
+  action: string;
+}) {
+  return (
+    <Card className="flex min-w-0 flex-col gap-3 p-4">
+      <div>
+        <p className="text-sm text-(--text-muted)">{label}</p>
+        <p className="mt-1 text-2xl font-bold tabular-nums text-(--text-primary)">{value}</p>
+        <p className="mt-2 text-sm text-(--text-muted)">{description}</p>
+      </div>
+      <ButtonLink href={href} variant="outline" size="sm" className="self-start">{action}</ButtonLink>
+    </Card>
+  );
 }

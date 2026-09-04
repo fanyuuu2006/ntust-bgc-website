@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 import { UserMenu } from "@/components/Header/UserMenu";
 import type { User } from "@/types/database";
 import { cn } from "@/utils/className";
@@ -11,6 +12,7 @@ type AdminHeaderProps = React.HTMLAttributes<HTMLElement> & {
   currentSectionLabel?: string;
   isSidebarOpen: boolean;
   sidebarId: string;
+  menuButtonRef: RefObject<HTMLButtonElement | null>;
   onOpenMenu: () => void;
 };
 
@@ -19,6 +21,7 @@ export function AdminHeader({
   currentSectionLabel,
   isSidebarOpen,
   sidebarId,
+  menuButtonRef,
   onOpenMenu,
   className,
   ...rest
@@ -35,6 +38,7 @@ export function AdminHeader({
         {/* 左側：選單按鈕 + 目前頁面標題 */}
         <div className="flex min-w-0 items-center gap-4">
           <Button
+            ref={menuButtonRef}
             type="button"
             onClick={onOpenMenu}
             aria-expanded={isSidebarOpen}
