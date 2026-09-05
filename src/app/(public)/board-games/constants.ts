@@ -1,5 +1,5 @@
 import type { BoardGameStatus } from "@/types/database";
-import type { FindManyBoardGamesOptions } from "@/repositories/board-games.repository";
+import type { FindManyBoardGamesWithStatsOptions } from "@/repositories/board-game-statistics.repository";
 
 export const BASE_PATH = "/board-games";
 
@@ -56,10 +56,16 @@ export const STATUS_META: Record<
 
 export const SORT_OPTIONS: {
   key: string;
-  orderBy: FindManyBoardGamesOptions["orderBy"];
+  orderBy: FindManyBoardGamesWithStatsOptions["orderBy"];
   orderDirection: "asc" | "desc";
   label: string;
 }[] = [
+  {
+    key: "popular",
+    orderBy: "popular",
+    orderDirection: "desc",
+    label: "熱門程度",
+  },
   {
     key: "created_at:desc",
     orderBy: "created_at",

@@ -98,7 +98,7 @@ test("public direct-query result paths remain server-rendered", async () => {
   const routes = [
     {
       path: "src/app/(public)/board-games/page.tsx",
-      serviceCall: /boardGamesService\.listBoardGamesWithCategoryAndLocation\(/,
+      serviceCall: /boardGamesService\.listBoardGameDiscovery\(/,
     },
     {
       path: "src/app/(public)/announcements/page.tsx",

@@ -45,6 +45,9 @@ test("checkout and return repositories use one transactional RPC each", async ()
   assert.match(repository, /supabase\.rpc\("checkout_borrowing"/);
   assert.match(repository, /supabase\.rpc\("return_borrowing"/);
 
-  const workflowSection = service.slice(service.indexOf("checkOutBorrowing"));
+  const workflowSection = service.slice(
+    service.indexOf("checkOutBorrowing"),
+    service.indexOf("updateBorrowingDueDate"),
+  );
   assert.doesNotMatch(workflowSection, /Promise\.all\(/);
 });

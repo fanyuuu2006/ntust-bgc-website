@@ -30,14 +30,13 @@ export function BoardGameSearchForm({
       query.status?.length ||
       query.category?.length ||
       query.location?.length ||
-      query.orderBy !== "created_at" ||
-      query.orderDirection !== "desc",
+      query.sort !== "popular",
   );
   const clearSearchQuery = buildQueryString({
     status: query.status,
     category: query.category,
     location: query.location,
-    sort: `${query.orderBy}:${query.orderDirection}`,
+    sort: query.sort,
     page: 1,
     pageSize,
   });
@@ -85,7 +84,7 @@ export function BoardGameSearchForm({
         <label className="flex min-h-10 items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-default) px-3 text-sm font-medium text-(--text-primary) focus-within:border-(--interactive-primary) focus-within:outline-2 focus-within:outline-(--focus-ring)">
           <ArrowUpDown aria-hidden="true" className="size-4 shrink-0 text-(--text-muted)" />
           <span className="sr-only">排序</span>
-          <Select name="sort" defaultValue={`${query.orderBy}:${query.orderDirection}`} focusOwner="parent" className="min-h-0 min-w-0 border-0 bg-transparent px-0 py-0">
+          <Select name="sort" defaultValue={query.sort} focusOwner="parent" className="min-h-0 min-w-0 border-0 bg-transparent px-0 py-0">
             {SORT_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}
           </Select>
         </label>

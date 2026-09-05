@@ -84,6 +84,7 @@ export default async function BoardGamesPage({
     status: statuses.length > 0 ? statuses : undefined,
     category: categoryIds.length > 0 ? categoryIds : undefined,
     location: locationIds.length > 0 ? locationIds : undefined,
+    sort: sortOption.key,
     orderBy: sortOption.orderBy,
     orderDirection: sortOption.orderDirection,
   };
@@ -97,7 +98,7 @@ export default async function BoardGamesPage({
   const [categories, locations, boardGames] = await Promise.all([
     boardGamesService.listCategories(),
     boardGamesService.listLocations(),
-    boardGamesService.listBoardGamesWithCategoryAndLocation({
+    boardGamesService.listBoardGameDiscovery({
       page,
       pageSize,
       search,
@@ -148,7 +149,7 @@ export default async function BoardGamesPage({
             status: query.status,
             category: query.category,
             location: query.location,
-            sort: sortOption.key,
+            sort: query.sort,
           }}
         />
       </div>

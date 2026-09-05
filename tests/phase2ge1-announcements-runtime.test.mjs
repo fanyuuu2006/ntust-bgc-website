@@ -29,12 +29,12 @@ async function loadOptionalCommonJsModule(path) {
   return runtimeModule.exports;
 }
 
-test("announcement pagination recognizes only PostgREST unsatisfied ranges as empty pages", async () => {
+test("pagination recognizes only PostgREST unsatisfied ranges as empty pages", async () => {
   const runtimeModule = await loadOptionalCommonJsModule(
-    "src/repositories/announcements.utils.ts",
+    "src/repositories/shared/postgrest.ts",
   );
 
-  assert.ok(runtimeModule, "expected announcement range error handling utility");
+  assert.ok(runtimeModule, "expected shared range error handling utility");
   assert.equal(
     runtimeModule.isPostgrestRangeNotSatisfiable({ code: "PGRST103" }),
     true,

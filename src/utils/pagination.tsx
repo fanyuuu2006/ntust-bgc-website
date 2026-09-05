@@ -13,7 +13,13 @@ export function parsePageSize(
 }
 
 export function getPageRange(page: number, pageSize: number, total: number) {
-  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const offset = (page - 1) * pageSize;
+
+  if (total === 0 || offset >= total) {
+    return { start: 0, end: 0 };
+  }
+
+  const start = offset + 1;
   const end = Math.min(page * pageSize, total);
   return { start, end };
 }

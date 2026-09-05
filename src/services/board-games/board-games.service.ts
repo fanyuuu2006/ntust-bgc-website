@@ -10,6 +10,10 @@ import {
   FindManyBoardGamesOptions,
 } from "@/repositories/board-games.repository";
 import {
+  boardGameStatisticsRepository,
+  type FindManyBoardGamesWithStatsOptions,
+} from "@/repositories/board-game-statistics.repository";
+import {
   boardGameCategoriesRepository,
   CreateBoardGameCategoryInput,
   type FindManyBoardGameCategoriesOptions,
@@ -32,6 +36,8 @@ import {
 } from "@/types/database";
 import {
   BoardGameBorrowingWithBoardGame,
+  BoardGameDiscoveryItem,
+  BoardGameWithStats,
   BoardGameWithCategoryAndLocation,
 } from "./board-games.types";
 import {
@@ -477,6 +483,22 @@ export const boardGamesService = {
     return { ...result, data };
   },
 
+  listBoardGameDiscovery: async (
+    options: FindManyBoardGamesWithStatsOptions = {},
+  ): Promise<ReturnType<typeof buildPaginationResult<BoardGameDiscoveryItem>>> => {
+    const result = await boardGameStatisticsRepository.findMany(options);
+    const data = await attachCategoryAndLocation(result.data);
+
+    return { ...result, data };
+  },
+
+  listPopularBoardGames: async (
+    options: { limit?: number } = {},
+  ): Promise<BoardGameDiscoveryItem[]> => {
+    const boardGames = await boardGameStatisticsRepository.findPopular(options);
+    return attachCategoryAndLocation(boardGames);
+  },
+
   getOpenBorrowingForUserAndBoardGame: async (
     userId: string,
     boardGameId: string,
@@ -818,6 +840,32 @@ export const boardGamesService = {
     return boardGameBorrowingsRepository.countByStatus(status);
   },
 };
+
+async function attachCategoryAndLocation(
+  boardGames: BoardGameWithStats[],
+): Promise<BoardGameDiscoveryItem[]> {
+  const categoryIds = [...new Set(boardGames.map((game) => game.category_id))];
+  const locationIds = [...new Set(boardGames.map((game) => game.location_id))];
+  const [categories, locations] = await Promise.all([
+    boardGameCategoriesRepository.findManyByIds(categoryIds),
+    boardGameLocationsRepository.findManyByIds(locationIds),
+  ]);
+  const categoriesById = new Map(
+    categories.map((category) => [category.id, category]),
+  );
+  const locationsById = new Map(
+    locations.map((location) => [location.id, location]),
+  );
+
+  return boardGames.map((boardGame) => {
+    const category = categoriesById.get(boardGame.category_id);
+    const location = locationsById.get(boardGame.location_id);
+    if (!category) throw new BoardGameCategoryNotFoundError();
+    if (!location) throw new BoardGameLocationNotFoundError();
+
+    return { ...boardGame, category, location };
+  });
+}
 
 function takeDashboardBorrowings<T>(groups: T[][], limit: number) {
   const selected: T[] = [];

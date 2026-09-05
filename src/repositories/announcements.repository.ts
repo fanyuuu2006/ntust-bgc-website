@@ -1,7 +1,7 @@
 import "server-only";
 
 import { supabase } from "@/libs/supabase/server";
-import { isPostgrestRangeNotSatisfiable } from "@/repositories/announcements.utils";
+import { isPostgrestRangeNotSatisfiable } from "@/repositories/shared/postgrest";
 import { throwRepositoryError } from "@/repositories/shared/errors";
 import { buildPaginationResult, normalizePaginationOptions } from "@/repositories/shared/pagination";
 import type { PaginationQuery } from "@/repositories/shared/types";

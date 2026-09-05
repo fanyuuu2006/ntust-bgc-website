@@ -42,7 +42,11 @@ export function Pagination({
       {...rest}
     >
       <p className="text-sm text-(--muted)">
-        顯示 {start}–{end}，共 {total} 筆
+        {start === 0 ? (
+          <>目前頁面沒有資料，共 {total} 筆</>
+        ) : (
+          <>顯示 {start}–{end}，共 {total} 筆</>
+        )}
       </p>
 
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">

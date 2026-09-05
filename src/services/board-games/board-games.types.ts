@@ -23,3 +23,15 @@ export type BoardGameWithCategoryAndLocation = BoardGame & {
   category: BoardGameCategory;
   location: BoardGameLocation;
 };
+
+export type BoardGameStats = {
+  completedBorrowCount: number;
+};
+
+export type BoardGameWithStats = BoardGame & {
+  stats: BoardGameStats;
+};
+
+export type BoardGameDiscoveryItem = BoardGameWithCategoryAndLocation & {
+  stats: BoardGameStats;
+};

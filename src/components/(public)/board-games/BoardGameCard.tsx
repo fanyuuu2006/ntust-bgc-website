@@ -2,17 +2,17 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGameStatusBadge";
-import type { BoardGameWithCategoryAndLocation } from "@/services/board-games/board-games.types";
+import type { BoardGameDiscoveryItem } from "@/services/board-games/board-games.types";
 
 type BoardGameCardProps = {
-  boardGame: BoardGameWithCategoryAndLocation;
+  boardGame: BoardGameDiscoveryItem;
 };
 
 export function BoardGameCard({ boardGame }: BoardGameCardProps) {
-  const description = boardGame.description?.trim();
   const metadata = [boardGame.category?.name, boardGame.location?.name].filter(
     (value): value is string => Boolean(value?.trim()),
   );
+  const completedBorrowCount = boardGame.stats.completedBorrowCount;
 
   return (
     <Link
@@ -43,20 +43,22 @@ export function BoardGameCard({ boardGame }: BoardGameCardProps) {
           {boardGame.name}
         </h2>
 
-        <div className="mt-2 flex min-w-0 items-start justify-between gap-2 text-xs leading-5 text-(--text-muted) sm:text-sm">
+        <div className="mt-2 flex min-w-0 items-start justify-between gap-2 text-xs leading-5 sm:text-sm">
           {metadata.length > 0 ? (
-            <span className="min-w-0 break-words">
+            <span className="min-w-0 break-words text-(--text-secondary)">
               {metadata.join(" · ")}
             </span>
           ) : null}
-          <span className="shrink-0 whitespace-nowrap">
+          <span className="shrink-0 whitespace-nowrap text-(--text-muted)">
             <span className="sr-only">社產編號 </span>#{boardGame.inventory_number}
           </span>
         </div>
 
-        {description ? (
-          <p className="mt-2 line-clamp-2 break-words text-xs leading-5 text-(--text-secondary) sm:text-sm sm:leading-6">
-            {description}
+        {completedBorrowCount > 0 ? (
+          <p className="mt-2 text-xs leading-5 text-(--text-secondary) sm:text-sm">
+            <span className="font-medium">熱門度</span>
+            <span aria-hidden="true"> · </span>
+            {completedBorrowCount} 次借用
           </p>
         ) : null}
 
