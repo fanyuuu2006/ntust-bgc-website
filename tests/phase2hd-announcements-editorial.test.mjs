@@ -10,10 +10,12 @@ test("public announcements compose a compact divider-based bulletin list while p
     "src/components/(public)/announcements/AnnouncementList.tsx";
   await access(new URL(listPath, root));
 
-  const [page, list] = await Promise.all([
+  const [page, list, row] = await Promise.all([
     readSource("src/app/(public)/announcements/page.tsx"),
     readSource(listPath),
+    readSource("src/components/(public)/announcements/AnnouncementRow.tsx"),
   ]);
+  const composition = list + row;
 
   assert.match(page, /<AnnouncementList[^>]*announcements=/);
   assert.match(page, /<QueryEmptyState/);
@@ -24,21 +26,21 @@ test("public announcements compose a compact divider-based bulletin list while p
 
   assert.match(list, /<ul[^>]*>/);
   assert.match(list, /<li[^>]*>/);
-  assert.match(list, /<article[^>]*>/);
-  assert.match(list, /<time[^>]*dateTime=/);
-  assert.match(list, /<h2[^>]*>/);
-  assert.match(list, /line-clamp-2/);
-  assert.match(list, /href=\{`\/announcements\/\$\{announcement\.id\}`\}/);
+  assert.match(row, /<article[^>]*>/);
+  assert.match(row, /<time[^>]*dateTime=/);
+  assert.match(list, /headingLevel=\{2\}/);
+  assert.match(row, /line-clamp-2/);
+  assert.match(row, /href=\{`\/announcements\/\$\{announcement\.id\}`\}/);
   assert.match(list, /border-b/);
-  assert.match(list, /announcement\.content\s*\?/);
-  assert.match(list, /grid-cols-\[minmax\(0,1fr\)_auto\]/);
-  assert.doesNotMatch(list, /查看公告|ArrowRight/);
+  assert.match(row, /announcement\.content\s*\?/);
+  assert.match(row, /grid-cols-\[minmax\(0,1fr\)_auto\]/);
+  assert.doesNotMatch(composition, /查看公告|ArrowRight/);
   assert.doesNotMatch(
-    list,
+    composition,
     /\bcard\b|rounded-(?:xl|2xl)|overflow-hidden|shadow-(?:base|card|hover)/,
   );
-  assert.doesNotMatch(list, /translate-y|min-h-|grid-cols-\[7\.5rem_/);
-  assert.doesNotMatch(list, /"use client"|useEffect|fetch\(/);
+  assert.doesNotMatch(composition, /translate-y|min-h-|grid-cols-\[7\.5rem_/);
+  assert.doesNotMatch(composition, /"use client"|useEffect|fetch\(/);
 });
 
 test("published announcement detail is a narrow server-rendered article without giant Card chrome", async () => {

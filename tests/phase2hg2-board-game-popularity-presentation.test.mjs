@@ -23,16 +23,20 @@ async function loadCommonJsModule(path) {
 }
 
 test("board-game cards present positive borrowing history as a semantic popularity signal", async () => {
-  const card = await readSource(
-    "src/components/(public)/board-games/BoardGameCard.tsx",
-  );
+  const [card, popularity] = await Promise.all([
+    readSource("src/components/(public)/board-games/BoardGameCard.tsx"),
+    readSource(
+      "src/components/(public)/board-games/BoardGamePopularity.tsx",
+    ),
+  ]);
 
-  assert.match(card, /completedBorrowCount > 0/);
-  assert.match(card, /熱門度/);
-  assert.match(card, /\{completedBorrowCount\} 次借用/);
-  assert.doesNotMatch(card, /借用 \{completedBorrowCount\} 次/);
+  assert.match(card, /BoardGamePopularity/);
+  assert.match(popularity, /completedBorrowCount <= 0/);
+  assert.match(popularity, /熱門度/);
+  assert.match(popularity, /\{completedBorrowCount\} 次借用/);
+  assert.doesNotMatch(popularity, /借用 \{completedBorrowCount\} 次/);
   assert.doesNotMatch(
-    card,
+    card + popularity,
     /\b(?:Star|Flame|TrendingUp)\b|%|冷門|超熱門|rating/i,
   );
 });

@@ -78,19 +78,23 @@ test("public discovery defaults to popular while retaining every established sor
 });
 
 test("cards consume the statistics read model without querying borrowings", async () => {
-  const [card, grid] = await Promise.all([
+  const [card, grid, popularity] = await Promise.all([
     readSource("src/components/(public)/board-games/BoardGameCard.tsx"),
     readSource("src/components/(public)/board-games/BoardGameGrid.tsx"),
+    readSource(
+      "src/components/(public)/board-games/BoardGamePopularity.tsx",
+    ),
   ]);
 
-  assert.match(card, /boardGame\.stats\.completedBorrowCount/);
-  assert.match(card, /熱門度/);
-  assert.match(card, /\{completedBorrowCount\} 次借用/);
+  assert.match(card, /<BoardGamePopularity stats=\{boardGame\.stats\}/);
+  assert.match(popularity, /stats\.completedBorrowCount/);
+  assert.match(popularity, /熱門度/);
+  assert.match(popularity, /\{completedBorrowCount\} 次借用/);
   assert.doesNotMatch(
-    card + grid,
+    card + grid + popularity,
     /apiClient|fetch\(|from "@\/repositories\/|Repository\.|Service\./,
   );
-  assert.doesNotMatch(card, /Flame|progress|rating|stars/i);
+  assert.doesNotMatch(card + popularity, /Flame|progress|rating|stars/i);
 });
 
 test("homepage has a clean reusable top-N popularity contract without duplicated SQL", async () => {

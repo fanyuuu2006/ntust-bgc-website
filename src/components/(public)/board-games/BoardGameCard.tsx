@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { BoardGameImage } from "@/components/BoardGameImage";
+import { BoardGamePopularity } from "@/components/(public)/board-games/BoardGamePopularity";
 import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGameStatusBadge";
 import type { BoardGameDiscoveryItem } from "@/services/board-games/board-games.types";
 
@@ -12,8 +13,6 @@ export function BoardGameCard({ boardGame }: BoardGameCardProps) {
   const metadata = [boardGame.category?.name, boardGame.location?.name].filter(
     (value): value is string => Boolean(value?.trim()),
   );
-  const completedBorrowCount = boardGame.stats.completedBorrowCount;
-
   return (
     <Link
       href={`/board-games/${boardGame.id}`}
@@ -54,13 +53,7 @@ export function BoardGameCard({ boardGame }: BoardGameCardProps) {
           </span>
         </div>
 
-        {completedBorrowCount > 0 ? (
-          <p className="mt-2 text-xs leading-5 text-(--text-secondary) sm:text-sm">
-            <span className="font-medium">熱門度</span>
-            <span aria-hidden="true"> · </span>
-            {completedBorrowCount} 次借用
-          </p>
-        ) : null}
+        <BoardGamePopularity stats={boardGame.stats} className="mt-2" />
 
         <span className="mt-auto inline-flex items-center gap-1 pt-3 text-sm font-semibold text-(--interactive-primary)">
           查看詳情

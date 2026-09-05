@@ -32,7 +32,7 @@ export default async function AnnouncementsPage({ searchParams }: Props) {
           <PageHeader
             eyebrow="最新消息"
             title="社團公告"
-            description="社課、活動與社員服務的重要通知。"
+            description="社團最新消息與活動公告。"
           />
 
           <form
