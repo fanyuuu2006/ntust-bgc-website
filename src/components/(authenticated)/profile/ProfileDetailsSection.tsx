@@ -24,11 +24,11 @@ function InfoField({ label, value }: Omit<InfoField, "key">) {
   const displayValue = value?.trim();
 
   return (
-    <div className="min-w-0 border-b border-(--border-muted) py-3 last:border-b-0 sm:[&:nth-last-child(-n+2)]:border-b-0">
+    <div className="min-w-0 border-b border-(--border-muted) py-3 last:border-b-0 sm:nth-last-[-n+2]:border-b-0">
       <dt className="text-xs font-medium text-(--text-muted)">{label}</dt>
       <dd
         title={displayValue || undefined}
-        className="mt-1 break-words text-sm font-semibold text-(--text-primary)"
+        className="mt-1 wrap-break-word text-sm font-semibold text-(--text-primary)"
       >
         {displayValue || "尚未填寫"}
       </dd>
@@ -98,7 +98,12 @@ export function ProfileDetailsSection({
                 社團資訊
               </h2>
             </div>
-            <ButtonLink href="/memberships" variant="text" size="sm" className="px-0">
+            <ButtonLink
+              href="/memberships"
+              variant="text"
+              size="sm"
+              className="px-0"
+            >
               查看社員資格
             </ButtonLink>
           </div>

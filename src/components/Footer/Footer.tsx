@@ -12,6 +12,11 @@ const legalNavigation = [
   { label: "使用條款", href: "/terms" },
 ] as const;
 
+const relatedLinks = [
+  { label: "臺科大官網", href: "https://www.ntust.edu.tw/" },
+  { label: "抽獎系統", href: "https://bgc-lottery.vercel.app/" },
+] as const;
+
 export function Footer({ variant = "full" }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
@@ -25,7 +30,7 @@ export function Footer({ variant = "full" }: FooterProps) {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="inline-flex min-h-10 items-center hover:text-(--interactive-primary)"
+                    className="inline-flex items-center hover:text-(--interactive-primary)"
                   >
                     {item.label}
                   </Link>
@@ -33,7 +38,9 @@ export function Footer({ variant = "full" }: FooterProps) {
               ))}
             </ul>
           </nav>
-          <p>© {currentYear} {siteConfigs.name}</p>
+          <p>
+            © {currentYear} {siteConfigs.name}
+          </p>
         </div>
       </footer>
     );
@@ -44,7 +51,7 @@ export function Footer({ variant = "full" }: FooterProps) {
       <div className="container pt-8 pb-6 lg:pt-10 lg:pb-7">
         <div className="grid min-w-0 gap-y-5 lg:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,1fr))] lg:items-start lg:gap-x-10 xl:gap-x-14">
           <div className="min-w-0 max-w-72">
-            <p className="text-base leading-5 font-semibold text-(--text-primary)">
+            <p className="text-lg leading-5 font-semibold text-(--text-primary)">
               {siteConfigs.name}
             </p>
             <p className="mt-1 max-w-xs text-sm leading-5 text-(--text-muted)">
@@ -53,7 +60,7 @@ export function Footer({ variant = "full" }: FooterProps) {
           </div>
 
           <nav aria-label="網站導覽">
-            <p className="text-sm leading-5 font-semibold text-(--text-primary)">
+            <p className="text-base leading-5 font-semibold text-(--text-primary)">
               網站導覽
             </p>
             <ul className="mt-2 flex flex-wrap gap-x-4 lg:flex-col lg:items-start lg:gap-0">
@@ -61,7 +68,7 @@ export function Footer({ variant = "full" }: FooterProps) {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="inline-flex min-h-10 items-center text-sm text-(--text-secondary) hover:text-(--interactive-primary)"
+                    className="inline-flex items-center text-sm text-(--text-secondary) hover:text-(--interactive-primary)"
                   >
                     {item.label}
                   </Link>
@@ -71,14 +78,14 @@ export function Footer({ variant = "full" }: FooterProps) {
           </nav>
 
           <address className="min-w-0 not-italic">
-            <p className="text-sm leading-5 font-semibold text-(--text-primary)">
+            <p className="text-base leading-5 font-semibold text-(--text-primary)">
               聯絡資訊
             </p>
-            <ul className="mt-2">
+            <ul className="mt-2 flex flex-col gap-1.5 text-sm text-(--text-secondary)">
               <li>
                 <a
                   href="mailto:ntustboardgame@gmail.com"
-                  className="inline-flex min-h-10 max-w-full items-center break-all text-sm text-(--text-secondary) hover:text-(--interactive-primary)"
+                  className="inline-flex max-w-full items-center break-all text-sm text-(--text-secondary) hover:text-(--interactive-primary)"
                 >
                   ntustboardgame@gmail.com
                 </a>
@@ -86,7 +93,7 @@ export function Footer({ variant = "full" }: FooterProps) {
               <li>
                 <a
                   href="https://www.instagram.com/ntust_boardgame/"
-                  className="inline-flex min-h-10 items-center text-sm text-(--text-secondary) hover:text-(--interactive-primary)"
+                  className="inline-flex items-center text-sm text-(--text-secondary) hover:text-(--interactive-primary)"
                 >
                   Instagram
                 </a>
@@ -95,31 +102,35 @@ export function Footer({ variant = "full" }: FooterProps) {
           </address>
 
           <nav aria-label="相關連結">
-            <p className="text-sm leading-5 font-semibold text-(--text-primary)">
+            <p className="text-base leading-5 font-semibold text-(--text-primary)">
               相關連結
             </p>
-            <ul className="mt-2">
-              <li>
-                <a
-                  href="https://www.ntust.edu.tw/"
-                  className="inline-flex min-h-10 items-center text-sm text-(--text-secondary) hover:text-(--interactive-primary)"
-                >
-                  臺科大官網
-                </a>
-              </li>
+            <ul className="mt-2 flex flex-col gap-1.5 text-sm text-(--text-secondary)">
+              {relatedLinks.map((link) => (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    className="inline-flex items-center text-sm text-(--text-secondary) hover:text-(--interactive-primary)"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </nav>
         </div>
 
         <div className="mt-6 border-t border-(--border-default) pt-4 flex flex-col gap-1 text-sm leading-5 text-(--text-muted) sm:flex-row sm:items-center sm:justify-between lg:mt-7">
-          <p>© {currentYear} {siteConfigs.fullName}</p>
+          <p>
+            © {currentYear} {siteConfigs.fullName}
+          </p>
           <nav aria-label="法律資訊">
             <ul className="flex flex-wrap gap-x-4">
               {legalNavigation.map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="inline-flex min-h-10 items-center hover:text-(--interactive-primary)"
+                    className="inline-flex items-center hover:text-(--interactive-primary)"
                   >
                     {item.label}
                   </Link>

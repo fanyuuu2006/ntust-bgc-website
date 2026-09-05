@@ -118,9 +118,16 @@ export function AccountSettingsForm({
   }
 
   return (
-    <section className={className} {...rest} aria-labelledby="account-settings-title">
+    <section
+      className={className}
+      {...rest}
+      aria-labelledby="account-settings-title"
+    >
       <div>
-        <h3 id="account-settings-title" className="font-semibold text-(--text-primary)">
+        <h3
+          id="account-settings-title"
+          className="font-semibold text-(--text-primary)"
+        >
           帳號資料
         </h3>
         <p className="mt-1 text-sm text-(--text-muted)">
@@ -140,7 +147,7 @@ export function AccountSettingsForm({
             className="size-14 shrink-0 rounded-xl border border-(--border-default) sm:size-16"
           />
           <div className="min-w-0">
-            <p className="break-words text-sm font-semibold text-(--text-primary)">
+            <p className="wrap-break-word text-sm font-semibold text-(--text-primary)">
               {values.name.trim() || user.name}
             </p>
             <p className="mt-0.5 text-xs text-(--text-muted)">
@@ -168,13 +175,22 @@ export function AccountSettingsForm({
           aria-describedby="settings-email-hint"
           className="min-w-0 rounded-xl border border-(--border-muted) bg-(--surface-subtle) px-3 py-3"
         >
-          <p id="settings-email-label" className="text-sm font-medium text-(--text-primary)">
+          <p
+            id="settings-email-label"
+            className="text-sm font-medium text-(--text-primary)"
+          >
             Email
           </p>
-          <p className="mt-1 break-all text-sm text-(--text-secondary)" title={user.email}>
+          <p
+            className="mt-1 break-all text-sm text-(--text-secondary)"
+            title={user.email}
+          >
             {user.email}
           </p>
-          <p id="settings-email-hint" className="mt-1 text-xs text-(--text-muted)">
+          <p
+            id="settings-email-hint"
+            className="mt-1 text-xs text-(--text-muted)"
+          >
             Email 為登入帳號，目前無法修改
           </p>
         </div>

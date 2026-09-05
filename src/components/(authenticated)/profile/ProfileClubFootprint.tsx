@@ -16,7 +16,13 @@ type FootprintItemProps = {
   accent: string;
 };
 
-function FootprintItem({ label, value, unit, icon: Icon, accent }: FootprintItemProps) {
+function FootprintItem({
+  label,
+  value,
+  unit,
+  icon: Icon,
+  accent,
+}: FootprintItemProps) {
   return (
     <div
       className="min-w-0 rounded-xl border px-3 py-3 sm:px-4"
@@ -26,12 +32,20 @@ function FootprintItem({ label, value, unit, icon: Icon, accent }: FootprintItem
       }}
     >
       <div className="flex items-center gap-2">
-        <Icon aria-hidden="true" className="size-4 shrink-0" style={{ color: accent }} />
+        <Icon
+          aria-hidden="true"
+          className="size-4 shrink-0"
+          style={{ color: accent }}
+        />
         <p className="text-xs font-medium text-(--text-secondary)">{label}</p>
       </div>
-      <p className="mt-2 break-words text-lg font-bold tabular-nums text-(--text-primary) sm:text-xl">
+      <p className="mt-2 wrap-break-word text-lg font-bold tabular-nums text-(--text-primary) sm:text-xl">
         {value}
-        {unit ? <span className="ml-1 text-sm font-medium text-(--text-secondary)">{unit}</span> : null}
+        {unit ? (
+          <span className="ml-1 text-sm font-medium text-(--text-secondary)">
+            {unit}
+          </span>
+        ) : null}
       </p>
     </div>
   );
@@ -46,7 +60,10 @@ export function ProfileClubFootprint({
     <section aria-labelledby="club-footprint-title">
       <Card className="p-4 sm:p-5">
         <div className="flex items-center gap-2">
-          <Footprints aria-hidden="true" className="size-5 text-(--interactive-primary)" />
+          <Footprints
+            aria-hidden="true"
+            className="size-5 text-(--interactive-primary)"
+          />
           <h2
             id="club-footprint-title"
             className="text-lg font-bold text-(--text-primary)"

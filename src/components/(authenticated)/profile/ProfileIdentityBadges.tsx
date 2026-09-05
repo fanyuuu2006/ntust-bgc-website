@@ -49,9 +49,7 @@ function IdentityBadge({ badge }: { badge: ProfileIdentityBadge }) {
   );
 }
 
-export function ProfileIdentityBadges({
-  badges,
-}: ProfileIdentityBadgesProps) {
+export function ProfileIdentityBadges({ badges }: ProfileIdentityBadgesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const disclosureId = useId();
   const visibleBadges = badges.slice(0, MAX_VISIBLE_BADGES);

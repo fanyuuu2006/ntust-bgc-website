@@ -38,14 +38,17 @@ export function ProfileHeroSection({
             <div className="min-w-0">
               <h1
                 id="profile-title"
-                className="break-words text-2xl font-bold text-(--foreground) sm:text-3xl"
+                className="wrap-break-word text-2xl font-bold text-(--foreground) sm:text-3xl"
               >
                 {user.name}
               </h1>
-              <p className="mt-1 break-words text-base font-medium text-(--text-secondary)">
+              <p className="mt-1 wrap-break-word text-base font-medium text-(--text-secondary)">
                 {profile.real_name || "尚未填寫"}
               </p>
-              <p className="mt-2 break-all text-sm text-(--muted)" title={user.email}>
+              <p
+                className="mt-2 break-all text-sm text-(--muted)"
+                title={user.email}
+              >
                 {user.email}
               </p>
               <ProfileIdentityBadges badges={identityBadges} />
