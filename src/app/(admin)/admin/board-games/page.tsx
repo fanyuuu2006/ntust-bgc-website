@@ -117,7 +117,7 @@ export default async function BoardGamesAdminPage({
         <BoardGameTable
           boardGames={boardGames.data}
           query={query}
-          hasFilters={Boolean(query.search || query.status || query.category || query.location)}
+          hasFilters={Boolean(query.search || query.status || query.category || query.location || page > 1)}
         />
 
         <Pagination

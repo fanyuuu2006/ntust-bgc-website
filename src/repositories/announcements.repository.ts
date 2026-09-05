@@ -1,6 +1,7 @@
 import "server-only";
 
 import { supabase } from "@/libs/supabase/server";
+import { isPostgrestRangeNotSatisfiable } from "@/repositories/announcements.utils";
 import { throwRepositoryError } from "@/repositories/shared/errors";
 import { buildPaginationResult, normalizePaginationOptions } from "@/repositories/shared/pagination";
 import type { PaginationQuery } from "@/repositories/shared/types";
@@ -31,7 +32,28 @@ export const announcementsRepository = {
     const search = options.search?.trim();
     if (search) query = query.or(`title.ilike.%${search.replace(/[%,()]/g, "")}%,content.ilike.%${search.replace(/[%,()]/g, "")}%`);
     const { data, error, count } = await query.order("published_at", { ascending: false }).range(from, to);
-    if (error) throwRepositoryError("讀取已發布公告失敗", error);
+    if (error) {
+      if (!isPostgrestRangeNotSatisfiable(error)) {
+        throwRepositoryError("讀取已發布公告失敗", error);
+      }
+
+      let countQuery = supabase
+        .from("announcements")
+        .select("id", { count: "exact", head: true })
+        .eq("is_published", true);
+      if (search) {
+        const escapedSearch = search.replace(/[%,()]/g, "");
+        countQuery = countQuery.or(
+          `title.ilike.%${escapedSearch}%,content.ilike.%${escapedSearch}%`,
+        );
+      }
+      const { count: totalCount, error: countError } = await countQuery;
+      if (countError) {
+        throwRepositoryError("計算已發布公告數量失敗", countError);
+      }
+
+      return buildPaginationResult<Announcement>([], totalCount, page, pageSize);
+    }
     return buildPaginationResult<Announcement>(data ?? [], count, page, pageSize);
   },
   findPublishedById: async (id: AnnouncementId): Promise<Announcement | null> => {

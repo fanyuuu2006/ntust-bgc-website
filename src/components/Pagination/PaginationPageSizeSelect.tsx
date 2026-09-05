@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { buildQueryString, type QueryValue } from "@/utils/url";
-import { cn } from "@/utils/className";
 import { Select } from "@/components/ui/Select";
+import { cn } from "@/utils/className";
+import { buildQueryString, type QueryValue } from "@/utils/url";
 
 type PaginationPageSizeSelectProps =
   React.LabelHTMLAttributes<HTMLLabelElement> & {
@@ -22,6 +22,9 @@ export function PaginationPageSizeSelect({
   ...rest
 }: PaginationPageSizeSelectProps) {
   const router = useRouter();
+  const visibleOptions = options.includes(pageSize)
+    ? options
+    : [...options, pageSize].sort((left, right) => left - right);
 
   function handleChange(event: React.ChangeEvent<HTMLSelectElement>) {
     const queryString = buildQueryString(query, {
@@ -45,9 +48,9 @@ export function PaginationPageSizeSelect({
         value={pageSize}
         onChange={handleChange}
         aria-label="每頁顯示筆數"
-        className="min-h-0 w-auto bg-(--surface-subtle) px-2 py-1 text-sm"
+        className="min-h-10 w-auto bg-(--surface-subtle) px-2 py-1 text-sm"
       >
-        {options.map((option) => (
+        {visibleOptions.map((option) => (
           <option key={option} value={option}>
             {option}
           </option>

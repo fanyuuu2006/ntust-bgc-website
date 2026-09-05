@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Modal } from "@/components/Modal";
+import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -30,9 +31,11 @@ type OfficerFormValues = {
 export function OfficerRecords({
   officers,
   years,
+  hasQuery = false,
 }: {
   officers: Officer[];
   years: AcademicYear[];
+  hasQuery?: boolean;
 }) {
   const router = useRouter();
   const [selectedOfficer, setSelectedOfficer] = useState<
@@ -114,7 +117,14 @@ export function OfficerRecords({
   };
 
   if (!officers.length) {
-    return <EmptyState title="沒有符合條件的幹部職位" description="調整搜尋條件或新增幹部職位。" />;
+    return hasQuery ? (
+      <QueryEmptyState
+        title="找不到符合條件的幹部職位"
+        clearHref="/admin/officers"
+      />
+    ) : (
+      <EmptyState title="目前沒有幹部職位" description="可由上方按鈕新增幹部職位。" />
+    );
   }
 
   return (

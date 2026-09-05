@@ -2,8 +2,9 @@ import Link from "next/link";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { cn } from "@/utils/className";
 import { buildQueryString } from "@/utils/url";
+import type { QueryValue } from "@/utils/url";
 
-type Query = Record<string, string | string[] | undefined>;
+type Query = Record<string, QueryValue>;
 type Props = { label: string; column: string; basePath: string; query: Query; className?: string };
 
 export function SortableTableHeader({ label, column, basePath, query, className }: Props) {

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
-import { ClearableSearchInput } from "@/components/(admin)/admin/ClearableSearchInput";
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { EventActions } from "@/components/(admin)/admin/events/EventActions";
 import { EventRecords } from "@/components/(admin)/admin/events/EventRecords";
 import { Pagination } from "@/components/Pagination/Pagination";
@@ -72,6 +72,8 @@ export default async function AdminEventsPage({
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
+          <input type="hidden" name="page" value="1" />
+          <input type="hidden" name="pageSize" value={pageSize} />
           <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_10rem_10rem_auto] md:items-center">
             <ClearableSearchInput initialValue={params.search} clearHref={clearSearchHref} name="search" placeholder="搜尋活動名稱或說明" className="w-full" />
             <Button type="submit" variant="primary" className="order-2 w-full md:order-4 md:w-auto">搜尋</Button>
@@ -90,7 +92,10 @@ export default async function AdminEventsPage({
             <input type="hidden" name="orderDirection" value={orderDirection} />
           </AdminToolbar>
         </form>
-        <EventRecords events={result.data} />
+        <EventRecords
+          events={result.data}
+          hasQuery={Boolean(params.search || status || Number(params.page) > 1)}
+        />
         <Pagination
           page={Math.max(1, Number(params.page) || 1)}
           pageSize={pageSize}

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Modal } from "@/components/Modal";
+import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -28,7 +29,7 @@ type EventFormValues = {
   check_in_closes_at: string;
 };
 
-export function EventRecords({ events }: { events: Event[] }) {
+export function EventRecords({ events, hasQuery = false }: { events: Event[]; hasQuery?: boolean }) {
   const router = useRouter();
   const [selectedEvent, setSelectedEvent] = useState<{ event: Event; action: "edit" | "delete" } | null>(null);
   const [values, setValues] = useState<EventFormValues>({
@@ -132,7 +133,15 @@ export function EventRecords({ events }: { events: Event[] }) {
   };
 
   if (!events.length) {
-    return <EmptyState title="沒有符合條件的活動" description="調整搜尋條件或新增活動。" />;
+    return hasQuery ? (
+      <QueryEmptyState
+        title="找不到符合條件的活動"
+        description="請調整搜尋或篩選條件後再試。"
+        clearHref="/admin/events"
+      />
+    ) : (
+      <EmptyState title="目前沒有活動" description="可由上方按鈕新增活動。" />
+    );
   }
 
   return (

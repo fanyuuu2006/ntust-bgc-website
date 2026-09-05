@@ -98,7 +98,8 @@ export default async function BoardGamesPage({
     Boolean(search) ||
     statuses.length > 0 ||
     categoryIds.length > 0 ||
-    locationIds.length > 0;
+    locationIds.length > 0 ||
+    page > 1;
 
   const [categories, locations, boardGames] = await Promise.all([
     boardGamesService.listCategories(),

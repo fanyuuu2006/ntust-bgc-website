@@ -62,7 +62,7 @@ test("academic-year composition keeps header, query, and records on the admin pa
 
 test("ClearableSearchInput is the single search-icon owner and academic-year deletion stays a canonical danger action", async () => {
   const [search, page, actions] = await Promise.all([
-    readSource("src/components/(admin)/admin/ClearableSearchInput.tsx"),
+    readSource("src/components/query/ClearableSearchInput.tsx"),
     readSource("src/app/(admin)/admin/academic-years/page.tsx"),
     readSource("src/components/(admin)/admin/academic-years/AcademicYearActions.tsx"),
   ]);
@@ -137,7 +137,7 @@ test("every admin search form exposes a primary text-only submit while Clearable
     "src/app/(admin)/admin/announcements/page.tsx",
   ];
   const [input, ...sources] = await Promise.all([
-    readSource("src/components/(admin)/admin/ClearableSearchInput.tsx"),
+    readSource("src/components/query/ClearableSearchInput.tsx"),
     ...searchPages.map(readSource),
   ]);
 

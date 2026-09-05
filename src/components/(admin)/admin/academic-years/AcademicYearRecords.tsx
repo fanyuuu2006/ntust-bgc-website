@@ -2,13 +2,23 @@
 
 import { AcademicYearActions } from "./AcademicYearActions";
 import { Badge } from "@/components/ui/Badge";
+import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { AcademicYear } from "@/types/database";
 import { formatDate } from "@/utils/date";
 
-export function AcademicYearRecords({ years }: { years: AcademicYear[] }) {
+export function AcademicYearRecords({ years, hasQuery = false }: { years: AcademicYear[]; hasQuery?: boolean }) {
   if (!years.length) {
+    if (hasQuery) {
+      return (
+        <QueryEmptyState
+          title="找不到符合條件的學年度"
+          clearHref="/admin/academic-years"
+        />
+      );
+    }
+
     return (
       <EmptyState
         title="目前沒有學年度資料"

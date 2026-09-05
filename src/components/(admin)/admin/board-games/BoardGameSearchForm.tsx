@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
-import { ClearableSearchInput } from "@/components/(admin)/admin/ClearableSearchInput";
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import type { BoardGamesQuery } from "@/app/(admin)/admin/board-games/types";
@@ -48,6 +48,7 @@ export function BoardGameSearchForm({
       orderBy: query.orderBy,
       orderDirection: query.orderDirection,
       pageSize: query.pageSize,
+      page: 1,
     });
 
     router.push(queryString ? `${pathname}?${queryString}` : pathname);

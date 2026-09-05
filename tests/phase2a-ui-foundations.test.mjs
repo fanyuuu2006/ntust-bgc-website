@@ -42,13 +42,15 @@ test("EmptyState supports optional icon, action, and compact presentation", asyn
   assert.match(source, /action \?\? children/);
 });
 
-test("member search and filter controls use canonical UI primitives", async () => {
-  const [announcements, borrowings] = await Promise.all([
+test("member search and filter controls use canonical shared UI primitives", async () => {
+  const [searchInput, announcements, borrowings] = await Promise.all([
+    readSource("src/components/query/ClearableSearchInput.tsx"),
     readSource("src/app/(public)/announcements/page.tsx"),
     readSource("src/app/(authenticated)/borrowings/page.tsx"),
   ]);
 
-  assert.match(announcements, /@\/components\/ui\/Input/);
+  assert.match(searchInput, /@\/components\/ui\/Input/);
+  assert.match(announcements, /@\/components\/query\/ClearableSearchInput/);
   assert.match(announcements, /@\/components\/ui\/Button/);
   assert.match(borrowings, /@\/components\/ui\/Select/);
   assert.match(borrowings, /<Select/);

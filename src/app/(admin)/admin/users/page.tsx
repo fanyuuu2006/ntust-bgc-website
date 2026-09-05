@@ -1,6 +1,7 @@
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
-import { ClearableSearchInput } from "@/components/(admin)/admin/ClearableSearchInput";
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
+import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { Pagination } from "@/components/Pagination/Pagination";
@@ -75,6 +76,10 @@ export default async function AdminUsersPage({ searchParams }: Props) {
 
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
+          <input type="hidden" name="page" value="1" />
+          <input type="hidden" name="pageSize" value={pageSize} />
+          <input type="hidden" name="orderBy" value={orderBy} />
+          <input type="hidden" name="orderDirection" value={orderDirection} />
           <AdminToolbar className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <ClearableSearchInput
               initialValue={params.search}
@@ -90,10 +95,15 @@ export default async function AdminUsersPage({ searchParams }: Props) {
           </AdminToolbar>
         </form>
 
-        {users.data.length === 0 ? (
-          <EmptyState
-            title="目前沒有符合條件的使用者"
+        {users.data.length === 0 && Boolean(params.search?.trim() || page > 1) ? (
+          <QueryEmptyState
+            title="找不到符合條件的使用者"
             description="請調整搜尋條件後再試。"
+            clearHref={BASE_PATH}
+          />
+        ) : users.data.length === 0 ? (
+          <EmptyState
+            title="目前沒有使用者"
           />
         ) : (
           <>

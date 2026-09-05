@@ -30,7 +30,7 @@ test("admin query and result shells keep their distinct surface responsibilities
 
 test("admin controls use Lucide affordances and keep explicit focus ownership", async () => {
   const [search, sortHeader, select, header, modal] = await Promise.all([
-    readSource("src/components/(admin)/admin/ClearableSearchInput.tsx"),
+    readSource("src/components/query/ClearableSearchInput.tsx"),
     readSource("src/components/(admin)/admin/SortableTableHeader.tsx"),
     readSource("src/components/ui/Select.tsx"),
     readSource("src/components/(admin)/AdminHeader.tsx"),

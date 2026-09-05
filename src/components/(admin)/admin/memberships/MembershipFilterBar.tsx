@@ -1,7 +1,7 @@
 "use client";
 
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
-import { ClearableSearchInput } from "@/components/(admin)/admin/ClearableSearchInput";
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import type { AcademicYear, MembershipStatus } from "@/types/database";
@@ -14,6 +14,8 @@ type Props = {
     search?: string;
     academic_year_id?: string;
     status?: MembershipStatus;
+    orderBy?: "joined_at" | "created_at" | "status";
+    orderDirection?: "asc" | "desc";
     pageSize?: number;
   };
 };
@@ -24,6 +26,8 @@ export function MemberFilterBar({ academicYears, query }: Props) {
   const clearSearchQuery = buildQueryString({
     academic_year_id: query.academic_year_id,
     status: query.status,
+    orderBy: query.orderBy,
+    orderDirection: query.orderDirection,
     pageSize: query.pageSize,
   });
   const clearSearchHref = clearSearchQuery ? `${pathname}?${clearSearchQuery}` : pathname;
@@ -35,6 +39,8 @@ export function MemberFilterBar({ academicYears, query }: Props) {
       search: String(formData.get("search") ?? "").trim() || undefined,
       academic_year_id: String(formData.get("academic_year_id") ?? "").trim() || undefined,
       status: String(formData.get("status") ?? "").trim() || undefined,
+      orderBy: query.orderBy,
+      orderDirection: query.orderDirection,
       pageSize: query.pageSize,
       page: "1",
     });

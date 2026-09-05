@@ -45,7 +45,7 @@ export default async function MembershipRegisterKeysPage({ searchParams }: Props
         <RegisterKeyTable
           registerKeys={registerKeys.data}
           hasFilters={Boolean(
-            query.search || query.academic_year_id || query.status,
+            query.search || query.academic_year_id || query.status || page > 1,
           )}
         />
         <Pagination

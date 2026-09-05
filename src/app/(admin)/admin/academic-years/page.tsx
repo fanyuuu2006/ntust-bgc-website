@@ -1,7 +1,7 @@
 import { AcademicYearActions } from "@/components/(admin)/admin/academic-years/AcademicYearActions";
 import { AcademicYearRecords } from "@/components/(admin)/admin/academic-years/AcademicYearRecords";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
-import { ClearableSearchInput } from "@/components/(admin)/admin/ClearableSearchInput";
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { Pagination } from "@/components/Pagination/Pagination";
 import { Button } from "@/components/ui/Button";
@@ -36,6 +36,8 @@ export default async function AcademicYearsPage({
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
+          <input type="hidden" name="page" value="1" />
+          <input type="hidden" name="pageSize" value={pageSize} />
           <AdminToolbar className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <ClearableSearchInput
               initialValue={search}
@@ -47,7 +49,7 @@ export default async function AcademicYearsPage({
             <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
           </AdminToolbar>
         </form>
-        <AcademicYearRecords years={years.data} />
+        <AcademicYearRecords years={years.data} hasQuery={Boolean(search || page > 1)} />
         <Pagination
           className="p-4"
           page={page}

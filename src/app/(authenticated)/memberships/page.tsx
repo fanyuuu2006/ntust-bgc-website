@@ -74,7 +74,8 @@ export default async function MembershipsPage({
     orderDirection:
       queryInput.orderDirection === "asc"
         ? ("asc" as const)
-        : ("desc" as const),
+          : ("desc" as const),
+    pageSize: membershipRecords.pageSize,
   };
   const hasMembershipQuery = Boolean(
     query.search ||

@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
-import { ClearableSearchInput } from "@/components/(admin)/admin/ClearableSearchInput";
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { AttendanceActions } from "@/components/(admin)/admin/events/AttendanceActions";
 import { AttendanceRecords } from "@/components/(admin)/admin/events/AttendanceRecords";
 import { EventStatusBadge } from "@/components/(admin)/admin/events/EventStatusBadge";
@@ -66,6 +66,8 @@ export default async function AdminEventDetailPage({
         </div>
         {event.description ? <p className="whitespace-pre-wrap text-sm leading-7 text-(--text-muted)">{event.description}</p> : null}
         <form>
+          <input type="hidden" name="page" value="1" />
+          <input type="hidden" name="pageSize" value={pageSize} />
           <AdminToolbar className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
             <ClearableSearchInput initialValue={query.search} clearHref={clearSearchHref} name="search" placeholder="搜尋使用者名稱、姓名、Email 或學號" aria-label="搜尋簽到名單" />
             <Select name="orderDirection" defaultValue={orderDirection} aria-label="簽到時間排序" className="w-full sm:w-auto">
@@ -75,7 +77,12 @@ export default async function AdminEventDetailPage({
             <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
           </AdminToolbar>
         </form>
-        <AttendanceRecords eventId={event.id} eventName={event.name} records={records.data} />
+        <AttendanceRecords
+          eventId={event.id}
+          eventName={event.name}
+          records={records.data}
+          hasQuery={Boolean(query.search || page > 1)}
+        />
         <Pagination page={page} pageSize={pageSize} total={records.total} totalPages={records.totalPages} basePath={`/admin/events/${event.id}`} pageSizeOptions={[10, 20, 50]} query={{ search: query.search, orderDirection }} />
       </section>
     </>

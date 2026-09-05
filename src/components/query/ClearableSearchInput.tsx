@@ -40,12 +40,14 @@ function ClearableSearchInputControl({
   const hasValue = value.trim().length > 0;
 
   return (
-    <div className={cn("relative w-full", className)}>
+    <div className={cn("relative min-w-0 w-full", className)}>
       <Search
         aria-hidden="true"
         className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-(--text-muted)"
       />
       <Input
+        type="search"
+        autoComplete="off"
         name={hasValue ? name : undefined}
         id={id}
         value={value}

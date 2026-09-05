@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Modal } from "@/components/Modal";
+import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -16,7 +17,7 @@ import type { BoardGameCategory } from "@/types/database";
 
 type CategoryRecord = BoardGameCategory & { count: number };
 
-export function CategoryRecords({ items }: { items: CategoryRecord[] }) {
+export function CategoryRecords({ items, hasQuery = false }: { items: CategoryRecord[]; hasQuery?: boolean }) {
   const router = useRouter();
   const [editing, setEditing] = useState<CategoryRecord | null>(null);
   const [deleting, setDeleting] = useState<CategoryRecord | null>(null);
@@ -89,7 +90,12 @@ export function CategoryRecords({ items }: { items: CategoryRecord[] }) {
     <div className="space-y-4">
       <FormFeedback error={message} />
 
-      {items.length === 0 ? (
+      {items.length === 0 && hasQuery ? (
+        <QueryEmptyState
+          title="找不到符合條件的桌遊分類"
+          clearHref="/admin/board-games/categories"
+        />
+      ) : items.length === 0 ? (
         <EmptyState
           title="目前沒有桌遊分類"
           description="請從頁面標題旁的新增分類開始建立資料。"

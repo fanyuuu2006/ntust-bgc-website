@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Modal } from "@/components/Modal";
+import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -16,7 +17,7 @@ import type { BoardGameLocation } from "@/types/database";
 
 type LocationRecord = BoardGameLocation & { count: number };
 
-export function LocationRecords({ items }: { items: LocationRecord[] }) {
+export function LocationRecords({ items, hasQuery = false }: { items: LocationRecord[]; hasQuery?: boolean }) {
   const router = useRouter();
   const [editing, setEditing] = useState<LocationRecord | null>(null);
   const [deleting, setDeleting] = useState<LocationRecord | null>(null);
@@ -89,7 +90,12 @@ export function LocationRecords({ items }: { items: LocationRecord[] }) {
     <div className="space-y-4">
       <FormFeedback error={message} />
 
-      {items.length === 0 ? (
+      {items.length === 0 && hasQuery ? (
+        <QueryEmptyState
+          title="找不到符合條件的桌遊位置"
+          clearHref="/admin/board-games/locations"
+        />
+      ) : items.length === 0 ? (
         <EmptyState
           title="目前沒有桌遊位置"
           description="請從頁面標題旁的新增位置開始建立資料。"

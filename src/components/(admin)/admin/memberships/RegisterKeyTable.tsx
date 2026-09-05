@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -74,13 +75,18 @@ export function RegisterKeyTable({
   }
 
   if (!registerKeys.length) {
+    if (hasFilters) {
+      return (
+        <QueryEmptyState
+          title="沒有符合條件的社員註冊序號"
+          clearHref="/admin/memberships/register-keys"
+        />
+      );
+    }
+
     return (
       <EmptyState
-        title={
-          hasFilters
-            ? "沒有符合條件的社員註冊序號"
-            : "目前沒有社員註冊序號"
-        }
+        title="目前沒有社員註冊序號"
       />
     );
   }

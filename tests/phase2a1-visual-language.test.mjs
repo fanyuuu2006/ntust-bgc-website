@@ -38,7 +38,7 @@ test("contextual controls use ghost or outline rather than the retired secondary
 
   assert.match(mobileNavigation, /variant="ghost"/);
   assert.match(boardGameToolbar, /btn outline/);
-  assert.match(boardGameToolbar, /variant="outline"/);
+  assert.match(boardGameToolbar, /<Button type="submit" variant="primary"/);
   assert.doesNotMatch(boardGameToolbar, /secondary/);
 });
 

@@ -1,16 +1,18 @@
 import Link from "next/link";
-import { ArrowUpDown, ListFilter, Search } from "lucide-react";
+import { ArrowUpDown, ListFilter } from "lucide-react";
 
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import type { MembershipStatus, MembershipType } from "@/types/database";
+import { buildQueryString } from "@/utils/url";
 
 type MembershipRecordsQuery = {
   search?: string;
   type?: MembershipType;
   status?: MembershipStatus;
   orderDirection: "asc" | "desc";
+  pageSize: number;
 };
 
 export function MembershipRecordsToolbar({
@@ -30,27 +32,34 @@ export function MembershipRecordsToolbar({
     query.status === "cancelled" ? "已取消" : null,
     query.orderDirection === "asc" ? "最早學年度" : null,
   ].filter((condition): condition is string => Boolean(condition));
+  const clearSearchQuery = buildQueryString({
+    type: query.type,
+    status: query.status,
+    orderBy: "academic_year",
+    orderDirection: query.orderDirection,
+    page: 1,
+    pageSize: query.pageSize,
+  });
+  const clearSearchHref = `/memberships?${clearSearchQuery}`;
 
   return (
     <form action="/memberships" className="space-y-3">
       <input type="hidden" name="page" value="1" />
+      <input type="hidden" name="pageSize" value={query.pageSize} />
       <input type="hidden" name="orderBy" value="academic_year" />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="relative min-w-0 flex-1">
-          <span className="sr-only">搜尋社員紀錄</span>
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-(--text-muted)"
-          />
-          <Input
+        <ClearableSearchInput
+            initialValue={query.search}
+            clearHref={clearSearchHref}
             name="search"
-            type="search"
-            defaultValue={query.search}
             placeholder="搜尋社員紀錄"
-            className="pl-9"
-          />
-        </label>
+            aria-label="搜尋社員紀錄"
+        />
+
+        <Button type="submit" variant="primary" size="md">
+          搜尋
+        </Button>
 
         <details className="group sm:relative">
           <summary className="btn outline flex min-h-10 cursor-pointer list-none items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium marker:content-none">
@@ -94,9 +103,6 @@ export function MembershipRecordsToolbar({
           </Select>
         </label>
 
-        <Button type="submit" variant='primary' size="md">
-          搜詢
-        </Button>
       </div>
 
       {hasFilters ? (

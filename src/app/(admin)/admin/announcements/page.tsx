@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
-import { ClearableSearchInput } from "@/components/(admin)/admin/ClearableSearchInput";
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
+import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { AnnouncementStatusBadge } from "@/components/(admin)/admin/announcements/AnnouncementStatusBadge";
@@ -80,6 +81,7 @@ export default async function AdminAnnouncementsPage({
     status: params.status,
     orderBy,
     orderDirection,
+    pageSize,
   };
   const clearSearchParams = new URLSearchParams();
   if (params.status) clearSearchParams.set("status", params.status);
@@ -102,6 +104,8 @@ export default async function AdminAnnouncementsPage({
 
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
+          <input type="hidden" name="page" value="1" />
+          <input type="hidden" name="pageSize" value={pageSize} />
           <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_10rem_10rem_auto] md:items-center">
             <ClearableSearchInput
               initialValue={params.search}
@@ -134,10 +138,15 @@ export default async function AdminAnnouncementsPage({
           </AdminToolbar>
         </form>
 
-        {result.data.length === 0 ? (
-          <EmptyState
-            title="目前沒有符合條件的公告"
+        {result.data.length === 0 && Boolean(params.search || params.status || page > 1) ? (
+          <QueryEmptyState
+            title="找不到符合條件的公告"
             description="請調整搜尋或篩選條件後再試。"
+            clearHref="/admin/announcements"
+          />
+        ) : result.data.length === 0 ? (
+          <EmptyState
+            title="目前沒有公告"
           />
         ) : (
           <>

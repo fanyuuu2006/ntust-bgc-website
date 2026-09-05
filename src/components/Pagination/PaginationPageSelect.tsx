@@ -41,12 +41,12 @@ export function PaginationPageSelect({
       )}
       {...rest}
     >
-      頁面
+      <span className="sr-only">目前第 {page} 頁，共 {totalPages} 頁</span>
       <Select
         value={page}
         onChange={handleChange}
-        aria-label="目前頁碼"
-        className="min-h-0 w-auto bg-(--surface-subtle) px-2 py-1 text-sm"
+        aria-label="前往頁碼"
+        className="min-h-10 w-auto bg-(--surface-subtle) px-2 py-1 text-sm"
       >
         {Array.from({ length: totalPages }, (_, index) => {
           const pageNumber = index + 1;
@@ -57,7 +57,7 @@ export function PaginationPageSelect({
           );
         })}
       </Select>
-      / {totalPages}
+      / {totalPages} 頁
     </label>
   );
 }

@@ -5,6 +5,7 @@ import { MembershipStatusBadge } from "@/components/MembershipStatusBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import type { MembershipWithAcademicYear } from "@/services/memberships/memberships.types";
 import { formatDate } from "@/utils/date";
 import { MEMBERSHIP_TYPE_LABEL } from "@/utils/membership";
@@ -39,15 +40,17 @@ export function MembershipHistory({
 
       {controls ? <div className="mt-4">{controls}</div> : null}
 
-      {memberships.length === 0 ? (
+      {memberships.length === 0 && hasQuery ? (
+        <QueryEmptyState
+          className="mt-4"
+          title="找不到符合條件的社員紀錄"
+          clearHref="/memberships"
+        />
+      ) : memberships.length === 0 ? (
         <EmptyState
           compact
           className="mt-4 border border-(--border-default) bg-(--surface-subtle) p-5 text-left"
-          title={
-            hasQuery
-              ? "找不到符合條件的社員紀錄"
-              : "目前沒有社員紀錄"
-          }
+          title="目前沒有社員紀錄"
         />
       ) : (
         <ul className="mt-4 grid gap-3">

@@ -7,7 +7,8 @@ import { UserRound } from "lucide-react";
 
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
-import { ClearableSearchInput } from "@/components/(admin)/admin/ClearableSearchInput";
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
+import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
@@ -53,6 +54,13 @@ type BorrowingQuery = {
 };
 
 const BASE_PATH = "/admin/board-games/borrowings";
+const SORT_OPTIONS = [
+  { value: "created_at:desc", label: "最新申請" },
+  { value: "created_at:asc", label: "最早申請" },
+  { value: "borrowed_at:desc", label: "最近借出" },
+  { value: "due_at:asc", label: "歸還期限較近" },
+  { value: "returned_at:desc", label: "最近歸還" },
+] as const;
 
 export function AdminBorrowingList({
   borrowings,
@@ -80,6 +88,14 @@ export function AdminBorrowingList({
   const clearSearchHref = clearSearchQuery
     ? `${BASE_PATH}?${clearSearchQuery}`
     : BASE_PATH;
+  const currentSort = `${query.orderBy ?? "created_at"}:${query.orderDirection ?? "desc"}`;
+  const hasQuery = Boolean(
+    query.search ||
+      query.status ||
+      query.board_game_id ||
+      query.user_id ||
+      query.page && query.page > 1,
+  );
 
   function choose(borrowing: BoardGameBorrowingForAdmin, action: Action) {
     setDueAt(
@@ -163,13 +179,17 @@ export function AdminBorrowingList({
               String(formData.get("search") ?? "").trim() || undefined;
             const status =
               String(formData.get("status") ?? "").trim() || undefined;
-            const orderBy =
-              String(formData.get("orderBy") ?? "").trim() || undefined;
+            const sort = String(formData.get("sort") ?? currentSort);
+            const [orderBy, orderDirection] = sort.split(":") as [
+              BorrowingQuery["orderBy"],
+              BorrowingQuery["orderDirection"],
+            ];
             router.push(
               `${BASE_PATH}?${buildQueryString(toHeaderQuery(query), {
                 search,
                 status,
                 orderBy,
+                orderDirection,
                 page: "1",
               })}`,
             );
@@ -196,6 +216,18 @@ export function AdminBorrowingList({
             <option value="rejected">已拒絕</option>
             <option value="cancelled">已取消</option>
           </Select>
+          <Select
+            name="sort"
+            aria-label="排序"
+            defaultValue={currentSort}
+            className="w-full"
+          >
+            {SORT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Select>
           <Button type="submit" variant="primary" className="w-full sm:w-auto">
             搜尋
           </Button>
@@ -204,10 +236,15 @@ export function AdminBorrowingList({
 
       <FormFeedback error={feedback} />
 
-      {borrowings.length === 0 ? (
-        <EmptyState
+      {borrowings.length === 0 && hasQuery ? (
+        <QueryEmptyState
           title="沒有符合條件的借用紀錄"
           description="調整搜尋或篩選條件後再試試看。"
+          clearHref={BASE_PATH}
+        />
+      ) : borrowings.length === 0 ? (
+        <EmptyState
+          title="目前沒有借用紀錄"
         />
       ) : (
         <>

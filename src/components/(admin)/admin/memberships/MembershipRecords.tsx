@@ -6,6 +6,7 @@ import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHea
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Modal } from "@/components/Modal";
+import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -137,7 +138,16 @@ export function MembershipRecords({
   };
 
   if (!memberships.length) {
-    return <EmptyState title="找不到符合條件的社員資格" description="請調整搜尋或篩選條件後再試。" />;
+    const hasQuery = Boolean(query.search || query.academic_year_id || query.status || query.page && query.page > 1);
+    return hasQuery ? (
+      <QueryEmptyState
+        title="找不到符合條件的社員資格"
+        description="請調整搜尋或篩選條件後再試。"
+        clearHref="/admin/memberships"
+      />
+    ) : (
+      <EmptyState title="目前沒有社員資格紀錄" />
+    );
   }
 
   return (

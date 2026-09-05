@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { ArrowUpDown, ListFilter, Search } from "lucide-react";
+import { ArrowUpDown, ListFilter } from "lucide-react";
 
 import { BASE_PATH, SORT_OPTIONS, STATUS_META } from "@/app/(public)/board-games/constants";
 import type { BoardGamesQuery } from "@/app/(public)/board-games/types";
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import type { BoardGameCategory, BoardGameLocation, BoardGameStatus } from "@/types/database";
+import { buildQueryString } from "@/utils/url";
 
 type BoardGameSearchFormProps = {
   categories: BoardGameCategory[];
@@ -31,26 +32,36 @@ export function BoardGameSearchForm({
       query.orderBy !== "created_at" ||
       query.orderDirection !== "desc",
   );
+  const clearSearchQuery = buildQueryString({
+    status: query.status,
+    category: query.category,
+    location: query.location,
+    sort: `${query.orderBy}:${query.orderDirection}`,
+    page: 1,
+    pageSize,
+  });
+  const clearSearchHref = `${BASE_PATH}?${clearSearchQuery}`;
 
   return (
     <form method="GET" action={BASE_PATH} className="space-y-3">
       <input type="hidden" name="page" value="1" />
       <input type="hidden" name="pageSize" value={pageSize} />
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="relative min-w-0 flex-1">
-          <span className="sr-only">搜尋桌遊</span>
-          <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-(--text-muted)" />
-          <Input
-            id="board-game-search"
-            type="search"
-            name="search"
-            autoComplete="off"
-            defaultValue={query.search}
-            placeholder="搜尋桌遊"
-            className="pl-9 text-base sm:text-sm"
-          />
-        </label>
+      <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto] sm:items-center">
+        <ClearableSearchInput
+          id="board-game-search"
+          initialValue={query.search}
+          clearHref={clearSearchHref}
+          name="search"
+          placeholder="搜尋桌遊"
+          aria-label="搜尋桌遊"
+          className="col-span-2 sm:col-span-1"
+          inputClassName="text-base sm:text-sm"
+        />
+
+        <Button type="submit" variant="primary" className="col-span-2 w-full sm:col-span-1 sm:w-auto">
+          搜尋
+        </Button>
 
         <details className="group sm:relative">
           <summary className="btn outline flex min-h-10 cursor-pointer list-none items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium marker:content-none">
@@ -84,7 +95,6 @@ export function BoardGameSearchForm({
           </Select>
         </label>
 
-        <Button type="submit" variant="outline">套用</Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-(--text-muted)">

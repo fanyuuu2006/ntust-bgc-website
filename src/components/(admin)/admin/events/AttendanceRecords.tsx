@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Modal } from "@/components/Modal";
+import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -37,10 +38,12 @@ export function AttendanceRecords({
   eventId,
   eventName,
   records,
+  hasQuery = false,
 }: {
   eventId: string;
   eventName: string;
   records: AttendanceRecord[];
+  hasQuery?: boolean;
 }) {
   const router = useRouter();
   const [selectedAttendance, setSelectedAttendance] = useState<{ record: AttendanceRecord; action: "edit" | "delete" } | null>(null);
@@ -119,7 +122,14 @@ export function AttendanceRecords({
   };
 
   if (!records.length) {
-    return <EmptyState title="目前還沒有簽到紀錄" description="可由上方按鈕手動新增簽到紀錄。" />;
+    return hasQuery ? (
+      <QueryEmptyState
+        title="找不到符合條件的簽到紀錄"
+        clearHref={`/admin/events/${eventId}`}
+      />
+    ) : (
+      <EmptyState title="目前還沒有簽到紀錄" description="可由上方按鈕手動新增簽到紀錄。" />
+    );
   }
 
   return (

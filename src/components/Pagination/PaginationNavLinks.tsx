@@ -9,6 +9,7 @@ type PaginationNavLinksProps = React.HTMLAttributes<HTMLDivElement> & {
   totalPages: number;
   basePath: string;
   query: Record<string, QueryValue>;
+  direction?: "previous" | "next" | "both";
 };
 
 export function PaginationNavLinks({
@@ -17,6 +18,7 @@ export function PaginationNavLinks({
   totalPages,
   basePath,
   query,
+  direction = "both",
   className,
   ...rest
 }: PaginationNavLinksProps) {
@@ -28,16 +30,12 @@ export function PaginationNavLinks({
       className={cn("flex items-center gap-2", className)}
       {...rest}
     >
-      <NavLink
-        href={hrefForPage(page - 1)}
-        label="上一頁"
-        disabled={page <= 1}
-      />
-      <NavLink
-        href={hrefForPage(page + 1)}
-        label="下一頁"
-        disabled={page >= totalPages}
-      />
+      {direction !== "next" ? (
+        <NavLink href={hrefForPage(page - 1)} label="上一頁" disabled={page <= 1} />
+      ) : null}
+      {direction !== "previous" ? (
+        <NavLink href={hrefForPage(page + 1)} label="下一頁" disabled={page >= totalPages} />
+      ) : null}
     </div>
   );
 }
@@ -53,7 +51,7 @@ function NavLink({ href, label, disabled }: NavLinkProps) {
     return (
       <span
         aria-disabled="true"
-        className="btn shrink-0 rounded-md px-3 py-1 text-sm opacity-50"
+        className="btn min-h-10 shrink-0 rounded-md px-3 py-2 text-sm opacity-50"
       >
         {label}
       </span>
@@ -61,7 +59,7 @@ function NavLink({ href, label, disabled }: NavLinkProps) {
   }
 
   return (
-    <Link href={href} className="btn shrink-0 rounded-md px-3 py-1 text-sm">
+    <Link href={href} className="btn min-h-10 shrink-0 rounded-md px-3 py-2 text-sm">
       {label}
     </Link>
   );

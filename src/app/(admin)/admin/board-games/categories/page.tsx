@@ -1,5 +1,5 @@
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
-import { ClearableSearchInput } from "@/components/(admin)/admin/ClearableSearchInput";
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { CategoryCreateAction } from "@/components/(admin)/admin/board-games/categories/CategoryCreateAction";
 import { CategoryRecords } from "@/components/(admin)/admin/board-games/categories/CategoryRecords";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
@@ -42,6 +42,8 @@ export default async function BoardGameCategoriesPage({
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
+          <input type="hidden" name="page" value="1" />
+          <input type="hidden" name="pageSize" value={pageSize} />
           <AdminToolbar className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <ClearableSearchInput
               initialValue={params.search}
@@ -53,7 +55,7 @@ export default async function BoardGameCategoriesPage({
             <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
           </AdminToolbar>
         </form>
-        <CategoryRecords items={items} />
+        <CategoryRecords items={items} hasQuery={Boolean(params.search || page > 1)} />
         <Pagination
           page={page}
           pageSize={pageSize}

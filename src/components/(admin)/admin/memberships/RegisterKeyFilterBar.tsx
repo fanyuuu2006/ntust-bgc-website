@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
-import { ClearableSearchInput } from "@/components/(admin)/admin/ClearableSearchInput";
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import type {
@@ -17,6 +17,8 @@ type RegisterKeyFilterBarProps = {
     search?: string;
     academic_year_id?: string;
     status?: MembershipRegisterKeyStatus;
+    orderBy?: "created_at" | "claimed_at" | "sequence_number";
+    orderDirection?: "asc" | "desc";
     pageSize?: number;
   };
 };
@@ -30,6 +32,8 @@ export function RegisterKeyFilterBar({
   const clearSearchQuery = buildQueryString({
     academic_year_id: query.academic_year_id,
     status: query.status,
+    orderBy: query.orderBy,
+    orderDirection: query.orderDirection,
     pageSize: query.pageSize,
   });
   const clearSearchHref = clearSearchQuery
@@ -44,8 +48,10 @@ export function RegisterKeyFilterBar({
       academic_year_id:
         String(form.get("academic_year_id") ?? "").trim() || undefined,
       status: String(form.get("status") ?? "").trim() || undefined,
+      orderBy: query.orderBy,
+      orderDirection: query.orderDirection,
       pageSize: query.pageSize,
-      page: undefined,
+      page: "1",
     });
     router.push(queryString ? pathname + "?" + queryString : pathname);
   }

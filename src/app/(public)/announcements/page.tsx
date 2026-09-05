@@ -2,12 +2,14 @@ import Link from "next/link";
 
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination/Pagination";
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
+import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Input } from "@/components/ui/Input";
 import { announcementsService } from "@/services/announcements/announcements.service";
 import { formatDate } from "@/utils/date";
+import { buildQueryString } from "@/utils/url";
 
 type Props = {
   searchParams: Promise<{ page?: string; pageSize?: string; search?: string }>;
@@ -23,6 +25,8 @@ export default async function AnnouncementsPage({ searchParams }: Props) {
     pageSize,
     search,
   });
+  const clearSearchQuery = buildQueryString({ page: 1, pageSize });
+  const clearSearchHref = `/announcements?${clearSearchQuery}`;
 
   return (
     <section className="container space-y-6 py-8">
@@ -33,19 +37,19 @@ export default async function AnnouncementsPage({ searchParams }: Props) {
       />
 
       <Card className="rounded-xl p-3">
-        <form className="flex gap-2">
-          <label className="sr-only" htmlFor="announcement-search">
-            搜尋公告
-          </label>
-          <Input
+        <form action="/announcements" className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <input type="hidden" name="page" value="1" />
+          <input type="hidden" name="pageSize" value={pageSize} />
+          <ClearableSearchInput
             id="announcement-search"
+            initialValue={search}
+            clearHref={clearSearchHref}
             name="search"
-            type="search"
-            defaultValue={search}
             placeholder="搜尋公告標題或內容"
-            className="min-w-0 flex-1 bg-(--primary-background)"
+            aria-label="搜尋公告"
+            inputClassName="bg-(--primary-background)"
           />
-          <Button type="submit">搜尋</Button>
+          <Button type="submit" variant="primary">搜尋</Button>
         </form>
       </Card>
 
@@ -70,9 +74,14 @@ export default async function AnnouncementsPage({ searchParams }: Props) {
               </p>
             </Link>
           ))
+        ) : search || page > 1 ? (
+          <QueryEmptyState
+            title={search ? "沒有符合搜尋條件的公告" : "這一頁沒有公告"}
+            clearHref="/announcements"
+          />
         ) : (
           <EmptyState
-            title={search ? "沒有符合搜尋條件的公告。" : "目前尚無已發布公告。"}
+            title="目前尚無已發布公告"
             compact
           />
         )}
@@ -86,6 +95,7 @@ export default async function AnnouncementsPage({ searchParams }: Props) {
         basePath="/announcements"
         pageSizeOptions={[10, 20, 50]}
         query={{ search }}
+        showPageSize={false}
       />
     </section>
   );

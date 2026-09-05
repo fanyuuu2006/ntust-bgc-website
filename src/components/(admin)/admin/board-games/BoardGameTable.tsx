@@ -9,6 +9,7 @@ import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -77,15 +78,23 @@ export function BoardGameTable({
   };
 
   if (!boardGames.length) {
+    if (hasFilters) {
+      return (
+        <QueryEmptyState
+          className={className}
+          title="找不到符合條件的桌遊"
+          description="請調整搜尋或篩選條件後再試。"
+          clearHref={BASE_PATH}
+          {...props}
+        />
+      );
+    }
+
     return (
       <EmptyState
         className={className}
-        title={hasFilters ? "找不到符合條件的桌遊" : "目前還沒有桌遊"}
-        description={
-          hasFilters
-            ? "請調整搜尋或篩選條件後再試。"
-            : "可從頁面標題旁新增第一款桌遊。"
-        }
+        title="目前還沒有桌遊"
+        description="可從頁面標題旁新增第一款桌遊。"
         {...props}
       />
     );

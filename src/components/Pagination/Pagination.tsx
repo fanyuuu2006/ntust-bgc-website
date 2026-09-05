@@ -5,7 +5,7 @@ import { DEFAULT_PAGE_SIZE_OPTIONS, getPageRange } from "@/utils/pagination";
 import type { QueryValue } from "@/utils/url";
 import { cn } from "@/utils/className";
 
-type PaginationProps = React.HTMLAttributes<HTMLDivElement> & {
+type PaginationProps = React.HTMLAttributes<HTMLElement> & {
   page: number;
   pageSize: number;
   total: number;
@@ -33,9 +33,10 @@ export function Pagination({
   const { start, end } = getPageRange(page, pageSize, total);
 
   return (
-    <div
+    <nav
+      aria-label="分頁"
       className={cn(
-        "flex flex-col gap-3 rounded-2xl sm:flex-row sm:flex-wrap sm:items-center sm:justify-between",
+        "min-w-0 space-y-3 rounded-2xl",
         className,
       )}
       {...rest}
@@ -44,7 +45,7 @@ export function Pagination({
         顯示 {start}–{end}，共 {total} 筆
       </p>
 
-      <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         {showPageSize ? (
           <PaginationPageSizeSelect
             pageSize={pageSize}
@@ -55,7 +56,15 @@ export function Pagination({
         ) : null}
 
         {totalPages > 1 && (
-          <>
+          <div className="flex min-w-0 items-center justify-between gap-2 sm:ml-auto sm:justify-end">
+            <PaginationNavLinks
+              page={page}
+              pageSize={pageSize}
+              totalPages={totalPages}
+              basePath={basePath}
+              query={query}
+              direction="previous"
+            />
             <PaginationPageSelect
               page={page}
               pageSize={pageSize}
@@ -69,10 +78,11 @@ export function Pagination({
               totalPages={totalPages}
               basePath={basePath}
               query={query}
+              direction="next"
             />
-          </>
+          </div>
         )}
       </div>
-    </div>
+    </nav>
   );
 }
