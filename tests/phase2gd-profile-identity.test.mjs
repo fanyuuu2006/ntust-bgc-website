@@ -8,11 +8,14 @@ test("profile keeps identity, club footprint, and current club context without o
   const page = await readSource("src/app/(authenticated)/profile/page.tsx");
 
   assert.match(page, /ProfileClubFootprint/);
-  assert.match(page, /ProfileClubInformation/);
+  assert.match(page, /ProfileDetailsSection/);
   assert.match(page, /getTotalBorrowedCount/);
   assert.match(page, /getAttendedCountByCurrentAcademicYear/);
   assert.doesNotMatch(page, /getCurrentlyBorrowedCount/);
-  assert.doesNotMatch(page, /HistorySection|getBorrowingsByUserId|getAttendancesByUserId/);
+  assert.doesNotMatch(
+    page,
+    /HistorySection|ProfileBasicInfoSection|ProfileClubInformation|getBorrowingsByUserId|getAttendancesByUserId/,
+  );
 });
 
 test("profile club footprint counts actual borrowing and attendance participation only", async () => {
@@ -37,23 +40,47 @@ test("profile identity badges derive established membership and officer facts wi
   assert.match(service, /current-membership|historical-membership|officer|non-member/);
   assert.match(service, /academic_year\.start_date/);
   assert.match(badges, /MAX_VISIBLE_BADGES = 4/);
+  assert.match(badges, /historical-membership[\s\S]*tone: "info"/);
+  assert.match(badges, /--primary/);
   assert.match(badges, /aria-expanded/);
   assert.match(badges, /hiddenBadges\.length/);
   assert.match(hero, /ProfileIdentityBadges/);
   assert.match(hero, /user\.name/);
   assert.match(hero, /profile\.real_name/);
+  assert.doesNotMatch(hero, />\s*真實姓名\s*</);
   assert.doesNotMatch(hero, /currentMembership|currentOfficerPositions/);
 });
 
 test("profile club context distinguishes current, historical, and never-member users without new permissions", async () => {
-  const [clubInformation, service] = await Promise.all([
-    readSource("src/components/(authenticated)/profile/ProfileClubInformation.tsx"),
+  const [profileDetails, service] = await Promise.all([
+    readSource("src/components/(authenticated)/profile/ProfileDetailsSection.tsx"),
     readSource("src/services/profile/profile.service.ts"),
   ]);
 
-  assert.match(clubInformation, /MembershipStatusBadge/);
-  assert.match(clubInformation, /\/memberships/);
-  assert.match(clubInformation, /hasMembershipHistory/);
+  assert.match(profileDetails, /MembershipStatusBadge/);
+  assert.match(profileDetails, /\/memberships/);
+  assert.match(profileDetails, /hasMembershipHistory/);
+  assert.match(profileDetails, /個人資料/);
+  assert.match(profileDetails, /社團資訊/);
+  assert.match(profileDetails, /profile\.real_name/);
+  assert.match(profileDetails, /profile\.phone/);
+  assert.match(profileDetails, /profile\.student_id/);
+  assert.match(profileDetails, /profile\.school/);
+  assert.match(profileDetails, /profile\.department/);
+  assert.match(profileDetails, /profile\.grade/);
   assert.match(service, /hasMembershipHistory/);
   assert.doesNotMatch(service, /hasEverBeenOfficer|isAdminByUserId/);
+});
+
+test("profile footprint uses one section surface with restrained semantic accents", async () => {
+  const footprint = await readSource(
+    "src/components/(authenticated)/profile/ProfileClubFootprint.tsx",
+  );
+
+  assert.match(footprint, /lucide-react/);
+  assert.match(footprint, /--status-info/);
+  assert.match(footprint, /--status-success/);
+  assert.match(footprint, /--status-warning/);
+  assert.match(footprint, /Card/);
+  assert.doesNotMatch(footprint, /借用中桌遊數量/);
 });

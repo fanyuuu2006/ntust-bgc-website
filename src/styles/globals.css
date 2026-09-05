@@ -409,7 +409,7 @@
     border-top-color: var(--status-danger);
   }
 
-  /* Decorative roles used by QuickStats and profile information groups. */
+  /* Decorative roles used by feature summary and information groups. */
   .card.accent.supporting {
     border-top-color: var(--game-green);
   }

@@ -19,7 +19,13 @@ export function ProfileHeroSection({
 }: ProfileHeroSectionProps) {
   return (
     <section className={className} {...rest} aria-labelledby="profile-title">
-      <div className="card relative overflow-hidden rounded-2xl p-5 sm:p-7 lg:p-8">
+      <div
+        className="card relative overflow-hidden rounded-2xl p-5 sm:p-7 lg:p-8"
+        style={{
+          backgroundImage:
+            "linear-gradient(135deg, color-mix(in oklab, var(--primary) 5%, transparent), transparent 45%), linear-gradient(315deg, color-mix(in oklab, var(--status-success) 4%, transparent), transparent 38%)",
+        }}
+      >
         <div
           aria-hidden
           className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-(--primary) via-(--game-blue) to-(--game-green)"
@@ -36,8 +42,7 @@ export function ProfileHeroSection({
               >
                 {user.name}
               </h1>
-              <p className="mt-1 break-words text-sm text-(--muted)">
-                <span className="mr-1">真實姓名</span>
+              <p className="mt-1 break-words text-base font-medium text-(--text-secondary)">
                 {profile.real_name || "尚未填寫"}
               </p>
               <p className="mt-2 break-all text-sm text-(--muted)" title={user.email}>

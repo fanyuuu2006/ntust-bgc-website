@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import type { CSSProperties } from "react";
 import { Badge, type BadgeTone } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import type {
@@ -10,11 +11,28 @@ import type {
 
 const MAX_VISIBLE_BADGES = 4;
 
-const categoryTone: Record<ProfileIdentityBadgeCategory, BadgeTone> = {
-  "current-membership": "info",
-  "historical-membership": "neutral",
-  officer: "success",
-  "non-member": "neutral",
+type BadgePresentation = {
+  tone: BadgeTone;
+  style?: CSSProperties;
+};
+
+const categoryPresentation: Record<
+  ProfileIdentityBadgeCategory,
+  BadgePresentation
+> = {
+  "current-membership": { tone: "info" },
+  "historical-membership": {
+    tone: "info",
+    style: {
+      backgroundColor:
+        "color-mix(in oklab, var(--primary) 7%, var(--surface-default))",
+      borderColor:
+        "color-mix(in oklab, var(--primary) 24%, var(--border-default))",
+      color: "var(--primary-dark)",
+    },
+  },
+  officer: { tone: "success" },
+  "non-member": { tone: "neutral" },
 };
 
 type ProfileIdentityBadgesProps = {
@@ -38,11 +56,19 @@ export function ProfileIdentityBadges({
       className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:justify-start"
       aria-label="社團身分標籤"
     >
-      {visibleBadges.map((badge) => (
-        <Badge key={badge.id} tone={categoryTone[badge.category]}>
-          {badge.label}
-        </Badge>
-      ))}
+      {visibleBadges.map((badge) => {
+        const presentation = categoryPresentation[badge.category];
+
+        return (
+          <Badge
+            key={badge.id}
+            tone={presentation.tone}
+            style={presentation.style}
+          >
+            {badge.label}
+          </Badge>
+        );
+      })}
       {hiddenBadges.length > 0 ? (
         <Button
           type="button"
@@ -51,7 +77,7 @@ export function ProfileIdentityBadges({
           aria-expanded={isExpanded}
           aria-controls={disclosureId}
           onClick={() => setIsExpanded((expanded) => !expanded)}
-          className="min-h-7 rounded-full px-2 text-xs"
+          className="min-h-7 rounded-full border-(--border-muted) bg-(--surface-default) px-2.5 text-xs hover:bg-(--surface-subtle)"
         >
           {isExpanded ? "收合" : `+${hiddenBadges.length}`}
         </Button>

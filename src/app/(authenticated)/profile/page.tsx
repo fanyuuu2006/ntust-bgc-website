@@ -1,6 +1,5 @@
-import { ProfileBasicInfoSection } from "@/components/(authenticated)/profile/ProfileBasicInfoSection";
 import { ProfileClubFootprint } from "@/components/(authenticated)/profile/ProfileClubFootprint";
-import { ProfileClubInformation } from "@/components/(authenticated)/profile/ProfileClubInformation";
+import { ProfileDetailsSection } from "@/components/(authenticated)/profile/ProfileDetailsSection";
 import { ProfileHeroSection } from "@/components/(authenticated)/profile/ProfileHeroSection";
 import { getCurrentUser } from "@/libs/auth";
 import { boardGamesService } from "@/services/board-games/board-games.service";
@@ -34,8 +33,8 @@ export default async function ProfilePage() {
         attendedCount={attendanceCount}
         joinedAcademicYear={clubContext.joinedAcademicYear}
       />
-      <ProfileBasicInfoSection profile={profile} />
-      <ProfileClubInformation
+      <ProfileDetailsSection
+        profile={profile}
         currentMembership={clubContext.currentMembership}
         hasMembershipHistory={clubContext.hasMembershipHistory}
       />
