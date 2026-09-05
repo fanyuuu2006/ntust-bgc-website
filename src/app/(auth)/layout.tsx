@@ -14,7 +14,7 @@ export default async function AuthLayout({
   }
 
   return (
-    <WebsiteShell user={user} isAdmin={false}>
+    <WebsiteShell user={user} isAdmin={false} footerVariant="legal">
       {children}
     </WebsiteShell>
   );

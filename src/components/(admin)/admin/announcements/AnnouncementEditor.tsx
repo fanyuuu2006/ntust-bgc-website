@@ -10,6 +10,10 @@ import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { apiClient } from "@/libs/api/client";
+import {
+  buildAnnouncementSubmitPayload,
+  type AnnouncementSubmitIntent,
+} from "./announcementEditor.utils";
 
 type EditableAnnouncement = {
   id: number;
@@ -27,14 +31,22 @@ export function AnnouncementEditor({ announcement }: { announcement?: EditableAn
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const save = async (published: boolean) => {
+  const save = async (intent: AnnouncementSubmitIntent) => {
     if (busy || deleting) return;
     setBusy(true);
     setError(null);
     try {
       await apiClient(
         announcement ? `/api/admin/announcements/${announcement.id}` : "/api/admin/announcements",
-        { method: announcement ? "PATCH" : "POST", body: { title, content, is_published: published } },
+        {
+          method: announcement ? "PATCH" : "POST",
+          body: buildAnnouncementSubmitPayload({
+            title,
+            content,
+            currentPublished: announcement?.is_published ?? false,
+            intent,
+          }),
+        },
       );
       router.push("/admin/announcements");
       router.refresh();
@@ -61,14 +73,16 @@ export function AnnouncementEditor({ announcement }: { announcement?: EditableAn
     }
   };
 
-  const submitPublished = announcement?.is_published ?? false;
-
   return (
     <>
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          void save(submitPublished);
+          if (announcement?.is_published) {
+            void save("save");
+          } else {
+            void save("publish");
+          }
         }}
         className="space-y-5"
       >
@@ -90,7 +104,7 @@ export function AnnouncementEditor({ announcement }: { announcement?: EditableAn
               取消
             </Button>
             {!announcement?.is_published ? (
-              <Button type="button" isLoading={busy} onClick={() => void save(false)} variant="outline" disabled={deleting}>
+              <Button type="button" isLoading={busy} onClick={() => void save("save")} variant="outline" disabled={deleting}>
                 {announcement ? "儲存變更" : "儲存草稿"}
               </Button>
             ) : null}

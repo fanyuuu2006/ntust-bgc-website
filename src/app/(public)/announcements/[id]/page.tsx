@@ -1,14 +1,59 @@
-import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 
-import { announcementsService } from "@/services/announcements/announcements.service";
+import { ButtonLink } from "@/components/ui/Button";
 import { positiveIntegerIdSchema } from "@/libs/zod/ids";
+import { announcementsService } from "@/services/announcements/announcements.service";
 import { formatDate } from "@/utils/date";
 
-export default async function AnnouncementDetailPage({ params }: { params: Promise<{ id: string }> }) {
+type AnnouncementDetailPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function AnnouncementDetailPage({
+  params,
+}: AnnouncementDetailPageProps) {
   const id = positiveIntegerIdSchema.safeParse((await params).id);
   if (!id.success) notFound();
+
   const announcement = await announcementsService.getPublishedById(id.data);
   if (!announcement) notFound();
-  return <article className="container max-w-4xl py-8"><Link href="/announcements" className="text-sm font-medium text-(--primary)">← 返回公告列表</Link><div className="card mt-5 rounded-2xl p-5 sm:p-8"><p className="text-sm text-(--muted)">{announcement.published_at ? formatDate(announcement.published_at) : formatDate(announcement.created_at)}</p><h1 className="mt-3 text-2xl font-bold sm:text-3xl">{announcement.title}</h1><div className="mt-6 whitespace-pre-wrap text-base leading-8 text-(--foreground)">{announcement.content}</div></div></article>;
+
+  const publishedAt = announcement.published_at ?? announcement.created_at;
+
+  return (
+    <section className="py-8">
+      <div className="container">
+        <div className="mx-auto max-w-3xl">
+          <ButtonLink
+            href="/announcements"
+            variant="text"
+            size="sm"
+            className="px-0"
+          >
+            <ArrowLeft aria-hidden="true" className="size-4" />
+            返回公告列表
+          </ButtonLink>
+
+          <article className="mt-4 min-w-0">
+            <header className="border-b border-(--border-muted) pb-6">
+              <time
+                dateTime={publishedAt}
+                className="block text-sm leading-5 text-(--text-muted)"
+              >
+                {formatDate(publishedAt)}
+              </time>
+              <h1 className="mt-2 break-words text-2xl leading-tight font-bold text-(--text-primary) sm:text-3xl">
+                {announcement.title}
+              </h1>
+            </header>
+
+            <div className="mt-6 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-base leading-7 text-(--text-primary)">
+              {announcement.content}
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  );
 }
