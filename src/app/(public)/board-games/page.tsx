@@ -6,8 +6,7 @@ import type { BoardGameStatus } from "@/types/database";
 import {
   ALLOWED_STATUSES,
   BASE_PATH,
-  DEFAULT_PAGE_SIZE,
-  MAX_PAGE_SIZE,
+  normalizePageSize,
   PAGE_SIZE_OPTIONS,
   SORT_OPTIONS,
 } from "./constants";
@@ -37,12 +36,6 @@ function getArrayParam(value?: string | string[]) {
 function normalizePage(value?: string) {
   const page = Number(value);
   return Number.isInteger(page) && page > 0 ? page : 1;
-}
-
-function normalizePageSize(value?: string) {
-  const pageSize = Number(value);
-  if (!Number.isInteger(pageSize) || pageSize <= 0) return DEFAULT_PAGE_SIZE;
-  return Math.min(pageSize, MAX_PAGE_SIZE);
 }
 
 function normalizeSearch(value?: string) {
@@ -117,7 +110,7 @@ export default async function BoardGamesPage({
   ]);
 
   return (
-    <section className="p-4">
+    <section>
       <div className="container space-y-5 sm:space-y-6">
         <header className="space-y-2">
           <div className="space-y-2">
@@ -125,7 +118,7 @@ export default async function BoardGamesPage({
               桌遊
             </h1>
             <p className="max-w-3xl text-sm leading-relaxed text-(--text-muted) sm:text-base">
-              這裡提供社團內的桌遊資料，包含桌遊名稱、分類、位置、狀態等資訊。您可以使用搜尋功能或篩選條件來快速找到想要的桌遊。
+              探索社團桌遊，找到下一款想玩的遊戲。
             </p>
           </div>
         </header>

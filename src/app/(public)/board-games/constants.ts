@@ -3,9 +3,17 @@ import type { FindManyBoardGamesOptions } from "@/repositories/board-games.repos
 
 export const BASE_PATH = "/board-games";
 
-export const DEFAULT_PAGE_SIZE = 12;
-export const MAX_PAGE_SIZE = 100;
-export const PAGE_SIZE_OPTIONS = [12, 24, 36] as const;
+export const DEFAULT_PAGE_SIZE = 24;
+export const PAGE_SIZE_OPTIONS = [24, 36, 48, 60] as const;
+
+export function normalizePageSize(value?: string) {
+  const pageSize = Number(value);
+  return PAGE_SIZE_OPTIONS.includes(
+    pageSize as (typeof PAGE_SIZE_OPTIONS)[number],
+  )
+    ? pageSize
+    : DEFAULT_PAGE_SIZE;
+}
 
 export const ALLOWED_STATUSES: BoardGameStatus[] = [
   "available",

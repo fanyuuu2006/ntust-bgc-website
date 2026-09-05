@@ -22,8 +22,11 @@ test("board-game discovery uses URL-authoritative search, filters, and sorting",
   assert.match(toolbar, /name="sort"/);
   assert.match(queryControls, /Search|ListFilter|ArrowUpDown/);
   assert.doesNotMatch(queryControls, /useRouter|usePathname|router\.replace|fetch\(/);
-  assert.match(card, /className="card interactive/);
-  assert.doesNotMatch(card, /bg-\(--surface-subtle\).*p-3/);
+  assert.match(card, /border-\(--border-default\)/);
+  assert.match(card, /bg-\(--surface-default\)/);
+  assert.doesNotMatch(card, /className="card interactive/);
+  assert.match(card, /relative aspect-square/);
+  assert.doesNotMatch(card, /aspect-square[^"\n]*\bp-[23]\b/);
 });
 
 test("board-game detail explains borrowability before exposing a borrowing action", async () => {

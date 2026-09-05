@@ -10,59 +10,57 @@ type BoardGameCardProps = {
 
 export function BoardGameCard({ boardGame }: BoardGameCardProps) {
   const description = boardGame.description?.trim();
+  const metadata = [boardGame.category?.name, boardGame.location?.name].filter(
+    (value): value is string => Boolean(value?.trim()),
+  );
 
   return (
     <Link
       href={`/board-games/${boardGame.id}`}
-      className="card interactive group grid min-w-0 grid-cols-[6rem_minmax(0,1fr)] overflow-hidden rounded-2xl p-0 text-left sm:flex sm:h-full sm:flex-col"
+      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-(--border-default) bg-(--surface-default) text-left shadow-(--shadow-base) transition-[border-color,box-shadow] hover:border-(--border-strong) hover:shadow-(--shadow-card) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
     >
-      <div className="overflow-hidden border-r border-(--border-default) bg-(--surface-subtle) sm:border-r-0 sm:border-b">
+      <div className="relative aspect-square overflow-hidden border-b border-(--border-default) bg-(--surface-subtle)">
         <BoardGameImage
           boardGame={boardGame}
-          className="aspect-square h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.02] sm:aspect-5/4 sm:h-auto lg:aspect-4/3"
+          className={
+            boardGame.image
+              ? "h-full w-full object-contain"
+              : "h-full w-full object-contain p-8 opacity-60"
+          }
           loading="lazy"
+        />
+        <BoardGameStatusBadge
+          status={boardGame.status}
+          className="absolute top-2 right-2 z-10 shadow-(--shadow-base)"
         />
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-2 p-3">
-        <div className="flex min-w-0 items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="line-clamp-2 text-base font-bold leading-snug text-(--text-primary)">
-              {boardGame.name}
-            </p>
-            <p className="mt-0.5 text-xs font-medium text-(--text-muted)">
-              社產編號 {boardGame.inventory_number}
-            </p>
-          </div>
+      <div className="flex min-w-0 flex-1 flex-col p-3">
+        <h2
+          title={boardGame.name}
+          className="line-clamp-2 min-h-10 min-w-0 break-words text-sm leading-snug font-semibold text-(--text-primary) transition-colors group-hover:text-(--interactive-primary) sm:min-h-11 sm:text-base"
+        >
+          {boardGame.name}
+        </h2>
 
-          <BoardGameStatusBadge
-            status={boardGame.status}
-            className="shrink-0"
-          />
-        </div>
-
-        <div className="grid gap-1 text-xs text-(--text-muted)">
-          <p className="truncate">
-            <span className="font-medium text-(--text-primary)">分類</span>{" "}
-            {boardGame.category.name}
-          </p>
-          <p className="truncate">
-            <span className="font-medium text-(--text-primary)">位置</span>{" "}
-            {boardGame.location.name}
-          </p>
+        <div className="mt-2 flex min-w-0 items-start justify-between gap-2 text-xs leading-5 text-(--text-muted) sm:text-sm">
+          {metadata.length > 0 ? (
+            <span className="min-w-0 break-words">
+              {metadata.join(" · ")}
+            </span>
+          ) : null}
+          <span className="shrink-0 whitespace-nowrap">
+            <span className="sr-only">社產編號 </span>#{boardGame.inventory_number}
+          </span>
         </div>
 
         {description ? (
-          <p className="line-clamp-2 text-xs leading-relaxed text-(--text-muted) sm:text-sm">
+          <p className="mt-2 line-clamp-2 break-words text-xs leading-5 text-(--text-secondary) sm:text-sm sm:leading-6">
             {description}
           </p>
-        ) : (
-          <p className="text-xs text-(--text-muted) sm:text-sm">
-            尚未補充桌遊描述。
-          </p>
-        )}
+        ) : null}
 
-        <span className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-(--interactive-primary)">
+        <span className="mt-auto inline-flex items-center gap-1 pt-3 text-sm font-semibold text-(--interactive-primary)">
           查看詳情
           <ArrowRight aria-hidden="true" className="size-4" />
         </span>
