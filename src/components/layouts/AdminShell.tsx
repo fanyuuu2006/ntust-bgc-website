@@ -32,9 +32,9 @@ export function AdminShell({ user, children }: AdminShellProps) {
   );
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh shrink-0 flex-col">
       <AdminHeader
-        className="z-40 shrink-0"
+        className="sticky top-0 z-40 shrink-0"
         user={user}
         currentSectionLabel={currentSection?.label}
         isSidebarOpen={isSidebarOpen}

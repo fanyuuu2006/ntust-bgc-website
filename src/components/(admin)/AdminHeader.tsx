@@ -29,12 +29,12 @@ export function AdminHeader({
   return (
     <header
       className={cn(
-        "flex flex-col border-b border-(--border-default) bg-(--surface-default)",
+        "flex h-14 flex-col border-b border-(--border-default) bg-(--surface-default)",
         className,
       )}
       {...rest}
     >
-      <div className="flex items-center justify-between gap-4 py-2 px-4">
+      <div className="flex h-full items-center justify-between gap-4 px-4">
         {/* 左側：選單按鈕 + 目前頁面標題 */}
         <div className="flex min-w-0 items-center gap-4">
           <Button

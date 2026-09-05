@@ -78,7 +78,10 @@ test("explicit public and authenticated search forms use the primary text-only s
   ]);
 
   for (const source of sources) {
-    assert.match(source, /<Button type="submit" variant="primary"/);
+    assert.match(
+      source,
+      /<Button[^>]*type="submit"[^>]*variant="primary"[^>]*>/,
+    );
     assert.match(source, />\s*搜尋\s*<\/Button>/);
     assert.doesNotMatch(source, />\s*(?:套用|搜詢)\s*<\/Button>/);
   }

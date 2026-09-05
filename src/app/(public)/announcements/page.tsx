@@ -5,7 +5,6 @@ import { Pagination } from "@/components/Pagination/Pagination";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { announcementsService } from "@/services/announcements/announcements.service";
 import { formatDate } from "@/utils/date";
@@ -36,22 +35,29 @@ export default async function AnnouncementsPage({ searchParams }: Props) {
         description="社課、活動與社員服務的重要通知。"
       />
 
-      <Card className="rounded-xl p-3">
-        <form action="/announcements" className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-          <input type="hidden" name="page" value="1" />
-          <input type="hidden" name="pageSize" value={pageSize} />
-          <ClearableSearchInput
-            id="announcement-search"
-            initialValue={search}
-            clearHref={clearSearchHref}
-            name="search"
-            placeholder="搜尋公告標題或內容"
-            aria-label="搜尋公告"
-            inputClassName="bg-(--primary-background)"
-          />
-          <Button type="submit" variant="primary">搜尋</Button>
-        </form>
-      </Card>
+      <form
+        method="GET"
+        action="/announcements"
+        className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]"
+      >
+        <input type="hidden" name="page" value="1" />
+        <input type="hidden" name="pageSize" value={pageSize} />
+        <ClearableSearchInput
+          id="announcement-search"
+          initialValue={search}
+          clearHref={clearSearchHref}
+          name="search"
+          placeholder="搜尋公告標題或內容"
+          aria-label="搜尋公告"
+        />
+        <Button
+          type="submit"
+          variant="primary"
+          className="w-full sm:w-auto"
+        >
+          搜尋
+        </Button>
+      </form>
 
       <div className="space-y-3">
         {announcements.data.length ? (

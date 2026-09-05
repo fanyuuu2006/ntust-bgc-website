@@ -94,7 +94,7 @@ export function AdminSidebar({
           "border-r border-(--border-default) bg-(--surface-default)",
           "transition-transform duration-300",
           isOpen ? "translate-x-0" : "-translate-x-full",
-          "lg:relative lg:inset-auto lg:z-auto lg:h-auto lg:w-64 lg:shrink-0",
+          "lg:sticky lg:inset-auto lg:top-14 lg:z-30 lg:h-[calc(100dvh-3.5rem)] lg:w-64 lg:shrink-0 lg:self-start",
           "lg:translate-x-0 lg:transition-none",
           className,
         )}

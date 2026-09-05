@@ -17,7 +17,7 @@ export const Header = ({ className, user, isAdmin, ...rest }: HeaderProps) => {
   return (
     <header
       className={cn(
-        "border-b border-(--border-default) bg-(--surface-default)",
+        "sticky top-0 z-40 border-b border-(--border-default) bg-(--surface-default)",
         className,
       )}
       {...rest}
