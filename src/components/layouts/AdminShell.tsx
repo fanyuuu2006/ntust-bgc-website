@@ -32,7 +32,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
   );
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden">
+    <div className="flex min-h-dvh flex-col">
       <AdminHeader
         className="z-40 shrink-0"
         user={user}
@@ -42,13 +42,13 @@ export function AdminShell({ user, children }: AdminShellProps) {
         menuButtonRef={menuButtonRef}
         onOpenMenu={() => setIsSidebarOpen(true)}
       />
-      <div className="flex min-h-0 flex-1">
+      <div className="flex flex-1">
         <AdminSidebar
           id={sidebarId}
           isOpen={isSidebarOpen}
           onClose={closeSidebar}
         />
-        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">{children}</main>
+        <main className="min-w-0 flex-1">{children}</main>
       </div>
     </div>
   );

@@ -1,16 +1,18 @@
-import { ArrowUpDown, ListFilter } from "lucide-react";
+import { Suspense } from "react";
+import { ArrowUpDown } from "lucide-react";
 
-import { BorrowingRecord } from "@/components/(authenticated)/borrowings/BorrowingRecord";
+import {
+  BorrowingsResults,
+  type BorrowingsResultQuery,
+} from "@/components/(authenticated)/borrowings/BorrowingsResults";
+import { BorrowingsResultsLoading } from "@/components/(authenticated)/borrowings/BorrowingsResultsLoading";
 import { BORROWING_STATUS_LABEL } from "@/components/BorrowingStatusBadge";
-import { Pagination } from "@/components/Pagination/Pagination";
 import { PageHeader } from "@/components/PageHeader";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
-import { QueryEmptyState } from "@/components/query/QueryEmptyState";
+import { QueryFilterDisclosure } from "@/components/query/QueryFilterDisclosure";
 import { Button, ButtonLink } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { Select } from "@/components/ui/Select";
 import { getCurrentUser } from "@/libs/auth";
-import { boardGamesService } from "@/services/board-games/board-games.service";
 import type { BorrowingStatus } from "@/types/database";
 import { parsePage, parsePageSize } from "@/utils/pagination";
 import { buildQueryString } from "@/utils/url";
@@ -77,14 +79,16 @@ export default async function BorrowingsPage({
   const status = normalizeStatus(params.status);
   const search = params.search?.trim() || undefined;
   const sort = normalizeSort(params.sort);
-  const borrowings = await boardGamesService.getBorrowingsByUserId(user.id, {
+  const resultQuery: BorrowingsResultQuery = {
     page,
     pageSize,
     status,
     search,
     orderBy: sort.orderBy,
     orderDirection: sort.orderDirection,
-  });
+    sort: sort.option.value,
+  };
+  const resultQueryKey = buildQueryString(resultQuery);
 
   return (
     <section className="py-8">
@@ -107,42 +111,16 @@ export default async function BorrowingsPage({
           pageSize={pageSize}
         />
 
-        {borrowings.data.length === 0 && (search || status || page > 1) ? (
-          <QueryEmptyState
-            title="找不到符合條件的借用紀錄"
-            description="試著調整搜尋或篩選條件。"
-            clearHref={BASE_PATH}
+        <Suspense
+          key={resultQueryKey}
+          fallback={<BorrowingsResultsLoading />}
+        >
+          <BorrowingsResults
+            userId={user.id}
+            query={resultQuery}
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
           />
-        ) : borrowings.data.length === 0 ? (
-          <EmptyState
-            title="目前沒有借用紀錄"
-            description="你可以先瀏覽社團桌遊，找到想借用的桌遊後提出申請。"
-            action={
-              <ButtonLink href="/board-games" variant="outline">
-                瀏覽桌遊
-              </ButtonLink>
-            }
-          />
-        ) : (
-          <ul className="flex flex-col gap-2.5">
-            {borrowings.data.map((borrowing) => (
-              <li key={borrowing.id}>
-                <BorrowingRecord borrowing={borrowing} />
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <Pagination
-          page={page}
-          pageSize={pageSize}
-          total={borrowings.total}
-          totalPages={borrowings.totalPages}
-          basePath={BASE_PATH}
-          pageSizeOptions={PAGE_SIZE_OPTIONS}
-          query={{ status, search, sort: sort.option.value }}
-          showPageSize={false}
-        />
+        </Suspense>
       </div>
     </section>
   );
@@ -169,30 +147,25 @@ function BorrowingsToolbar({
   const clearSearchHref = `${BASE_PATH}?${clearSearchQuery}`;
 
   return (
-    <form action={BASE_PATH} className="space-y-2.5">
+    <form method="GET" action={BASE_PATH} className="space-y-2">
       <input type="hidden" name="page" value="1" />
       <input type="hidden" name="pageSize" value={pageSize} />
 
-      <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:items-center">
+      <div className="grid min-w-0 gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto] lg:items-center">
         <ClearableSearchInput
             initialValue={search}
             clearHref={clearSearchHref}
             name="search"
             placeholder="搜尋桌遊或社產編號"
             aria-label="搜尋借用紀錄"
-            inputClassName="text-base md:text-sm"
+            inputClassName="text-base lg:text-sm"
         />
 
-        <Button type="submit" variant="primary">
+        <Button type="submit" variant="primary" className="w-full lg:w-auto">
           搜尋
         </Button>
 
-        <details className="group md:relative">
-          <summary className="btn outline flex min-h-10 cursor-pointer list-none items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium marker:content-none">
-            <ListFilter aria-hidden="true" className="size-4" />
-            篩選
-          </summary>
-          <div className="mt-2 rounded-xl border border-(--border-default) bg-(--surface-default) p-3 md:absolute md:right-0 md:z-10 md:min-w-56 md:shadow-(--shadow-card)">
+        <QueryFilterDisclosure panelClassName="lg:min-w-56">
             <label className="grid gap-1.5 text-sm font-medium text-(--text-primary)">
               借用狀態
               <Select name="status" defaultValue={status ?? ""}>
@@ -204,10 +177,9 @@ function BorrowingsToolbar({
                 ))}
               </Select>
             </label>
-          </div>
-        </details>
+        </QueryFilterDisclosure>
 
-        <label className="flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-default) px-3 text-sm font-medium text-(--text-primary) focus-within:border-(--interactive-primary) focus-within:outline-2 focus-within:outline-(--focus-ring) md:flex-none md:min-w-40">
+        <label className="flex min-h-10 min-w-0 items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-default) px-3 text-sm font-medium text-(--text-primary) focus-within:border-(--interactive-primary) focus-within:outline-2 focus-within:outline-(--focus-ring) lg:min-w-40">
             <ArrowUpDown
               aria-hidden="true"
               className="size-4 shrink-0 text-(--text-muted)"

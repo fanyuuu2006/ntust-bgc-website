@@ -104,8 +104,8 @@ test("query-empty recovery receives each route's explicit canonical dataset URL"
   const [primitive, boardGames, borrowings, memberships, announcements] = await Promise.all([
     readSource(primitivePath),
     readSource("src/components/(public)/board-games/BoardGameGrid.tsx"),
-    readSource("src/app/(authenticated)/borrowings/page.tsx"),
-    readSource("src/components/(authenticated)/memberships/MembershipHistory.tsx"),
+    readSource("src/components/(authenticated)/borrowings/BorrowingsResults.tsx"),
+    readSource("src/components/(authenticated)/memberships/MembershipRecordsResults.tsx"),
     readSource("src/app/(public)/announcements/page.tsx"),
   ]);
 
@@ -141,8 +141,8 @@ test("pagination uses a semantic URL-preserving page selector with safe edge sta
 test("page-size controls remain only where the audited product task benefits", async () => {
   const [boardGames, borrowings, memberships, announcements, adminUsers] = await Promise.all([
     readSource("src/app/(public)/board-games/page.tsx"),
-    readSource("src/app/(authenticated)/borrowings/page.tsx"),
-    readSource("src/app/(authenticated)/memberships/page.tsx"),
+    readSource("src/components/(authenticated)/borrowings/BorrowingsResults.tsx"),
+    readSource("src/components/(authenticated)/memberships/MembershipRecordsResults.tsx"),
     readSource("src/app/(public)/announcements/page.tsx"),
     readSource("src/app/(admin)/admin/users/page.tsx"),
   ]);
@@ -188,11 +188,13 @@ test("Admin query forms preserve page size and explicitly reset page", async () 
     readSource("src/components/(admin)/admin/board-games/BoardGameSearchForm.tsx"),
   ]);
   for (const source of [memberships, registerKeys, boardGames]) {
-    assert.match(source, /pageSize: query\.pageSize/);
-    assert.match(source, /page: (?:"1"|1)/);
+    assert.match(source, /<form method="GET" action=/);
+    assert.match(source, /name="page" value="1"/);
+    assert.match(source, /name="pageSize"/);
+    assert.doesNotMatch(source, /preventDefault|router\.push/);
   }
-  assert.match(memberships, /orderDirection: query\.orderDirection/);
-  assert.match(registerKeys, /orderDirection: query\.orderDirection/);
+  assert.match(memberships, /name="orderDirection"/);
+  assert.match(registerKeys, /name="orderDirection"/);
 });
 
 test("Admin zero-result views distinguish active queries from empty datasets", async () => {

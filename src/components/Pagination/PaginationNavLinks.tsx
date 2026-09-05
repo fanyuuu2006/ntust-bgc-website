@@ -51,7 +51,7 @@ function NavLink({ href, label, disabled }: NavLinkProps) {
     return (
       <span
         aria-disabled="true"
-        className="btn min-h-10 shrink-0 rounded-md px-3 py-2 text-sm opacity-50"
+        className="btn inline-flex min-h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-md px-3 py-2 text-sm opacity-50"
       >
         {label}
       </span>
@@ -59,7 +59,10 @@ function NavLink({ href, label, disabled }: NavLinkProps) {
   }
 
   return (
-    <Link href={href} className="btn min-h-10 shrink-0 rounded-md px-3 py-2 text-sm">
+    <Link
+      href={href}
+      className="btn inline-flex min-h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-md px-3 py-2 text-sm"
+    >
       {label}
     </Link>
   );

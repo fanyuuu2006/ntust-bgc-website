@@ -55,10 +55,11 @@ test("dashboard borrowing uses a bounded urgency-first server summary and server
 });
 
 test("membership records are complete, URL-driven, and paginated without a client page", async () => {
-  const [page, toolbar, history, service, repository, presentation] = await Promise.all([
+  const [page, toolbar, history, results, service, repository, presentation] = await Promise.all([
     readSource("src/app/(authenticated)/memberships/page.tsx"),
     readSource("src/components/(authenticated)/memberships/MembershipRecordsToolbar.tsx"),
     readSource("src/components/(authenticated)/memberships/MembershipHistory.tsx"),
+    readSource("src/components/(authenticated)/memberships/MembershipRecordsResults.tsx"),
     readSource("src/services/memberships/memberships.service.ts"),
     readSource("src/repositories/memberships.repository.ts"),
     readSource("src/utils/membership.ts"),
@@ -66,15 +67,17 @@ test("membership records are complete, URL-driven, and paginated without a clien
 
   assert.doesNotMatch(page, /"use client"|Manager|Controller|Container/);
   assert.match(page, /searchParams/);
-  assert.match(page, /listMembershipRecordsByUserId/);
-  assert.match(page, /showPageSize=\{false\}/);
+  assert.match(results, /listMembershipRecordsByUserId/);
+  assert.match(results, /showPageSize=\{false\}/);
   assert.doesNotMatch(page, /membership\.id !== currentYearMembership/);
-  assert.match(toolbar, /<form action="\/memberships"/);
+  assert.match(toolbar, /<form method="GET" action="\/memberships"/);
   assert.match(toolbar, /name="search"|name="type"|name="status"|name="orderDirection"/);
-  assert.match(toolbar, /Search|ListFilter|ArrowUpDown/);
+  assert.match(toolbar, /ClearableSearchInput/);
+  assert.match(toolbar, /QueryFilterDisclosure/);
+  assert.match(toolbar, /ArrowUpDown/);
   assert.match(history, /History/);
-  assert.match(history, /<Card className="p-4">/);
-  assert.match(history, /currentMembershipId/);
+  assert.match(results, /<Card className="p-4">/);
+  assert.match(results, /currentMembershipId/);
   assert.match(service, /findAllMembershipsByUserId/);
   assert.match(service, /firstPage\.totalPages/);
   assert.match(service, /compareMembershipRecords/);

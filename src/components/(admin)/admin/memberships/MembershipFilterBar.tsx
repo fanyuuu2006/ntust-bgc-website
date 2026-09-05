@@ -1,12 +1,12 @@
-"use client";
-
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
+import { QueryFilterDisclosure } from "@/components/query/QueryFilterDisclosure";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import type { AcademicYear, MembershipStatus } from "@/types/database";
 import { buildQueryString } from "@/utils/url";
-import { usePathname, useRouter } from "next/navigation";
+
+const BASE_PATH = "/admin/memberships";
 
 type Props = {
   academicYears: AcademicYear[];
@@ -21,8 +21,6 @@ type Props = {
 };
 
 export function MemberFilterBar({ academicYears, query }: Props) {
-  const router = useRouter();
-  const pathname = usePathname();
   const clearSearchQuery = buildQueryString({
     academic_year_id: query.academic_year_id,
     status: query.status,
@@ -30,38 +28,47 @@ export function MemberFilterBar({ academicYears, query }: Props) {
     orderDirection: query.orderDirection,
     pageSize: query.pageSize,
   });
-  const clearSearchHref = clearSearchQuery ? `${pathname}?${clearSearchQuery}` : pathname;
+  const clearSearchHref = clearSearchQuery ? `${BASE_PATH}?${clearSearchQuery}` : BASE_PATH;
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const queryString = buildQueryString({
-      search: String(formData.get("search") ?? "").trim() || undefined,
-      academic_year_id: String(formData.get("academic_year_id") ?? "").trim() || undefined,
-      status: String(formData.get("status") ?? "").trim() || undefined,
-      orderBy: query.orderBy,
-      orderDirection: query.orderDirection,
-      pageSize: query.pageSize,
-      page: "1",
-    });
-    router.push(queryString ? `${pathname}?${queryString}` : pathname);
-  }
-
-  return <form onSubmit={handleSubmit}>
-    <AdminToolbar className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_11rem_9rem_auto] md:items-center">
-      <ClearableSearchInput initialValue={query.search} clearHref={clearSearchHref} name="search" placeholder="搜尋使用者姓名、學號或 Email" aria-label="搜尋使用者" className="w-full md:col-span-2 lg:col-span-1" />
-      <Button type="submit" variant="primary" className="order-2 w-full md:order-4 md:col-span-2 md:justify-self-end md:w-auto lg:col-span-1">搜尋</Button>
-      <FilterSelect name="academic_year_id" ariaLabel="學年度" defaultValue={query.academic_year_id}>
-        <option value="">全部學年度</option>
-        {academicYears.map((year) => <option key={year.id} value={year.id}>{year.year} 學年度</option>)}
-      </FilterSelect>
-      <FilterSelect name="status" ariaLabel="狀態" defaultValue={query.status}>
-        <option value="">全部狀態</option><option value="active">有效</option><option value="expired">已結束</option><option value="cancelled">已撤銷</option>
-      </FilterSelect>
-    </AdminToolbar>
-  </form>;
+  return (
+    <form method="GET" action={BASE_PATH}>
+      <input type="hidden" name="page" value="1" />
+      <input type="hidden" name="pageSize" value={query.pageSize ?? 20} />
+      {query.orderBy ? <input type="hidden" name="orderBy" value={query.orderBy} /> : null}
+      {query.orderDirection ? <input type="hidden" name="orderDirection" value={query.orderDirection} /> : null}
+      <AdminToolbar className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+        <ClearableSearchInput
+          initialValue={query.search}
+          clearHref={clearSearchHref}
+          name="search"
+          placeholder="搜尋使用者姓名、學號或 Email"
+          aria-label="搜尋使用者"
+          className="w-full"
+        />
+        <Button type="submit" variant="primary" className="w-full lg:w-auto">
+          搜尋
+        </Button>
+        <QueryFilterDisclosure panelClassName="lg:min-w-72">
+          <FilterSelect name="academic_year_id" label="學年度" defaultValue={query.academic_year_id}>
+            <option value="">全部學年度</option>
+            {academicYears.map((year) => <option key={year.id} value={year.id}>{year.year} 學年度</option>)}
+          </FilterSelect>
+          <FilterSelect name="status" label="狀態" defaultValue={query.status}>
+            <option value="">全部狀態</option><option value="active">有效</option><option value="expired">已結束</option><option value="cancelled">已撤銷</option>
+          </FilterSelect>
+        </QueryFilterDisclosure>
+      </AdminToolbar>
+    </form>
+  );
 }
 
-function FilterSelect({ name, ariaLabel, defaultValue, children }: { name: string; ariaLabel: string; defaultValue?: string; children: React.ReactNode }) {
-  return <Select name={name} aria-label={ariaLabel} defaultValue={defaultValue ?? ""} className="order-3 w-full">{children}</Select>;
+function FilterSelect({ name, label, defaultValue, children }: { name: string; label: string; defaultValue?: string; children: React.ReactNode }) {
+  return (
+    <label className="grid gap-1.5 text-sm font-medium text-(--text-primary)">
+      {label}
+      <Select name={name} defaultValue={defaultValue ?? ""} className="w-full">
+        {children}
+      </Select>
+    </label>
+  );
 }

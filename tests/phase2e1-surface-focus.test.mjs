@@ -8,7 +8,7 @@ test("touched entity records use canonical card surfaces while subtle internals 
   const [borrowing, checkIn, history, gameCard, detail] = await Promise.all([
     readSource("src/components/(authenticated)/dashboard/DashboardBorrowingSummary.tsx"),
     readSource("src/components/(authenticated)/dashboard/SelfCheckInEvents.tsx"),
-    readSource("src/components/(authenticated)/memberships/MembershipHistory.tsx"),
+    readSource("src/components/(authenticated)/memberships/MembershipRecordsResults.tsx"),
     readSource("src/components/(public)/board-games/BoardGameCard.tsx"),
     readSource("src/app/(public)/board-games/[id]/page.tsx"),
   ]);

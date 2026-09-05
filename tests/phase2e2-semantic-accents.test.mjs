@@ -6,7 +6,7 @@ const readSource = (path) => readFile(new URL(`../${path}`, import.meta.url), "u
 
 test("semantic accents distinguish current, active, attention, and urgent states", async () => {
   const [history, membershipStatus, borrowingStatus, borrowingRecord] = await Promise.all([
-    readSource("src/components/(authenticated)/memberships/MembershipHistory.tsx"),
+    readSource("src/components/(authenticated)/memberships/MembershipRecordsResults.tsx"),
     readSource("src/components/MembershipStatusBadge.tsx"),
     readSource("src/components/BorrowingStatusBadge.tsx"),
     readSource("src/components/(authenticated)/borrowings/BorrowingRecord.tsx"),

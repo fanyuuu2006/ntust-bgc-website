@@ -5,21 +5,23 @@ import test from "node:test";
 const readSource = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("board-game discovery uses URL-authoritative search, filters, and sorting", async () => {
-  const [page, toolbar, card] = await Promise.all([
+  const [page, toolbar, filters, card] = await Promise.all([
     readSource("src/app/(public)/board-games/page.tsx"),
     readSource("src/components/(public)/board-games/BoardGameSearchForm.tsx"),
+    readSource("src/components/(public)/board-games/BoardGameFilterDisclosure.tsx"),
     readSource("src/components/(public)/board-games/BoardGameCard.tsx"),
   ]);
+  const queryControls = toolbar + filters;
 
   assert.match(page, /sort\?: string/);
   assert.match(page, /normalizeSortOption\(/);
   assert.match(toolbar, /<form method="GET" action=\{BASE_PATH\}/);
   assert.match(toolbar, /name="page" value="1"/);
   assert.match(toolbar, /name="search"/);
-  assert.match(toolbar, /name="status"/);
+  assert.match(queryControls, /name="status"/);
   assert.match(toolbar, /name="sort"/);
-  assert.match(toolbar, /Search|ListFilter|ArrowUpDown/);
-  assert.doesNotMatch(toolbar, /useRouter|usePathname|router\.replace/);
+  assert.match(queryControls, /Search|ListFilter|ArrowUpDown/);
+  assert.doesNotMatch(queryControls, /useRouter|usePathname|router\.replace|fetch\(/);
   assert.match(card, /className="card interactive/);
   assert.doesNotMatch(card, /bg-\(--surface-subtle\).*p-3/);
 });
@@ -38,8 +40,9 @@ test("board-game detail explains borrowability before exposing a borrowing actio
 });
 
 test("borrowings remain server-rendered, queryable, and time-aware", async () => {
-  const [page, record, service] = await Promise.all([
+  const [page, results, record, service] = await Promise.all([
     readSource("src/app/(authenticated)/borrowings/page.tsx"),
+    readSource("src/components/(authenticated)/borrowings/BorrowingsResults.tsx"),
     readSource("src/components/(authenticated)/borrowings/BorrowingRecord.tsx"),
     readSource("src/services/board-games/board-games.service.ts"),
   ]);
@@ -48,11 +51,11 @@ test("borrowings remain server-rendered, queryable, and time-aware", async () =>
   assert.match(page, /name="search"/);
   assert.match(page, /name="status"/);
   assert.match(page, /name="sort"/);
-  assert.match(page, /getBorrowingsByUserId/);
+  assert.match(results, /getBorrowingsByUserId/);
   assert.match(record, /getDueTimePresentation/);
   assert.match(record, /CalendarClock|TriangleAlert/);
-  assert.match(page, /<ul className="flex flex-col gap-2\.5">/);
-  assert.match(page, /<li key=\{borrowing\.id\}>/);
+  assert.match(results, /<ul className="flex flex-col gap-2\.5">/);
+  assert.match(results, /<li key=\{borrowing\.id\}>/);
   assert.match(page, /container max-w-3xl space-y-6/);
   assert.match(record, /<Card className="p-3 md:p-4">/);
   assert.match(record, /className="size-12 shrink-0 rounded-lg/);
@@ -80,5 +83,5 @@ test("borrowing records use state-aware compact metadata without a membership ga
   assert.match(record, /<div className="min-w-0 flex-1">[\s\S]*?<h2[\s\S]*?<BorrowingStatusBadge/);
   assert.match(record, /className="shrink-0 self-start"/);
   assert.match(action, /variant="danger"/);
-  assert.match(page, /grid gap-2 md:grid-cols-\[minmax\(0,1fr\)_auto_auto_auto\]/);
+  assert.match(page, /lg:grid-cols-\[minmax\(0,1fr\)_auto_auto_auto\]/);
 });

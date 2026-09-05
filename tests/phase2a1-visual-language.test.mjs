@@ -31,15 +31,16 @@ test("text actions keep navigation semantics without boxed button treatment", as
 });
 
 test("contextual controls use ghost or outline rather than the retired secondary role", async () => {
-  const [mobileNavigation, boardGameToolbar] = await Promise.all([
+  const [mobileNavigation, boardGameToolbar, boardGameFilters] = await Promise.all([
     readSource("src/components/Header/MobileNavigation.tsx"),
     readSource("src/components/(public)/board-games/BoardGameSearchForm.tsx"),
+    readSource("src/components/(public)/board-games/BoardGameFilterDisclosure.tsx"),
   ]);
 
   assert.match(mobileNavigation, /variant="ghost"/);
-  assert.match(boardGameToolbar, /btn outline/);
+  assert.match(boardGameFilters, /variant="outline"/);
   assert.match(boardGameToolbar, /<Button type="submit" variant="primary"/);
-  assert.doesNotMatch(boardGameToolbar, /secondary/);
+  assert.doesNotMatch(boardGameToolbar + boardGameFilters, /secondary/);
 });
 
 test("primitive styles remain intrinsic and do not impose parent layout", async () => {

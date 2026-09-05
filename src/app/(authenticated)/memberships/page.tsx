@@ -1,13 +1,19 @@
+import { Suspense } from "react";
 import { MembershipActivationForm } from "@/components/(authenticated)/memberships/MembershipActivationForm";
 import { CurrentMembershipCard } from "@/components/(authenticated)/memberships/CurrentMembershipCard";
 import { MembershipHistory } from "@/components/(authenticated)/memberships/MembershipHistory";
+import { MembershipRecordsLoading } from "@/components/(authenticated)/memberships/MembershipRecordsLoading";
+import {
+  MembershipRecordsResults,
+  type MembershipRecordsResultQuery,
+} from "@/components/(authenticated)/memberships/MembershipRecordsResults";
 import { MembershipRecordsToolbar } from "@/components/(authenticated)/memberships/MembershipRecordsToolbar";
-import { Pagination } from "@/components/Pagination/Pagination";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { getCurrentUser } from "@/libs/auth";
 import { membershipService } from "@/services/memberships/memberships.service";
 import type { MembershipStatus, MembershipType } from "@/types/database";
+import { buildQueryString } from "@/utils/url";
 
 type MembershipSearchParams = {
   page?: string | string[];
@@ -54,36 +60,29 @@ export default async function MembershipsPage({
   };
   const academicYears = await membershipService.listAcademicYears();
   const currentAcademicYear = academicYears.find((year) => year.is_current);
-  const [currentYearMembership, membershipRecords] = await Promise.all([
-    currentAcademicYear
-      ? membershipService.getMembershipByUserIdAndAcademicYearId(
-          user.id,
-          currentAcademicYear.id,
-        )
-      : Promise.resolve(null),
-    membershipService.listMembershipRecordsByUserId(user.id, queryInput),
-  ]);
+  const currentYearMembership = currentAcademicYear
+    ? await membershipService.getMembershipByUserIdAndAcademicYearId(
+        user.id,
+        currentAcademicYear.id,
+      )
+    : null;
   const mayActivate = Boolean(currentAcademicYear) && (
     !currentYearMembership ||
     ["expired", "cancelled"].includes(currentYearMembership.status)
   );
-  const query = {
+  const resultQuery: MembershipRecordsResultQuery = {
+    page: Number(queryInput.page ?? "1"),
+    pageSize: Number(queryInput.pageSize ?? "12"),
     search: queryInput.search?.trim() || undefined,
     type: queryInput.type,
     status: queryInput.status,
+    orderBy: "academic_year",
     orderDirection:
       queryInput.orderDirection === "asc"
         ? ("asc" as const)
           : ("desc" as const),
-    pageSize: membershipRecords.pageSize,
   };
-  const hasMembershipQuery = Boolean(
-    query.search ||
-      query.type ||
-      query.status ||
-      query.orderDirection === "asc" ||
-      Number(queryInput.page ?? "1") > 1,
-  );
+  const resultQueryKey = buildQueryString(resultQuery);
 
   return (
     <section className="container max-w-5xl space-y-8 py-8">
@@ -113,28 +112,19 @@ export default async function MembershipsPage({
       ) : null}
 
       <MembershipHistory
-        memberships={membershipRecords.data}
-        currentMembershipId={currentYearMembership?.id}
-        hasQuery={hasMembershipQuery}
-        controls={<MembershipRecordsToolbar query={query} />}
-        pagination={
-          <Pagination
-            page={membershipRecords.page}
-            pageSize={membershipRecords.pageSize}
-            total={membershipRecords.total}
-            totalPages={membershipRecords.totalPages}
-            basePath="/memberships"
-            query={{
-              search: query.search,
-              type: query.type,
-              status: query.status,
-              orderBy: "academic_year",
-              orderDirection: query.orderDirection,
-            }}
-            showPageSize={false}
+        controls={<MembershipRecordsToolbar query={resultQuery} />}
+      >
+        <Suspense
+          key={resultQueryKey}
+          fallback={<MembershipRecordsLoading />}
+        >
+          <MembershipRecordsResults
+            userId={user.id}
+            currentMembershipId={currentYearMembership?.id}
+            query={resultQuery}
           />
-        }
-      />
+        </Suspense>
+      </MembershipHistory>
     </section>
   );
 }

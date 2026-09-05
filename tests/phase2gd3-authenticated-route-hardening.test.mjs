@@ -5,14 +5,14 @@ import test from "node:test";
 const readSource = (path) =>
   readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("authenticated routes provide route-shaped busy states and a shared recoverable error boundary", async () => {
+test("authenticated routes provide page or result-shaped busy states and a shared recoverable error boundary", async () => {
   const [errorBoundary, ...loadingStates] = await Promise.all([
     readSource("src/app/(authenticated)/error.tsx"),
     readSource("src/app/(authenticated)/dashboard/loading.tsx"),
-    readSource("src/app/(authenticated)/borrowings/loading.tsx"),
-    readSource("src/app/(authenticated)/memberships/loading.tsx"),
     readSource("src/app/(authenticated)/profile/loading.tsx"),
     readSource("src/app/(authenticated)/settings/loading.tsx"),
+    readSource("src/components/(authenticated)/borrowings/BorrowingsResultsLoading.tsx"),
+    readSource("src/components/(authenticated)/memberships/MembershipRecordsLoading.tsx"),
   ]);
 
   assert.match(errorBoundary, /"use client"/);
@@ -22,19 +22,20 @@ test("authenticated routes provide route-shaped busy states and a shared recover
 
   for (const loadingState of loadingStates) {
     assert.match(loadingState, /aria-busy="true"/);
-    assert.match(loadingState, /aria-label="頁面載入中"/);
     assert.match(loadingState, /skeleton/);
   }
 
-  assert.notEqual(loadingStates[0], loadingStates[1]);
-  assert.notEqual(loadingStates[1], loadingStates[3]);
+  assert.match(loadingStates[0], /aria-label="頁面載入中"/);
+  assert.match(loadingStates[3], /aria-label="正在更新借用紀錄"/);
+  assert.match(loadingStates[4], /aria-label="正在更新社員紀錄"/);
+  assert.notEqual(loadingStates[0], loadingStates[3]);
 });
 
 test("profile and memberships recover from distinct missing and empty data states", async () => {
-  const [profilePage, membershipsPage, membershipHistory, dashboardMembership] = await Promise.all([
+  const [profilePage, membershipsPage, membershipResults, dashboardMembership] = await Promise.all([
     readSource("src/app/(authenticated)/profile/page.tsx"),
     readSource("src/app/(authenticated)/memberships/page.tsx"),
-    readSource("src/components/(authenticated)/memberships/MembershipHistory.tsx"),
+    readSource("src/components/(authenticated)/memberships/MembershipRecordsResults.tsx"),
     readSource("src/components/(authenticated)/dashboard/DashboardMembershipSummary.tsx"),
   ]);
 
@@ -42,12 +43,12 @@ test("profile and memberships recover from distinct missing and empty data state
   assert.match(profilePage, /個人資料暫時無法載入/);
   assert.match(profilePage, /帳號仍可正常使用/);
 
-  assert.match(membershipsPage, /hasMembershipQuery/);
+  assert.match(membershipsPage, /MembershipRecordsResults/);
   assert.match(membershipsPage, /currentAcademicYear \?/);
   assert.match(membershipsPage, /目前尚未設定可入社的學年度/);
-  assert.match(membershipHistory, /hasQuery/);
-  assert.match(membershipHistory, /目前沒有社員紀錄/);
-  assert.match(membershipHistory, /找不到符合條件的社員紀錄/);
+  assert.match(membershipResults, /hasQuery/);
+  assert.match(membershipResults, /目前沒有社員紀錄/);
+  assert.match(membershipResults, /找不到符合條件的社員紀錄/);
   assert.match(dashboardMembership, /hasCurrentAcademicYear/);
   assert.match(dashboardMembership, /目前尚未設定可入社的學年度/);
 });
