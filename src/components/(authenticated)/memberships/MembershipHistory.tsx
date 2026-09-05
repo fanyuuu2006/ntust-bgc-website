@@ -12,11 +12,13 @@ import { MEMBERSHIP_TYPE_LABEL } from "@/utils/membership";
 export function MembershipHistory({
   memberships,
   currentMembershipId,
+  hasQuery = false,
   controls,
   pagination,
 }: {
   memberships: MembershipWithAcademicYear[];
   currentMembershipId?: string;
+  hasQuery?: boolean;
   controls?: ReactNode;
   pagination?: ReactNode;
 }) {
@@ -41,7 +43,11 @@ export function MembershipHistory({
         <EmptyState
           compact
           className="mt-4 border border-(--border-default) bg-(--surface-subtle) p-5 text-left"
-          title="找不到符合條件的社員紀錄"
+          title={
+            hasQuery
+              ? "找不到符合條件的社員紀錄"
+              : "目前沒有社員紀錄"
+          }
         />
       ) : (
         <ul className="mt-4 grid gap-3">

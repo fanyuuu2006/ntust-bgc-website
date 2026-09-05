@@ -29,7 +29,7 @@ export function PageHeader({
             {eyebrow}
           </p>
         ) : null}
-        <h1 className={cn("font-bold text-(--text-primary)", eyebrow ? "mt-1 text-2xl sm:text-3xl" : "text-2xl sm:text-3xl")}>
+        <h1 className={cn("min-w-0 break-words font-bold text-(--text-primary)", eyebrow ? "mt-1 text-2xl sm:text-3xl" : "text-2xl sm:text-3xl")}>
           {title}
         </h1>
         {description ? (

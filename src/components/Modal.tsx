@@ -18,6 +18,7 @@ type ModalProps = {
   className?: string;
   contentClassName?: string;
   closeLabel?: string;
+  closeDisabled?: boolean;
 };
 
 const sizeClassNames: Record<ModalSize, string> = {
@@ -72,6 +73,7 @@ export function Modal({
   className,
   contentClassName,
   closeLabel = "關閉對話框",
+  closeDisabled = false,
 }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const hasBodyScrollLock = useRef(false);
@@ -118,10 +120,10 @@ export function Modal({
       onClose={onClose}
       onCancel={(event) => {
         event.preventDefault();
-        onClose();
+        if (!closeDisabled) onClose();
       }}
       onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (event.target === event.currentTarget && !closeDisabled) onClose();
       }}
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
@@ -131,13 +133,13 @@ export function Modal({
         className,
       )}
     >
-      <div className="flex items-start justify-between gap-4 border-b border-(--border-default) px-5 py-4">
-        <div>
-          <h2 id={titleId} className="text-lg font-bold">
+      <div className="flex min-w-0 items-start justify-between gap-4 border-b border-(--border-default) px-5 py-4">
+        <div className="min-w-0">
+          <h2 id={titleId} className="break-words text-lg font-bold">
             {title}
           </h2>
           {description ? (
-            <p id={descriptionId} className="mt-1 text-sm leading-6 text-(--text-muted)">
+            <p id={descriptionId} className="mt-1 break-words text-sm leading-6 text-(--text-muted)">
               {description}
             </p>
           ) : null}
@@ -147,13 +149,14 @@ export function Modal({
           size="sm"
           iconOnly
           onClick={onClose}
+          disabled={closeDisabled}
           aria-label={closeLabel}
           className="shrink-0"
         >
           <X aria-hidden="true" className="size-4" />
         </Button>
       </div>
-      <div className={cn("max-h-[75dvh] overflow-y-auto p-5", contentClassName)}>
+      <div className={cn("min-w-0 max-h-[75dvh] overflow-y-auto p-5", contentClassName)}>
         {children}
       </div>
     </dialog>

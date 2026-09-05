@@ -36,7 +36,7 @@ test("HeaderActions owns the single primary login action and registration remain
   assert.match(register, /loginHref/);
 });
 
-test("UserMenu uses a flat member-first link list with secondary admin and a menu-row logout action", async () => {
+test("UserMenu keeps member-first links, secondary admin navigation, and a separate destructive logout action", async () => {
   const [menu, navigation] = await Promise.all([
     readSource("src/components/Header/UserMenu.tsx"),
     readSource("src/libs/navigation.tsx"),
@@ -46,8 +46,10 @@ test("UserMenu uses a flat member-first link list with secondary admin and a men
   assert.match(menu, /items=\{memberMenuNavigation\}/);
   assert.match(menu, /items=\{adminNavigation\}/);
   assert.match(menu, /isAdmin/);
-  assert.match(menu, /variant="ghost"/);
-  assert.match(menu, /text-\(--status-danger\)/);
+  assert.match(
+    menu,
+    /<hr[^>]*\/>\s*<LogoutButton[\s\S]*?variant="danger"[\s\S]*?>[\s\S]*?登出[\s\S]*?<\/LogoutButton>/,
+  );
   assert.doesNotMatch(menu, /MenuGroup|clubNavigation|accountNavigation/);
   assert.doesNotMatch(menu, /membership\.type|lifetime/);
   assert.match(menu, /user\.name/);

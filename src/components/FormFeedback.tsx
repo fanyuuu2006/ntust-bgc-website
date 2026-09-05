@@ -20,11 +20,13 @@ export const FormFeedback = ({
   className,
   ...props
 }: FormFeedbackProps) => {
-  if (!error && !success && !warning && !info) {
-    return null;
-  }
   return (
-    <div aria-live="polite" className={cn(`min-h-5`, className)} {...props}>
+    <div
+      aria-live="polite"
+      aria-atomic="true"
+      className={cn("min-h-5", className)}
+      {...props}
+    >
       {error && (
         <p role="alert" className="text-sm text-(--status-danger)">
           {error}

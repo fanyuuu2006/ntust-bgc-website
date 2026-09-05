@@ -135,7 +135,12 @@ export function ProfileSettingsForm({ profile }: { profile: UserProfile }) {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-4 flex flex-col gap-4">
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        aria-busy={isLoading || undefined}
+        className="mt-4 flex flex-col gap-4"
+      >
         <div className="grid gap-4 sm:grid-cols-2">
           {fields.map((field) => (
             <FieldInput

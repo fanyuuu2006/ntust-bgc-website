@@ -16,8 +16,8 @@ export function DashboardMembershipSummary({
   academicYearLabel?: string;
 }) {
   const hasCurrentMembership = Boolean(membership);
-  const academicYear =
-    membership?.academic_year?.year ?? academicYearLabel ?? "目前";
+  const academicYear = membership?.academic_year?.year ?? academicYearLabel;
+  const hasCurrentAcademicYear = Boolean(academicYear);
 
   return (
     <Card
@@ -57,7 +57,7 @@ export function DashboardMembershipSummary({
         {membership ? (
           <div className="mt-3 min-w-0">
             <p className="wrap-break-word text-xl font-semibold text-(--text-primary)">
-              {academicYear} 學年度
+              {academicYear ?? "本"} 學年度
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
               <span className="text-(--text-secondary)">
@@ -74,7 +74,7 @@ export function DashboardMembershipSummary({
               </p>
             ) : null}
           </div>
-        ) : (
+        ) : hasCurrentAcademicYear ? (
           <div className="mt-3 min-w-0">
             <p className="font-semibold text-(--text-primary)">
               尚未完成 {academicYear} 學年度入社
@@ -89,6 +89,24 @@ export function DashboardMembershipSummary({
               className="mt-3"
             >
               前往社員資格
+              <ArrowRight aria-hidden="true" className="size-4" />
+            </ButtonLink>
+          </div>
+        ) : (
+          <div className="mt-3 min-w-0">
+            <p className="font-semibold text-(--text-primary)">
+              目前尚未設定可入社的學年度
+            </p>
+            <p className="mt-2 text-sm leading-6 text-(--text-muted)">
+              社團尚未開放新的學年度入社；既有社員紀錄仍可前往社員資格頁查看。
+            </p>
+            <ButtonLink
+              href="/memberships"
+              variant="outline"
+              size="sm"
+              className="mt-3"
+            >
+              查看社員資格
               <ArrowRight aria-hidden="true" className="size-4" />
             </ButtonLink>
           </div>

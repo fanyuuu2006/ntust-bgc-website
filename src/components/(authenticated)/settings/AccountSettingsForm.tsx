@@ -128,7 +128,12 @@ export function AccountSettingsForm({
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-4 flex flex-col gap-4">
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        aria-busy={isLoading || undefined}
+        className="mt-4 flex flex-col gap-4"
+      >
         <div className="flex min-w-0 items-center gap-3 rounded-xl bg-(--surface-subtle) p-3 sm:p-4">
           <UserAvatar
             user={previewUser}

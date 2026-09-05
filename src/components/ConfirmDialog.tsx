@@ -25,9 +25,21 @@ export function ConfirmDialog({
   isSubmitting = false,
 }: ConfirmDialogProps) {
   return (
-    <Modal open={open} onClose={onClose} title={title} description={description}>
+    <Modal
+      open={open}
+      onClose={onClose}
+      closeDisabled={isSubmitting}
+      title={title}
+      description={description}
+    >
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onClose}
+          disabled={isSubmitting}
+          autoFocus
+        >
           取消
         </Button>
         <Button type="button" variant={confirmVariant} onClick={onConfirm} isLoading={isSubmitting}>

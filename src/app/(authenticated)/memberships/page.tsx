@@ -4,6 +4,7 @@ import { MembershipHistory } from "@/components/(authenticated)/memberships/Memb
 import { MembershipRecordsToolbar } from "@/components/(authenticated)/memberships/MembershipRecordsToolbar";
 import { Pagination } from "@/components/Pagination/Pagination";
 import { PageHeader } from "@/components/PageHeader";
+import { Card } from "@/components/ui/Card";
 import { getCurrentUser } from "@/libs/auth";
 import { membershipService } from "@/services/memberships/memberships.service";
 import type { MembershipStatus, MembershipType } from "@/types/database";
@@ -62,9 +63,10 @@ export default async function MembershipsPage({
       : Promise.resolve(null),
     membershipService.listMembershipRecordsByUserId(user.id, queryInput),
   ]);
-  const mayActivate =
+  const mayActivate = Boolean(currentAcademicYear) && (
     !currentYearMembership ||
-    ["expired", "cancelled"].includes(currentYearMembership.status);
+    ["expired", "cancelled"].includes(currentYearMembership.status)
+  );
   const query = {
     search: queryInput.search?.trim() || undefined,
     type: queryInput.type,
@@ -74,6 +76,13 @@ export default async function MembershipsPage({
         ? ("asc" as const)
         : ("desc" as const),
   };
+  const hasMembershipQuery = Boolean(
+    query.search ||
+      query.type ||
+      query.status ||
+      query.orderDirection === "asc" ||
+      Number(queryInput.page ?? "1") > 1,
+  );
 
   return (
     <section className="container max-w-5xl space-y-8 py-8">
@@ -87,7 +96,16 @@ export default async function MembershipsPage({
         <CurrentMembershipCard membership={currentYearMembership} />
       ) : null}
 
-      {mayActivate ? (
+      {!currentAcademicYear ? (
+        <Card surface="subtle" className="p-5 sm:p-6">
+          <h2 className="font-semibold text-(--text-primary)">
+            目前尚未設定可入社的學年度
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-(--text-muted)">
+            社團尚未開放新的學年度入社；既有社員紀錄仍可在下方查看。
+          </p>
+        </Card>
+      ) : mayActivate ? (
         <MembershipActivationForm
           academicYearLabel={currentAcademicYear?.year}
         />
@@ -96,6 +114,7 @@ export default async function MembershipsPage({
       <MembershipHistory
         memberships={membershipRecords.data}
         currentMembershipId={currentYearMembership?.id}
+        hasQuery={hasMembershipQuery}
         controls={<MembershipRecordsToolbar query={query} />}
         pagination={
           <Pagination

@@ -39,14 +39,22 @@ type ProfileIdentityBadgesProps = {
   badges: ProfileIdentityBadge[];
 };
 
+function IdentityBadge({ badge }: { badge: ProfileIdentityBadge }) {
+  const presentation = categoryPresentation[badge.category];
+
+  return (
+    <Badge tone={presentation.tone} style={presentation.style}>
+      {badge.label}
+    </Badge>
+  );
+}
+
 export function ProfileIdentityBadges({
   badges,
 }: ProfileIdentityBadgesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const disclosureId = useId();
-  const visibleBadges = isExpanded
-    ? badges
-    : badges.slice(0, MAX_VISIBLE_BADGES);
+  const visibleBadges = badges.slice(0, MAX_VISIBLE_BADGES);
   const hiddenBadges = badges.slice(MAX_VISIBLE_BADGES);
 
   if (badges.length === 0) return null;
@@ -56,24 +64,24 @@ export function ProfileIdentityBadges({
       className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:justify-start"
       aria-label="社團身分標籤"
     >
-      {visibleBadges.map((badge) => {
-        const presentation = categoryPresentation[badge.category];
-
-        return (
-          <Badge
-            key={badge.id}
-            tone={presentation.tone}
-            style={presentation.style}
-          >
-            {badge.label}
-          </Badge>
-        );
-      })}
+      {visibleBadges.map((badge) => (
+        <IdentityBadge key={badge.id} badge={badge} />
+      ))}
+      <span id={disclosureId} className="contents" hidden={!isExpanded}>
+        {hiddenBadges.map((badge) => (
+          <IdentityBadge key={badge.id} badge={badge} />
+        ))}
+      </span>
       {hiddenBadges.length > 0 ? (
         <Button
           type="button"
           variant="ghost"
           size="sm"
+          aria-label={
+            isExpanded
+              ? "收合社團身分標籤"
+              : `顯示其餘 ${hiddenBadges.length} 個社團身分標籤`
+          }
           aria-expanded={isExpanded}
           aria-controls={disclosureId}
           onClick={() => setIsExpanded((expanded) => !expanded)}
@@ -82,7 +90,7 @@ export function ProfileIdentityBadges({
           {isExpanded ? "收合" : `+${hiddenBadges.length}`}
         </Button>
       ) : null}
-      <span id={disclosureId} className="sr-only">
+      <span aria-live="polite" className="sr-only">
         {isExpanded ? "已顯示全部社團身分標籤" : "尚有更多社團身分標籤"}
       </span>
     </div>
