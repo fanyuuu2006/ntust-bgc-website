@@ -2,14 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { SettingsCard } from "./SettingsCard";
+
 import { FieldInput, type FieldInputField } from "@/components/FieldInput";
+import { FormFeedback } from "@/components/FormFeedback";
 import { UserAvatar } from "@/components/UserAvatar";
+import { Button } from "@/components/ui/Button";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import type { User } from "@/types/database";
-import { FormFeedback } from "@/components/FormFeedback";
-import { Button } from "@/components/ui/Button";
 
 type AccountFormValues = {
   name: string;
@@ -20,32 +20,25 @@ type UpdateAccountPayload = {
   name?: string;
   avatar?: string | null;
 };
-type AccountSettingsCardProps = React.HTMLAttributes<HTMLDivElement> & {
+
+type AccountSettingsFormProps = React.HTMLAttributes<HTMLElement> & {
   user: User;
 };
 
 const nameField: FieldInputField = {
   id: "name",
-  label: "帳號名稱",
+  label: "使用者名稱",
   type: "text",
   autoComplete: "nickname",
-  placeholder: "請輸入顯示名稱",
+  placeholder: "請輸入使用者名稱",
 };
 
 const avatarField: FieldInputField = {
   id: "avatar",
-  label: "頭像",
+  label: "頭像圖片網址",
   type: "url",
   placeholder: "https://example.com/avatar.png",
   hint: "目前支援圖片網址，建議使用正方形圖片",
-};
-
-const emailField: FieldInputField = {
-  id: "email",
-  label: "Email",
-  type: "email",
-  disabled: true,
-  hint: "Email 為登入帳號，無法修改",
 };
 
 function toFormValues(user: User): AccountFormValues {
@@ -55,13 +48,12 @@ function toFormValues(user: User): AccountFormValues {
   };
 }
 
-export const AccountSettingsCard = ({
+export function AccountSettingsForm({
   user,
   className,
   ...rest
-}: AccountSettingsCardProps) => {
+}: AccountSettingsFormProps) {
   const router = useRouter();
-
   const [values, setValues] = useState<AccountFormValues>(() =>
     toFormValues(user),
   );
@@ -85,7 +77,8 @@ export const AccountSettingsCard = ({
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
-    setValues((prev) => ({ ...prev, [name]: value }));
+    setValues((current) => ({ ...current, [name]: value }));
+    setFormError(null);
     setSuccessMessage(null);
   }
 
@@ -94,9 +87,9 @@ export const AccountSettingsCard = ({
     setFormError(null);
     setSuccessMessage(null);
   }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     setFormError(null);
     setSuccessMessage(null);
     setIsLoading(true);
@@ -111,13 +104,13 @@ export const AccountSettingsCard = ({
         method: "PATCH",
         body: payload,
       });
-
-      setSuccessMessage("帳號資訊已更新");
-
+      setSuccessMessage("帳號資料已更新");
       router.refresh();
-    } catch (err) {
+    } catch (error) {
       setFormError(
-        err instanceof ApiError ? err.message : "更新帳號資訊失敗，請稍後再試",
+        error instanceof ApiError
+          ? error.message
+          : "更新帳號資料失敗，請稍後再試",
       );
     } finally {
       setIsLoading(false);
@@ -125,27 +118,33 @@ export const AccountSettingsCard = ({
   }
 
   return (
-    <SettingsCard
-      title="帳號資訊"
-      description="修改顯示名稱與頭像，Email 僅供登入使用"
-      className={className}
-      {...rest}
-    >
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-        <div className="flex flex-col items-start gap-4 rounded-xl bg-(--secondary-background) p-4 sm:flex-row sm:items-center">
+    <section className={className} {...rest} aria-labelledby="account-settings-title">
+      <div>
+        <h3 id="account-settings-title" className="font-semibold text-(--text-primary)">
+          帳號資料
+        </h3>
+        <p className="mt-1 text-sm text-(--text-muted)">
+          管理網站上的使用者名稱與頭像。
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} noValidate className="mt-4 flex flex-col gap-4">
+        <div className="flex min-w-0 items-center gap-3 rounded-xl bg-(--surface-subtle) p-3 sm:p-4">
           <UserAvatar
             user={previewUser}
-            className="size-16 shrink-0 rounded-2xl border border-(--border)"
+            className="size-14 shrink-0 rounded-xl border border-(--border-default) sm:size-16"
           />
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <p className="truncate text-sm font-medium text-(--text-primary)">
+          <div className="min-w-0">
+            <p className="break-words text-sm font-semibold text-(--text-primary)">
               {values.name.trim() || user.name}
             </p>
-            <p className="text-sm text-(--text-muted)">頭像與名稱會在此預覽</p>
+            <p className="mt-0.5 text-xs text-(--text-muted)">
+              頭像與使用者名稱預覽
+            </p>
           </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <FieldInput
             field={{ ...nameField, disabled: isLoading }}
             value={values.name}
@@ -158,31 +157,46 @@ export const AccountSettingsCard = ({
           />
         </div>
 
-        <FieldInput field={emailField} value={user.email} onChange={() => {}} />
+        <div
+          aria-readonly="true"
+          aria-labelledby="settings-email-label"
+          aria-describedby="settings-email-hint"
+          className="min-w-0 rounded-xl border border-(--border-muted) bg-(--surface-subtle) px-3 py-3"
+        >
+          <p id="settings-email-label" className="text-sm font-medium text-(--text-primary)">
+            Email
+          </p>
+          <p className="mt-1 break-all text-sm text-(--text-secondary)" title={user.email}>
+            {user.email}
+          </p>
+          <p id="settings-email-hint" className="mt-1 text-xs text-(--text-muted)">
+            Email 為登入帳號，目前無法修改
+          </p>
+        </div>
 
         <FormFeedback error={formError} success={successMessage} />
 
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button
             type="button"
             onClick={handleReset}
             disabled={isLoading || !isDirty}
             variant="outline"
-            className="w-full px-6 py-2.5 sm:w-auto sm:text-base"
+            className="w-full sm:w-auto"
           >
             重設
           </Button>
-
           <Button
             type="submit"
+            variant="primary"
             disabled={isLoading || !isDirty}
             isLoading={isLoading}
-            className="w-full px-6 py-2.5 sm:w-auto sm:text-base"
+            className="w-full sm:w-auto"
           >
-            {isLoading ? "儲存中..." : "儲存"}
+            儲存帳號資料
           </Button>
         </div>
       </form>
-    </SettingsCard>
+    </section>
   );
-};
+}

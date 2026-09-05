@@ -26,11 +26,16 @@ export const createUserProfileSchema = z.object({
   ...userAcademicFields,
 });
 
-export const updateAcademicProfileSchema = z
+export const updateSelfProfileSchema = z
   .object({
-    ...userAcademicFields,
+    real_name: userContactFields.real_name,
+    phone: userContactFields.phone,
+    student_id: nullableAcademicField,
+    school: nullableAcademicField,
+    department: nullableAcademicField,
+    grade: nullableAcademicField,
   })
-  .refine((data) => Object.keys(data).length > 0, "沒有可更新的欄位");
+  .strict();
 
 export const updateUserProfileSchema = z.object({
   ...userContactFields,

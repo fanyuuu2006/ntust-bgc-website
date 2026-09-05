@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { SettingsCard } from "./SettingsCard";
+
 import { FieldInput, type FieldInputField } from "@/components/FieldInput";
-import { apiClient } from "@/libs/api/client";
-import { ApiError } from "@/libs/api/errors";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Button } from "@/components/ui/Button";
+import { apiClient } from "@/libs/api/client";
+import { ApiError } from "@/libs/api/errors";
 
 type PasswordFormValues = {
   currentPassword: string;
@@ -15,7 +15,6 @@ type PasswordFormValues = {
 };
 
 type PasswordFieldId = keyof PasswordFormValues;
-
 type PasswordField = Omit<FieldInputField, "id"> & { id: PasswordFieldId };
 
 const initialValues: PasswordFormValues = {
@@ -49,20 +48,12 @@ const baseFields: PasswordField[] = [
   },
 ];
 
-type PasswordSettingsCardProps = React.HTMLAttributes<HTMLDivElement>;
-
-export const PasswordSettingsCard = (props: PasswordSettingsCardProps) => {
+export function PasswordSettingsForm() {
   const [values, setValues] = useState<PasswordFormValues>(initialValues);
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const isDirty =
-    values.currentPassword !== "" ||
-    values.newPassword !== "" ||
-    values.confirmPassword !== "";
-
-  // 送出期間鎖住所有輸入框，避免畫面顯示值與已送出的請求內容不同步
+  const isDirty = Object.values(values).some(Boolean);
   const fields = useMemo(
     () => baseFields.map((field) => ({ ...field, disabled: isLoading })),
     [isLoading],
@@ -70,7 +61,7 @@ export const PasswordSettingsCard = (props: PasswordSettingsCardProps) => {
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
-    setValues((prev) => ({ ...prev, [name]: value }));
+    setValues((current) => ({ ...current, [name]: value }));
     setFormError(null);
     setSuccessMessage(null);
   }
@@ -96,9 +87,11 @@ export const PasswordSettingsCard = (props: PasswordSettingsCardProps) => {
       await apiClient("/api/auth/password", { method: "PATCH", body: values });
       setSuccessMessage("密碼已更新，下次登入請使用新密碼");
       setValues(initialValues);
-    } catch (err) {
+    } catch (error) {
       setFormError(
-        err instanceof ApiError ? err.message : "更新密碼失敗，請稍後再試",
+        error instanceof ApiError
+          ? error.message
+          : "更新密碼失敗，請稍後再試",
       );
     } finally {
       setIsLoading(false);
@@ -106,49 +99,52 @@ export const PasswordSettingsCard = (props: PasswordSettingsCardProps) => {
   }
 
   return (
-    <SettingsCard
-      title="安全性"
-      description="定期更換密碼可以降低帳號被盜用的風險"
-      {...props}
-    >
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-        <div className="grid gap-4 xl:grid-cols-2">
+    <section aria-labelledby="password-settings-title">
+      <div>
+        <h3 id="password-settings-title" className="font-semibold text-(--text-primary)">
+          變更密碼
+        </h3>
+        <p className="mt-1 text-sm text-(--text-muted)">
+          使用目前密碼驗證後設定新密碼。
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} noValidate className="mt-4 flex flex-col gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           {fields.map((field) => (
             <FieldInput
               key={field.id}
               field={field}
               value={values[field.id]}
               onChange={handleChange}
-              className={
-                field.id === "currentPassword" ? "sm:col-span-2" : undefined
-              }
+              className={field.id === "currentPassword" ? "sm:col-span-2" : undefined}
             />
           ))}
         </div>
 
         <FormFeedback error={formError} success={successMessage} />
 
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button
             type="button"
             onClick={handleReset}
             disabled={isLoading || !isDirty}
             variant="outline"
-            className="w-full px-6 py-2.5 sm:w-auto sm:text-base"
+            className="w-full sm:w-auto"
           >
             重設
           </Button>
-
           <Button
             type="submit"
+            variant="primary"
             disabled={isLoading || !isDirty}
             isLoading={isLoading}
-            className="w-full px-6 py-2.5 sm:w-auto sm:text-base"
+            className="w-full sm:w-auto"
           >
-            {isLoading ? "更新中..." : "更新密碼"}
+            更新密碼
           </Button>
         </div>
       </form>
-    </SettingsCard>
+    </section>
   );
-};
+}

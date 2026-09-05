@@ -2,7 +2,7 @@ import "server-only";
 import { userProfilesRepository } from "@/repositories/user-profiles.repository";
 import {
   createUserProfileSchema,
-  updateAcademicProfileSchema,
+  updateSelfProfileSchema,
   updateUserAccountSchema,
   updateUserProfileSchema,
 } from "./users.schema";
@@ -95,11 +95,11 @@ export const usersService = {
     return updated;
   },
 
-  updateAcademicProfile: async (
+  updateSelfProfile: async (
     userId: string,
     payload: unknown,
   ): Promise<UserProfile> => {
-    const data = updateAcademicProfileSchema.parse(payload);
+    const data = updateSelfProfileSchema.parse(payload);
 
     const updated = await userProfilesRepository.updateByUserId(userId, data);
 

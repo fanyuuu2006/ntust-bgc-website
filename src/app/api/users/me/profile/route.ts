@@ -60,7 +60,7 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    const profile = await usersService.updateAcademicProfile(user.id, body);
+    const profile = await usersService.updateSelfProfile(user.id, body);
 
     return NextResponse.json({ data: profile }, { status: 200 });
   } catch (error) {
