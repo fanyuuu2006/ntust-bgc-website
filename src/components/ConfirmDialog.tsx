@@ -12,6 +12,7 @@ type ConfirmDialogProps = {
   confirmLabel?: string;
   confirmVariant?: "primary" | "danger";
   isSubmitting?: boolean;
+  children?: React.ReactNode;
 };
 
 export function ConfirmDialog({
@@ -23,6 +24,7 @@ export function ConfirmDialog({
   confirmLabel = "刪除",
   confirmVariant = "danger",
   isSubmitting = false,
+  children,
 }: ConfirmDialogProps) {
   return (
     <Modal
@@ -32,6 +34,7 @@ export function ConfirmDialog({
       title={title}
       description={description}
     >
+      {children ? <div className="mb-4">{children}</div> : null}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button
           type="button"

@@ -30,10 +30,12 @@ test("board-game discovery uses URL-authoritative search, filters, and sorting",
 });
 
 test("board-game detail explains borrowability before exposing a borrowing action", async () => {
-  const [detail, service] = await Promise.all([
+  const [page, panel, service] = await Promise.all([
     readSource("src/app/(public)/board-games/[id]/page.tsx"),
+    readSource("src/components/(public)/board-games/BoardGameBorrowingPanel.tsx"),
     readSource("src/services/board-games/board-games.service.ts"),
   ]);
+  const detail = page + panel;
 
   assert.match(detail, /getOpenBorrowingForUserAndBoardGame/);
   assert.match(detail, /目前無法借用|登入後可申請借用|完成入社後可申請借用/);

@@ -7,6 +7,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const borrowingService = read("src/services/board-games/board-games.service.ts");
 const borrowRoute = read("src/app/api/board-games/[id]/borrow/route.ts");
 const boardGameDetail = read("src/app/(public)/board-games/[id]/page.tsx");
+const boardGameBorrowingPanel = read("src/components/(public)/board-games/BoardGameBorrowingPanel.tsx");
 const eventsService = read("src/services/events/events.service.ts");
 const loginForm = read("src/components/(auth)/login/LoginForm.tsx");
 const registerForm = read("src/components/(auth)/register/RegisterForm.tsx");
@@ -31,11 +32,11 @@ test("borrowing permission is authenticated-user only while check-in retains its
 });
 
 test("board-game detail keeps the entry visible and treats non-current membership as information", () => {
-  assert.match(boardGameDetail, /BorrowBoardGameForm/);
-  assert.match(boardGameDetail, /登入後申請借用/);
-  assert.match(boardGameDetail, /nonCurrentAcademicYearMemberBorrowingNotice/);
+  assert.match(boardGameBorrowingPanel, /BorrowBoardGameForm/);
+  assert.match(boardGameBorrowingPanel, /登入後申請借用/);
+  assert.match(boardGameBorrowingPanel, /nonCurrentAcademicYearMemberBorrowingNotice/);
   assert.match(boardGameDetail, /getCurrentMembershipByUserId/);
-  assert.doesNotMatch(boardGameDetail, /href="\/memberships"/);
+  assert.doesNotMatch(boardGameDetail + boardGameBorrowingPanel, /href="\/memberships"/);
 });
 
 test("login preserves only a safe same-site return destination", () => {
