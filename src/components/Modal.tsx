@@ -6,13 +6,13 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/utils/className";
 
-type ModalSize = "sm" | "md" | "lg";
+export type ModalSize = "sm" | "md" | "lg";
 
 type ModalProps = {
   open: boolean;
   onClose: () => void;
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   children: React.ReactNode;
   size?: ModalSize;
   className?: string;

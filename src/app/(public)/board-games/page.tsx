@@ -2,6 +2,7 @@ import { boardGamesService } from "@/services/board-games/board-games.service";
 import { Pagination } from "@/components/Pagination/Pagination";
 import { BoardGameSearchForm } from "@/components/(public)/board-games/BoardGameSearchForm";
 import { BoardGameGrid } from "@/components/(public)/board-games/BoardGameGrid";
+import { PageHeader } from "@/components/PageHeader";
 import type { BoardGameStatus } from "@/types/database";
 import {
   ALLOWED_STATUSES,
@@ -112,30 +113,29 @@ export default async function BoardGamesPage({
 
   return (
     <section>
-      <div className="container space-y-5 sm:space-y-6">
-        <header className="space-y-2">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-(--text-primary) sm:text-3xl">
-              桌遊
-            </h1>
-            <p className="max-w-3xl text-sm leading-relaxed text-(--text-muted) sm:text-base">
-              探索社團桌遊，找到下一款想玩的遊戲。
-            </p>
-          </div>
-        </header>
-
-        <BoardGameSearchForm
-          categories={categories}
-          locations={locations}
-          query={query}
-          pageSize={pageSize}
-          total={boardGames.total}
+      <div className="container py-8">
+        <PageHeader
+          eyebrow="桌遊探索"
+          title="桌遊"
+          description="探索社團桌遊，找到下一款想玩的遊戲。"
         />
 
-        <BoardGameGrid
-          boardGames={boardGames.data}
-          hasActiveQuery={hasActiveQuery}
-        />
+        <div className="mt-6">
+          <BoardGameSearchForm
+            categories={categories}
+            locations={locations}
+            query={query}
+            pageSize={pageSize}
+            total={boardGames.total}
+          />
+        </div>
+
+        <div className="mt-6">
+          <BoardGameGrid
+            boardGames={boardGames.data}
+            hasActiveQuery={hasActiveQuery}
+          />
+        </div>
 
         <Pagination
           page={page}
@@ -151,6 +151,7 @@ export default async function BoardGamesPage({
             location: query.location,
             sort: query.sort,
           }}
+          className="mt-6"
         />
       </div>
     </section>

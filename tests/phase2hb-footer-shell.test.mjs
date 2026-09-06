@@ -21,7 +21,8 @@ test("full Footer exposes the confirmed identity, website, contact, related, and
   assert.match(footer, /href="https:\/\/www\.instagram\.com\/ntust_boardgame\/"/);
   assert.ok(footer.includes("Instagram"));
   assert.ok(footer.includes("\u76f8\u95dc\u9023\u7d50"));
-  assert.match(footer, /href="https:\/\/www\.ntust\.edu\.tw\/"/);
+  assert.ok(footer.includes('href: "https://www.ntust.edu.tw/"'));
+  assert.match(footer, /href=\{link\.href\}/);
   assert.ok(footer.includes("\u81fa\u79d1\u5927\u5b98\u7db2"));
   assert.ok(footer.includes("\u96b1\u79c1\u6b0a\u653f\u7b56"));
   assert.ok(footer.includes("\u4f7f\u7528\u689d\u6b3e"));
@@ -65,7 +66,8 @@ test("full Footer keeps mobile groups stacked and gives identity more room only 
     footer,
     /border-t[^"\n]*pt-4[^"\n]*flex[^"\n]*flex-col[^"\n]*sm:flex-row/,
   );
-  assert.match(footer, /inline-flex min-h-10 items-center/);
+  assert.match(footer, /<ul className="mt-2 flex flex-col gap-2 text-sm text-\(--text-secondary\)">/);
+  assert.doesNotMatch(footer, /mt-2 flex flex-wrap gap-x-4 lg:flex-col/);
 });
 
 test("full Footer expresses brand, group, link, and quiet utility text as distinct levels", async () => {
@@ -73,11 +75,11 @@ test("full Footer expresses brand, group, link, and quiet utility text as distin
 
   assert.match(
     footer,
-    /className="[^"\n]*text-base[^"\n]*font-semibold[^"\n]*text-\(--text-primary\)"[\s\S]*?siteConfigs\.name/,
+    /className="[^"\n]*text-lg[^"\n]*font-semibold[^"\n]*text-\(--text-primary\)"[\s\S]*?siteConfigs\.name/,
   );
   assert.match(
     footer,
-    /className="[^"\n]*text-sm[^"\n]*font-semibold[^"\n]*text-\(--text-primary\)"/,
+    /className="[^"\n]*text-base[^"\n]*font-semibold[^"\n]*text-\(--text-primary\)"/,
   );
   assert.match(
     footer,

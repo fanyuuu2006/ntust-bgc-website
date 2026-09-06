@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function TermsPage() {
   return (
     <section>
-      <div className="container">
+      <div className="container py-8">
         <div className="mx-auto max-w-4xl space-y-10">
           <header className="space-y-3">
             <h1 className="text-2xl font-bold text-(--foreground) sm:text-3xl">

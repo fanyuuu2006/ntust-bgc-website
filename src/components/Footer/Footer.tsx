@@ -63,7 +63,7 @@ export function Footer({ variant = "full" }: FooterProps) {
             <p className="text-base leading-5 font-semibold text-(--text-primary)">
               網站導覽
             </p>
-            <ul className="mt-2 flex flex-wrap gap-x-4 lg:flex-col lg:items-start lg:gap-0">
+            <ul className="mt-2 flex flex-col gap-2 text-sm text-(--text-secondary)">
               {publicNavigation.map((item) => (
                 <li key={item.href}>
                   <Link
@@ -81,7 +81,7 @@ export function Footer({ variant = "full" }: FooterProps) {
             <p className="text-base leading-5 font-semibold text-(--text-primary)">
               聯絡資訊
             </p>
-            <ul className="mt-2 flex flex-col gap-1.5 text-sm text-(--text-secondary)">
+            <ul className="mt-2 flex flex-col gap-2 text-sm text-(--text-secondary)">
               <li>
                 <a
                   href="mailto:ntustboardgame@gmail.com"
@@ -105,7 +105,7 @@ export function Footer({ variant = "full" }: FooterProps) {
             <p className="text-base leading-5 font-semibold text-(--text-primary)">
               相關連結
             </p>
-            <ul className="mt-2 flex flex-col gap-1.5 text-sm text-(--text-secondary)">
+            <ul className="mt-2 flex flex-col gap-2 text-sm text-(--text-secondary)">
               {relatedLinks.map((link) => (
                 <li key={link.href}>
                   <a

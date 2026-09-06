@@ -82,8 +82,18 @@ export function BorrowBoardGameForm({
         }}
         onConfirm={handleSubmit}
         isSubmitting={isSubmitting}
+        size="sm"
         title="確認申請借用？"
-        description={`你將申請借用「${boardGameName}」。送出後會由幹部確認借用安排。`}
+        description={
+          <span>
+            <span className="mt-2 block font-semibold break-words text-(--text-primary)">
+              {boardGameName}
+            </span>
+            <span className="mt-1.5 block text-sm leading-6 text-(--text-muted)">
+              送出後由幹部審核。
+            </span>
+          </span>
+        }
         confirmLabel="確認申請"
         confirmVariant="primary"
       >

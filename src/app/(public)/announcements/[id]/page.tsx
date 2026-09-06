@@ -35,8 +35,8 @@ export default async function AnnouncementDetailPage({
             返回公告列表
           </ButtonLink>
 
-          <article className="mt-4 min-w-0">
-            <header className="border-b border-(--border-muted) pb-6">
+          <article className="mt-5 min-w-0">
+            <header className="border-b border-(--border-muted) pb-5">
               <time
                 dateTime={publishedAt}
                 className="block text-sm leading-5 text-(--text-muted)"
@@ -48,7 +48,7 @@ export default async function AnnouncementDetailPage({
               </h1>
             </header>
 
-            <div className="mt-6 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-base leading-7 text-(--text-primary)">
+            <div className="mt-5 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-base leading-7 text-(--text-primary)">
               {announcement.content}
             </div>
           </article>

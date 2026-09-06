@@ -18,7 +18,8 @@ test("authenticated borrowing requires the shared confirmation dialog before mut
   assert.match(form, /setOpen\(true\)/);
   assert.match(form, /onConfirm=\{handleSubmit\}/);
   assert.match(form, /確認申請借用？/);
-  assert.match(form, /你將申請借用「\$\{boardGameName\}」/);
+  assert.match(form, /<span[\s\S]*?\{boardGameName\}[\s\S]*?<\/span>/);
+  assert.match(form, /送出後由幹部審核/);
   assert.match(form, /確認申請/);
   assert.doesNotMatch(form, /window\.confirm/);
 

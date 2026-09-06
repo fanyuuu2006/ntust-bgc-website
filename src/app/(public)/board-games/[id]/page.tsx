@@ -9,6 +9,7 @@ import { getCurrentUser } from "@/libs/auth";
 import { BoardNotFoundError } from "@/services/board-games/board-games.errors";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { membershipService } from "@/services/memberships/memberships.service";
+import { cn } from "@/utils/className";
 
 type BoardGameDetailPageProps = { params: Promise<{ id: string }> };
 
@@ -38,21 +39,28 @@ export default async function BoardGameDetailPage({
   const description = boardGame.description?.trim();
 
   return (
-    <section className="py-6 sm:py-8">
+    <section className="py-8">
       <div className="container">
         <div className="mx-auto max-w-6xl">
           <ButtonLink
             href="/board-games"
             variant="text"
             size="sm"
-            className="mb-4 px-0 sm:mb-5"
+            className="px-0"
           >
             <ArrowLeft aria-hidden="true" className="size-4" />
             返回桌遊列表
           </ButtonLink>
 
-          <div className="grid min-w-0 gap-5 lg:grid-cols-2 lg:items-start lg:gap-8">
-            <div className="relative aspect-4/3 overflow-hidden rounded-2xl border border-(--border-default) bg-(--surface-subtle)">
+          <div className="mt-5 grid min-w-0 gap-5 lg:grid-cols-2 lg:items-start lg:gap-8">
+            <div
+              className={cn(
+                "relative aspect-4/3 overflow-hidden rounded-2xl border",
+                boardGame.image
+                  ? "border-(--border-muted) bg-(--surface-default)"
+                  : "border-(--border-default) bg-(--surface-subtle)",
+              )}
+            >
               <BoardGameImage
                 boardGame={boardGame}
                 className={
@@ -63,7 +71,7 @@ export default async function BoardGameDetailPage({
               />
             </div>
 
-            <div className="min-w-0 space-y-4">
+            <div className="min-w-0">
               <header className="min-w-0 space-y-2">
                 <BoardGameStatusBadge status={boardGame.status} />
                 <h1 className="break-words text-2xl leading-tight font-semibold text-(--text-primary) sm:text-3xl">
@@ -71,7 +79,7 @@ export default async function BoardGameDetailPage({
                 </h1>
               </header>
 
-              <dl className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 py-1 text-sm">
+              <dl className="mt-5 grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 py-1 text-sm">
                 <dt className="text-(--text-muted)">分類</dt>
                 <dd className="min-w-0 break-words font-medium text-(--text-primary)">
                   {boardGame.category.name}
@@ -86,14 +94,16 @@ export default async function BoardGameDetailPage({
                 </dd>
               </dl>
 
-              <BoardGameBorrowingPanel
-                status={boardGame.status}
-                isAuthenticated={Boolean(user)}
-                isCurrentAcademicYearMember={Boolean(currentMembership)}
-                existingBorrowing={existingBorrowing}
-                boardGameId={boardGame.id}
-                boardGameName={boardGame.name}
-              />
+              <div className="mt-5">
+                <BoardGameBorrowingPanel
+                  status={boardGame.status}
+                  isAuthenticated={Boolean(user)}
+                  isCurrentAcademicYearMember={Boolean(currentMembership)}
+                  existingBorrowing={existingBorrowing}
+                  boardGameId={boardGame.id}
+                  boardGameName={boardGame.name}
+                />
+              </div>
             </div>
           </div>
 

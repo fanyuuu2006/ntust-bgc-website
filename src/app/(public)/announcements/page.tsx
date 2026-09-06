@@ -26,9 +26,9 @@ export default async function AnnouncementsPage({ searchParams }: Props) {
   const clearSearchHref = `/announcements?${clearSearchQuery}`;
 
   return (
-    <section className="py-8">
-      <div className="container">
-        <div className="mx-auto max-w-5xl space-y-6">
+    <section>
+      <div className="container py-8">
+        <div className="mx-auto max-w-5xl">
           <PageHeader
             eyebrow="最新消息"
             title="社團公告"
@@ -38,7 +38,7 @@ export default async function AnnouncementsPage({ searchParams }: Props) {
           <form
             method="GET"
             action="/announcements"
-            className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]"
+            className="mt-6 grid min-w-0 gap-2 max-w-3xl sm:grid-cols-[minmax(0,1fr)_auto]"
           >
             <input type="hidden" name="page" value="1" />
             <input type="hidden" name="pageSize" value={pageSize} />
@@ -59,16 +59,27 @@ export default async function AnnouncementsPage({ searchParams }: Props) {
             </Button>
           </form>
 
-          {announcements.data.length ? (
-            <AnnouncementList announcements={announcements.data} />
-          ) : search || page > 1 ? (
-            <QueryEmptyState
-              title={search ? "沒有符合搜尋條件的公告" : "這一頁沒有公告"}
-              clearHref="/announcements"
-            />
-          ) : (
-            <EmptyState title="目前尚無已發布公告" compact />
-          )}
+          <div className="mt-6">
+            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2 px-2">
+              <p className="font-semibold text-(--text-primary)">全部公告</p>
+              <p
+                aria-live="polite"
+                className="text-sm tabular-nums text-(--text-muted)"
+              >
+                共 {announcements.total} 筆
+              </p>
+            </div>
+            {announcements.data.length ? (
+              <AnnouncementList announcements={announcements.data} />
+            ) : search || page > 1 ? (
+              <QueryEmptyState
+                title={search ? "沒有符合搜尋條件的公告" : "這一頁沒有公告"}
+                clearHref="/announcements"
+              />
+            ) : (
+              <EmptyState title="目前尚無已發布公告" compact />
+            )}
+          </div>
 
           <Pagination
             page={page}
@@ -79,6 +90,7 @@ export default async function AnnouncementsPage({ searchParams }: Props) {
             pageSizeOptions={[10, 20, 50]}
             query={{ search }}
             showPageSize={false}
+            className="mt-5"
           />
         </div>
       </div>
