@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
@@ -20,7 +19,13 @@ import {
   TableRow,
 } from "@/components/ui/Table";
 import { announcementsService } from "@/services/announcements/announcements.service";
+import {
+  normalizePageSizeOption,
+  readSingleQueryValue,
+  type QueryParamValue,
+} from "@/libs/query-params";
 import { formatAdminDateTime } from "@/utils/date";
+import { parsePage } from "@/utils/pagination";
 
 const fields = ["title", "created_at", "updated_at", "published_at"] as const;
 
@@ -28,29 +33,23 @@ export default async function AdminAnnouncementsPage({
   searchParams,
 }: {
   searchParams: Promise<{
-    search?: string;
-    status?: string;
-    orderBy?: string;
-    orderDirection?: string;
-    page?: string;
-    pageSize?: string;
+    search?: QueryParamValue;
+    status?: QueryParamValue;
+    orderBy?: QueryParamValue;
+    orderDirection?: QueryParamValue;
+    page?: QueryParamValue;
+    pageSize?: QueryParamValue;
   }>;
 }) {
-  const params = await searchParams;
-  if (params.search === "" || params.status === "") {
-    const normalized = new URLSearchParams();
-    if (params.search?.trim()) normalized.set("search", params.search.trim());
-    if (params.status) normalized.set("status", params.status);
-    if (params.orderBy) normalized.set("orderBy", params.orderBy);
-    if (params.orderDirection) {
-      normalized.set("orderDirection", params.orderDirection);
-    }
-    if (params.page) normalized.set("page", params.page);
-    if (params.pageSize) normalized.set("pageSize", params.pageSize);
-    redirect(
-      normalized.size ? "/admin/announcements?" + normalized : "/admin/announcements",
-    );
-  }
+  const rawParams = await searchParams;
+  const params = {
+    search: readSingleQueryValue(rawParams.search),
+    status: readSingleQueryValue(rawParams.status),
+    orderBy: readSingleQueryValue(rawParams.orderBy),
+    orderDirection: readSingleQueryValue(rawParams.orderDirection),
+    page: readSingleQueryValue(rawParams.page),
+    pageSize: readSingleQueryValue(rawParams.pageSize),
+  };
 
   const orderBy = fields.includes(
     params.orderBy as (typeof fields)[number],
@@ -64,10 +63,8 @@ export default async function AdminAnnouncementsPage({
       : params.status === "draft"
         ? false
         : undefined;
-  const page = Math.max(1, Number(params.page) || 1);
-  const pageSize = [10, 20, 50, 100].includes(Number(params.pageSize))
-    ? Number(params.pageSize)
-    : 20;
+  const page = parsePage(params.page);
+  const pageSize = normalizePageSizeOption(params.pageSize, [10, 20, 50, 100], 20);
   const result = await announcementsService.listForAdmin({
     search: params.search,
     published,

@@ -6,18 +6,24 @@ import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { Pagination } from "@/components/Pagination/Pagination";
 import { Button } from "@/components/ui/Button";
 import { academicYearsService } from "@/services/academic-years/academic-years.service";
+import {
+  normalizePageSizeOption,
+  readSingleQueryValue,
+  type QueryParamValue,
+} from "@/libs/query-params";
+import { parsePage } from "@/utils/pagination";
 
 export default async function AcademicYearsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; page?: string; pageSize?: string }>;
+  searchParams: Promise<{ search?: QueryParamValue; page?: QueryParamValue; pageSize?: QueryParamValue }>;
 }) {
-  const { search, page: pageParam, pageSize: pageSizeParam } =
-    await searchParams;
-  const page = Math.max(1, Number(pageParam) || 1);
-  const pageSize = [10, 20, 50, 100].includes(Number(pageSizeParam))
-    ? Number(pageSizeParam)
-    : 20;
+  const rawParams = await searchParams;
+  const search = readSingleQueryValue(rawParams.search);
+  const pageParam = readSingleQueryValue(rawParams.page);
+  const pageSizeParam = readSingleQueryValue(rawParams.pageSize);
+  const page = parsePage(pageParam);
+  const pageSize = normalizePageSizeOption(pageSizeParam, [10, 20, 50, 100], 20);
   const years = await academicYearsService.listForAdmin({
     search: search?.trim() || undefined,
     page,

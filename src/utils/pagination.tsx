@@ -1,15 +1,24 @@
+import {
+  readSingleQueryValue,
+  type QueryParamValue,
+} from "@/libs/query-params";
+
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
 
-export function parsePage(value: string | undefined): number {
-  return Math.max(1, Number(value) || 1);
+export function parsePage(value: QueryParamValue): number {
+  const parsed = Number(readSingleQueryValue(value));
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
 }
 
 export function parsePageSize(
-  value: string | undefined,
+  value: QueryParamValue,
   defaultPageSize: number,
   maxPageSize = 100,
 ): number {
-  return Math.max(1, Math.min(maxPageSize, Number(value) || defaultPageSize));
+  const parsed = Number(readSingleQueryValue(value));
+  return Number.isInteger(parsed) && parsed > 0
+    ? Math.min(maxPageSize, parsed)
+    : defaultPageSize;
 }
 
 export function getPageRange(page: number, pageSize: number, total: number) {

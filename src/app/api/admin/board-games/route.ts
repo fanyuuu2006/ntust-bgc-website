@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
+import { queryRecordFromSearchParams } from "@/libs/query-params";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { listBoardGamesQuerySchema } from "@/services/board-games/board-games.schema";
 import {
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const query = listBoardGamesQuerySchema.parse(
-      Object.fromEntries(request.nextUrl.searchParams),
+      queryRecordFromSearchParams(request.nextUrl.searchParams),
     );
     const result =
       await boardGamesService.listBoardGamesWithCategoryAndLocation(query);

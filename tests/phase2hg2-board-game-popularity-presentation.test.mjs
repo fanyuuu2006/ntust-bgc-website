@@ -15,9 +15,22 @@ async function loadCommonJsModule(path) {
     },
   }).outputText;
   const runtimeModule = { exports: {} };
-  new Function("exports", "module", javascript)(
+  new Function("exports", "module", "require", javascript)(
     runtimeModule.exports,
     runtimeModule,
+    (specifier) => {
+      if (specifier === "@/libs/query-params") {
+        return {
+          readSingleQueryValue(value) {
+            const first = Array.isArray(value) ? value[0] : value;
+            return typeof first === "string" && first.trim()
+              ? first.trim()
+              : undefined;
+          },
+        };
+      }
+      throw new Error(`Unexpected import: ${specifier}`);
+    },
   );
   return runtimeModule.exports;
 }

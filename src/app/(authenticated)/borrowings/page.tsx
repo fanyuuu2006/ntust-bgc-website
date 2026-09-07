@@ -14,8 +14,13 @@ import { QueryFilterDisclosure } from "@/components/query/QueryFilterDisclosure"
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { getCurrentUser } from "@/libs/auth";
+import {
+  normalizePageSizeOption,
+  readSingleQueryValue,
+  type QueryParamValue,
+} from "@/libs/query-params";
 import type { BorrowingStatus } from "@/types/database";
-import { parsePage, parsePageSize } from "@/utils/pagination";
+import { parsePage } from "@/utils/pagination";
 import { buildQueryString } from "@/utils/url";
 
 export const metadata: Metadata = {
@@ -43,11 +48,11 @@ const SORT_OPTIONS = [
 ] as const;
 
 type BorrowingsSearchParams = {
-  status?: string | string[];
-  search?: string;
-  sort?: string;
-  page?: string;
-  pageSize?: string;
+  status?: QueryParamValue;
+  search?: QueryParamValue;
+  sort?: QueryParamValue;
+  page?: QueryParamValue;
+  pageSize?: QueryParamValue;
 };
 
 type BorrowingsPageProps = {
@@ -55,15 +60,16 @@ type BorrowingsPageProps = {
 };
 
 function normalizeStatus(value?: string | string[]): BorrowingStatus | undefined {
-  const status = Array.isArray(value) ? value[0] : value;
+  const status = readSingleQueryValue(value);
   return STATUS_OPTIONS.some((option) => option.value === status)
     ? (status as BorrowingStatus)
     : undefined;
 }
 
-function normalizeSort(value?: string) {
+function normalizeSort(value?: QueryParamValue) {
+  const normalizedValue = readSingleQueryValue(value);
   const option =
-    SORT_OPTIONS.find((item) => item.value === value) ?? SORT_OPTIONS[0];
+    SORT_OPTIONS.find((item) => item.value === normalizedValue) ?? SORT_OPTIONS[0];
   const [orderBy, orderDirection] = option.value.split(":") as [
     "created_at" | "due_at" | "returned_at",
     "asc" | "desc",
@@ -80,9 +86,13 @@ export default async function BorrowingsPage({
 
   const params = await searchParams;
   const page = parsePage(params.page);
-  const pageSize = parsePageSize(params.pageSize, DEFAULT_PAGE_SIZE, 50);
+  const pageSize = normalizePageSizeOption(
+    params.pageSize,
+    PAGE_SIZE_OPTIONS,
+    DEFAULT_PAGE_SIZE,
+  );
   const status = normalizeStatus(params.status);
-  const search = params.search?.trim() || undefined;
+  const search = readSingleQueryValue(params.search);
   const sort = normalizeSort(params.sort);
   const resultQuery: BorrowingsResultQuery = {
     page,

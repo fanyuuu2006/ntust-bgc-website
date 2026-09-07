@@ -6,8 +6,13 @@ import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { classifyQuerySeo } from "@/libs/query-seo";
+import {
+  normalizePageSizeOption,
+  readSingleQueryValue,
+} from "@/libs/query-params";
 import { announcementsService } from "@/services/announcements/announcements.service";
 import { buildQueryString } from "@/utils/url";
+import { parsePage } from "@/utils/pagination";
 import type { Metadata } from "next";
 
 const ANNOUNCEMENTS_METADATA = {
@@ -20,9 +25,6 @@ const ANNOUNCEMENTS_METADATA = {
 
 type AnnouncementsSearchParams = {
   [key: string]: string | string[] | undefined;
-  page?: string;
-  pageSize?: string;
-  search?: string;
 };
 
 type Props = {
@@ -48,9 +50,9 @@ export async function generateMetadata({
 
 export default async function AnnouncementsPage({ searchParams }: Props) {
   const params = await searchParams;
-  const page = Math.max(1, Number(params.page) || 1);
-  const pageSize = Math.min(50, Math.max(1, Number(params.pageSize) || 10));
-  const search = params.search?.trim() || undefined;
+  const page = parsePage(params.page);
+  const pageSize = normalizePageSizeOption(params.pageSize, [10, 20, 50], 10);
+  const search = readSingleQueryValue(params.search);
   const announcements = await announcementsService.listPublished({
     page,
     pageSize,

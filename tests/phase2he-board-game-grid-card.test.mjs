@@ -39,9 +39,10 @@ test("public board-game grid scales from two to six columns", async () => {
 });
 
 test("public board-game page size accepts only its canonical grid-aligned values", async () => {
-  const [constants, page, pageSizeSelect] = await Promise.all([
+  const [constants, page, query, pageSizeSelect] = await Promise.all([
     loadCommonJsModule("src/app/(public)/board-games/constants.ts"),
     readSource("src/app/(public)/board-games/page.tsx"),
+    readSource("src/app/(public)/board-games/query.ts"),
     readSource("src/components/Pagination/PaginationPageSizeSelect.tsx"),
   ]);
 
@@ -56,7 +57,8 @@ test("public board-game page size accepts only its canonical grid-aligned values
   assert.equal(constants.normalizePageSize("999"), 24);
   assert.equal(constants.normalizePageSize("invalid"), 24);
 
-  assert.match(page, /normalizePageSize\(params\.pageSize\)/);
+  assert.match(page, /normalizePublicBoardGamesQuery\(params\)/);
+  assert.match(query, /normalizePageSize\(readSingleQueryValue\(params\.pageSize\)\)/);
   assert.match(page, /pageSizeOptions=\{PAGE_SIZE_OPTIONS\}/);
   assert.match(
     page,

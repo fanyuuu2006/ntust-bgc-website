@@ -17,15 +17,21 @@ import {
   TableRow,
 } from "@/components/ui/Table";
 import { usersService } from "@/services/users/users.service";
+import {
+  normalizePageSizeOption,
+  readSingleQueryValue,
+  type QueryParamValue,
+} from "@/libs/query-params";
 import { formatDateTime } from "@/utils/date";
+import { parsePage } from "@/utils/pagination";
 
 type Props = {
   searchParams: Promise<{
-    search?: string;
-    page?: string;
-    pageSize?: string;
-    orderBy?: string;
-    orderDirection?: string;
+    search?: QueryParamValue;
+    page?: QueryParamValue;
+    pageSize?: QueryParamValue;
+    orderBy?: QueryParamValue;
+    orderDirection?: QueryParamValue;
   }>;
 };
 
@@ -34,9 +40,16 @@ const SORT_FIELDS = ["name", "created_at"] as const;
 const MISSING_VALUE = "尚未填寫";
 
 export default async function AdminUsersPage({ searchParams }: Props) {
-  const params = await searchParams;
-  const page = Math.max(1, Number(params.page) || 1);
-  const pageSize = Math.min(100, Math.max(1, Number(params.pageSize) || 20));
+  const rawParams = await searchParams;
+  const params = {
+    search: readSingleQueryValue(rawParams.search),
+    page: readSingleQueryValue(rawParams.page),
+    pageSize: readSingleQueryValue(rawParams.pageSize),
+    orderBy: readSingleQueryValue(rawParams.orderBy),
+    orderDirection: readSingleQueryValue(rawParams.orderDirection),
+  };
+  const page = parsePage(params.page);
+  const pageSize = normalizePageSizeOption(params.pageSize, [10, 20, 50, 100], 20);
   const orderBy = SORT_FIELDS.includes(
     params.orderBy as (typeof SORT_FIELDS)[number],
   )

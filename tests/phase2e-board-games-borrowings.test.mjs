@@ -5,16 +5,18 @@ import test from "node:test";
 const readSource = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("board-game discovery uses URL-authoritative search, filters, and sorting", async () => {
-  const [page, toolbar, filters, card] = await Promise.all([
+  const [page, query, toolbar, filters, card] = await Promise.all([
     readSource("src/app/(public)/board-games/page.tsx"),
+    readSource("src/app/(public)/board-games/query.ts"),
     readSource("src/components/(public)/board-games/BoardGameSearchForm.tsx"),
     readSource("src/components/(public)/board-games/BoardGameFilterDisclosure.tsx"),
     readSource("src/components/(public)/board-games/BoardGameCard.tsx"),
   ]);
   const queryControls = toolbar + filters;
 
-  assert.match(page, /sort\?: string/);
-  assert.match(page, /normalizeSortOption\(/);
+  assert.match(page, /normalizePublicBoardGamesQuery\(params\)/);
+  assert.match(query, /SORT_OPTIONS\.find\(/);
+  assert.match(query, /readSingleQueryValue\(params\.sort\)/);
   assert.match(toolbar, /<form method="GET" action=\{BASE_PATH\}/);
   assert.match(toolbar, /name="page" value="1"/);
   assert.match(toolbar, /name="search"/);

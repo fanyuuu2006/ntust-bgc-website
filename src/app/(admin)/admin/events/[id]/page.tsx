@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
@@ -9,26 +9,31 @@ import { Pagination } from "@/components/Pagination/Pagination";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { eventsService } from "@/services/events/events.service";
+import {
+  normalizePageSizeOption,
+  readSingleQueryValue,
+  type QueryParamValue,
+} from "@/libs/query-params";
 import { formatDateTime } from "@/utils/date";
+import { parsePage } from "@/utils/pagination";
 
 export default async function AdminEventDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ search?: string; orderDirection?: string; page?: string; pageSize?: string }>;
+  searchParams: Promise<{ search?: QueryParamValue; orderDirection?: QueryParamValue; page?: QueryParamValue; pageSize?: QueryParamValue }>;
 }) {
-  const [{ id }, query] = await Promise.all([params, searchParams]);
-  if (query.search === "") {
-    const normalized = new URLSearchParams();
-    if (query.orderDirection) normalized.set("orderDirection", query.orderDirection);
-    if (query.page) normalized.set("page", query.page);
-    if (query.pageSize) normalized.set("pageSize", query.pageSize);
-    redirect(normalized.size ? `/admin/events/${id}?${normalized}` : `/admin/events/${id}`);
-  }
+  const [{ id }, rawQuery] = await Promise.all([params, searchParams]);
+  const query = {
+    search: readSingleQueryValue(rawQuery.search),
+    orderDirection: readSingleQueryValue(rawQuery.orderDirection),
+    page: readSingleQueryValue(rawQuery.page),
+    pageSize: readSingleQueryValue(rawQuery.pageSize),
+  };
 
-  const page = Math.max(1, Number(query.page) || 1);
-  const pageSize = [10, 20, 50].includes(Number(query.pageSize)) ? Number(query.pageSize) : 20;
+  const page = parsePage(query.page);
+  const pageSize = normalizePageSizeOption(query.pageSize, [10, 20, 50], 20);
   const orderDirection = query.orderDirection === "asc" ? "asc" : "desc";
   const [event, records] = await Promise.all([
     eventsService.getEventById(id),

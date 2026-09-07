@@ -12,6 +12,10 @@ import { MembershipRecordsToolbar } from "@/components/(authenticated)/membershi
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { getCurrentUser } from "@/libs/auth";
+import {
+  normalizePageSizeOption,
+  readSingleQueryValue,
+} from "@/libs/query-params";
 import { membershipService } from "@/services/memberships/memberships.service";
 import type { MembershipStatus, MembershipType } from "@/types/database";
 import { buildQueryString } from "@/utils/url";
@@ -34,10 +38,6 @@ type MembershipsPageProps = {
   searchParams: Promise<MembershipSearchParams>;
 };
 
-function firstValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
 export default async function MembershipsPage({
   searchParams,
 }: MembershipsPageProps) {
@@ -45,14 +45,14 @@ export default async function MembershipsPage({
   if (!user) return null;
 
   const params = await searchParams;
-  const type = firstValue(params.type);
-  const status = firstValue(params.status);
-  const orderBy = firstValue(params.orderBy);
-  const orderDirection = firstValue(params.orderDirection);
+  const type = readSingleQueryValue(params.type);
+  const status = readSingleQueryValue(params.status);
+  const orderBy = readSingleQueryValue(params.orderBy);
+  const orderDirection = readSingleQueryValue(params.orderDirection);
   const queryInput = {
-    page: normalizePositiveInteger(firstValue(params.page)),
-    pageSize: normalizePositiveInteger(firstValue(params.pageSize)),
-    search: firstValue(params.search),
+    page: normalizePositiveInteger(readSingleQueryValue(params.page)),
+    pageSize: String(normalizePageSizeOption(params.pageSize, [12], 12)),
+    search: readSingleQueryValue(params.search),
     type: isMembershipType(type) ? type : undefined,
     status: isMembershipStatus(status) ? status : undefined,
     orderBy: orderBy === "academic_year" ? "academic_year" : undefined,

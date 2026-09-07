@@ -1,17 +1,19 @@
 import { z } from "zod";
+import { readSingleQueryValue } from "@/libs/query-params";
 
 function normalizeOptionalQueryValue(value: unknown) {
-  if (Array.isArray(value)) return undefined;
-  if (typeof value !== "string") return value;
-
-  const normalized = value.trim();
-  return normalized === "" || normalized.toLowerCase() === "all"
+  const normalized = readSingleQueryValue(
+    value as string | string[] | undefined,
+  );
+  return normalized?.toLowerCase() === "all"
     ? undefined
     : normalized;
 }
 
 function optionalQueryString<T extends z.ZodType>(schema: T) {
-  return z.preprocess(normalizeOptionalQueryValue, schema.optional());
+  return z
+    .preprocess(normalizeOptionalQueryValue, schema.optional())
+    .catch(undefined);
 }
 
 export const membershipRegisterKeySchema = z

@@ -6,17 +6,26 @@ import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { Pagination } from "@/components/Pagination/Pagination";
 import { Button } from "@/components/ui/Button";
 import { boardGamesService } from "@/services/board-games/board-games.service";
+import {
+  normalizePageSizeOption,
+  readSingleQueryValue,
+  type QueryParamValue,
+} from "@/libs/query-params";
+import { parsePage } from "@/utils/pagination";
 
 export default async function BoardGameCategoriesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; page?: string; pageSize?: string }>;
+  searchParams: Promise<{ search?: QueryParamValue; page?: QueryParamValue; pageSize?: QueryParamValue }>;
 }) {
-  const params = await searchParams;
-  const page = Math.max(1, Number(params.page) || 1);
-  const pageSize = [10, 20, 50, 100].includes(Number(params.pageSize))
-    ? Number(params.pageSize)
-    : 20;
+  const rawParams = await searchParams;
+  const params = {
+    search: readSingleQueryValue(rawParams.search),
+    page: readSingleQueryValue(rawParams.page),
+    pageSize: readSingleQueryValue(rawParams.pageSize),
+  };
+  const page = parsePage(params.page);
+  const pageSize = normalizePageSizeOption(params.pageSize, [10, 20, 50, 100], 20);
   const categories = await boardGamesService.listCategoriesForAdmin({
     search: params.search?.trim() || undefined,
     page,

@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
@@ -8,31 +7,35 @@ import { Pagination } from "@/components/Pagination/Pagination";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { eventsService } from "@/services/events/events.service";
+import {
+  normalizePageSizeOption,
+  readSingleQueryValue,
+  type QueryParamValue,
+} from "@/libs/query-params";
+import { parsePage } from "@/utils/pagination";
 const ORDER_FIELDS = ["name", "start_time", "end_time", "created_at"] as const;
 type Status = "upcoming" | "ongoing" | "ended";
 export default async function AdminEventsPage({
   searchParams,
 }: {
   searchParams: Promise<{
-    orderBy?: string;
-    orderDirection?: string;
-    page?: string;
-    pageSize?: string;
-    search?: string;
-    status?: string;
+    orderBy?: QueryParamValue;
+    orderDirection?: QueryParamValue;
+    page?: QueryParamValue;
+    pageSize?: QueryParamValue;
+    search?: QueryParamValue;
+    status?: QueryParamValue;
   }>;
 }) {
-  const params = await searchParams;
-  if (params.search === "" || params.status === "") {
-    const normalized = new URLSearchParams();
-    if (params.search?.trim()) normalized.set("search", params.search.trim());
-    if (params.status) normalized.set("status", params.status);
-    if (params.orderBy) normalized.set("orderBy", params.orderBy);
-    if (params.orderDirection) normalized.set("orderDirection", params.orderDirection);
-    if (params.page) normalized.set("page", params.page);
-    if (params.pageSize) normalized.set("pageSize", params.pageSize);
-    redirect(normalized.size ? `/admin/events?${normalized}` : "/admin/events");
-  }
+  const rawParams = await searchParams;
+  const params = {
+    orderBy: readSingleQueryValue(rawParams.orderBy),
+    orderDirection: readSingleQueryValue(rawParams.orderDirection),
+    page: readSingleQueryValue(rawParams.page),
+    pageSize: readSingleQueryValue(rawParams.pageSize),
+    search: readSingleQueryValue(rawParams.search),
+    status: readSingleQueryValue(rawParams.status),
+  };
   const orderBy = ORDER_FIELDS.includes(
     params.orderBy as (typeof ORDER_FIELDS)[number],
   )
@@ -44,17 +47,16 @@ export default async function AdminEventsPage({
   )
     ? (params.status as Status)
     : undefined;
+  const page = parsePage(params.page);
   const result = await eventsService.getEvents({
-    page: Math.max(1, Number(params.page) || 1),
-    pageSize: [10, 20, 50, 100].includes(Number(params.pageSize))
-      ? Number(params.pageSize)
-      : 20,
+    page,
+    pageSize: normalizePageSizeOption(params.pageSize, [10, 20, 50, 100], 20),
     orderBy,
     orderDirection,
     search: params.search?.trim() || undefined,
     status,
   });
-  const pageSize = [10, 20, 50, 100].includes(Number(params.pageSize)) ? Number(params.pageSize) : 20;
+  const pageSize = normalizePageSizeOption(params.pageSize, [10, 20, 50, 100], 20);
   const clearSearchParams = new URLSearchParams();
   if (params.status) clearSearchParams.set("status", params.status);
   if (params.orderBy) clearSearchParams.set("orderBy", params.orderBy);
@@ -97,7 +99,7 @@ export default async function AdminEventsPage({
           hasQuery={Boolean(params.search || status || Number(params.page) > 1)}
         />
         <Pagination
-          page={Math.max(1, Number(params.page) || 1)}
+          page={page}
           pageSize={pageSize}
           total={result.total}
           totalPages={result.totalPages}

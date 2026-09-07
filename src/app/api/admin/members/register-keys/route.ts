@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
 import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
+import { queryRecordFromSearchParams } from "@/libs/query-params";
 import {
   AcademicYearNotFoundError,
   RegisterKeySecretNotConfiguredError,
@@ -38,12 +39,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const query = Object.fromEntries(
-      [...request.nextUrl.searchParams.keys()].map((key) => {
-        const values = request.nextUrl.searchParams.getAll(key);
-        return [key, values.length > 1 ? values : values[0]];
-      }),
-    );
+    const query = queryRecordFromSearchParams(request.nextUrl.searchParams);
     const result = await membershipService.listRegisterKeys(query);
 
     return NextResponse.json({ data: result }, { status: 200 });

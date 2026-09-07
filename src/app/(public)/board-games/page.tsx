@@ -4,16 +4,17 @@ import { BoardGameSearchForm } from "@/components/(public)/board-games/BoardGame
 import { BoardGameGrid } from "@/components/(public)/board-games/BoardGameGrid";
 import { PageHeader } from "@/components/PageHeader";
 import { classifyQuerySeo } from "@/libs/query-seo";
-import type { BoardGameStatus } from "@/types/database";
 import type { Metadata } from "next";
 import {
-  ALLOWED_STATUSES,
   BASE_PATH,
-  normalizePageSize,
   PAGE_SIZE_OPTIONS,
   SORT_OPTIONS,
 } from "./constants";
 import type { BoardGamesQuery } from "./types";
+import {
+  normalizePublicBoardGamesQuery,
+  type PublicBoardGamesSearchParams,
+} from "./query";
 
 const BOARD_GAMES_METADATA = {
   title: "桌遊",
@@ -23,21 +24,8 @@ const BOARD_GAMES_METADATA = {
   },
 } satisfies Metadata;
 
-type BoardGamesSearchParams = {
-  [key: string]: string | string[] | undefined;
-  page?: string;
-  pageSize?: string;
-  search?: string;
-  status?: string | string[];
-  category?: string | string[];
-  location?: string | string[];
-  sort?: string;
-  orderBy?: string;
-  orderDirection?: string;
-};
-
 type BoardGamesPageProps = {
-  searchParams: Promise<BoardGamesSearchParams>;
+  searchParams: Promise<PublicBoardGamesSearchParams>;
 };
 
 export async function generateMetadata({
@@ -58,56 +46,19 @@ export async function generateMetadata({
   };
 }
 
-function getArrayParam(value?: string | string[]) {
-  if (!value) return [];
-  return Array.isArray(value) ? value : [value];
-}
-
-function normalizePage(value?: string) {
-  const page = Number(value);
-  return Number.isInteger(page) && page > 0 ? page : 1;
-}
-
-function normalizeSearch(value?: string) {
-  return value?.trim() || undefined;
-}
-
-function normalizeStatuses(value?: string | string[]) {
-  return getArrayParam(value).filter((status): status is BoardGameStatus =>
-    ALLOWED_STATUSES.includes(status as BoardGameStatus),
-  );
-}
-
-function normalizeSortOption(
-  sort?: string,
-  orderBy?: string,
-  orderDirection?: string,
-) {
-  return (
-    SORT_OPTIONS.find(
-      (option) =>
-        option.key === sort ||
-        (option.orderBy === orderBy && option.orderDirection === orderDirection),
-    ) ?? SORT_OPTIONS[0]
-  );
-}
-
 export default async function BoardGamesPage({
   searchParams,
 }: BoardGamesPageProps) {
   const params = await searchParams;
-
-  const page = normalizePage(params.page);
-  const pageSize = normalizePageSize(params.pageSize);
-  const search = normalizeSearch(params.search);
-  const statuses = normalizeStatuses(params.status);
-  const categoryIds = getArrayParam(params.category);
-  const locationIds = getArrayParam(params.location);
-  const sortOption = normalizeSortOption(
-    params.sort,
-    params.orderBy,
-    params.orderDirection,
-  );
+  const {
+    page,
+    pageSize,
+    search,
+    statuses,
+    categoryIds,
+    locationIds,
+    sortOption,
+  } = normalizePublicBoardGamesQuery(params);
 
   const query: BoardGamesQuery = {
     search,

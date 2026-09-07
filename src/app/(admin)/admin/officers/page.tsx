@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { z } from "zod";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
@@ -10,6 +10,12 @@ import { Select } from "@/components/ui/Select";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { officerPositionsService } from "@/services/officer-positions/officer-positions.service";
 import { usersService } from "@/services/users/users.service";
+import {
+  normalizePageSizeOption,
+  readSingleQueryValue,
+  type QueryParamValue,
+} from "@/libs/query-params";
+import { parsePage } from "@/utils/pagination";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
 
@@ -17,28 +23,24 @@ export default async function OfficersPage({
   searchParams,
 }: {
   searchParams: Promise<{
-    search?: string;
-    academicYearId?: string;
-    page?: string;
-    pageSize?: string;
+    search?: QueryParamValue;
+    academicYearId?: QueryParamValue;
+    page?: QueryParamValue;
+    pageSize?: QueryParamValue;
   }>;
 }) {
-  const params = await searchParams;
-  if (params.search === "" || params.academicYearId === "") {
-    const normalized = new URLSearchParams();
-    if (params.search?.trim()) normalized.set("search", params.search.trim());
-    if (params.academicYearId) normalized.set("academicYearId", params.academicYearId);
-    if (params.page) normalized.set("page", params.page);
-    if (params.pageSize) normalized.set("pageSize", params.pageSize);
-    redirect(normalized.size ? `/admin/officers?${normalized}` : "/admin/officers");
-  }
-  const page = Math.max(1, Number(params.page) || 1);
-  const requestedPageSize = Number(params.pageSize);
-  const pageSize = PAGE_SIZE_OPTIONS.includes(
-    requestedPageSize as (typeof PAGE_SIZE_OPTIONS)[number],
-  )
-    ? requestedPageSize
-    : 20;
+  const rawParams = await searchParams;
+  const academicYearCandidate = readSingleQueryValue(rawParams.academicYearId);
+  const params = {
+    search: readSingleQueryValue(rawParams.search),
+    academicYearId: z.uuid().safeParse(academicYearCandidate).success
+      ? academicYearCandidate
+      : undefined,
+    page: readSingleQueryValue(rawParams.page),
+    pageSize: readSingleQueryValue(rawParams.pageSize),
+  };
+  const page = parsePage(params.page);
+  const pageSize = normalizePageSizeOption(params.pageSize, PAGE_SIZE_OPTIONS, 20);
   const [years, officers, users] = await Promise.all([
     membershipService.listAcademicYears(),
     officerPositionsService.listForAdmin({
