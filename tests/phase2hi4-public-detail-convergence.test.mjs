@@ -68,7 +68,10 @@ test("board-game identity uses explicit metadata and decision groups", async () 
   assert.match(detail, /className="mt-5 grid min-w-0 gap-5 lg:grid-cols-2/);
   assert.doesNotMatch(detail, /className="min-w-0 space-y-4"/);
   assert.match(detail, /<dl className="mt-5 [^"]*grid/);
-  assert.match(detail, /<div className="mt-5">\s*<BoardGameBorrowingPanel/);
+  assert.match(
+    detail,
+    /<div className="mt-5">[\s\S]*viewer\.status === "unavailable"[\s\S]*<BoardGameBorrowingPanel/,
+  );
   assert.match(detail, /aspect-4\/3/);
   assert.match(detail, /<dl/);
   assert.match(detail, /<h2[^>]*id="board-game-description"/);

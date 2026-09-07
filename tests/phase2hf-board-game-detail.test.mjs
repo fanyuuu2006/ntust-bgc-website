@@ -108,7 +108,8 @@ test("detail page keeps one server-owned data-read path", async () => {
     (resolver.match(/getBoardGameWithCategoryAndLocation\(/g) ?? []).length,
     1,
   );
-  assert.equal((page.match(/getCurrentUser\(/g) ?? []).length, 1);
+  assert.equal((page.match(/resolvePublicViewer\(/g) ?? []).length, 1);
+  assert.doesNotMatch(page, /getCurrentUser\(/);
   assert.equal(
     (page.match(/getCurrentMembershipByUserId\(/g) ?? []).length,
     1,

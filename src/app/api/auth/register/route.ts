@@ -4,6 +4,7 @@ import { authService } from "@/services/auth/auth.service";
 import { EmailAlreadyExistsError } from "@/services/auth/auth.errors";
 import { verifyTurnstile } from "@/libs/security/turnstile";
 import { checkRateLimit, getRequestIp } from "@/libs/security/rate-limit";
+import { emailVerificationService } from "@/services/email-verification/email-verification.service";
 
 const REGISTRATION_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 
@@ -55,12 +56,22 @@ export async function POST(request: Request) {
 
     const user = await authService.register(body);
 
+    let emailVerification: "sent" | "delivery_failed" = "sent";
+    try {
+      await emailVerificationService.request(user);
+    } catch {
+      // The account is already committed. Keep it usable and offer resend later.
+      console.error("[EmailVerification] Initial verification delivery failed");
+      emailVerification = "delivery_failed";
+    }
+
     return NextResponse.json(
       {
         data: {
           id: user.id,
           email: user.email,
           name: user.name,
+          emailVerification,
         },
       },
       { status: 201 },

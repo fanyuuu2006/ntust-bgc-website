@@ -78,6 +78,7 @@ export type User = {
   id: UUID;
   name: string;
   email: string;
+  email_verified_at: Timestamp | null;
   avatar: string | null;
   created_at: Timestamp;
   updated_at: Timestamp;
@@ -150,6 +151,15 @@ export type Membership = {
   updated_at: Timestamp;
   joined_at: Timestamp | null;
   membership_register_key_id: UUID | null;
+};
+
+export type EmailVerificationToken = {
+  id: UUID;
+  user_id: UUID;
+  token_hash: string;
+  expires_at: Timestamp;
+  consumed_at: Timestamp | null;
+  created_at: Timestamp;
 };
 
 export type MembershipRegisterKey = {

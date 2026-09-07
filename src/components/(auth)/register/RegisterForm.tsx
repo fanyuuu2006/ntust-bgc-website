@@ -73,6 +73,15 @@ type RegisterFormValues = Record<RegisterFieldId, string> & {
 
 type FieldErrors = Partial<Record<RegisterFieldId | "acceptTerms", string>>;
 
+type RegistrationResult = {
+  data: {
+    id: string;
+    email: string;
+    name: string;
+    emailVerification: "sent" | "delivery_failed";
+  };
+};
+
 const INITIAL_VALUES: RegisterFormValues = {
   email: "",
   name: "",
@@ -102,6 +111,8 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
+  const [registrationResult, setRegistrationResult] =
+    useState<RegistrationResult["data"] | null>(null);
 
   const turnstileRef = useRef<TurnstileInstance>(null);
 
@@ -155,7 +166,7 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
     setIsLoading(true);
 
     try {
-      await apiClient("/api/auth/register", {
+      const result = await apiClient<RegistrationResult>("/api/auth/register", {
         method: "POST",
         body: {
           name: values.name,
@@ -166,7 +177,7 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
           phone: values.phone,
         },
       });
-      router.push(loginHref);
+      setRegistrationResult(result.data);
     } catch (err) {
       turnstileRef.current?.reset();
       setTurnstileToken("");
@@ -176,6 +187,34 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  if (registrationResult) {
+    const wasSent = registrationResult.emailVerification === "sent";
+    return (
+      <section
+        role="status"
+        aria-live="polite"
+        className={cn("flex flex-col gap-5", className)}
+      >
+        <div className="rounded-xl border border-(--border-default) bg-(--surface-subtle) p-4">
+          <h2 className="font-semibold text-(--text-primary)">帳號已建立</h2>
+          <p className="mt-2 text-sm leading-6 text-(--text-muted)">
+            {wasSent
+              ? "我們已將 Email 驗證信寄到你的信箱。請完成驗證，以確保日後能正常收到網站通知。"
+              : "帳號已建立，但驗證信暫時無法寄出。請先登入，你可以稍後重新寄送。"}
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="primary"
+          className="w-full"
+          onClick={() => router.push(loginHref)}
+        >
+          前往登入
+        </Button>
+      </section>
+    );
   }
 
   return (

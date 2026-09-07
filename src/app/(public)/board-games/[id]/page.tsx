@@ -5,12 +5,12 @@ import { BoardGameBorrowingPanel } from "@/components/(public)/board-games/Board
 import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGameStatusBadge";
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { ButtonLink } from "@/components/ui/Button";
-import { getCurrentUser } from "@/libs/auth";
 import {
   createMetadataDescription,
   createMetadataTitle,
   getSafeMetadataImageUrl,
 } from "@/libs/metadata-content";
+import { resolvePublicViewer } from "@/libs/public-viewer";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { cn } from "@/utils/className";
@@ -52,7 +52,8 @@ export default async function BoardGameDetailPage({
   const { id } = await params;
   const boardGame = await getBoardGameDetail(id);
 
-  const user = await getCurrentUser();
+  const viewer = await resolvePublicViewer();
+  const user = viewer.status === "resolved" ? viewer.user : null;
   const [currentMembership, existingBorrowing] = user
     ? await Promise.all([
         membershipService.getCurrentMembershipByUserId(user.id),
@@ -121,14 +122,23 @@ export default async function BoardGameDetailPage({
               </dl>
 
               <div className="mt-5">
-                <BoardGameBorrowingPanel
-                  status={boardGame.status}
-                  isAuthenticated={Boolean(user)}
-                  isCurrentAcademicYearMember={Boolean(currentMembership)}
-                  existingBorrowing={existingBorrowing}
-                  boardGameId={boardGame.id}
-                  boardGameName={boardGame.name}
-                />
+                {viewer.status === "unavailable" ? (
+                  <div
+                    role="status"
+                    className="rounded-xl border border-(--border-default) bg-(--surface-subtle) p-4 text-sm leading-6 text-(--text-muted)"
+                  >
+                    目前暫時無法確認登入狀態，請稍後重新整理後再試。
+                  </div>
+                ) : (
+                  <BoardGameBorrowingPanel
+                    status={boardGame.status}
+                    isAuthenticated={Boolean(user)}
+                    isCurrentAcademicYearMember={Boolean(currentMembership)}
+                    existingBorrowing={existingBorrowing}
+                    boardGameId={boardGame.id}
+                    boardGameName={boardGame.name}
+                  />
+                )}
               </div>
             </div>
           </div>

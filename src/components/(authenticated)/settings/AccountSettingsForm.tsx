@@ -7,6 +7,7 @@ import { FieldInput, type FieldInputField } from "@/components/FieldInput";
 import { FormFeedback } from "@/components/FormFeedback";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/Button";
+import { ResendEmailVerificationButton } from "@/components/(auth)/email-verification/ResendEmailVerificationButton";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import type { User } from "@/types/database";
@@ -193,6 +194,14 @@ export function AccountSettingsForm({
           >
             Email 為登入帳號，目前無法修改
           </p>
+          <p className="mt-2 text-xs font-medium text-(--text-secondary)">
+            {user.email_verified_at ? "Email 已驗證" : "Email 尚未驗證"}
+          </p>
+          {!user.email_verified_at && (
+            <div className="mt-3">
+              <ResendEmailVerificationButton />
+            </div>
+          )}
         </div>
 
         <FormFeedback error={formError} success={successMessage} />

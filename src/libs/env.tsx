@@ -41,6 +41,43 @@ export function getSiteUrl(environment = process.env.NODE_ENV): string {
   return resolveSiteUrl(process.env.SITE_URL, environment);
 }
 
+export type EmailConfig = {
+  apiKey: string;
+  from: string;
+  fromName: string;
+};
+
+export function resolveEmailConfig(values: {
+  apiKey: string | undefined;
+  from: string | undefined;
+  fromName: string | undefined;
+}): EmailConfig {
+  const apiKey = values.apiKey?.trim();
+  const from = values.from?.trim().toLowerCase();
+  const fromName = values.fromName?.trim();
+
+  if (!apiKey || !from || !fromName) {
+    throw new Error(
+      "Email delivery requires BREVO_API_KEY, EMAIL_FROM, and EMAIL_FROM_NAME",
+    );
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(from)) {
+    throw new Error("EMAIL_FROM must be a valid email address");
+  }
+
+  return { apiKey, from, fromName };
+}
+
+/** Email configuration is resolved lazily so unrelated routes do not depend on it. */
+export function getEmailConfig(): EmailConfig {
+  return resolveEmailConfig({
+    apiKey: process.env.BREVO_API_KEY,
+    from: process.env.EMAIL_FROM,
+    fromName: process.env.EMAIL_FROM_NAME,
+  });
+}
+
 export const SUPABASE_URL = process.env.SUPABASE_URL!;
 export const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 export const NEXT_PUBLIC_TURNSTILE_SITE_KEY =
