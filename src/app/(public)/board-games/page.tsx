@@ -3,6 +3,7 @@ import { Pagination } from "@/components/Pagination/Pagination";
 import { BoardGameSearchForm } from "@/components/(public)/board-games/BoardGameSearchForm";
 import { BoardGameGrid } from "@/components/(public)/board-games/BoardGameGrid";
 import { PageHeader } from "@/components/PageHeader";
+import { classifyQuerySeo } from "@/libs/query-seo";
 import type { BoardGameStatus } from "@/types/database";
 import type { Metadata } from "next";
 import {
@@ -14,15 +15,16 @@ import {
 } from "./constants";
 import type { BoardGamesQuery } from "./types";
 
-export const metadata: Metadata = {
+const BOARD_GAMES_METADATA = {
   title: "桌遊",
   description: "探索臺科大桌遊社的桌遊，查看分類、位置與借用資訊。",
   alternates: {
     canonical: "/board-games",
   },
-};
+} satisfies Metadata;
 
 type BoardGamesSearchParams = {
+  [key: string]: string | string[] | undefined;
   page?: string;
   pageSize?: string;
   search?: string;
@@ -37,6 +39,24 @@ type BoardGamesSearchParams = {
 type BoardGamesPageProps = {
   searchParams: Promise<BoardGamesSearchParams>;
 };
+
+export async function generateMetadata({
+  searchParams,
+}: BoardGamesPageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const { indexable } = classifyQuerySeo(params, {
+    page: "1",
+    pageSize: String(PAGE_SIZE_OPTIONS[0]),
+    sort: SORT_OPTIONS[0].key,
+  });
+
+  return {
+    ...BOARD_GAMES_METADATA,
+    ...(indexable
+      ? {}
+      : { robots: { index: false, follow: true } }),
+  };
+}
 
 function getArrayParam(value?: string | string[]) {
   if (!value) return [];

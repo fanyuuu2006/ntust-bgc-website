@@ -25,7 +25,10 @@ test("public static routes own concise titles, descriptions, and relative canoni
 
   for (const [source, title, description, canonical] of expected) {
     const metadata = metadataSource(source);
-    assert.match(metadata, /export const metadata:\s*Metadata/);
+    assert.match(
+      metadata,
+      /export const metadata:\s*Metadata|satisfies Metadata/,
+    );
     if (title) assert.match(metadata, new RegExp(`title:\\s*"${title}"`));
     if (description) {
       assert.ok(metadata.includes(`description: "${description}"`));

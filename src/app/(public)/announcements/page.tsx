@@ -5,21 +5,46 @@ import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { classifyQuerySeo } from "@/libs/query-seo";
 import { announcementsService } from "@/services/announcements/announcements.service";
 import { buildQueryString } from "@/utils/url";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
+const ANNOUNCEMENTS_METADATA = {
   title: "社團公告",
   description: "查看臺科大桌遊社最新社團公告與活動消息。",
   alternates: {
     canonical: "/announcements",
   },
+} satisfies Metadata;
+
+type AnnouncementsSearchParams = {
+  [key: string]: string | string[] | undefined;
+  page?: string;
+  pageSize?: string;
+  search?: string;
 };
 
 type Props = {
-  searchParams: Promise<{ page?: string; pageSize?: string; search?: string }>;
+  searchParams: Promise<AnnouncementsSearchParams>;
 };
+
+export async function generateMetadata({
+  searchParams,
+}: Props): Promise<Metadata> {
+  const params = await searchParams;
+  const { indexable } = classifyQuerySeo(params, {
+    page: "1",
+    pageSize: "10",
+  });
+
+  return {
+    ...ANNOUNCEMENTS_METADATA,
+    ...(indexable
+      ? {}
+      : { robots: { index: false, follow: true } }),
+  };
+}
 
 export default async function AnnouncementsPage({ searchParams }: Props) {
   const params = await searchParams;
