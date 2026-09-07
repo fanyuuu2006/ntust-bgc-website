@@ -14,6 +14,15 @@
     npx tsc --noEmit
     git diff --check
 
+### 環境設定
+
+`SITE_URL` 是網站 canonical production origin 的唯一 deployment 設定來源，例如
+`https://ntust-bgc.vercel.app`。Production 必須明確設定完整的 HTTP/HTTPS origin，且不可包含
+path、query 或 hash；development 與 test 未設定時使用 `http://localhost:3000`。
+
+Vercel Preview 不會自動使用 `VERCEL_URL` 作為 canonical origin，因此 Production 與需要驗證
+正式 canonical 的 Preview 環境都應明確提供 `SITE_URL`。
+
 ## Admin 架構
 
 /admin/** 由 (admin)/layout.tsx 在 server-side 驗證登入與管理權限。

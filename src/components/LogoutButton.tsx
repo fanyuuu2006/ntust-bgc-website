@@ -28,7 +28,7 @@ export const LogoutButton = ({ onClick, ...rest }: LogoutButtonProps) => {
     }
   }
   return (
-    <div className="space-y-2">
+    <div>
       <Button
         type="button"
         onClick={handleLogout}
@@ -36,7 +36,7 @@ export const LogoutButton = ({ onClick, ...rest }: LogoutButtonProps) => {
         className="w-full"
         {...rest}
       />
-      <FormFeedback error={error} />
+      {error ? <FormFeedback error={error} className="mt-2" /> : null}
     </div>
   );
 };

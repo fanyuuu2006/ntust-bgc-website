@@ -1,22 +1,16 @@
 import { NextResponse } from "next/server";
 import { ZodError, z } from "zod";
-import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
+import { authorizeAdminRequest } from "@/libs/api/admin-authorization";
 import { usersService } from "@/services/users/users.service";
 import { UserProfileNotFoundError } from "@/services/users/users.errors";
 import { unexpectedErrorResponse } from "@/libs/api/server-response";
-
-async function requireAdmin() {
-  const user = await getCurrentUser();
-  return user && (await isAdminByUserId(user.id)) ? user : null;
-}
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  if (!(await requireAdmin())) {
-    return NextResponse.json({ message: "沒有管理權限" }, { status: 403 });
-  }
+  const authorization = await authorizeAdminRequest("沒有管理權限");
+  if (authorization.response) return authorization.response;
 
   try {
     const { id } = await params;

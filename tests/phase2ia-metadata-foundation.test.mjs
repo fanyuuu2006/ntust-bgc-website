@@ -6,14 +6,16 @@ const root = new URL("../", import.meta.url);
 const readSource = (path) => readFile(new URL(path, root), "utf8");
 
 test("root metadata derives the canonical identity from the shared site configuration", async () => {
-  const [metadata, siteConfigs] = await Promise.all([
+  const [environment, metadata, siteConfigs] = await Promise.all([
+    readSource("src/libs/env.tsx"),
     readSource("src/libs/metadata.tsx"),
     readSource("src/libs/siteConfigs.tsx"),
   ]);
 
   assert.match(siteConfigs, /name:\s*"臺科大桌遊社"/);
   assert.match(siteConfigs, /fullName:\s*"國立臺灣科技大學桌上遊戲研究社"/);
-  assert.match(siteConfigs, /url:\s*"https:\/\/ntust-bgc\.vercel\.app"/);
+  assert.match(environment, /export function getSiteUrl/);
+  assert.match(siteConfigs, /get url\(\)[\s\S]*return getSiteUrl\(\)/);
   assert.match(
     siteConfigs,
     /description:\s*"臺科大桌遊社官方網站，查看社團最新消息、探索桌遊與相關資訊。"/,
@@ -26,6 +28,10 @@ test("root metadata derives the canonical identity from the shared site configur
   assert.match(metadata, /template:\s*`%s｜\$\{siteConfigs\.name\}`/);
   assert.match(metadata, /description:\s*siteConfigs\.description/);
   assert.match(metadata, /url:\s*siteConfigs\.icon/);
+  assert.doesNotMatch(
+    environment + metadata + siteConfigs,
+    /https:\/\/ntust-bgc\.vercel\.app/,
+  );
 });
 
 test("root metadata establishes a base URL without inheriting unfinished SEO policies", async () => {

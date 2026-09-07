@@ -1,18 +1,14 @@
 import { NextResponse } from "next/server";
 import { ZodError, z } from "zod";
 
-import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
+import { authorizeAdminRequest } from "@/libs/api/admin-authorization";
 import { EventCheckInWindowError, EventHasAttendanceRecordsError, EventNotFoundError } from "@/services/events/events.errors";
 import { eventsService } from "@/services/events/events.service";
 import { unexpectedErrorResponse } from "@/libs/api/server-response";
 
-async function requireAdmin() {
-  const user = await getCurrentUser();
-  return user && await isAdminByUserId(user.id);
-}
-
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!await requireAdmin()) return NextResponse.json({ message: "沒有管理權限" }, { status: 403 });
+  const authorization = await authorizeAdminRequest("沒有管理權限");
+  if (authorization.response) return authorization.response;
   try {
     const { id } = await params;
     return NextResponse.json({ data: await eventsService.updateEvent(id, await request.json()) });
@@ -27,7 +23,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!await requireAdmin()) return NextResponse.json({ message: "沒有管理權限" }, { status: 403 });
+  const authorization = await authorizeAdminRequest("沒有管理權限");
+  if (authorization.response) return authorization.response;
   try {
     const { id } = await params;
     await eventsService.deleteEvent(id);

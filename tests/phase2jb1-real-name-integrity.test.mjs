@@ -122,8 +122,8 @@ test("self and admin routes preserve validation and authorization boundaries", a
 
   assert.match(selfRoute, /usersService\.updateSelfProfile\(user\.id, body\)/);
   assert.match(selfRoute, /error instanceof ZodError[\s\S]*status: 400/);
-  assert.match(adminRoute, /isAdminByUserId/);
-  assert.match(adminRoute, /if \(!\(await requireAdmin\(\)\)\)[\s\S]*status: 403/);
+  assert.match(adminRoute, /authorizeAdminRequest\("沒有管理權限"\)/);
+  assert.match(adminRoute, /if \(authorization\.response\) return authorization\.response/);
   assert.match(adminRoute, /error instanceof ZodError[\s\S]*status: 400/);
 });
 

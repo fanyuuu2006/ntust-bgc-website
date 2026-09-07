@@ -1,21 +1,17 @@
 import { NextResponse } from "next/server";
 import { ZodError, z } from "zod";
-import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
+import { authorizeAdminRequest } from "@/libs/api/admin-authorization";
 import { parsePositiveIntegerId } from "@/libs/zod/ids";
 import { AttendanceNotFoundError } from "@/services/events/events.errors";
 import { eventsService } from "@/services/events/events.service";
 import { unexpectedErrorResponse } from "@/libs/api/server-response";
 
-async function admin() {
-  const user = await getCurrentUser();
-  return user && await isAdminByUserId(user.id);
-}
-
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string; attendanceId: string }> },
 ) {
-  if (!await admin()) return NextResponse.json({ message: "沒有管理權限" }, { status: 403 });
+  const authorization = await authorizeAdminRequest("沒有管理權限");
+  if (authorization.response) return authorization.response;
 
   try {
     const { id, attendanceId: rawAttendanceId } = await params;
@@ -38,7 +34,8 @@ export async function DELETE(
   _: Request,
   { params }: { params: Promise<{ id: string; attendanceId: string }> },
 ) {
-  if (!await admin()) return NextResponse.json({ message: "沒有管理權限" }, { status: 403 });
+  const authorization = await authorizeAdminRequest("沒有管理權限");
+  if (authorization.response) return authorization.response;
 
   try {
     const { id, attendanceId: rawAttendanceId } = await params;
