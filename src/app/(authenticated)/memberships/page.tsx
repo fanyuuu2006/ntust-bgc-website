@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { MembershipActivationForm } from "@/components/(authenticated)/memberships/MembershipActivationForm";
 import { CurrentMembershipCard } from "@/components/(authenticated)/memberships/CurrentMembershipCard";
 import { MembershipHistory } from "@/components/(authenticated)/memberships/MembershipHistory";
@@ -14,6 +15,10 @@ import { getCurrentUser } from "@/libs/auth";
 import { membershipService } from "@/services/memberships/memberships.service";
 import type { MembershipStatus, MembershipType } from "@/types/database";
 import { buildQueryString } from "@/utils/url";
+
+export const metadata: Metadata = {
+  title: "社員資格",
+};
 
 type MembershipSearchParams = {
   page?: string | string[];

@@ -44,12 +44,14 @@ test("public announcements compose a compact divider-based bulletin list while p
 });
 
 test("published announcement detail is a narrow server-rendered article without giant Card chrome", async () => {
-  const detail = await readSource(
-    "src/app/(public)/announcements/[id]/page.tsx",
-  );
+  const [detail, resolver] = await Promise.all([
+    readSource("src/app/(public)/announcements/[id]/page.tsx"),
+    readSource("src/app/(public)/announcements/[id]/announcement-detail.ts"),
+  ]);
 
-  assert.match(detail, /announcementsService\.getPublishedById/);
-  assert.match(detail, /if \(!announcement\) notFound\(\)/);
+  assert.match(detail, /getPublishedAnnouncement\(id\)/);
+  assert.match(resolver, /announcementsService\.getPublishedById/);
+  assert.match(resolver, /if \(!announcement\) notFound\(\)/);
   assert.match(detail, /<article[^>]*>/);
   assert.equal((detail.match(/<h1\b/g) ?? []).length, 1);
   assert.match(detail, /<time[^>]*dateTime=/);

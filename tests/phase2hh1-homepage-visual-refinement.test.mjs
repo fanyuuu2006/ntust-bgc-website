@@ -50,8 +50,9 @@ test("popular preview stays two-column on mobile and uses the container for its 
   ]);
 
   assert.match(section, /grid-cols-2/);
-  assert.match(section, /md:grid-cols-3/);
+  assert.match(section, /sm:grid-cols-3/);
   assert.match(section, /lg:grid-cols-4/);
+  assert.match(section, /xl:grid-cols-6/);
   assert.match(section, /items-stretch/);
   assert.doesNotMatch(section, /max-w-5xl/);
   assert.match(preview, /className="group flex h-full/);

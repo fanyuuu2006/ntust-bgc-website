@@ -4,6 +4,7 @@ import { BoardGameSearchForm } from "@/components/(public)/board-games/BoardGame
 import { BoardGameGrid } from "@/components/(public)/board-games/BoardGameGrid";
 import { PageHeader } from "@/components/PageHeader";
 import type { BoardGameStatus } from "@/types/database";
+import type { Metadata } from "next";
 import {
   ALLOWED_STATUSES,
   BASE_PATH,
@@ -12,6 +13,14 @@ import {
   SORT_OPTIONS,
 } from "./constants";
 import type { BoardGamesQuery } from "./types";
+
+export const metadata: Metadata = {
+  title: "桌遊",
+  description: "探索臺科大桌遊社的桌遊，查看分類、位置與借用資訊。",
+  alternates: {
+    canonical: "/board-games",
+  },
+};
 
 type BoardGamesSearchParams = {
   page?: string;

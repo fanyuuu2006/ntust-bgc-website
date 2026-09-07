@@ -1,30 +1,56 @@
 import { ArrowLeft } from "lucide-react";
-import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 import { BoardGameBorrowingPanel } from "@/components/(public)/board-games/BoardGameBorrowingPanel";
 import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGameStatusBadge";
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { ButtonLink } from "@/components/ui/Button";
 import { getCurrentUser } from "@/libs/auth";
-import { BoardNotFoundError } from "@/services/board-games/board-games.errors";
+import {
+  createMetadataDescription,
+  createMetadataTitle,
+  getSafeMetadataImageUrl,
+} from "@/libs/metadata-content";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { cn } from "@/utils/className";
+import { getBoardGameDetail } from "./board-game-detail";
 
 type BoardGameDetailPageProps = { params: Promise<{ id: string }> };
+
+export async function generateMetadata({
+  params,
+}: BoardGameDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const boardGame = await getBoardGameDetail(id);
+  const normalizedName = createMetadataDescription(boardGame.name);
+  const title = createMetadataTitle(normalizedName);
+  const description = createMetadataDescription(
+    boardGame.description?.trim() ||
+      `查看「${normalizedName}」的分類、位置與借用資訊。`,
+  );
+  const canonical = `/board-games/${boardGame.id}`;
+  const image = getSafeMetadataImageUrl(boardGame.image);
+
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: canonical,
+      ...(image ? { images: [{ url: image, alt: normalizedName }] } : {}),
+    },
+  };
+}
 
 export default async function BoardGameDetailPage({
   params,
 }: BoardGameDetailPageProps) {
   const { id } = await params;
-  let boardGame;
-
-  try {
-    boardGame = await boardGamesService.getBoardGameWithCategoryAndLocation(id);
-  } catch (error) {
-    if (error instanceof BoardNotFoundError) notFound();
-    throw error;
-  }
+  const boardGame = await getBoardGameDetail(id);
 
   const user = await getCurrentUser();
   const [currentMembership, existingBorrowing] = user

@@ -48,14 +48,11 @@ test("latest announcements preview is a published-only top-three semantic list",
 });
 
 test("popular games preview consumes the reusable top-six service contract", async () => {
-  const [section, preview, popularity] = await Promise.all([
+  const [section, preview] = await Promise.all([
     readSource(
       "src/components/(public)/home/PopularBoardGamesSection.tsx",
     ),
     readSource("src/components/(public)/home/HomeBoardGamePreview.tsx"),
-    readSource(
-      "src/components/(public)/board-games/BoardGamePopularity.tsx",
-    ),
   ]);
 
   assert.match(
@@ -63,16 +60,16 @@ test("popular games preview consumes the reusable top-six service contract", asy
     /boardGamesService\.listPopularBoardGames\(\{[\s\S]*?limit:\s*6,[\s\S]*?\}\)/,
   );
   assert.match(section, /grid-cols-2/);
-  assert.match(section, /md:grid-cols-3/);
+  assert.match(section, /sm:grid-cols-3/);
+  assert.match(section, /xl:grid-cols-6/);
   assert.match(section, /href="\/board-games"/);
   assert.match(section, /目前尚無桌遊資料/);
   assert.match(preview, /BoardGameImage/);
   assert.match(preview, /BoardGameStatusBadge/);
-  assert.match(preview, /BoardGamePopularity/);
-  assert.match(popularity, /completedBorrowCount <= 0/);
-  assert.match(popularity, /熱門度/);
-  assert.match(popularity, /\{completedBorrowCount\} 次借用/);
-  assert.doesNotMatch(preview, /inventory_number|description|fetch\(/);
+  assert.doesNotMatch(
+    preview,
+    /BoardGamePopularity|completedBorrowCount|inventory_number|description|fetch\(/,
+  );
 });
 
 test("homepage keeps hero immediate and streams isolated server sections", async () => {

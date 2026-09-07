@@ -1,5 +1,11 @@
 import { AuthCard } from "@/components/(auth)/AuthCard";
 import { RegisterForm } from "@/components/(auth)/register/RegisterForm";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "建立網站帳號",
+  description: "建立臺科大桌遊社網站帳號。",
+};
 
 export default function RegisterPage() {
   return (

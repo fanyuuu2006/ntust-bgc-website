@@ -1,5 +1,11 @@
 import { AuthCard } from "@/components/(auth)/AuthCard";
 import { LoginForm } from "@/components/(auth)/login/LoginForm";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "登入",
+  description: "登入臺科大桌遊社網站帳號。",
+};
 
 export default function LoginPage() {
   return (

@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { BoardGameImage } from "@/components/BoardGameImage";
-import { BoardGamePopularity } from "@/components/(public)/board-games/BoardGamePopularity";
 import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGameStatusBadge";
 import type { BoardGameDiscoveryItem } from "@/services/board-games/board-games.types";
 
@@ -47,7 +46,6 @@ export function HomeBoardGamePreview({
             {metadata.join(" · ")}
           </p>
         ) : null}
-        <BoardGamePopularity stats={boardGame.stats} className="mt-1.5" />
       </div>
     </Link>
   );

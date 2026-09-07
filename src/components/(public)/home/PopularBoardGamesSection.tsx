@@ -10,7 +10,7 @@ export function PopularBoardGamesSection() {
     <section
       id="popular-board-games"
       aria-labelledby="popular-board-games-title"
-      className="scroll-mt-20 bg-(--surface-subtle)"
+      className="scroll-mt-20 bg-(--surface-page)"
     >
       <div className="container py-10 sm:py-14 lg:py-16">
         <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
@@ -62,7 +62,7 @@ async function PopularBoardGamesContent() {
   }
 
   return (
-    <div className="mt-6 grid min-w-0 grid-cols-2 items-stretch gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
+    <div className="mt-6 grid min-w-0 grid-cols-2 items-stretch gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6">
       {boardGames.map((boardGame) => (
         <HomeBoardGamePreview key={boardGame.id} boardGame={boardGame} />
       ))}
@@ -75,7 +75,7 @@ function PopularBoardGamesLoading() {
     <div
       role="status"
       aria-label="正在載入熱門桌遊"
-      className="mt-6 grid grid-cols-2 items-stretch gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4"
+      className="mt-6 grid min-w-0 grid-cols-2 items-stretch gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6"
     >
       {[0, 1, 2, 3, 4, 5].map((item) => (
         <div

@@ -39,12 +39,14 @@ test("public detail routes share page-top and back-navigation grammar", async ()
 });
 
 test("announcement detail remains a compact readable plain-text article", async () => {
-  const detail = await readSource(
-    "src/app/(public)/announcements/[id]/page.tsx",
-  );
+  const [detail, resolver] = await Promise.all([
+    readSource("src/app/(public)/announcements/[id]/page.tsx"),
+    readSource("src/app/(public)/announcements/[id]/announcement-detail.ts"),
+  ]);
 
-  assert.match(detail, /announcementsService\.getPublishedById/);
-  assert.match(detail, /if \(!announcement\) notFound\(\)/);
+  assert.match(detail, /getPublishedAnnouncement\(id\)/);
+  assert.match(resolver, /announcementsService\.getPublishedById/);
+  assert.match(resolver, /if \(!announcement\) notFound\(\)/);
   assert.match(detail, /<article className="mt-5 min-w-0">/);
   assert.match(detail, /<header[^>]*border-b/);
   assert.match(detail, /<time[^>]*dateTime=/);
@@ -73,16 +75,18 @@ test("board-game identity uses explicit metadata and decision groups", async () 
 });
 
 test("board-game detail preserves server reads and borrowing confirmation boundaries", async () => {
-  const [page, panel, form] = await Promise.all([
+  const [page, resolver, panel, form] = await Promise.all([
     readSource("src/app/(public)/board-games/[id]/page.tsx"),
+    readSource("src/app/(public)/board-games/[id]/board-game-detail.ts"),
     readSource("src/components/(public)/board-games/BoardGameBorrowingPanel.tsx"),
     readSource("src/components/(public)/board-games/BorrowBoardGameForm.tsx"),
   ]);
 
   assert.equal(
-    (page.match(/getBoardGameWithCategoryAndLocation\(/g) ?? []).length,
+    (resolver.match(/getBoardGameWithCategoryAndLocation\(/g) ?? []).length,
     1,
   );
+  assert.match(page, /getBoardGameDetail\(id\)/);
   assert.match(page, /Promise\.all\(/);
   assert.doesNotMatch(page, /["']use client["']|useEffect|fetch\(/);
   assert.match(panel, /if \(existingBorrowing\)/);

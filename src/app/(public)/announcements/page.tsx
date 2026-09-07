@@ -7,6 +7,15 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { announcementsService } from "@/services/announcements/announcements.service";
 import { buildQueryString } from "@/utils/url";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "社團公告",
+  description: "查看臺科大桌遊社最新社團公告與活動消息。",
+  alternates: {
+    canonical: "/announcements",
+  },
+};
 
 type Props = {
   searchParams: Promise<{ page?: string; pageSize?: string; search?: string }>;

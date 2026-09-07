@@ -99,12 +99,13 @@ test("borrowing decision surface preserves every established user state", async 
 });
 
 test("detail page keeps one server-owned data-read path", async () => {
-  const page = await readSource(
-    "src/app/(public)/board-games/[id]/page.tsx",
-  );
+  const [page, resolver] = await Promise.all([
+    readSource("src/app/(public)/board-games/[id]/page.tsx"),
+    readSource("src/app/(public)/board-games/[id]/board-game-detail.ts"),
+  ]);
 
   assert.equal(
-    (page.match(/getBoardGameWithCategoryAndLocation\(/g) ?? []).length,
+    (resolver.match(/getBoardGameWithCategoryAndLocation\(/g) ?? []).length,
     1,
   );
   assert.equal((page.match(/getCurrentUser\(/g) ?? []).length, 1);
@@ -117,5 +118,6 @@ test("detail page keeps one server-owned data-read path", async () => {
     1,
   );
   assert.match(page, /Promise\.all\(/);
-  assert.match(page, /BoardNotFoundError[\s\S]*notFound\(\)/);
+  assert.match(page, /getBoardGameDetail\(id\)/);
+  assert.match(resolver, /BoardNotFoundError[\s\S]*notFound\(\)/);
 });

@@ -1,23 +1,47 @@
 import { ArrowLeft } from "lucide-react";
-import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 import { ButtonLink } from "@/components/ui/Button";
-import { positiveIntegerIdSchema } from "@/libs/zod/ids";
-import { announcementsService } from "@/services/announcements/announcements.service";
+import {
+  createMetadataDescription,
+  createMetadataTitle,
+} from "@/libs/metadata-content";
 import { formatDate } from "@/utils/date";
+import { getPublishedAnnouncement } from "./announcement-detail";
 
 type AnnouncementDetailPageProps = {
   params: Promise<{ id: string }>;
 };
 
+export async function generateMetadata({
+  params,
+}: AnnouncementDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const announcement = await getPublishedAnnouncement(id);
+  const title = createMetadataTitle(announcement.title);
+  const description = createMetadataDescription(announcement.content);
+  const canonical = `/announcements/${announcement.id}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      type: "article",
+      title,
+      description,
+      url: canonical,
+      publishedTime: announcement.published_at ?? announcement.created_at,
+      modifiedTime: announcement.updated_at,
+    },
+  };
+}
+
 export default async function AnnouncementDetailPage({
   params,
 }: AnnouncementDetailPageProps) {
-  const id = positiveIntegerIdSchema.safeParse((await params).id);
-  if (!id.success) notFound();
-
-  const announcement = await announcementsService.getPublishedById(id.data);
-  if (!announcement) notFound();
+  const { id } = await params;
+  const announcement = await getPublishedAnnouncement(id);
 
   const publishedAt = announcement.published_at ?? announcement.created_at;
 

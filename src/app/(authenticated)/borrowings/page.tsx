@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { ArrowUpDown } from "lucide-react";
+import type { Metadata } from "next";
 
 import {
   BorrowingsResults,
@@ -16,6 +17,10 @@ import { getCurrentUser } from "@/libs/auth";
 import type { BorrowingStatus } from "@/types/database";
 import { parsePage, parsePageSize } from "@/utils/pagination";
 import { buildQueryString } from "@/utils/url";
+
+export const metadata: Metadata = {
+  title: "我的借用",
+};
 
 const BASE_PATH = "/borrowings";
 const PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
