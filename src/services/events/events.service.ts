@@ -256,21 +256,6 @@ export const eventsService = {
     };
   },
 
-  searchAttendanceUsersForAdmin: async (eventId: string, search: string) => {
-    const keyword = search.trim();
-    if (!await eventsRepository.findById(eventId)) throw new EventNotFoundError();
-    if (!keyword) return [];
-
-    const userIds = [...new Set((await Promise.all([
-      usersRepository.findIdsBySearch(keyword),
-      userProfilesRepository.findUserIdsBySearch(keyword),
-    ])).flat())];
-    const users = await usersRepository.findMany({ userIds, pageSize: 20, orderBy: "name", orderDirection: "asc" });
-    const profiles = await userProfilesRepository.findManyByUserIds(users.data.map((user) => user.id));
-    const profilesByUserId = new Map(profiles.map((profile) => [profile.user_id, profile]));
-    return users.data.map((user) => ({ ...user, profile: profilesByUserId.get(user.id) ?? null }));
-  },
-
   createAttendanceForAdmin: async (eventId: string, input: unknown) => {
     const data = attendanceInputSchema.parse(input);
     const [event, user, existing] = await Promise.all([eventsRepository.findById(eventId), usersRepository.findById(data.user_id), eventAttendancesRepository.findByUserIdAndEventId(data.user_id, eventId)]);

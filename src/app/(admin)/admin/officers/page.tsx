@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { officerPositionsService } from "@/services/officer-positions/officer-positions.service";
-import { usersService } from "@/services/users/users.service";
 import {
   normalizePageSizeOption,
   readSingleQueryValue,
@@ -41,7 +40,7 @@ export default async function OfficersPage({
   };
   const page = parsePage(params.page);
   const pageSize = normalizePageSizeOption(params.pageSize, PAGE_SIZE_OPTIONS, 20);
-  const [years, officers, users] = await Promise.all([
+  const [years, officers] = await Promise.all([
     membershipService.listAcademicYears(),
     officerPositionsService.listForAdmin({
       page,
@@ -49,7 +48,6 @@ export default async function OfficersPage({
       academicYearId: params.academicYearId,
       titleSearch: params.search?.trim() || undefined,
     }),
-    usersService.listForAdmin({ page: 1, pageSize: 100 }),
   ]);
   const clearSearchParams = new URLSearchParams();
   if (params.academicYearId) clearSearchParams.set("academicYearId", params.academicYearId);
@@ -61,7 +59,7 @@ export default async function OfficersPage({
       <HeadingSection
         title="幹部管理"
         description="管理各學年度的幹部紀錄。"
-        actions={<OfficerActions users={users.data} years={years} />}
+        actions={<OfficerActions years={years} />}
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <form>

@@ -64,10 +64,14 @@ test("attendance records preserve username and real name as separate administrat
 });
 
 test("manual attendance user selection uses a server-backed search instead of a preloaded giant select", async () => {
-  const actions = await readSource("src/components/(admin)/admin/events/AttendanceActions.tsx");
+  const [actions, picker] = await Promise.all([
+    readSource("src/components/(admin)/admin/events/AttendanceActions.tsx"),
+    readSource("src/components/(admin)/admin/users/AdminUserPicker.tsx"),
+  ]);
 
-  assert.match(actions, /attendances\/users/);
-  assert.match(actions, /搜尋使用者/);
+  assert.match(actions, /AdminUserPicker/);
+  assert.match(picker, /\/api\/admin\/users\/search/);
+  assert.match(picker, /搜尋使用者/);
   assert.doesNotMatch(actions, /users: User\[\]/);
   assert.doesNotMatch(actions, /users\.map/);
 });

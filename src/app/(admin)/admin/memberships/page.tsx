@@ -6,7 +6,6 @@ import { Pagination } from "@/components/Pagination/Pagination";
 import { ButtonLink } from "@/components/ui/Button";
 import { listAdminMembershipsQuerySchema } from "@/services/memberships/memberships.schema";
 import { membershipService } from "@/services/memberships/memberships.service";
-import { usersService } from "@/services/users/users.service";
 
 type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -17,10 +16,9 @@ export default async function MembershipsPage({ searchParams }: Props) {
   const query = parsed.success ? parsed.data : {};
   const page = query.page ?? 1;
   const pageSize = query.pageSize ?? 20;
-  const [years, memberships, users] = await Promise.all([
+  const [years, memberships] = await Promise.all([
     membershipService.listAcademicYears(),
     membershipService.listAdminMemberships({ ...query, page, pageSize }),
-    usersService.listForAdmin({ page: 1, pageSize: 100 }),
   ]);
   return (
     <>
@@ -32,10 +30,7 @@ export default async function MembershipsPage({ searchParams }: Props) {
             <ButtonLink href="/admin/memberships/register-keys" variant="outline">
               社員註冊序號管理
             </ButtonLink>
-            <MembershipCreateButton
-              users={users.data}
-              years={years}
-            />
+            <MembershipCreateButton years={years} />
           </>
         }
       />

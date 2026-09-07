@@ -7,22 +7,22 @@ import { Modal } from "@/components/Modal";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
+import { AdminUserPicker } from "@/components/(admin)/admin/users/AdminUserPicker";
 import { apiClient } from "@/libs/api/client";
-import type { AcademicYear, MembershipStatus, User } from "@/types/database";
+import type { AcademicYear, MembershipStatus } from "@/types/database";
 
 type Props = {
-  users: User[];
   years: AcademicYear[];
 };
 
 export function MembershipCreateButton({
-  users,
   years,
 }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pickerResetKey, setPickerResetKey] = useState(0);
   const [values, setValues] = useState({
     user_id: "",
     academic_year_id: years.find((year) => year.is_current)?.id ?? "",
@@ -36,6 +36,7 @@ export function MembershipCreateButton({
       academic_year_id: years.find((year) => year.is_current)?.id ?? "",
       status: "active",
     });
+    setPickerResetKey((current) => current + 1);
     setOpen(true);
   }
 
@@ -59,11 +60,18 @@ export function MembershipCreateButton({
       <Button type="button" onClick={showDialog}>新增社員資格</Button>
       <Modal open={open} onClose={() => !busy && setOpen(false)} title="新增社員資格">
         <form className="space-y-4" onSubmit={submit}>
-          <Field label="使用者" htmlFor="membership-user">
-            <Select id="membership-user" required value={values.user_id} disabled={busy} onChange={(event) => setValues((current) => ({ ...current, user_id: event.target.value }))}>
-              <option value="">請選擇使用者</option>
-              {users.map((user) => <option key={user.id} value={user.id}>{user.name}（{user.email}）</option>)}
-            </Select>
+          <Field label="使用者" htmlFor="membership-user" required>
+            <AdminUserPicker
+              key={pickerResetKey}
+              id="membership-user"
+              disabled={busy}
+              onChange={(user) =>
+                setValues((current) => ({
+                  ...current,
+                  user_id: user?.id ?? "",
+                }))
+              }
+            />
           </Field>
           <Field label="學年度" htmlFor="membership-year">
             <Select id="membership-year" required value={values.academic_year_id} disabled={busy} onChange={(event) => setValues((current) => ({ ...current, academic_year_id: event.target.value }))}>
@@ -79,7 +87,7 @@ export function MembershipCreateButton({
           <FormFeedback error={error} />
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" disabled={busy} onClick={() => setOpen(false)}>取消</Button>
-            <Button type="submit" isLoading={busy}>{busy ? "新增中…" : "新增"}</Button>
+            <Button type="submit" isLoading={busy} disabled={!values.user_id}>{busy ? "新增中…" : "新增"}</Button>
           </div>
         </form>
       </Modal>

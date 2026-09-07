@@ -63,3 +63,7 @@ export const updateUserAccountSchema = z
   .refine((data) => data.name !== undefined || data.avatar !== undefined, {
     message: "沒有可更新的欄位",
   });
+
+export const adminUserPickerSearchSchema = z.object({
+  search: z.string().trim().min(1, "請輸入搜尋條件").max(100),
+});

@@ -8,14 +8,16 @@ import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { AdminUserPicker } from "@/components/(admin)/admin/users/AdminUserPicker";
 import { apiClient } from "@/libs/api/client";
-import type { AcademicYear, User } from "@/types/database";
+import type { AcademicYear } from "@/types/database";
 
-export function OfficerActions({ users, years }: { users: User[]; years: AcademicYear[] }) {
+export function OfficerActions({ years }: { years: AcademicYear[] }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pickerResetKey, setPickerResetKey] = useState(0);
   const [values, setValues] = useState({
     user_id: "",
     academic_year_id: years.find((year) => year.is_current)?.id ?? "",
@@ -51,6 +53,12 @@ export function OfficerActions({ users, years }: { users: User[]; years: Academi
         type="button"
         onClick={() => {
           setError(null);
+          setValues({
+            user_id: "",
+            academic_year_id: years.find((year) => year.is_current)?.id ?? "",
+            title: "",
+          });
+          setPickerResetKey((current) => current + 1);
           setOpen(true);
         }}
       >
@@ -59,22 +67,18 @@ export function OfficerActions({ users, years }: { users: User[]; years: Academi
 
       <Modal open={open} onClose={closeForm} title="新增幹部職位">
         <form onSubmit={createOfficer} className="space-y-4">
-          <Field label="使用者" htmlFor="officer-user">
-            <Select
+          <Field label="使用者" htmlFor="officer-user" required>
+            <AdminUserPicker
+              key={pickerResetKey}
               id="officer-user"
-              className="w-full"
-              required
-              value={values.user_id}
               disabled={busy}
-              onChange={(event) => setValues((current) => ({ ...current, user_id: event.target.value }))}
-            >
-              <option value="">請選擇使用者</option>
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.name}（{user.email}）
-                </option>
-              ))}
-            </Select>
+              onChange={(user) =>
+                setValues((current) => ({
+                  ...current,
+                  user_id: user?.id ?? "",
+                }))
+              }
+            />
           </Field>
           <Field label="學年度" htmlFor="officer-year">
             <Select
@@ -106,7 +110,7 @@ export function OfficerActions({ users, years }: { users: User[]; years: Academi
             <Button type="button" variant="outline" disabled={busy} onClick={closeForm}>
               取消
             </Button>
-            <Button type="submit" isLoading={busy}>
+            <Button type="submit" isLoading={busy} disabled={!values.user_id}>
               {busy ? "新增中…" : "新增"}
             </Button>
           </div>

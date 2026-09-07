@@ -5,7 +5,9 @@ import {
   updateSelfProfileSchema,
   updateUserAccountSchema,
   updateUserProfileSchema,
+  adminUserPickerSearchSchema,
 } from "./users.schema";
+import type { AdminUserPickerItem } from "./users.types";
 import type { User, UserProfile } from "@/types/database";
 import {
   UserProfileAlreadyExistsError,
@@ -15,7 +17,30 @@ import { usersRepository } from "@/repositories/users.repository";
 import { officerPositionsService } from "@/services/officer-positions/officer-positions.service";
 import { membershipService } from "@/services/memberships/memberships.service";
 
+const ADMIN_USER_PICKER_LIMIT = 20;
+
 export const usersService = {
+  searchForAdminPicker: async (
+    input: unknown,
+  ): Promise<AdminUserPickerItem[]> => {
+    const { search } = adminUserPickerSearchSchema.parse(input);
+    const result = await usersService.listForAdmin({
+      page: 1,
+      pageSize: ADMIN_USER_PICKER_LIMIT,
+      search,
+      orderBy: "name",
+      orderDirection: "asc",
+    });
+
+    return result.data.map((user) => ({
+      id: user.id,
+      username: user.name,
+      email: user.email,
+      realName: user.profile?.real_name ?? null,
+      studentId: user.profile?.student_id ?? null,
+    }));
+  },
+
   listForAdmin: async (options: { page?: number; pageSize?: number; search?: string; orderBy?: "name" | "email" | "created_at" | "updated_at"; orderDirection?: "asc" | "desc" } = {}) => {
     const keyword = options.search?.trim();
     const matchedUserIds = keyword
