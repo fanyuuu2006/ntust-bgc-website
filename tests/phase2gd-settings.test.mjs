@@ -17,7 +17,7 @@ test("settings presents two focused account and security surfaces without blanki
   assert.doesNotMatch(page, /會員|社員資格|社團足跡|借用/);
 });
 
-test("authenticated profile update uses an explicit strict six-field self-service boundary", async () => {
+test("authenticated profile update uses an explicit strict five-field self-service boundary", async () => {
   const [schema, service, route] = await Promise.all([
     readSource("src/services/users/users.schema.tsx"),
     readSource("src/services/users/users.service.tsx"),
@@ -26,8 +26,17 @@ test("authenticated profile update uses an explicit strict six-field self-servic
 
   assert.match(
     schema,
-    /updateSelfProfileSchema[\s\S]*real_name[\s\S]*phone[\s\S]*student_id[\s\S]*school[\s\S]*department[\s\S]*grade[\s\S]*\.strict\(\)/,
+    /selfEditableProfileFields[\s\S]*phone[\s\S]*userAcademicFields/,
   );
+  assert.match(
+    schema,
+    /updateSelfProfileSchema[\s\S]*object\(selfEditableProfileFields\)[\s\S]*\.strict\(\)/,
+  );
+  const selfSchema = schema.match(
+    /updateSelfProfileSchema[\s\S]*?(?=export const updateUserProfileSchema)/,
+  )?.[0];
+  assert.ok(selfSchema);
+  assert.doesNotMatch(selfSchema, /real_name/);
   assert.doesNotMatch(schema, /updateSelfProfileSchema[\s\S]*user_id/);
   assert.match(service, /updateSelfProfileSchema\.parse\(payload\)/);
   assert.match(route, /usersService\.updateSelfProfile\(user\.id, body\)/);
@@ -49,13 +58,12 @@ test("account settings separates editable username and avatar from read-only ema
   assert.match(account, /FormFeedback/);
 });
 
-test("personal settings edits all six supported profile fields through the self profile endpoint", async () => {
+test("personal settings keeps real name read-only and edits only self-service profile fields", async () => {
   const profile = await readSource(
     "src/components/(authenticated)/settings/ProfileSettingsForm.tsx",
   );
 
   for (const field of [
-    "real_name",
     "phone",
     "student_id",
     "school",
@@ -64,6 +72,9 @@ test("personal settings edits all six supported profile fields through the self 
   ]) {
     assert.match(profile, new RegExp(`id: "${field}"`));
   }
+  assert.doesNotMatch(profile, /id: "real_name"/);
+  assert.match(profile, /profile\.real_name/);
+  assert.match(profile, /如需更正真實姓名，請聯絡社團幹部。/);
   assert.match(profile, /\/api\/users\/me\/profile/);
   assert.match(profile, /variant="primary"/);
   assert.match(profile, /FormFeedback/);

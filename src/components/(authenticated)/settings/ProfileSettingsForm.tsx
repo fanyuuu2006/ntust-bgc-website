@@ -12,7 +12,7 @@ import type { UserProfile } from "@/types/database";
 
 type ProfileFormValues = Pick<
   UserProfile,
-  "real_name" | "phone" | "student_id" | "school" | "department" | "grade"
+  "phone" | "student_id" | "school" | "department" | "grade"
 >;
 
 type ProfileField = Omit<FieldInputField, "id"> & {
@@ -20,13 +20,6 @@ type ProfileField = Omit<FieldInputField, "id"> & {
 };
 
 const fields: ProfileField[] = [
-  {
-    id: "real_name",
-    label: "真實姓名",
-    type: "text",
-    autoComplete: "name",
-    placeholder: "請輸入真實姓名",
-  },
   {
     id: "phone",
     label: "手機號碼",
@@ -63,7 +56,6 @@ const fields: ProfileField[] = [
 
 function toFormValues(profile: UserProfile): ProfileFormValues {
   return {
-    real_name: profile.real_name,
     phone: profile.phone,
     student_id: profile.student_id ?? "",
     school: profile.school ?? "",
@@ -141,6 +133,16 @@ export function ProfileSettingsForm({ profile }: { profile: UserProfile }) {
         aria-busy={isLoading || undefined}
         className="mt-4 flex flex-col gap-4"
       >
+        <div>
+          <p className="text-sm font-medium text-(--text-secondary)">
+            真實姓名
+          </p>
+          <p className="mt-1 text-(--text-primary)">{profile.real_name}</p>
+          <p className="mt-1 text-sm leading-6 text-(--text-muted)">
+            如需更正真實姓名，請聯絡社團幹部。
+          </p>
+        </div>
+
         <div className="grid gap-4 sm:grid-cols-2">
           {fields.map((field) => (
             <FieldInput

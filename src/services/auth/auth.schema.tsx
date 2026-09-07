@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { userContactFields } from "../users/users.schema";
+import { registrationProfileFields } from "../users/users.schema";
 
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_MAX_LENGTH = 128;
@@ -39,7 +39,7 @@ export const registerSchema = z
         error: `密碼不可超過 ${PASSWORD_MAX_LENGTH} 個字元`,
       })
       .superRefine(applyPasswordRules),
-    ...userContactFields,
+    ...registrationProfileFields,
   })
   .refine((data) => data.password !== data.name, {
     message: "密碼不可與帳號名稱相同",

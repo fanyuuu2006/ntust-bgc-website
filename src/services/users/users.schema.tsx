@@ -16,31 +16,38 @@ const userAcademicFields = {
   grade: nullableAcademicField,
 };
 
-export const userContactFields = {
-  real_name: z.string().trim().max(REAL_NAME_MAX_LENGTH),
-  phone: z.string().trim().min(1, { error: "電話不可為空" }),
+export const realNameSchema = z
+  .string()
+  .trim()
+  .min(1, { error: "請填寫真實姓名" })
+  .max(REAL_NAME_MAX_LENGTH);
+
+const phoneSchema = z.string().trim().min(1, { error: "電話不可為空" });
+
+export const registrationProfileFields = {
+  real_name: realNameSchema,
+  phone: phoneSchema,
+};
+
+const selfEditableProfileFields = {
+  phone: phoneSchema,
+  ...userAcademicFields,
+};
+
+const adminEditableProfileFields = {
+  ...registrationProfileFields,
+  ...userAcademicFields,
 };
 
 export const createUserProfileSchema = z.object({
-  ...userContactFields,
-  ...userAcademicFields,
+  ...adminEditableProfileFields,
 });
 
 export const updateSelfProfileSchema = z
-  .object({
-    real_name: userContactFields.real_name,
-    phone: userContactFields.phone,
-    student_id: nullableAcademicField,
-    school: nullableAcademicField,
-    department: nullableAcademicField,
-    grade: nullableAcademicField,
-  })
+  .object(selfEditableProfileFields)
   .strict();
 
-export const updateUserProfileSchema = z.object({
-  ...userContactFields,
-  ...userAcademicFields,
-});
+export const updateUserProfileSchema = z.object(adminEditableProfileFields);
 
 export const updateUserAccountSchema = z
   .object({

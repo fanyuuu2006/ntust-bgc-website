@@ -115,6 +115,8 @@ create table public.user_profiles (
   real_name text not null,
   user_id uuid not null,
   student_id text,
+  constraint user_profiles_real_name_nonempty_check
+    check (btrim(real_name) <> ''),
   constraint user_profiles_user_id_fkey
     foreign key (user_id) references public.users(id)
     on delete no action on update no action,
