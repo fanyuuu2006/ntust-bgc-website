@@ -96,8 +96,8 @@ test("query forms intentionally reset page while preserving valid page size", as
   ]);
 
   for (const source of sources) {
-    assert.match(source, /name="page" value="1"/);
-    assert.match(source, /name="pageSize"/);
+    assert.match(source, /PreservedQueryFields|name="page" value="1"/);
+    assert.match(source, /pageSize/);
   }
 });
 
@@ -160,29 +160,35 @@ test("page-size controls remain only where the audited product task benefits", a
 test("Admin Borrowings exposes only established sort fields and resets page", async () => {
   const source = await readSource("src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx");
 
-  assert.match(source, /name="sort"/);
+  assert.match(source, /aria-label="排序"/);
   assert.match(source, /created_at:desc/);
   assert.match(source, /borrowed_at:desc/);
   assert.match(source, /due_at:asc/);
   assert.match(source, /returned_at:desc/);
-  assert.match(source, /page: "1"/);
+  assert.match(source, /ownedKeys: \["orderBy", "orderDirection"\]/);
 });
 
 test("Admin query forms preserve page size and explicitly reset page", async () => {
-  const nativeForms = await Promise.all([
+  const unchangedNativeForms = await Promise.all([
     readSource("src/app/(admin)/admin/users/page.tsx"),
     readSource("src/app/(admin)/admin/academic-years/page.tsx"),
     readSource("src/app/(admin)/admin/board-games/categories/page.tsx"),
     readSource("src/app/(admin)/admin/board-games/locations/page.tsx"),
+  ]);
+  for (const source of unchangedNativeForms) {
+    assert.match(source, /name="page" value="1"/);
+    assert.match(source, /name="pageSize"/);
+  }
+
+  const convergedNativeForms = await Promise.all([
     readSource("src/app/(admin)/admin/officers/page.tsx"),
     readSource("src/app/(admin)/admin/events/page.tsx"),
     readSource("src/app/(admin)/admin/events/[id]/page.tsx"),
     readSource("src/app/(admin)/admin/announcements/page.tsx"),
   ]);
-
-  for (const source of nativeForms) {
-    assert.match(source, /name="page" value="1"/);
-    assert.match(source, /name="pageSize"/);
+  for (const source of convergedNativeForms) {
+    assert.match(source, /PreservedQueryFields/);
+    assert.match(source, /ownedKeys=\{\["search"\]\}/);
   }
 
   const [memberships, registerKeys, boardGames] = await Promise.all([
@@ -191,13 +197,13 @@ test("Admin query forms preserve page size and explicitly reset page", async () 
     readSource("src/components/(admin)/admin/board-games/BoardGameSearchForm.tsx"),
   ]);
   for (const source of [memberships, registerKeys, boardGames]) {
-    assert.match(source, /<form method="GET" action=/);
-    assert.match(source, /name="page" value="1"/);
-    assert.match(source, /name="pageSize"/);
+    assert.match(source, /QueryFilterForm/);
+    assert.match(source, /PreservedQueryFields/);
+    assert.match(source, /ownedKeys=\{\["search"\]\}/);
     assert.doesNotMatch(source, /preventDefault|router\.push/);
   }
-  assert.match(memberships, /name="orderDirection"/);
-  assert.match(registerKeys, /name="orderDirection"/);
+  assert.match(memberships, /orderDirection/);
+  assert.match(registerKeys, /orderDirection/);
 });
 
 test("Admin zero-result views distinguish active queries from empty datasets", async () => {

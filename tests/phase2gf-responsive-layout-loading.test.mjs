@@ -23,11 +23,11 @@ test("authenticated query toolbars defer the four-control desktop row and keep f
   ]);
 
   for (const source of [memberships, borrowings]) {
-    assert.match(source, /lg:grid-cols-\[minmax\(0,1fr\)_auto_auto_auto\]/);
+    assert.match(source, /lg:grid-cols-\[minmax\(0,1fr\)_auto_auto\]/);
     assert.match(source, /QueryFilterDisclosure/);
   }
   assert.match(disclosure, /<summary className="[^"]*shrink-0[^"]*whitespace-nowrap|<summary className="[^"]*whitespace-nowrap[^"]*shrink-0/);
-  assert.doesNotMatch(memberships, /sm:flex-row/);
+  assert.match(memberships, /QueryFilterForm/);
 });
 
 test("Board Game expanded filters are a feature-local full-width flow item", async () => {

@@ -3,7 +3,12 @@
 import { useId, useState } from "react";
 import { ListFilter } from "lucide-react";
 
+import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
+import { QueryFilterForm } from "@/components/query/QueryFilterForm";
 import { Button } from "@/components/ui/Button";
+import type { AppliedQuery } from "@/libs/query-navigation";
+
+const BASE_PATH = "/board-games";
 
 type FilterOption = {
   value: string;
@@ -17,6 +22,9 @@ type BoardGameFilterDisclosureProps = {
   selectedStatuses?: string[];
   selectedCategories?: string[];
   selectedLocations?: string[];
+  appliedQuery: AppliedQuery;
+  clearFiltersHref: string;
+  activeFilterCount: number;
 };
 
 export function BoardGameFilterDisclosure({
@@ -26,6 +34,9 @@ export function BoardGameFilterDisclosure({
   selectedStatuses,
   selectedCategories,
   selectedLocations,
+  appliedQuery,
+  clearFiltersHref,
+  activeFilterCount,
 }: BoardGameFilterDisclosureProps) {
   const [isOpen, setIsOpen] = useState(false);
   const panelId = useId();
@@ -41,15 +52,25 @@ export function BoardGameFilterDisclosure({
         className="w-full shrink-0 whitespace-nowrap sm:w-auto"
       >
         <ListFilter aria-hidden="true" className="size-4" />
-        篩選
+        {activeFilterCount > 0 ? `篩選 (${activeFilterCount})` : "篩選"}
       </Button>
 
       <div
         id={panelId}
         hidden={!isOpen}
-        className="order-last col-span-full grid min-w-0 gap-3 rounded-xl border border-(--border-default) bg-(--surface-default) p-3 sm:grid-cols-3 lg:absolute lg:right-0 lg:top-full lg:z-20 lg:mt-3 lg:w-[min(40rem,calc(100vw-2rem))] lg:shadow-(--shadow-card)"
+        className="order-last col-span-full min-w-0 rounded-xl border border-(--border-default) bg-(--surface-default) p-3 lg:absolute lg:right-0 lg:top-full lg:z-20 lg:mt-3 lg:w-[min(40rem,calc(100vw-2rem))] lg:shadow-(--shadow-card)"
       >
-        <FilterGroup label="狀態">
+        <QueryFilterForm
+          method="GET"
+          action={BASE_PATH}
+          appliedQuery={appliedQuery}
+          ownedKeys={["status", "category", "location"]}
+          clearHref={clearFiltersHref}
+          actionsClassName="sm:col-span-3"
+          className="grid min-w-0 gap-3 sm:grid-cols-3"
+        >
+          <PreservedQueryFields query={appliedQuery} ownedKeys={["status", "category", "location"]} />
+          <FilterGroup label="狀態">
           {statusOptions.map((option) => (
             <FilterCheckbox
               key={option.value}
@@ -58,8 +79,8 @@ export function BoardGameFilterDisclosure({
               defaultChecked={selectedStatuses?.includes(option.value)}
             />
           ))}
-        </FilterGroup>
-        <FilterGroup label="類型">
+          </FilterGroup>
+          <FilterGroup label="類型">
           {categoryOptions.map((option) => (
             <FilterCheckbox
               key={option.value}
@@ -68,8 +89,8 @@ export function BoardGameFilterDisclosure({
               defaultChecked={selectedCategories?.includes(option.value)}
             />
           ))}
-        </FilterGroup>
-        <FilterGroup label="位置">
+          </FilterGroup>
+          <FilterGroup label="位置">
           {locationOptions.map((option) => (
             <FilterCheckbox
               key={option.value}
@@ -78,7 +99,8 @@ export function BoardGameFilterDisclosure({
               defaultChecked={selectedLocations?.includes(option.value)}
             />
           ))}
-        </FilterGroup>
+          </FilterGroup>
+        </QueryFilterForm>
       </div>
     </>
   );
@@ -121,7 +143,7 @@ function FilterCheckbox({
         value={option.value}
         defaultChecked={defaultChecked}
       />
-      <span className="min-w-0 break-words">{option.label}</span>
+      <span className="min-w-0 wrap-break-word">{option.label}</span>
     </label>
   );
 }

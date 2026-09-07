@@ -17,11 +17,11 @@ test("board-game discovery uses URL-authoritative search, filters, and sorting",
   assert.match(page, /normalizePublicBoardGamesQuery\(params\)/);
   assert.match(query, /SORT_OPTIONS\.find\(/);
   assert.match(query, /readSingleQueryValue\(params\.sort\)/);
-  assert.match(toolbar, /<form method="GET" action=\{BASE_PATH\}/);
-  assert.match(toolbar, /name="page" value="1"/);
+  assert.match(toolbar, /<form[\s\S]*?method="GET"[\s\S]*?action=\{BASE_PATH\}/);
+  assert.match(toolbar, /PreservedQueryFields/);
   assert.match(toolbar, /name="search"/);
   assert.match(queryControls, /name="status"/);
-  assert.match(toolbar, /name="sort"/);
+  assert.match(toolbar, /queryKey="sort"/);
   assert.match(queryControls, /Search|ListFilter|ArrowUpDown/);
   assert.doesNotMatch(queryControls, /useRouter|usePathname|router\.replace|fetch\(/);
   assert.match(card, /border-\(--border-default\)/);
@@ -57,7 +57,7 @@ test("borrowings remain server-rendered, queryable, and time-aware", async () =>
   assert.doesNotMatch(page, /"use client"|useRouter/);
   assert.match(page, /name="search"/);
   assert.match(page, /name="status"/);
-  assert.match(page, /name="sort"/);
+  assert.match(page, /queryKey="sort"/);
   assert.match(results, /getBorrowingsByUserId/);
   assert.match(record, /getDueTimePresentation/);
   assert.match(record, /CalendarClock|TriangleAlert/);
@@ -90,5 +90,5 @@ test("borrowing records use state-aware compact metadata without a membership ga
   assert.match(record, /<div className="min-w-0 flex-1">[\s\S]*?<h2[\s\S]*?<BorrowingStatusBadge/);
   assert.match(record, /className="shrink-0 self-start"/);
   assert.match(action, /variant="danger"/);
-  assert.match(page, /lg:grid-cols-\[minmax\(0,1fr\)_auto_auto_auto\]/);
+  assert.match(page, /lg:grid-cols-\[minmax\(0,1fr\)_auto_auto\]/);
 });

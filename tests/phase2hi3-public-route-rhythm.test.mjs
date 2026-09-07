@@ -43,10 +43,10 @@ test("board-game controls and result utility form one flat region", async () => 
   );
 
   assert.match(form, /<form[\s\S]*?method="GET"[\s\S]*?action=\{BASE_PATH\}/);
-  assert.match(form, /name="page" value="1"/);
-  assert.match(form, /name="pageSize" value=\{pageSize\}/);
+  assert.match(form, /PreservedQueryFields/);
+  assert.match(form, /pageSize/);
   assert.match(form, /aria-live="polite"/);
-  assert.match(form, /<form[^>]*className="space-y-2"/);
+  assert.match(form, /<div className="space-y-2"/);
   assert.doesNotMatch(
     form,
     /<form[^>]*className="[^"]*(?:rounded-xl|shadow-|bg-\(--surface-default\)|border border-)/,

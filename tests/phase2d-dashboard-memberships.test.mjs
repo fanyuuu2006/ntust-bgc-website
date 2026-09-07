@@ -70,7 +70,7 @@ test("membership records are complete, URL-driven, and paginated without a clien
   assert.match(results, /listMembershipRecordsByUserId/);
   assert.match(results, /showPageSize=\{false\}/);
   assert.doesNotMatch(page, /membership\.id !== currentYearMembership/);
-  assert.match(toolbar, /<form method="GET" action="\/memberships"/);
+  assert.match(toolbar, /QueryFilterForm/);
   assert.match(toolbar, /name="search"|name="type"|name="status"|name="orderDirection"/);
   assert.match(toolbar, /ClearableSearchInput/);
   assert.match(toolbar, /QueryFilterDisclosure/);

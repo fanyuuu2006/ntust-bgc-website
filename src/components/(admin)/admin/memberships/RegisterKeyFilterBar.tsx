@@ -1,8 +1,11 @@
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
+import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { QueryFilterDisclosure } from "@/components/query/QueryFilterDisclosure";
+import { QueryFilterForm } from "@/components/query/QueryFilterForm";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
+import { buildOwnedQueryHref } from "@/libs/query-navigation";
 import type {
   AcademicYear,
   MembershipRegisterKeyStatus,
@@ -37,14 +40,18 @@ export function RegisterKeyFilterBar({
   const clearSearchHref = clearSearchQuery
     ? BASE_PATH + "?" + clearSearchQuery
     : BASE_PATH;
+  const activeFilterCount = [query.academic_year_id, query.status].filter(Boolean).length;
+  const clearFiltersHref = buildOwnedQueryHref({
+    basePath: BASE_PATH,
+    appliedQuery: query,
+    ownedKeys: ["academic_year_id", "status"],
+    changes: {},
+  });
 
   return (
-    <form method="GET" action={BASE_PATH}>
-      <input type="hidden" name="page" value="1" />
-      <input type="hidden" name="pageSize" value={query.pageSize ?? 20} />
-      {query.orderBy ? <input type="hidden" name="orderBy" value={query.orderBy} /> : null}
-      {query.orderDirection ? <input type="hidden" name="orderDirection" value={query.orderDirection} /> : null}
-      <AdminToolbar className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+    <AdminToolbar className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      <form method="GET" action={BASE_PATH} aria-label="搜尋社員註冊序號" className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <PreservedQueryFields query={query} ownedKeys={["search"]} />
         <ClearableSearchInput
           id="register-key-search"
           initialValue={query.search}
@@ -57,7 +64,17 @@ export function RegisterKeyFilterBar({
         <Button type="submit" variant="primary" className="w-full lg:w-auto">
           搜尋
         </Button>
-        <QueryFilterDisclosure panelClassName="lg:min-w-72">
+      </form>
+      <QueryFilterDisclosure label={activeFilterCount ? `篩選 (${activeFilterCount})` : "篩選"} panelClassName="lg:min-w-72">
+        <QueryFilterForm
+          method="GET"
+          action={BASE_PATH}
+          appliedQuery={query}
+          ownedKeys={["academic_year_id", "status"]}
+          clearHref={clearFiltersHref}
+          className="grid gap-3"
+        >
+          <PreservedQueryFields query={query} ownedKeys={["academic_year_id", "status"]} />
           <label className="grid gap-1.5 text-sm font-medium text-(--text-primary)">
             學年度
             <Select
@@ -89,8 +106,8 @@ export function RegisterKeyFilterBar({
               <option value="expired">已過期</option>
             </Select>
           </label>
-        </QueryFilterDisclosure>
-      </AdminToolbar>
-    </form>
+        </QueryFilterForm>
+      </QueryFilterDisclosure>
+    </AdminToolbar>
   );
 }

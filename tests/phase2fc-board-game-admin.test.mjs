@@ -14,9 +14,8 @@ test("board-game administration uses an explicit create action and URL-backed qu
   assert.match(page, /新增桌遊/);
   assert.match(page, /import \{ Plus \} from "lucide-react"/);
   assert.match(query, /搜尋桌遊名稱、社產編號或描述/);
-  assert.match(query, /<form method="GET" action=\{BASE_PATH\}>/);
-  assert.match(query, /name="page" value="1"/);
-  assert.match(query, /name="pageSize"/);
+  assert.match(query, /<form[\s\S]*?method="GET"[\s\S]*?action=\{BASE_PATH\}/);
+  assert.match(query, /PreservedQueryFields/);
   assert.doesNotMatch(query, /router\.push|preventDefault/);
   assert.match(query, /status/);
   assert.match(query, /category/);

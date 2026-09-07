@@ -10,10 +10,14 @@ import { BorrowingsResultsLoading } from "@/components/(authenticated)/borrowing
 import { BORROWING_STATUS_LABEL } from "@/components/BorrowingStatusBadge";
 import { PageHeader } from "@/components/PageHeader";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
+import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
+import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { QueryFilterDisclosure } from "@/components/query/QueryFilterDisclosure";
+import { QueryFilterForm } from "@/components/query/QueryFilterForm";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { getCurrentUser } from "@/libs/auth";
+import { buildOwnedQueryHref } from "@/libs/query-navigation";
 import {
   normalizePageSizeOption,
   readSingleQueryValue,
@@ -153,34 +157,61 @@ function BorrowingsToolbar({
   pageSize: number;
 }) {
   const hasFilters = Boolean(status || search || sort !== SORT_OPTIONS[0].value);
-  const clearSearchQuery = buildQueryString({
+  const appliedQuery = {
+    search,
     status,
     sort,
-    page: 1,
     pageSize,
+  };
+  const clearSearchHref = buildOwnedQueryHref({
+    basePath: BASE_PATH,
+    appliedQuery,
+    ownedKeys: ["search"],
+    changes: { search: undefined },
   });
-  const clearSearchHref = `${BASE_PATH}?${clearSearchQuery}`;
+  const clearFiltersHref = buildOwnedQueryHref({
+    basePath: BASE_PATH,
+    appliedQuery,
+    ownedKeys: ["status"],
+    changes: {},
+  });
 
   return (
-    <form method="GET" action={BASE_PATH} className="space-y-2">
-      <input type="hidden" name="page" value="1" />
-      <input type="hidden" name="pageSize" value={pageSize} />
-
-      <div className="grid min-w-0 gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto] lg:items-center">
-        <ClearableSearchInput
+    <div className="space-y-2">
+      <div className="grid min-w-0 gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+        <form
+          method="GET"
+          action={BASE_PATH}
+          aria-label="搜尋借用紀錄"
+          className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]"
+        >
+          <PreservedQueryFields query={appliedQuery} ownedKeys={["search"]} />
+          <ClearableSearchInput
             initialValue={search}
             clearHref={clearSearchHref}
             name="search"
             placeholder="搜尋桌遊或社產編號"
             aria-label="搜尋借用紀錄"
             inputClassName="text-base lg:text-sm"
-        />
+          />
+          <Button type="submit" variant="primary" className="w-full sm:w-auto">
+            搜尋
+          </Button>
+        </form>
 
-        <Button type="submit" variant="primary" className="w-full lg:w-auto">
-          搜尋
-        </Button>
-
-        <QueryFilterDisclosure panelClassName="lg:min-w-56">
+        <QueryFilterDisclosure
+          label={status ? "篩選 (1)" : "篩選"}
+          panelClassName="lg:min-w-56"
+        >
+          <QueryFilterForm
+            method="GET"
+            action={BASE_PATH}
+            appliedQuery={appliedQuery}
+            ownedKeys={["status"]}
+            clearHref={clearFiltersHref}
+            className="grid gap-3"
+          >
+            <PreservedQueryFields query={appliedQuery} ownedKeys={["status"]} />
             <label className="grid gap-1.5 text-sm font-medium text-(--text-primary)">
               借用狀態
               <Select name="status" defaultValue={status ?? ""}>
@@ -192,6 +223,7 @@ function BorrowingsToolbar({
                 ))}
               </Select>
             </label>
+          </QueryFilterForm>
         </QueryFilterDisclosure>
 
         <label className="flex min-h-10 min-w-0 items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-default) px-3 text-sm font-medium text-(--text-primary) focus-within:border-(--interactive-primary) focus-within:outline-2 focus-within:outline-(--focus-ring) lg:min-w-40">
@@ -200,9 +232,11 @@ function BorrowingsToolbar({
               className="size-4 shrink-0 text-(--text-muted)"
             />
             <span className="sr-only">排序</span>
-            <Select
-              name="sort"
-              defaultValue={sort}
+            <ImmediateQuerySelect
+              appliedQuery={appliedQuery}
+              basePath={BASE_PATH}
+              queryKey="sort"
+              value={sort}
               focusOwner="parent"
               className="min-h-0 min-w-0 border-0 bg-transparent px-0 py-0"
             >
@@ -211,7 +245,7 @@ function BorrowingsToolbar({
                   {option.label}
                 </option>
               ))}
-            </Select>
+            </ImmediateQuerySelect>
         </label>
       </div>
 
@@ -228,6 +262,6 @@ function BorrowingsToolbar({
           </ButtonLink>
         </div>
       ) : null}
-    </form>
+    </div>
   );
 }

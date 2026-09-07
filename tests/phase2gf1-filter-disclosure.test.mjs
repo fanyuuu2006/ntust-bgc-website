@@ -32,10 +32,10 @@ test("authenticated Borrowings and Memberships share native disclosure without c
 
   for (const source of [borrowings, memberships]) {
     assert.match(source, /QueryFilterDisclosure/);
+    assert.match(source, /QueryFilterForm/);
     assert.doesNotMatch(source, /<details|<summary/);
-    assert.match(source, /<form[\s\S]*?<QueryFilterDisclosure[\s\S]*?<Select[\s\S]*?<\/QueryFilterDisclosure>[\s\S]*?<\/form>/);
-    assert.match(source, /name="page" value="1"/);
-    assert.match(source, /name="pageSize"/);
+    assert.equal((source.match(/<form/g) ?? []).length, 1);
+    assert.match(source, /PreservedQueryFields/);
   }
 
   assert.match(borrowings, /name="status"/);
@@ -62,10 +62,9 @@ test("multi-filter Admin toolbars use the shared native disclosure and preserve 
   for (const route of routes) {
     const source = await readSource(route.path);
     assert.match(source, /QueryFilterDisclosure/);
-    assert.match(source, /<form[\s\S]*?<QueryFilterDisclosure[\s\S]*?<\/QueryFilterDisclosure>[\s\S]*?<\/form>/);
-    assert.match(source, /<form method="GET" action=/);
-    assert.match(source, /name="page" value="1"/);
-    assert.match(source, /name="pageSize"/);
+    assert.match(source, /QueryFilterForm/);
+    assert.equal((source.match(/<form/g) ?? []).length, 1);
+    assert.match(source, /PreservedQueryFields/);
     assert.doesNotMatch(source, /"use client"|preventDefault|useRouter|fetch\(|@\/repositories/);
     for (const field of route.fields) assert.ok(source.includes(field));
   }
@@ -95,7 +94,7 @@ test("filter utility surfaces use compact mobile spacing without shrinking reada
   assert.match(publicDisclosure, /text-sm/);
 
   for (const source of [borrowings, memberships]) {
-    assert.match(source, /<form[^>]*className="space-y-2"/);
+    assert.match(source, /<div className="space-y-2"/);
   }
 
   for (const source of [shared, publicForm, publicDisclosure, borrowings, memberships]) {
@@ -135,10 +134,10 @@ test("disclosed Admin fields keep visible feature-owned labels", async () => {
 
 test("single high-frequency Admin filters intentionally remain directly available", async () => {
   const routes = [
-    ["src/app/(admin)/admin/officers/page.tsx", 'name="academicYearId"'],
-    ["src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx", 'name="status"'],
-    ["src/app/(admin)/admin/events/page.tsx", 'name="status"'],
-    ["src/app/(admin)/admin/announcements/page.tsx", 'name="status"'],
+    ["src/app/(admin)/admin/officers/page.tsx", 'queryKey="academicYearId"'],
+    ["src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx", 'queryKey="status"'],
+    ["src/app/(admin)/admin/events/page.tsx", 'queryKey="status"'],
+    ["src/app/(admin)/admin/announcements/page.tsx", 'queryKey="status"'],
   ];
 
   for (const [path, field] of routes) {
@@ -154,7 +153,8 @@ test("Public Board Games keeps a query-neutral interaction island with mobile fl
     readSource("src/components/(public)/board-games/BoardGameFilterDisclosure.tsx"),
   ]);
 
-  assert.match(form, /<form method="GET"[\s\S]*?<BoardGameFilterDisclosure[\s\S]*?<\/form>/);
+  assert.match(form, /<form[\s\S]*?method="GET"[\s\S]*?<\/form>[\s\S]*?<BoardGameFilterDisclosure/);
+  assert.match(disclosure, /<QueryFilterForm/);
   assert.match(form, /relative/);
   assert.match(disclosure, /aria-expanded=\{isOpen\}/);
   assert.match(disclosure, /col-span-full/);

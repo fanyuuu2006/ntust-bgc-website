@@ -2,12 +2,13 @@ import { notFound } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
+import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
+import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { AttendanceActions } from "@/components/(admin)/admin/events/AttendanceActions";
 import { AttendanceRecords } from "@/components/(admin)/admin/events/AttendanceRecords";
 import { EventStatusBadge } from "@/components/(admin)/admin/events/EventStatusBadge";
 import { Pagination } from "@/components/Pagination/Pagination";
 import { Button, ButtonLink } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Select";
 import { eventsService } from "@/services/events/events.service";
 import {
   normalizePageSizeOption,
@@ -70,18 +71,17 @@ export default async function AdminEventDetailPage({
           <ButtonLink href="/admin/events" size="sm" variant="outline">返回活動管理</ButtonLink>
         </div>
         {event.description ? <p className="whitespace-pre-wrap text-sm leading-7 text-(--text-muted)">{event.description}</p> : null}
-        <form>
-          <input type="hidden" name="page" value="1" />
-          <input type="hidden" name="pageSize" value={pageSize} />
-          <AdminToolbar className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
+        <AdminToolbar className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <form className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]" aria-label="搜尋簽到名單">
+            <PreservedQueryFields query={{ search: query.search, orderDirection, pageSize }} ownedKeys={["search"]} />
             <ClearableSearchInput initialValue={query.search} clearHref={clearSearchHref} name="search" placeholder="搜尋使用者名稱、姓名、Email 或學號" aria-label="搜尋簽到名單" />
-            <Select name="orderDirection" defaultValue={orderDirection} aria-label="簽到時間排序" className="w-full sm:w-auto">
+            <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
+          </form>
+            <ImmediateQuerySelect appliedQuery={{ search: query.search, orderDirection, pageSize }} basePath={`/admin/events/${event.id}`} queryKey="orderDirection" value={orderDirection} aria-label="簽到時間排序" className="w-full sm:w-auto">
               <option value="desc">最新簽到</option>
               <option value="asc">最早簽到</option>
-            </Select>
-            <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
-          </AdminToolbar>
-        </form>
+            </ImmediateQuerySelect>
+        </AdminToolbar>
         <AttendanceRecords
           eventId={event.id}
           eventName={event.name}

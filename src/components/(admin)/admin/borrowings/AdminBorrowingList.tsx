@@ -8,6 +8,7 @@ import { UserRound } from "lucide-react";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
+import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -31,6 +32,7 @@ import {
 import { apiClient } from "@/libs/api/client";
 import { borrowingConfig } from "@/libs/borrowingConfig";
 import { clubPolicies } from "@/libs/clubPolicies";
+import { buildOwnedQueryHref } from "@/libs/query-navigation";
 import type { BoardGameBorrowingForAdmin } from "@/services/board-games/board-games.types";
 import type { BorrowingStatus } from "@/types/database";
 import {
@@ -39,7 +41,6 @@ import {
   getFutureTaipeiDateTimeLocal,
   parseTaipeiDateTimeLocal,
 } from "@/utils/date";
-import { buildQueryString } from "@/utils/url";
 
 type Action = "approve" | "reject" | "checkout" | "return" | "edit" | "delete";
 type BorrowingQuery = {
@@ -77,17 +78,13 @@ export function AdminBorrowingList({
   const [dueAt, setDueAt] = useState("");
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
-  const clearSearchQuery = buildQueryString({
-    status: query.status,
-    board_game_id: query.board_game_id,
-    user_id: query.user_id,
-    orderBy: query.orderBy,
-    orderDirection: query.orderDirection,
-    pageSize: query.pageSize,
+  const appliedQuery = toHeaderQuery(query);
+  const clearSearchHref = buildOwnedQueryHref({
+    basePath: BASE_PATH,
+    appliedQuery,
+    ownedKeys: ["search"],
+    changes: { search: undefined },
   });
-  const clearSearchHref = clearSearchQuery
-    ? `${BASE_PATH}?${clearSearchQuery}`
-    : BASE_PATH;
   const currentSort = `${query.orderBy ?? "created_at"}:${query.orderDirection ?? "desc"}`;
   const hasQuery = Boolean(
     query.search ||
@@ -170,42 +167,41 @@ export function AdminBorrowingList({
   return (
     <div className="space-y-4">
       <AdminToolbar aria-label="桌遊借用管理搜尋與篩選">
-        <form
-          className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto] sm:items-center"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const formData = new FormData(event.currentTarget);
-            const search =
-              String(formData.get("search") ?? "").trim() || undefined;
-            const status =
-              String(formData.get("status") ?? "").trim() || undefined;
-            const sort = String(formData.get("sort") ?? currentSort);
-            const [orderBy, orderDirection] = sort.split(":") as [
-              BorrowingQuery["orderBy"],
-              BorrowingQuery["orderDirection"],
-            ];
-            router.push(
-              `${BASE_PATH}?${buildQueryString(toHeaderQuery(query), {
-                search,
-                status,
-                orderBy,
-                orderDirection,
-                page: "1",
-              })}`,
-            );
-          }}
-        >
-          <ClearableSearchInput
-            initialValue={query.search}
-            clearHref={clearSearchHref}
-            name="search"
-            placeholder="搜尋桌遊、借用人或 Email"
-            className="w-full"
-          />
-          <Select
-            name="status"
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
+          <form
+            className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
+            aria-label="搜尋借用紀錄"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const formData = new FormData(event.currentTarget);
+              const search = String(formData.get("search") ?? "").trim() || undefined;
+              router.push(
+                buildOwnedQueryHref({
+                  basePath: BASE_PATH,
+                  appliedQuery,
+                  ownedKeys: ["search"],
+                  changes: { search },
+                }),
+              );
+            }}
+          >
+            <ClearableSearchInput
+              initialValue={query.search}
+              clearHref={clearSearchHref}
+              name="search"
+              placeholder="搜尋桌遊、借用人或 Email"
+              className="w-full"
+            />
+            <Button type="submit" variant="primary" className="w-full sm:w-auto">
+              搜尋
+            </Button>
+          </form>
+          <ImmediateQuerySelect
+            appliedQuery={appliedQuery}
+            basePath={BASE_PATH}
+            queryKey="status"
+            value={query.status ?? ""}
             aria-label="借用狀態"
-            defaultValue={query.status ?? ""}
             className="w-full"
           >
             <option value="">全部狀態</option>
@@ -215,12 +211,25 @@ export function AdminBorrowingList({
             <option value="returned">已歸還</option>
             <option value="rejected">已拒絕</option>
             <option value="cancelled">已取消</option>
-          </Select>
+          </ImmediateQuerySelect>
           <Select
-            name="sort"
             aria-label="排序"
-            defaultValue={currentSort}
+            value={currentSort}
             className="w-full"
+            onChange={(event) => {
+              const [orderBy, orderDirection] = event.target.value.split(":") as [
+                BorrowingQuery["orderBy"],
+                BorrowingQuery["orderDirection"],
+              ];
+              router.push(
+                buildOwnedQueryHref({
+                  basePath: BASE_PATH,
+                  appliedQuery,
+                  ownedKeys: ["orderBy", "orderDirection"],
+                  changes: { orderBy, orderDirection },
+                }),
+              );
+            }}
           >
             {SORT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -228,10 +237,7 @@ export function AdminBorrowingList({
               </option>
             ))}
           </Select>
-          <Button type="submit" variant="primary" className="w-full sm:w-auto">
-            搜尋
-          </Button>
-        </form>
+        </div>
       </AdminToolbar>
 
       <FormFeedback error={feedback} />

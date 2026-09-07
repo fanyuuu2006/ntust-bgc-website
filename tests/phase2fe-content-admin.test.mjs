@@ -10,8 +10,8 @@ test("events keep URL-driven status and sort controls while status remains deriv
     readSource("src/components/(admin)/admin/events/EventStatusBadge.tsx"),
     readSource("src/services/events/events.service.ts"),
   ]);
-  assert.match(page, /name="status"/);
-  assert.match(page, /name="orderBy"/);
+  assert.match(page, /queryKey="status"/);
+  assert.match(page, /queryKey="orderBy"/);
   assert.match(status, /即將開始/);
   assert.match(status, /進行中/);
   assert.match(status, /已結束/);
@@ -104,7 +104,7 @@ test("announcements retain draft-publication semantics and expose natural query 
     readSource("src/repositories/announcements.repository.ts"),
   ]);
   assert.match(page, /搜尋公告標題或內容/);
-  assert.match(page, /name="orderBy"/);
+  assert.match(page, /queryKey="orderBy"/);
   assert.match(service, /data\.is_published && !current\.is_published/);
   assert.match(repository, /eq\("is_published", true\)/);
 });

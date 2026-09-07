@@ -1,9 +1,12 @@
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
+import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { QueryFilterDisclosure } from "@/components/query/QueryFilterDisclosure";
+import { QueryFilterForm } from "@/components/query/QueryFilterForm";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import type { BoardGamesQuery } from "@/app/(admin)/admin/board-games/types";
+import { buildOwnedQueryHref } from "@/libs/query-navigation";
 import type {
   BoardGameCategory,
   BoardGameLocation,
@@ -34,13 +37,23 @@ export function BoardGameSearchForm({
   query,
   clearSearchHref,
 }: BoardGameSearchFormProps) {
+  const activeFilterCount = [query.status, query.category, query.location].filter(Boolean).length;
+  const clearFiltersHref = buildOwnedQueryHref({
+    basePath: BASE_PATH,
+    appliedQuery: query,
+    ownedKeys: ["status", "category", "location"],
+    changes: {},
+  });
+
   return (
-    <form method="GET" action={BASE_PATH}>
-      <input type="hidden" name="page" value="1" />
-      <input type="hidden" name="pageSize" value={query.pageSize ?? 20} />
-      <input type="hidden" name="orderBy" value={query.orderBy ?? "created_at"} />
-      <input type="hidden" name="orderDirection" value={query.orderDirection ?? "desc"} />
-      <AdminToolbar className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+    <AdminToolbar className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      <form
+        method="GET"
+        action={BASE_PATH}
+        aria-label="搜尋桌遊"
+        className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]"
+      >
+          <PreservedQueryFields query={query} ownedKeys={["search"]} />
           <ClearableSearchInput
             id="board-game-search"
             initialValue={query.search}
@@ -50,8 +63,21 @@ export function BoardGameSearchForm({
             aria-label="搜尋桌遊名稱、社產編號或描述"
             className="w-full"
           />
-          <Button type="submit" variant="primary" className="w-full lg:w-auto">搜尋</Button>
-        <QueryFilterDisclosure panelClassName="lg:min-w-80">
+          <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
+      </form>
+      <QueryFilterDisclosure
+        label={activeFilterCount ? `篩選 (${activeFilterCount})` : "篩選"}
+        panelClassName="lg:min-w-80"
+      >
+        <QueryFilterForm
+          method="GET"
+          action={BASE_PATH}
+          appliedQuery={query}
+          ownedKeys={["status", "category", "location"]}
+          clearHref={clearFiltersHref}
+          className="grid gap-3"
+        >
+          <PreservedQueryFields query={query} ownedKeys={["status", "category", "location"]} />
           <FilterSelect name="status" label="狀態" value={query.status}>
             <option value="">全部狀態</option>
             {STATUS_OPTIONS.map((option) => (
@@ -70,9 +96,9 @@ export function BoardGameSearchForm({
               <option key={location.id} value={location.id}>{location.name}</option>
             ))}
           </FilterSelect>
-        </QueryFilterDisclosure>
-      </AdminToolbar>
-    </form>
+        </QueryFilterForm>
+      </QueryFilterDisclosure>
+    </AdminToolbar>
   );
 }
 
