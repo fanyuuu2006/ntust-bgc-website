@@ -42,6 +42,7 @@ export function MembershipCreateButton({
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError(null);
     try {

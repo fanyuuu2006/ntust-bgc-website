@@ -4,8 +4,25 @@ import { z, ZodError } from "zod";
 import { authService } from "@/services/auth/auth.service";
 import { InvalidCredentialsError } from "@/services/auth/auth.errors";
 import { SESSION_COOKIE_NAME } from "@/libs/auth";
+import { checkRateLimit, getRequestIp } from "@/libs/security/rate-limit";
+
+const LOGIN_RATE_LIMIT = { limit: 10, windowMs: 15 * 60 * 1000 };
 
 export async function POST(request: Request) {
+  const rateLimit = checkRateLimit(
+    `auth:login:${getRequestIp(request)}`,
+    LOGIN_RATE_LIMIT,
+  );
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { message: "嘗試次數過多，請稍後再試" },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rateLimit.retryAfter) },
+      },
+    );
+  }
+
   let body: unknown;
 
   try {

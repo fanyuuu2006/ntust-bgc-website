@@ -97,7 +97,7 @@ test("public board-game card keeps one vertical composition at every breakpoint"
   assert.match(card, /\.filter\(/);
   assert.match(card, /items-start justify-between gap-2/);
   assert.match(card, /sr-only[^>]*>社產編號/);
-  assert.match(card, /#\{boardGame\.inventory_number\}/);
+  assert.match(card, /#\s*\{boardGame\.inventory_number\}/);
   assert.doesNotMatch(card, /boardGame\.description|description\s*\?/);
   assert.doesNotMatch(card, /尚未補充桌遊描述/);
   assert.match(card, /boardGame\.image\s*\?/);

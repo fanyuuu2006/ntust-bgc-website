@@ -28,6 +28,7 @@ export function MembershipActivationForm({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) return;
     setError(null);
     setSuccess(null);
     setIsSubmitting(true);

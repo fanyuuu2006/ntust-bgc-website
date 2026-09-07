@@ -43,6 +43,7 @@ export function AttendanceActions({ eventId }: { eventId: string }) {
 
   const createAttendance = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (busy) return;
     if (!selectedUser) {
       setError("請先搜尋並選擇使用者");
       return;

@@ -71,6 +71,7 @@ export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
 
   async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isLoading) return;
 
     setError(null);
     setIsLoading(true);

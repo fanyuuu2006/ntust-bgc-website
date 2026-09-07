@@ -33,6 +33,7 @@ export function OfficerActions({ years }: { years: AcademicYear[] }) {
 
   const createOfficer = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError(null);
 

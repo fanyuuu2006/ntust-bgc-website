@@ -4,6 +4,7 @@ import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
 import { parsePositiveIntegerId } from "@/libs/zod/ids";
 import { AttendanceNotFoundError } from "@/services/events/events.errors";
 import { eventsService } from "@/services/events/events.service";
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 
 async function admin() {
   const user = await getCurrentUser();
@@ -29,7 +30,7 @@ export async function PATCH(
     if (error instanceof AttendanceNotFoundError) {
       return NextResponse.json({ message: error.message }, { status: 404 });
     }
-    return NextResponse.json({ message: "更新簽到失敗" }, { status: 400 });
+    return unexpectedErrorResponse("[PATCH /api/admin/events/[id]/attendances/[attendanceId]]", error, "更新簽到失敗，請稍後再試");
   }
 }
 
@@ -51,6 +52,6 @@ export async function DELETE(
     if (error instanceof AttendanceNotFoundError) {
       return NextResponse.json({ message: error.message }, { status: 404 });
     }
-    return NextResponse.json({ message: "刪除簽到失敗" }, { status: 400 });
+    return unexpectedErrorResponse("[DELETE /api/admin/events/[id]/attendances/[attendanceId]]", error, "刪除簽到失敗，請稍後再試");
   }
 }

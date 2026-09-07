@@ -12,6 +12,13 @@ export class EventHasAttendanceRecordsError extends Error {
   }
 }
 
+export class EventCheckInWindowError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "EventCheckInWindowError";
+  }
+}
+
 export class AttendanceNotFoundError extends Error {
   constructor() {
     super("找不到簽到紀錄");

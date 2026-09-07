@@ -3,8 +3,25 @@ import { z, ZodError } from "zod";
 import { authService } from "@/services/auth/auth.service";
 import { EmailAlreadyExistsError } from "@/services/auth/auth.errors";
 import { verifyTurnstile } from "@/libs/security/turnstile";
+import { checkRateLimit, getRequestIp } from "@/libs/security/rate-limit";
+
+const REGISTRATION_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 
 export async function POST(request: Request) {
+  const rateLimit = checkRateLimit(
+    `auth:register:${getRequestIp(request)}`,
+    REGISTRATION_RATE_LIMIT,
+  );
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { message: "註冊嘗試次數過多，請稍後再試" },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rateLimit.retryAfter) },
+      },
+    );
+  }
+
   let body: unknown;
 
   try {

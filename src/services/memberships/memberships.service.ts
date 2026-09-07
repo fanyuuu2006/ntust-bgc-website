@@ -32,6 +32,9 @@ import {
   MembershipRegisterKeyNotFoundError,
   MembershipRegisterKeyCannotBeRevokedError,
   MembershipAlreadyExistsForAcademicYearError,
+  MembershipNotFoundError,
+  MembershipStatusTransitionError,
+  MembershipUserNotFoundError,
   RegisterKeySecretNotConfiguredError,
   UserAlreadyCurrentMemberError,
 } from "./memberships.errors";
@@ -166,7 +169,7 @@ export const membershipService = {
       usersRepository.findById(data.user_id),
       academicYearsRepository.findById(data.academic_year_id),
     ]);
-    if (!user) throw new Error("找不到此使用者");
+    if (!user) throw new MembershipUserNotFoundError();
     if (!year) throw new AcademicYearNotFoundError();
     try {
       return await membershipsRepository.createForAdmin(data);
@@ -180,9 +183,9 @@ export const membershipService = {
 
   updateForAdmin: async (id: string, input: unknown) => {
     const current = await membershipsRepository.findById(id);
-    if (!current) throw new Error("找不到此社員資格");
+    if (!current) throw new MembershipNotFoundError();
     const data = updateAdminMembershipSchema.parse(input);
-    if (!canTransitionMembershipStatus(current.status, data.status)) throw new Error(`不允許從 ${current.status} 變更為 ${data.status}`);
+    if (!canTransitionMembershipStatus(current.status, data.status)) throw new MembershipStatusTransitionError();
     let updated: Membership | null;
     try {
       updated = await membershipsRepository.updateForAdmin(id, data);
@@ -192,7 +195,7 @@ export const membershipService = {
       }
       throw error;
     }
-    if (!updated) throw new Error("更新社員資格失敗");
+    if (!updated) throw new MembershipNotFoundError();
     return updated;
   },
   listAcademicYears: async () => {
@@ -322,7 +325,7 @@ export const membershipService = {
 
   deleteForAdmin: async (id: string) => {
     const membership = await membershipsRepository.findById(id);
-    if (!membership) throw new Error("找不到此社員資格");
+    if (!membership) throw new MembershipNotFoundError();
     await membershipsRepository.deleteById(id);
   },
 

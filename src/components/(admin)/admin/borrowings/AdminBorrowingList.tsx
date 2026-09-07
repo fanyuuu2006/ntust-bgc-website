@@ -111,7 +111,7 @@ export function AdminBorrowingList({
   }
 
   async function run() {
-    if (!selected) return;
+    if (!selected || busy) return;
 
     const editedDueAt =
       selected.action === "checkout" || selected.action === "edit"

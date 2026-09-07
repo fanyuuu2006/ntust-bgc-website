@@ -47,6 +47,27 @@ export class MembershipAlreadyExistsForAcademicYearError extends Error {
   }
 }
 
+export class MembershipUserNotFoundError extends Error {
+  constructor() {
+    super("找不到此使用者");
+    this.name = "MembershipUserNotFoundError";
+  }
+}
+
+export class MembershipNotFoundError extends Error {
+  constructor() {
+    super("找不到此社員資格");
+    this.name = "MembershipNotFoundError";
+  }
+}
+
+export class MembershipStatusTransitionError extends Error {
+  constructor() {
+    super("目前狀態不允許此社員資格變更，請重新整理後再試");
+    this.name = "MembershipStatusTransitionError";
+  }
+}
+
 
 export class CurrentAcademicYearNotFoundError extends Error {
   constructor() {

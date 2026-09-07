@@ -137,6 +137,7 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isLoading) return;
 
     const errors = validate();
     setFieldErrors(errors);

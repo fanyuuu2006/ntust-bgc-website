@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { ZodError, z } from "zod";
 import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
 import { usersService } from "@/services/users/users.service";
+import { UserProfileNotFoundError } from "@/services/users/users.errors";
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 
 async function requireAdmin() {
   const user = await getCurrentUser();
@@ -28,9 +30,14 @@ export async function PATCH(
       );
     }
 
-    return NextResponse.json(
-      { message: error instanceof Error ? error.message : "更新使用者資料失敗" },
-      { status: 404 },
+    if (error instanceof UserProfileNotFoundError) {
+      return NextResponse.json({ message: error.message }, { status: 404 });
+    }
+
+    return unexpectedErrorResponse(
+      "[PATCH /api/admin/users/[id]/profile]",
+      error,
+      "更新使用者資料失敗，請稍後再試",
     );
   }
 }

@@ -10,6 +10,7 @@ import { userProfilesRepository } from "@/repositories/user-profiles.repository"
 import {
   EventNotFoundError,
   EventHasAttendanceRecordsError,
+  EventCheckInWindowError,
   AttendanceAlreadyExistsError,
   AttendanceNotFoundError,
   AttendanceUserNotFoundError,
@@ -37,11 +38,11 @@ function resolveCheckInWindow(
   closesAt: string | null,
 ) {
   if ((opensAt === null) !== (closesAt === null)) {
-    throw new Error("簽到開始與截止時間必須同時設定");
+    throw new EventCheckInWindowError("簽到開始與截止時間必須同時設定");
   }
 
   if (opensAt && closesAt && new Date(opensAt) > new Date(closesAt)) {
-    throw new Error("簽到截止時間不得早於簽到開始時間");
+    throw new EventCheckInWindowError("簽到截止時間不得早於簽到開始時間");
   }
 
   return { check_in_opens_at: opensAt, check_in_closes_at: closesAt };
