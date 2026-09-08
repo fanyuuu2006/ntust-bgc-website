@@ -5,6 +5,7 @@ import {
   MembershipTypeLabel,
 } from "@/components/(admin)/admin/memberships/MemberStatusBadge";
 import { UserProfileEditButton } from "@/components/(admin)/admin/users/UserProfileEditButton";
+import { EmailVerificationBadge } from "@/components/(admin)/admin/users/EmailVerificationBadge";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -40,9 +41,20 @@ export default async function AdminUserDetailPage({
 
       <section className="space-y-8 px-4 pb-6 sm:px-6 lg:px-8">
         <DetailSection title="帳號資料">
-          <Card className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
+          <Card className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
             <Info label="使用者名稱" value={user.name} />
             <Info label="Email" value={user.email} />
+            <div>
+              <dt className="text-sm text-(--text-muted)">Email 驗證</dt>
+              <dd className="mt-1 space-y-1.5">
+                <EmailVerificationBadge verifiedAt={user.email_verified_at} />
+                {user.email_verified_at ? (
+                  <p className="text-sm text-(--text-muted)">
+                    {formatDateTime(user.email_verified_at)}
+                  </p>
+                ) : null}
+              </dd>
+            </div>
             <Info label="建立時間" value={formatDateTime(user.created_at)} />
             <Info label="更新時間" value={formatDateTime(user.updated_at)} />
           </Card>

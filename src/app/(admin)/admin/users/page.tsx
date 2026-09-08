@@ -1,6 +1,8 @@
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
+import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
+import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
@@ -24,6 +26,8 @@ import {
 } from "@/libs/query-params";
 import { formatDateTime } from "@/utils/date";
 import { parsePage } from "@/utils/pagination";
+import { EmailVerificationBadge } from "@/components/(admin)/admin/users/EmailVerificationBadge";
+import { normalizeAdminUserEmailVerification } from "./query";
 
 type Props = {
   searchParams: Promise<{
@@ -32,6 +36,7 @@ type Props = {
     pageSize?: QueryParamValue;
     orderBy?: QueryParamValue;
     orderDirection?: QueryParamValue;
+    emailVerification?: QueryParamValue;
   }>;
 };
 
@@ -47,6 +52,9 @@ export default async function AdminUsersPage({ searchParams }: Props) {
     pageSize: readSingleQueryValue(rawParams.pageSize),
     orderBy: readSingleQueryValue(rawParams.orderBy),
     orderDirection: readSingleQueryValue(rawParams.orderDirection),
+    emailVerification: normalizeAdminUserEmailVerification(
+      rawParams.emailVerification,
+    ),
   };
   const page = parsePage(params.page);
   const pageSize = normalizePageSizeOption(params.pageSize, [10, 20, 50, 100], 20);
@@ -60,6 +68,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
     page,
     pageSize,
     search: params.search?.trim() || undefined,
+    emailVerification: params.emailVerification,
     orderBy,
     orderDirection,
   });
@@ -69,6 +78,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
     pageSize: String(pageSize),
     orderBy,
     orderDirection,
+    emailVerification: params.emailVerification,
   };
   const clearSearchParams = new URLSearchParams();
   if (params.orderBy) clearSearchParams.set("orderBy", params.orderBy);
@@ -76,6 +86,9 @@ export default async function AdminUsersPage({ searchParams }: Props) {
     clearSearchParams.set("orderDirection", params.orderDirection);
   }
   if (params.pageSize) clearSearchParams.set("pageSize", params.pageSize);
+  if (params.emailVerification) {
+    clearSearchParams.set("emailVerification", params.emailVerification);
+  }
   const clearSearchHref = clearSearchParams.size
     ? BASE_PATH + "?" + clearSearchParams
     : BASE_PATH;
@@ -88,12 +101,12 @@ export default async function AdminUsersPage({ searchParams }: Props) {
       />
 
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
-        <form>
-          <input type="hidden" name="page" value="1" />
-          <input type="hidden" name="pageSize" value={pageSize} />
-          <input type="hidden" name="orderBy" value={orderBy} />
-          <input type="hidden" name="orderDirection" value={orderDirection} />
-          <AdminToolbar className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_11rem] md:items-center">
+          <form
+            className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
+            aria-label="搜尋使用者"
+          >
+            <PreservedQueryFields query={query} ownedKeys={["search"]} />
             <ClearableSearchInput
               initialValue={params.search}
               clearHref={clearSearchHref}
@@ -105,10 +118,23 @@ export default async function AdminUsersPage({ searchParams }: Props) {
             <Button type="submit" variant="primary" className="w-full sm:w-auto">
               搜尋
             </Button>
-          </AdminToolbar>
-        </form>
+          </form>
+          <ImmediateQuerySelect
+            appliedQuery={query}
+            basePath={BASE_PATH}
+            queryKey="emailVerification"
+            value={params.emailVerification ?? ""}
+            aria-label="Email 驗證狀態"
+            className="w-full"
+          >
+            <option value="">全部驗證狀態</option>
+            <option value="verified">已驗證</option>
+            <option value="unverified">尚未驗證</option>
+          </ImmediateQuerySelect>
+        </AdminToolbar>
 
-        {users.data.length === 0 && Boolean(params.search?.trim() || page > 1) ? (
+        {users.data.length === 0 &&
+        Boolean(params.search?.trim() || params.emailVerification || page > 1) ? (
           <QueryEmptyState
             title="找不到符合條件的使用者"
             description="請調整搜尋條件後再試。"
@@ -131,6 +157,11 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                     <p className="mt-2 break-all text-sm text-(--text-muted)">
                       {user.email}
                     </p>
+                    <div className="mt-2">
+                      <EmailVerificationBadge
+                        verifiedAt={user.email_verified_at}
+                      />
+                    </div>
                   </div>
                   <dl className="grid grid-cols-2 gap-3 text-sm">
                     <Info label="學號" value={user.profile?.student_id || MISSING_VALUE} />
@@ -166,6 +197,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                     />
                     <TableHead>真實姓名</TableHead>
                     <TableHead>Email</TableHead>
+                    <TableHead>Email 驗證</TableHead>
                     <TableHead>學號</TableHead>
                     <TableHead>系所／年級</TableHead>
                     <SortableTableHeader
@@ -184,6 +216,11 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                       <TableCell>{user.profile?.real_name || MISSING_VALUE}</TableCell>
                       <TableCell className="max-w-56 break-all text-(--text-muted)">
                         {user.email}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <EmailVerificationBadge
+                          verifiedAt={user.email_verified_at}
+                        />
                       </TableCell>
                       <TableCell>{user.profile?.student_id || MISSING_VALUE}</TableCell>
                       <TableCell>

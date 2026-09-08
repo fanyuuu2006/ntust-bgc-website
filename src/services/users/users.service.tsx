@@ -13,7 +13,10 @@ import {
   UserProfileAlreadyExistsError,
   UserProfileNotFoundError,
 } from "./users.errors";
-import { usersRepository } from "@/repositories/users.repository";
+import {
+  usersRepository,
+  type UserEmailVerificationFilter,
+} from "@/repositories/users.repository";
 import { officerPositionsService } from "@/services/officer-positions/officer-positions.service";
 import { membershipService } from "@/services/memberships/memberships.service";
 
@@ -41,7 +44,16 @@ export const usersService = {
     }));
   },
 
-  listForAdmin: async (options: { page?: number; pageSize?: number; search?: string; orderBy?: "name" | "email" | "created_at" | "updated_at"; orderDirection?: "asc" | "desc" } = {}) => {
+  listForAdmin: async (
+    options: {
+      page?: number;
+      pageSize?: number;
+      search?: string;
+      emailVerification?: UserEmailVerificationFilter;
+      orderBy?: "name" | "email" | "created_at" | "updated_at";
+      orderDirection?: "asc" | "desc";
+    } = {},
+  ) => {
     const keyword = options.search?.trim();
     const matchedUserIds = keyword
       ? [...new Set((await Promise.all([
