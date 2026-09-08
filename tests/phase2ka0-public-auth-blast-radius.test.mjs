@@ -274,19 +274,26 @@ test("board-game detail keeps core content but skips personalization when viewer
   assert.equal(borrowingReads, 0);
 });
 
-test("strict layouts and mutation authorization keep using getCurrentUser", async () => {
-  const paths = [
+test("strict layouts keep getCurrentUser while protected APIs use the verified strict boundary", async () => {
+  const strictLayoutPaths = [
     "src/app/(auth)/layout.tsx",
     "src/app/(authenticated)/layout.tsx",
     "src/app/(admin)/layout.tsx",
+  ];
+  const verifiedApiPaths = [
     "src/libs/api/admin-authorization.ts",
     "src/app/api/board-games/[id]/borrow/route.ts",
   ];
-  const sources = await Promise.all(paths.map(readSource));
+  const strictLayoutSources = await Promise.all(strictLayoutPaths.map(readSource));
+  const verifiedApiSources = await Promise.all(verifiedApiPaths.map(readSource));
 
-  for (const [index, source] of sources.entries()) {
-    assert.match(source, /getCurrentUser\(\)/, paths[index]);
-    assert.doesNotMatch(source, /resolvePublicViewer/, paths[index]);
+  for (const [index, source] of strictLayoutSources.entries()) {
+    assert.match(source, /getCurrentUser\(\)/, strictLayoutPaths[index]);
+    assert.doesNotMatch(source, /resolvePublicViewer/, strictLayoutPaths[index]);
+  }
+  for (const [index, source] of verifiedApiSources.entries()) {
+    assert.match(source, /authorizeVerifiedRequest/, verifiedApiPaths[index]);
+    assert.doesNotMatch(source, /resolvePublicViewer/, verifiedApiPaths[index]);
   }
 });
 

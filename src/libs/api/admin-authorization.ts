@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
 
-import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
+import { isAdminByUserId } from "@/libs/auth";
+import { authorizeVerifiedRequest } from "./verified-authorization";
 
 export async function authorizeAdminRequest(forbiddenMessage: string) {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    return {
-      user: null,
-      response: NextResponse.json({ message: "請先登入" }, { status: 401 }),
-    };
-  }
+  const authorization = await authorizeVerifiedRequest();
+  if (authorization.response) return authorization;
+  const { user } = authorization;
 
   if (!(await isAdminByUserId(user.id))) {
     return {

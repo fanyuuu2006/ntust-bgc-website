@@ -20,6 +20,9 @@ export default async function AuthenticatedLayout({
   if (!user) {
     redirect("/login");
   }
+  if (!user.email_verified_at) {
+    redirect("/verify-email/pending");
+  }
   const isAdmin = await isAdminByUserId(user.id);
 
   return (

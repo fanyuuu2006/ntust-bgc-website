@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
-import { getCurrentUser } from "@/libs/auth";
+import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
 import { queryRecordFromSearchParams } from "@/libs/query-params";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { listBorrowingsQuerySchema } from "@/services/board-games/board-games.schema";
 
 export async function GET(request: NextRequest) {
-  const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.json({ message: "請先登入" }, { status: 401 });
-  }
+  const authorization = await authorizeVerifiedRequest();
+  if (authorization.response) return authorization.response;
+  const { user } = authorization;
 
   try {
     const result = listBorrowingsQuerySchema.parse(

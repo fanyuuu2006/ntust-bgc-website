@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
-import { ResendEmailVerificationButton } from "@/components/(auth)/email-verification/ResendEmailVerificationButton";
+import { AuthCard } from "@/components/(auth)/AuthCard";
+import { EmailVerificationConfirmForm } from "@/components/(auth)/email-verification/EmailVerificationConfirmForm";
 import { ButtonLink } from "@/components/ui/Button";
 import { emailVerificationService } from "@/services/email-verification/email-verification.service";
 
@@ -11,50 +12,77 @@ export const metadata: Metadata = {
 };
 
 type VerifyEmailPageProps = {
-  searchParams: Promise<{ token?: string | string[] }>;
+  searchParams: Promise<{
+    token?: string | string[];
+    result?: string | string[];
+  }>;
 };
 
 export default async function VerifyEmailPage({
   searchParams,
 }: VerifyEmailPageProps) {
-  const rawToken = (await searchParams).token;
-  const token = typeof rawToken === "string" ? rawToken : "";
-  const result = token
-    ? await emailVerificationService.verify(token)
+  const params = await searchParams;
+  const token = typeof params.token === "string" ? params.token : "";
+  const result = typeof params.result === "string" ? params.result : "";
+  const tokenState = token
+    ? await emailVerificationService.inspect(token)
     : "invalid";
 
-  return (
-    <main className="container flex min-h-[55vh] items-center justify-center py-10 sm:py-14">
-      <section className="w-full max-w-lg rounded-2xl border border-(--border-default) bg-(--surface-default) p-6 shadow-(--shadow-card) sm:p-8">
-        {result === "verified" ? (
-          <>
-            <h1 className="text-2xl font-bold text-(--text-primary)">
-              Email 驗證成功
-            </h1>
-            <p className="mt-3 leading-7 text-(--text-muted)">
-              你的 Email 已完成驗證。
-            </p>
-            <ButtonLink href="/login" className="mt-6 w-full sm:w-auto">
-              前往我的頁面
+  if (result === "success") {
+    return (
+      <section className="flex flex-1 items-center py-8 sm:py-10">
+        <div className="container flex justify-center">
+          <AuthCard
+            title="Email 驗證完成"
+            description="你的 Email 已完成驗證，現在可以使用網站的完整帳號功能。"
+            className="w-full max-w-md"
+          >
+            <ButtonLink
+              href="/dashboard"
+              variant="primary"
+              className="w-full sm:w-auto"
+            >
+              前往 Dashboard
             </ButtonLink>
-          </>
-        ) : (
-          <>
-            <h1 className="text-2xl font-bold text-(--text-primary)">
-              驗證連結無法使用
-            </h1>
-            <p className="mt-3 leading-7 text-(--text-muted)">
-              這個驗證連結無效或已失效。
-            </p>
-            <p className="mt-2 text-sm leading-6 text-(--text-muted)">
-              若你已登入，可以重新寄送一封新的驗證信。
-            </p>
-            <div className="mt-6">
-              <ResendEmailVerificationButton />
-            </div>
-          </>
-        )}
+          </AuthCard>
+        </div>
       </section>
-    </main>
+    );
+  }
+
+  if (tokenState === "valid") {
+    return (
+      <section className="flex flex-1 items-center py-8 sm:py-10">
+        <div className="container flex justify-center">
+          <AuthCard
+            title="確認 Email 驗證"
+            description="為了確認這個 Email 是你本人使用的信箱，請完成最後一步驗證。"
+            className="w-full max-w-md"
+          >
+            <EmailVerificationConfirmForm token={token} />
+          </AuthCard>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="flex flex-1 items-center py-8 sm:py-10">
+      <div className="container flex justify-center">
+        <AuthCard
+          title="驗證連結已失效"
+          description="這個驗證連結可能已過期、已使用，或不是有效連結。"
+          className="w-full max-w-md"
+        >
+          <ButtonLink
+            href="/login"
+            variant="outline"
+            className="w-full sm:w-auto"
+          >
+            返回登入
+          </ButtonLink>
+        </AuthCard>
+      </div>
+    </section>
   );
 }

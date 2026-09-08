@@ -44,7 +44,7 @@ export function ResendEmailVerificationButton() {
   }
 
   return (
-    <div className="flex flex-col items-start gap-2">
+    <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-start">
       <Button
         type="button"
         variant="outline"
@@ -52,6 +52,7 @@ export function ResendEmailVerificationButton() {
         disabled={isLoading}
         isLoading={isLoading}
         onClick={handleResend}
+        className="w-full sm:w-auto"
       >
         重新寄送驗證信
       </Button>

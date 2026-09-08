@@ -9,6 +9,7 @@ export type IssueEmailVerificationTokenResult =
   | "cooldown";
 
 export type ConsumeEmailVerificationTokenResult = "verified" | "invalid";
+export type InspectEmailVerificationTokenResult = "valid" | "invalid";
 
 export const emailVerificationRepository = {
   issue: async (input: {
@@ -51,5 +52,20 @@ export const emailVerificationRepository = {
       throwRepositoryError("Email 驗證 token 使用結果不正確", data);
     }
     return data;
+  },
+
+  inspect: async (
+    tokenHash: string,
+  ): Promise<InspectEmailVerificationTokenResult> => {
+    const { data, error } = await supabase
+      .from("email_verification_tokens")
+      .select("id")
+      .eq("token_hash", tokenHash)
+      .is("consumed_at", null)
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle();
+
+    if (error) throwRepositoryError("檢查 Email 驗證 token 失敗", error);
+    return data ? "valid" : "invalid";
   },
 };

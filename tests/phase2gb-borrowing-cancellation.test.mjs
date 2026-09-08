@@ -36,7 +36,7 @@ test("the user-only cancellation route owns authentication and maps ownership an
   const route = await readSource("src/app/api/users/me/borrowings/[id]/cancel/route.ts");
 
   assert.match(route, /export async function POST/);
-  assert.match(route, /getCurrentUser\(\)/);
+  assert.match(route, /authorizeVerifiedRequest/);
   assert.match(route, /cancelPendingBorrowingByUserId\([\s\S]*?user\.id/);
   assert.match(route, /BorrowingNotFoundError[\s\S]*?status: 404/);
   assert.match(route, /BorrowingCancellationConflictError[\s\S]*?status: 409/);

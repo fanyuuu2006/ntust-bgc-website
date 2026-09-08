@@ -35,7 +35,10 @@ test("public shell retains document scroll, sticky header, and footer push-down"
   ]);
 
   assert.match(shell, /flex min-h-dvh shrink-0 flex-col/);
-  assert.match(shell, /<main[\s\S]*?className="min-w-0 flex-1 focus:outline-none"/);
+  assert.match(
+    shell,
+    /<main[\s\S]*?className="[^"]*flex-1[^"]*flex-col[^"]*focus:outline-none"/,
+  );
   assert.doesNotMatch(shell, /overflow-y-(?:auto|scroll)/);
   assert.match(header, /sticky top-0/);
 });

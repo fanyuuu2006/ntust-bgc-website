@@ -33,7 +33,7 @@ test("admin user lookup is admin-only, bounded, and returns a picker DTO", async
     readSource("src/services/users/users.types.ts"),
   ]);
 
-  assert.match(route, /getCurrentUser/);
+  assert.match(route, /authorizeVerifiedRequest/);
   assert.match(route, /isAdminByUserId/);
   assert.match(route, /searchForAdminPicker/);
   assert.match(service, /pageSize: ADMIN_USER_PICKER_LIMIT/);

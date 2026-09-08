@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
-import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
+import { isAdminByUserId } from "@/libs/auth";
+import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
 import { queryRecordFromSearchParams } from "@/libs/query-params";
 import {
   AcademicYearNotFoundError,
@@ -10,7 +11,9 @@ import {
 import { membershipService } from "@/services/memberships/memberships.service";
 
 async function requireAdmin() {
-  const user = await getCurrentUser();
+  const authorization = await authorizeVerifiedRequest();
+  if (authorization.response) return authorization;
+  const { user } = authorization;
 
   if (!user) {
     return {

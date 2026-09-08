@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
-import { getCurrentUser } from "@/libs/auth";
+import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
 import { usersService } from "@/services/users/users.service";
 import {
   UserProfileNotFoundError,
@@ -14,7 +14,9 @@ import type { User } from "@/types/database";
  * 由呼叫端用 `instanceof NextResponse` 判斷是否要提早 return。
  */
 async function requireUser(): Promise<User | NextResponse> {
-  const user = await getCurrentUser();
+  const authorization = await authorizeVerifiedRequest();
+  if (authorization.response) return authorization.response;
+  const { user } = authorization;
   if (!user) {
     return NextResponse.json(
       { message: "尚未登入或登入已過期" },

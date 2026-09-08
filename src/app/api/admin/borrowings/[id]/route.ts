@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
-import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
+import { isAdminByUserId } from "@/libs/auth";
+import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
 import {
   BorrowingDueDateError,
   BorrowingNotFoundError,
@@ -20,7 +21,9 @@ import { parsePositiveIntegerId } from "@/libs/zod/ids";
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
-  const user = await getCurrentUser();
+  const authorization = await authorizeVerifiedRequest();
+  if (authorization.response) return authorization.response;
+  const { user } = authorization;
   if (!user) return NextResponse.json({ message: "請先登入" }, { status: 401 });
   if (!(await isAdminByUserId(user.id))) return NextResponse.json({ message: "您沒有管理借用紀錄的權限" }, { status: 403 });
 
@@ -52,7 +55,9 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 }
 
 export async function DELETE(_request: NextRequest, { params }: RouteContext) {
-  const user = await getCurrentUser();
+  const authorization = await authorizeVerifiedRequest();
+  if (authorization.response) return authorization.response;
+  const { user } = authorization;
   if (!user) return NextResponse.json({ message: "請先登入" }, { status: 401 });
   if (!(await isAdminByUserId(user.id))) return NextResponse.json({ message: "沒有管理借用紀錄的權限" }, { status: 403 });
 

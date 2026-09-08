@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getCurrentUser, SESSION_COOKIE_NAME } from "@/libs/auth";
+import { SESSION_COOKIE_NAME } from "@/libs/auth";
+import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
 import { authService } from "@/services/auth/auth.service";
 import {
   SessionNotFoundError,
@@ -12,10 +13,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ message: "尚未登入" }, { status: 401 });
-    }
+    const authorization = await authorizeVerifiedRequest();
+    if (authorization.response) return authorization.response;
+    const { user } = authorization;
 
     const { id } = await params;
     const cookieStore = await cookies();

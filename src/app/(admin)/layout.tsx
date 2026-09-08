@@ -13,6 +13,10 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
+  if (!user.email_verified_at) {
+    redirect("/verify-email/pending");
+  }
+
   const isAdmin = await isAdminByUserId(user.id);
 
   if (!isAdmin) {

@@ -6,6 +6,7 @@ import { siteConfigs } from "@/libs/siteConfigs";
 import {
   emailVerificationRepository,
   type ConsumeEmailVerificationTokenResult,
+  type InspectEmailVerificationTokenResult,
   type IssueEmailVerificationTokenResult,
 } from "@/repositories/email-verification.repository";
 import type { User } from "@/types/database";
@@ -26,6 +27,7 @@ type EmailVerificationRepository = {
     cooldownBefore: string;
   }): Promise<IssueEmailVerificationTokenResult>;
   consume(tokenHash: string): Promise<ConsumeEmailVerificationTokenResult>;
+  inspect(tokenHash: string): Promise<InspectEmailVerificationTokenResult>;
 };
 
 type EmailVerificationDependencies = {
@@ -107,6 +109,11 @@ export function createEmailVerificationService(
     verify: async (rawToken: string): Promise<"verified" | "invalid"> => {
       if (!/^[A-Za-z0-9_-]{40,}$/.test(rawToken)) return "invalid";
       return dependencies.repository.consume(dependencies.hashToken(rawToken));
+    },
+
+    inspect: async (rawToken: string): Promise<"valid" | "invalid"> => {
+      if (!/^[A-Za-z0-9_-]{40,}$/.test(rawToken)) return "invalid";
+      return dependencies.repository.inspect(dependencies.hashToken(rawToken));
     },
   };
 }

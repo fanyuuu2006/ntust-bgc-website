@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
-import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
+import { isAdminByUserId } from "@/libs/auth";
+import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import {
   BoardGameCategoryNotFoundError,
@@ -13,7 +14,9 @@ import {
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(_request: NextRequest, { params }: RouteContext) {
-  const user = await getCurrentUser();
+  const authorization = await authorizeVerifiedRequest();
+  if (authorization.response) return authorization.response;
+  const { user } = authorization;
   if (!user) {
     return NextResponse.json({ message: "請先登入" }, { status: 401 });
   }
@@ -42,7 +45,9 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
-  const user = await getCurrentUser();
+  const authorization = await authorizeVerifiedRequest();
+  if (authorization.response) return authorization.response;
+  const { user } = authorization;
   if (!user) {
     return NextResponse.json({ message: "請先登入" }, { status: 401 });
   }
@@ -87,7 +92,9 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 }
 
 export async function DELETE(_request: NextRequest, { params }: RouteContext) {
-  const user = await getCurrentUser();
+  const authorization = await authorizeVerifiedRequest();
+  if (authorization.response) return authorization.response;
+  const { user } = authorization;
   if (!user) {
     return NextResponse.json({ message: "請先登入" }, { status: 401 });
   }

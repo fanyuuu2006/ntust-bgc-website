@@ -366,8 +366,8 @@ test("verification and authenticated resend routes expose safe domain states", a
     "src/app/api/auth/email-verification/resend/route.ts",
   );
 
-  assert.match(page, /Email 驗證成功/);
-  assert.match(page, /這個驗證連結無效或已失效/);
+  assert.match(page, /Email 驗證完成/);
+  assert.match(page, /驗證連結已失效/);
   assert.doesNotMatch(page, /token_hash|error\.message|Brevo|digest/i);
   assert.match(resend, /getCurrentUser/);
   assert.match(resend, /status: 401/);
@@ -389,7 +389,7 @@ test("verification service owns expiration, cooldown, URL construction, and emai
   assert.doesNotMatch(service, /Membership|Officer|Borrowing/);
 });
 
-test("verification state does not gate login, sessions, admin, membership, or borrowing", async () => {
+test("credential login stays separate while verified state gates formal account access", async () => {
   const authService = await readSource("src/services/auth/auth.service.tsx");
   const authenticatedLayout = await readSource(
     "src/app/(authenticated)/layout.tsx",
@@ -398,7 +398,9 @@ test("verification state does not gate login, sessions, admin, membership, or bo
   const borrowRoute = await readSource(
     "src/app/api/board-games/[id]/borrow/route.ts",
   );
-  for (const source of [authService, authenticatedLayout, adminLayout, borrowRoute]) {
-    assert.doesNotMatch(source, /email_verified_at/);
-  }
+  assert.doesNotMatch(authService, /email_verified_at/);
+  assert.match(authenticatedLayout, /email_verified_at/);
+  assert.match(adminLayout, /email_verified_at/);
+  assert.match(borrowRoute, /authorizeVerifiedRequest/);
+  assert.doesNotMatch(borrowRoute, /membershipService|currentMembership/);
 });

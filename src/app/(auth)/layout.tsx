@@ -17,6 +17,10 @@ export default async function AuthLayout({
 }) {
   const user = await getCurrentUser();
 
+  if (user && !user.email_verified_at) {
+    redirect("/verify-email/pending");
+  }
+
   if (user) {
     redirect("/dashboard");
   }

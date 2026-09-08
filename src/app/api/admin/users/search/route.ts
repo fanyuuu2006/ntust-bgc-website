@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { ZodError, z } from "zod";
 
-import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
+import { isAdminByUserId } from "@/libs/auth";
+import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
 import { usersService } from "@/services/users/users.service";
 
 export async function GET(request: Request) {
-  const user = await getCurrentUser();
+  const authorization = await authorizeVerifiedRequest();
+  if (authorization.response) return authorization.response;
+  const { user } = authorization;
   if (!user) {
     return NextResponse.json({ message: "請先登入" }, { status: 401 });
   }

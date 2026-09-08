@@ -27,7 +27,7 @@ export function WebsiteShell({
       <main
         id="main-content"
         tabIndex={-1}
-        className="min-w-0 flex-1 focus:outline-none"
+        className="flex min-w-0 flex-1 flex-col focus:outline-none"
       >
         {children}
       </main>

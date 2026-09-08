@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
-import { getCurrentUser } from "@/libs/auth";
+import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
 import { parsePositiveIntegerId } from "@/libs/zod/ids";
 import {
   BorrowingCancellationConflictError,
@@ -12,8 +12,9 @@ import { boardGamesService } from "@/services/board-games/board-games.service";
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(_request: Request, { params }: RouteContext) {
-  const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ message: "請先登入" }, { status: 401 });
+  const authorization = await authorizeVerifiedRequest();
+  if (authorization.response) return authorization.response;
+  const { user } = authorization;
 
   try {
     const { id: rawId } = await params;

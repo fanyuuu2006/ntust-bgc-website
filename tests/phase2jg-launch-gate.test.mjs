@@ -6,9 +6,13 @@ const root = new URL("../", import.meta.url);
 const readSource = (path) => readFile(new URL(path, root), "utf8");
 
 test("Admin API auth boundary distinguishes unauthenticated and forbidden requests", async () => {
-  const helper = await readSource("src/libs/api/admin-authorization.ts");
+  const [helper, verifiedHelper] = await Promise.all([
+    readSource("src/libs/api/admin-authorization.ts"),
+    readSource("src/libs/api/verified-authorization.ts"),
+  ]);
 
-  assert.match(helper, /if \(!user\)[\s\S]*status: 401/);
+  assert.match(verifiedHelper, /if \(!user\)[\s\S]*status: 401/);
+  assert.match(helper, /authorizeVerifiedRequest/);
   assert.match(helper, /isAdminByUserId\(user\.id\)[\s\S]*status: 403/);
   assert.match(helper, /return \{ user, response: null \}/);
 });

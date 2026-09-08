@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser, getSessionTokenFromCookie } from "@/libs/auth";
+import { getSessionTokenFromCookie } from "@/libs/auth";
+import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
 import { authService } from "@/services/auth/auth.service";
 
 export async function DELETE() {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ message: "尚未登入" }, { status: 401 });
-    }
+    const authorization = await authorizeVerifiedRequest();
+    if (authorization.response) return authorization.response;
+    const { user } = authorization;
     const token = await getSessionTokenFromCookie();
     if (!token) {
       return NextResponse.json(

@@ -16,6 +16,15 @@ type LoginFormValues = {
   password: string;
 };
 
+type LoginResponse = {
+  data: {
+    id: string;
+    email: string;
+    name: string;
+    emailVerified: boolean;
+  };
+};
+
 const createInitialValues = (): LoginFormValues => ({
   email: "",
   password: "",
@@ -77,12 +86,14 @@ export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
     setIsLoading(true);
 
     try {
-      await apiClient("/api/auth/login", {
+      const result = await apiClient<LoginResponse>("/api/auth/login", {
         method: "POST",
         body: values,
       });
 
-      router.replace(returnTo);
+      router.replace(
+        result.data.emailVerified ? returnTo : "/verify-email/pending",
+      );
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "登入失敗，請稍後再試");
     } finally {

@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
-import { getCurrentUser } from "@/libs/auth";
+import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
 import { authService } from "@/services/auth/auth.service";
 import { InvalidCurrentPasswordError } from "@/services/auth/auth.errors";
 
 export async function PATCH(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ message: "尚未登入" }, { status: 401 });
-    }
+    const authorization = await authorizeVerifiedRequest();
+    if (authorization.response) return authorization.response;
+    const { user } = authorization;
 
     const body = await request.json();
     await authService.changePassword(user.id, body);

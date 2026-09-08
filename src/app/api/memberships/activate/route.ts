@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
-import { getCurrentUser } from "@/libs/auth";
+import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
 import { checkRateLimit, getRequestIp } from "@/libs/security/rate-limit";
 import {
   CurrentAcademicYearNotFoundError,
@@ -14,11 +14,9 @@ import {
 import { membershipService } from "@/services/memberships/memberships.service";
 
 export async function POST(request: Request) {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    return NextResponse.json({ message: "請先登入" }, { status: 401 });
-  }
+  const authorization = await authorizeVerifiedRequest();
+  if (authorization.response) return authorization.response;
+  const { user } = authorization;
 
   const rateLimit = checkRateLimit(
     `membership-activate:${user.id}:${getRequestIp(request)}`,
