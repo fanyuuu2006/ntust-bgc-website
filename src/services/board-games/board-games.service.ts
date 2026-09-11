@@ -84,6 +84,17 @@ function getRepositoryDatabaseError(error: unknown): PostgrestErrorLike | null {
   return error.cause as PostgrestErrorLike;
 }
 
+function rethrowInventoryNumberConflict(error: unknown): never {
+  const databaseError = getRepositoryDatabaseError(error);
+  if (databaseError?.code === "23505" && (
+    databaseError.constraint === "board_games_inventory_number_key" ||
+    databaseError.message?.includes('"board_games_inventory_number_key"')
+  )) {
+    throw new DuplicateInventoryNumberError();
+  }
+  throw error;
+}
+
 function rethrowBorrowingRequestConflict(error: unknown): never {
   const databaseError = getRepositoryDatabaseError(error);
   if (
@@ -142,6 +153,14 @@ function rethrowBorrowingTransactionError(error: unknown): never {
 }
 
 export const boardGamesService = {
+  getNextInventoryNumber: async (): Promise<number | null> => {
+    const highest = await boardGamesRepository.findHighestInventoryNumber();
+    if (highest === null || highest < 1) return 1;
+    // PostgreSQL bigint can exceed JavaScript's safe integer range. Do not round a suggestion.
+    return Number.isSafeInteger(highest) && highest < Number.MAX_SAFE_INTEGER
+      ? highest + 1
+      : null;
+  },
   /* ============================================================ *
    * 分類（Categories）
    * ============================================================ */
@@ -361,7 +380,11 @@ export const boardGamesService = {
     ]);
     if (isDuplicate) throw new DuplicateInventoryNumberError();
 
-    return boardGamesRepository.create(data);
+    try {
+      return await boardGamesRepository.create(data);
+    } catch (error) {
+      return rethrowInventoryNumberConflict(error);
+    }
   },
 
   updateBoardGame: async (id: string, input: unknown): Promise<BoardGame> => {
@@ -400,7 +423,7 @@ export const boardGamesService = {
 
     await Promise.all(checks);
 
-    const updated = await boardGamesRepository.updateById(id, data);
+    const updated = await boardGamesRepository.updateById(id, data).catch(rethrowInventoryNumberConflict);
     if (!updated) throw new BoardNotFoundError();
     return updated;
   },
@@ -796,14 +819,6 @@ export const boardGamesService = {
     const borrowing = await boardGameBorrowingsRepository.findById(borrowingId);
     if (!borrowing) throw new BorrowingNotFoundError();
     throw new BorrowingStatusTransitionError("borrowed", borrowing.status);
-  },
-
-  deleteBorrowing: async (borrowingId: BoardGameBorrowingId): Promise<void> => {
-    try {
-      await boardGameBorrowingsRepository.deleteTransactionally(borrowingId);
-    } catch (error) {
-      return rethrowBorrowingTransactionError(error);
-    }
   },
 
   countAllBoardGames: async (): Promise<number> => {

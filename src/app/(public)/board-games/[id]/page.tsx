@@ -117,7 +117,7 @@ export default async function BoardGameDetailPage({
                 </dd>
                 <dt className="text-(--text-muted)">社產編號</dt>
                 <dd className="min-w-0 break-words font-medium text-(--text-primary)">
-                  #{String(boardGame.inventory_number).padStart(3, "0")}
+                  #{boardGame.inventory_number}
                 </dd>
               </dl>
 

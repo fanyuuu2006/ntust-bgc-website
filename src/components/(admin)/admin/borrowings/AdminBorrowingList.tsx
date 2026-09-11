@@ -42,7 +42,7 @@ import {
   parseTaipeiDateTimeLocal,
 } from "@/utils/date";
 
-type Action = "approve" | "reject" | "checkout" | "return" | "edit" | "delete";
+type Action = "approve" | "reject" | "checkout" | "return" | "edit";
 type BorrowingQuery = {
   search?: string;
   status?: BorrowingStatus;
@@ -128,24 +128,18 @@ export function AdminBorrowingList({
     setBusy(true);
     setFeedback(null);
     try {
-      if (selected.action === "delete") {
-        await apiClient(`/api/admin/borrowings/${selected.borrowing.id}`, {
-          method: "DELETE",
-        });
-      } else {
-        await apiClient(`/api/admin/borrowings/${selected.borrowing.id}`, {
-          method: "PATCH",
-          body:
-            selected.action === "edit"
-              ? { due_at: editedDueAt }
-              : {
-                  action: selected.action,
-                  ...(selected.action === "checkout"
-                    ? { due_at: editedDueAt }
-                    : {}),
-                },
-        });
-      }
+      await apiClient(`/api/admin/borrowings/${selected.borrowing.id}`, {
+        method: "PATCH",
+        body:
+          selected.action === "edit"
+            ? { due_at: editedDueAt }
+            : {
+                action: selected.action,
+                ...(selected.action === "checkout"
+                  ? { due_at: editedDueAt }
+                  : {}),
+              },
+      });
       setSelected(null);
       router.refresh();
     } catch (error) {
@@ -159,9 +153,7 @@ export function AdminBorrowingList({
 
   const actionTitle = selected ? actionTitles[selected.action] : "";
   const actionDescription = selected
-    ? selected.action === "delete"
-      ? `確定要永久刪除「${selected.borrowing.board_game.name}」的借用紀錄嗎？借用人：${getBorrowerName(selected.borrowing)}。刪除後將無法復原。`
-      : `桌遊「${selected.borrowing.board_game.name}」的借用。`
+    ? `桌遊「${selected.borrowing.board_game.name}」的借用。`
     : "";
 
   return (
@@ -388,7 +380,7 @@ export function AdminBorrowingList({
         description={actionDescription}
         confirmLabel={selected ? actionConfirmLabels[selected.action] : "確認"}
         confirmVariant={
-          selected?.action === "reject" || selected?.action === "delete"
+          selected?.action === "reject"
             ? "danger"
             : "primary"
         }
@@ -403,7 +395,6 @@ const actionTitles: Record<Action, string> = {
   checkout: "確認借出",
   return: "確認歸還",
   edit: "編輯借用紀錄",
-  delete: "刪除借用紀錄",
 };
 
 const actionConfirmLabels: Record<Action, string> = {
@@ -412,7 +403,6 @@ const actionConfirmLabels: Record<Action, string> = {
   checkout: "確認借出",
   return: "確認歸還",
   edit: "儲存變更",
-  delete: "刪除借用紀錄",
 };
 
 function BorrowingActions({
@@ -457,13 +447,6 @@ function BorrowingActions({
           編輯
         </Button>
       ) : null}
-      <Button
-        size="sm"
-        variant="danger"
-        onClick={() => onAction(borrowing, "delete")}
-      >
-        刪除
-      </Button>
     </div>
   );
 }
@@ -482,7 +465,7 @@ function BoardGameSummary({
       </p>
       <p className="mt-1 text-xs text-(--text-muted)">
         社產編號 #
-        {String(borrowing.board_game.inventory_number).padStart(3, "0")}
+        {borrowing.board_game.inventory_number}
       </p>
     </div>
   );

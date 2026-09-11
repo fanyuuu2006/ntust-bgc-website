@@ -53,22 +53,3 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     return NextResponse.json({ message: "更新借用紀錄失敗，請稍後再試" }, { status: 500 });
   }
 }
-
-export async function DELETE(_request: NextRequest, { params }: RouteContext) {
-  const authorization = await authorizeVerifiedRequest();
-  if (authorization.response) return authorization.response;
-  const { user } = authorization;
-  if (!user) return NextResponse.json({ message: "請先登入" }, { status: 401 });
-  if (!(await isAdminByUserId(user.id))) return NextResponse.json({ message: "沒有管理借用紀錄的權限" }, { status: 403 });
-
-  try {
-    const { id: rawId } = await params;
-    await boardGamesService.deleteBorrowing(parsePositiveIntegerId(rawId));
-    return NextResponse.json({ data: null }, { status: 200 });
-  } catch (error) {
-    if (error instanceof BorrowingNotFoundError) return NextResponse.json({ message: error.message }, { status: 404 });
-    if (error instanceof BorrowingWorkflowConflictError) return NextResponse.json({ message: error.message }, { status: 409 });
-    console.error("[DELETE /api/admin/borrowings/[id]]", error);
-    return NextResponse.json({ message: "刪除借用紀錄失敗，請稍後再試" }, { status: 500 });
-  }
-}

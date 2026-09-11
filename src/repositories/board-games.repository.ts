@@ -168,6 +168,17 @@ export const boardGamesRepository = {
     return (count ?? 0) > 0;
   },
 
+  findHighestInventoryNumber: async (): Promise<number | null> => {
+    const { data, error } = await supabase
+      .from("board_games")
+      .select("inventory_number")
+      .order("inventory_number", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throwRepositoryError("取得最大社產編號失敗", error);
+    return data?.inventory_number ?? null;
+  },
+
   countAll: async (): Promise<number> => {
     const { count, error } = await supabase
       .from("board_games")

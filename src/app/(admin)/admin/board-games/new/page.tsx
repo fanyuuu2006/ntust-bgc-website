@@ -4,9 +4,10 @@ import { BoardGameForm } from "@/components/(admin)/admin/board-games/BoardGameF
 import { boardGamesService } from "@/services/board-games/board-games.service";
 
 export default async function NewBoardGamePage() {
-  const [categories, locations] = await Promise.all([
+  const [categories, locations, nextInventoryNumber] = await Promise.all([
     boardGamesService.listCategories(),
     boardGamesService.listLocations(),
+    boardGamesService.getNextInventoryNumber(),
   ]);
 
   return (
@@ -22,7 +23,7 @@ export default async function NewBoardGamePage() {
       />
 
       <section className="mx-auto w-full max-w-3xl px-4 pb-8 sm:px-6 lg:px-8">
-        <BoardGameForm mode="create" categories={categories} locations={locations} />
+        <BoardGameForm initialValues={nextInventoryNumber === null ? undefined : { inventory_number: String(nextInventoryNumber) }} mode="create" categories={categories} locations={locations} />
       </section>
     </>
   );
