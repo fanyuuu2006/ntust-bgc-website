@@ -1,3 +1,4 @@
+import { getAdminReturnPath } from "@/utils/admin-return";
 import { notFound } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
@@ -23,10 +24,12 @@ export default async function AdminEventDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ search?: QueryParamValue; orderDirection?: QueryParamValue; page?: QueryParamValue; pageSize?: QueryParamValue }>;
+  searchParams: Promise<{ returnTo?: QueryParamValue; search?: QueryParamValue; orderDirection?: QueryParamValue; page?: QueryParamValue; pageSize?: QueryParamValue }>;
 }) {
   const [{ id }, rawQuery] = await Promise.all([params, searchParams]);
+  const returnTo = getAdminReturnPath(rawQuery.returnTo, "/admin/events");
   const query = {
+    returnTo,
     search: readSingleQueryValue(rawQuery.search),
     orderDirection: readSingleQueryValue(rawQuery.orderDirection),
     page: readSingleQueryValue(rawQuery.page),
@@ -48,7 +51,7 @@ export default async function AdminEventDetailPage({
 
   if (!event) notFound();
 
-  const clearSearchParams = new URLSearchParams();
+  const clearSearchParams = new URLSearchParams({ returnTo });
   if (query.orderDirection) clearSearchParams.set("orderDirection", query.orderDirection);
   if (query.pageSize) clearSearchParams.set("pageSize", query.pageSize);
   const clearSearchHref = clearSearchParams.size
@@ -68,27 +71,28 @@ export default async function AdminEventDetailPage({
             <h2 className="text-lg font-semibold">簽到管理</h2>
             <EventStatusBadge event={event} />
           </div>
-          <ButtonLink href="/admin/events" size="sm" variant="outline">返回活動管理</ButtonLink>
+          <ButtonLink href={returnTo} size="sm" variant="outline">返回活動管理</ButtonLink>
         </div>
-        {event.description ? <p className="whitespace-pre-wrap text-sm leading-7 text-(--text-muted)">{event.description}</p> : null}
+        {event.description ? <p className="whitespace-pre-wrap wrap-anywhere text-sm leading-7 text-(--text-muted)">{event.description}</p> : null}
         <AdminToolbar className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <form className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]" aria-label="搜尋簽到名單">
-            <PreservedQueryFields query={{ search: query.search, orderDirection, pageSize }} ownedKeys={["search"]} />
+            <PreservedQueryFields query={{ returnTo, search: query.search, orderDirection, pageSize }} ownedKeys={["search"]} />
             <ClearableSearchInput initialValue={query.search} clearHref={clearSearchHref} name="search" placeholder="搜尋使用者名稱、姓名、Email 或學號" aria-label="搜尋簽到名單" />
             <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
           </form>
-            <ImmediateQuerySelect appliedQuery={{ search: query.search, orderDirection, pageSize }} basePath={`/admin/events/${event.id}`} queryKey="orderDirection" value={orderDirection} aria-label="簽到時間排序" className="w-full sm:w-auto">
+            <ImmediateQuerySelect appliedQuery={{ returnTo, search: query.search, orderDirection, pageSize }} basePath={`/admin/events/${event.id}`} queryKey="orderDirection" value={orderDirection} aria-label="簽到時間排序" className="w-full sm:w-auto">
               <option value="desc">最新簽到</option>
               <option value="asc">最早簽到</option>
             </ImmediateQuerySelect>
         </AdminToolbar>
         <AttendanceRecords
+          returnTo={returnTo}
           eventId={event.id}
           eventName={event.name}
           records={records.data}
           hasQuery={Boolean(query.search || page > 1)}
         />
-        <Pagination page={page} pageSize={pageSize} total={records.total} totalPages={records.totalPages} basePath={`/admin/events/${event.id}`} pageSizeOptions={[10, 20, 50]} query={{ search: query.search, orderDirection }} />
+        <Pagination page={page} pageSize={pageSize} total={records.total} totalPages={records.totalPages} basePath={`/admin/events/${event.id}`} pageSizeOptions={[10, 20, 50]} query={{ returnTo, search: query.search, orderDirection }} />
       </section>
     </>
   );

@@ -170,7 +170,6 @@ test("Admin Borrowings exposes only established sort fields and resets page", as
 
 test("Admin query forms preserve page size and explicitly reset page", async () => {
   const unchangedNativeForms = await Promise.all([
-    readSource("src/app/(admin)/admin/users/page.tsx"),
     readSource("src/app/(admin)/admin/academic-years/page.tsx"),
     readSource("src/app/(admin)/admin/board-games/categories/page.tsx"),
     readSource("src/app/(admin)/admin/board-games/locations/page.tsx"),
@@ -181,6 +180,7 @@ test("Admin query forms preserve page size and explicitly reset page", async () 
   }
 
   const convergedNativeForms = await Promise.all([
+    readSource("src/app/(admin)/admin/users/page.tsx"),
     readSource("src/app/(admin)/admin/officers/page.tsx"),
     readSource("src/app/(admin)/admin/events/page.tsx"),
     readSource("src/app/(admin)/admin/events/[id]/page.tsx"),

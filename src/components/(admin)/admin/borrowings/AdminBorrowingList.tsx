@@ -42,7 +42,7 @@ import {
   parseTaipeiDateTimeLocal,
 } from "@/utils/date";
 
-type Action = "approve" | "reject" | "checkout" | "return" | "edit" | "delete";
+type Action = "approve" | "reject" | "checkout" | "return" | "edit";
 type BorrowingQuery = {
   search?: string;
   status?: BorrowingStatus;
@@ -128,24 +128,18 @@ export function AdminBorrowingList({
     setBusy(true);
     setFeedback(null);
     try {
-      if (selected.action === "delete") {
-        await apiClient(`/api/admin/borrowings/${selected.borrowing.id}`, {
-          method: "DELETE",
-        });
-      } else {
-        await apiClient(`/api/admin/borrowings/${selected.borrowing.id}`, {
-          method: "PATCH",
-          body:
-            selected.action === "edit"
-              ? { due_at: editedDueAt }
-              : {
-                  action: selected.action,
-                  ...(selected.action === "checkout"
-                    ? { due_at: editedDueAt }
-                    : {}),
-                },
-        });
-      }
+      await apiClient(`/api/admin/borrowings/${selected.borrowing.id}`, {
+        method: "PATCH",
+        body:
+          selected.action === "edit"
+            ? { due_at: editedDueAt }
+            : {
+                action: selected.action,
+                ...(selected.action === "checkout"
+                  ? { due_at: editedDueAt }
+                  : {}),
+              },
+      });
       setSelected(null);
       router.refresh();
     } catch (error) {
@@ -159,9 +153,7 @@ export function AdminBorrowingList({
 
   const actionTitle = selected ? actionTitles[selected.action] : "";
   const actionDescription = selected
-    ? selected.action === "delete"
-      ? `確定要永久刪除「${selected.borrowing.board_game.name}」的借用紀錄嗎？借用人：${getBorrowerName(selected.borrowing)}。刪除後將無法復原。`
-      : `桌遊「${selected.borrowing.board_game.name}」的借用。`
+    ? `桌遊「${selected.borrowing.board_game.name}」的借用。`
     : "";
 
   return (
@@ -268,7 +260,7 @@ export function AdminBorrowingList({
               <TableBody>
                 {borrowings.map((borrowing) => (
                   <TableRow key={borrowing.id}>
-                    <TableCell className="min-w-56">
+                    <TableCell className="min-w-56 max-w-80">
                       <BoardGameSummary borrowing={borrowing} />
                     </TableCell>
                     <TableCell className="min-w-56">
@@ -301,7 +293,7 @@ export function AdminBorrowingList({
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <BoardGameSummary
                     borrowing={borrowing}
-                    titleClassName="line-clamp-2"
+                    titleClassName="wrap-anywhere"
                   />
                   <BorrowingStatusBadge
                     status={borrowing.status}
@@ -327,9 +319,11 @@ export function AdminBorrowingList({
       >
         <div className="space-y-4">
           {selected ? <CheckoutContext borrowing={selected.borrowing} /> : null}
-          <Field label="預計歸還時間（台北時間）" htmlFor="borrowing-due-at">
+          <Field label="預計歸還時間（台北時間）" htmlFor="borrowing-due-at" required>
             <Input
               id="borrowing-due-at"
+              required
+              aria-required="true"
               autoFocus
               className="w-full"
               type="datetime-local"
@@ -388,7 +382,7 @@ export function AdminBorrowingList({
         description={actionDescription}
         confirmLabel={selected ? actionConfirmLabels[selected.action] : "確認"}
         confirmVariant={
-          selected?.action === "reject" || selected?.action === "delete"
+          selected?.action === "reject"
             ? "danger"
             : "primary"
         }
@@ -403,7 +397,6 @@ const actionTitles: Record<Action, string> = {
   checkout: "確認借出",
   return: "確認歸還",
   edit: "編輯借用紀錄",
-  delete: "刪除借用紀錄",
 };
 
 const actionConfirmLabels: Record<Action, string> = {
@@ -412,7 +405,6 @@ const actionConfirmLabels: Record<Action, string> = {
   checkout: "確認借出",
   return: "確認歸還",
   edit: "儲存變更",
-  delete: "刪除借用紀錄",
 };
 
 function BorrowingActions({
@@ -457,20 +449,13 @@ function BorrowingActions({
           編輯
         </Button>
       ) : null}
-      <Button
-        size="sm"
-        variant="danger"
-        onClick={() => onAction(borrowing, "delete")}
-      >
-        刪除
-      </Button>
     </div>
   );
 }
 
 function BoardGameSummary({
   borrowing,
-  titleClassName = "truncate",
+  titleClassName = "wrap-anywhere",
 }: {
   borrowing: BoardGameBorrowingForAdmin;
   titleClassName?: string;
@@ -482,7 +467,7 @@ function BoardGameSummary({
       </p>
       <p className="mt-1 text-xs text-(--text-muted)">
         社產編號 #
-        {String(borrowing.board_game.inventory_number).padStart(3, "0")}
+        {borrowing.board_game.inventory_number}
       </p>
     </div>
   );
@@ -495,10 +480,10 @@ function BorrowerSummary({
 }) {
   return (
     <div className="min-w-0">
-      <p className="truncate font-medium text-(--text-primary)">
+      <p className="wrap-anywhere font-medium text-(--text-primary)">
         {getBorrowerName(borrowing)}
       </p>
-      <p className="truncate text-xs text-(--text-muted)">
+      <p className="wrap-anywhere text-xs text-(--text-muted)">
         {borrowing.user.email}
       </p>
       <div className="mt-1">
@@ -596,7 +581,7 @@ function Timeline({
   return (
     <div className="min-w-0">
       <p className="text-xs text-(--text-muted)">{label}</p>
-      <p className="mt-0.5 wrap-break-word text-sm text-(--text-primary)">
+      <p className="mt-0.5 wrap-anywhere text-sm text-(--text-primary)">
         {value}
       </p>
       {details.filter(Boolean).map((detail) => (
@@ -635,7 +620,7 @@ function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
       <dt className="text-xs text-(--text-muted)">{label}</dt>
-      <dd className="mt-0.5 wrap-break-word text-(--text-primary)">{value}</dd>
+      <dd className="mt-0.5 wrap-anywhere text-(--text-primary)">{value}</dd>
     </div>
   );
 }

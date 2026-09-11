@@ -1,5 +1,6 @@
 "use client";
 
+import { getAdminReturnPath } from "@/utils/admin-return";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -22,8 +23,9 @@ type EditableAnnouncement = {
   is_published: boolean;
 };
 
-export function AnnouncementEditor({ announcement }: { announcement?: EditableAnnouncement }) {
+export function AnnouncementEditor({ announcement, returnTo }: { announcement?: EditableAnnouncement; returnTo?: string }) {
   const router = useRouter();
+  const returnHref = getAdminReturnPath(returnTo, "/admin/announcements");
   const [title, setTitle] = useState(announcement?.title ?? "");
   const [content, setContent] = useState(announcement?.content ?? "");
   const [busy, setBusy] = useState(false);
@@ -48,7 +50,7 @@ export function AnnouncementEditor({ announcement }: { announcement?: EditableAn
           }),
         },
       );
-      router.push("/admin/announcements");
+      router.push(returnHref);
       router.refresh();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "儲存公告失敗");
@@ -63,7 +65,7 @@ export function AnnouncementEditor({ announcement }: { announcement?: EditableAn
     setError(null);
     try {
       await apiClient(`/api/admin/announcements/${announcement.id}`, { method: "DELETE" });
-      router.push("/admin/announcements");
+      router.push(returnHref);
       router.refresh();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "刪除公告失敗");
@@ -100,7 +102,7 @@ export function AnnouncementEditor({ announcement }: { announcement?: EditableAn
             </Button>
           ) : <span />}
           <div className="flex flex-wrap justify-end gap-2">
-            <Button type="button" onClick={() => router.push("/admin/announcements")} variant="outline" disabled={busy || deleting}>
+            <Button type="button" onClick={() => router.push(returnHref)} variant="outline" disabled={busy || deleting}>
               取消
             </Button>
             {!announcement?.is_published ? (

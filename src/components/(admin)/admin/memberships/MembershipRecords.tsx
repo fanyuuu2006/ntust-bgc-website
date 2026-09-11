@@ -235,9 +235,9 @@ export function MembershipRecords({
 
       <Modal open={editingMembership !== null} onClose={closeEditDialog} title="編輯社員資格">
         <form onSubmit={saveMembership} className="space-y-4">
-          <Field label="學年度" htmlFor="membership-year">
+          <Field label="學年度" htmlFor="membership-year" required>
             <Select
-              id="membership-year"
+              id="membership-year" required
               className="w-full"
               value={values.academic_year_id}
               disabled={isSaving}
@@ -251,9 +251,9 @@ export function MembershipRecords({
             </Select>
           </Field>
           <p className="text-sm text-(--muted)">社員類型會依幹部職位紀錄自動重新判定。</p>
-          <Field label="狀態" htmlFor="membership-status">
+          <Field label="狀態" htmlFor="membership-status" required>
             <Select
-              id="membership-status"
+              id="membership-status" required
               className="w-full"
               value={values.status}
               disabled={isSaving}

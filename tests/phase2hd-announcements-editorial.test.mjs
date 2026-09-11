@@ -57,7 +57,7 @@ test("published announcement detail is a narrow server-rendered article without 
   assert.match(detail, /<time[^>]*dateTime=/);
   assert.match(detail, /announcement\.published_at\s*\?\?/);
   assert.match(detail, /whitespace-pre-wrap/);
-  assert.match(detail, /break-words/);
+  assert.match(detail, /wrap-anywhere/);
   assert.match(detail, /overflow-wrap:anywhere/);
   assert.match(detail, /href="\/announcements"/);
   assert.match(detail, /max-w-3xl/);

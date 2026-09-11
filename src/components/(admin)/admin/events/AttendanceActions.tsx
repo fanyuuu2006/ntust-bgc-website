@@ -95,9 +95,9 @@ export function AttendanceActions({ eventId }: { eventId: string }) {
             />
           </Field>
 
-          <Field label="狀態" htmlFor="attendance-status">
+          <Field label="狀態" htmlFor="attendance-status" required>
             <Select
-              id="attendance-status"
+              id="attendance-status" required
               className="w-full"
               value={status}
               disabled={busy}

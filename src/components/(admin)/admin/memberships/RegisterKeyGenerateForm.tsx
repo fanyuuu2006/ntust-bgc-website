@@ -85,9 +85,9 @@ export function RegisterKeyGenerateForm({
         description="選擇學年度與數量後，系統會產生僅能使用一次的社員註冊序號。"
       >
         <form onSubmit={submit} className="space-y-4">
-          <Field label="學年度" htmlFor="register-key-year">
+          <Field label="學年度" htmlFor="register-key-year" required>
             <Select
-              id="register-key-year"
+              id="register-key-year" required
               value={academicYearId}
               onChange={(event) => setAcademicYearId(event.target.value)}
               disabled={busy}
@@ -100,9 +100,9 @@ export function RegisterKeyGenerateForm({
               ))}
             </Select>
           </Field>
-          <Field label="產生數量" htmlFor="register-key-count">
+          <Field label="產生數量" htmlFor="register-key-count" required>
             <Input
-              id="register-key-count"
+              id="register-key-count" required
               type="number"
               min={1}
               max={100}

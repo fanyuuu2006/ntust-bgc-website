@@ -1,5 +1,6 @@
 "use client";
 
+import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BASE_PATH } from "@/app/(admin)/admin/board-games/constants";
@@ -39,6 +40,7 @@ export function BoardGameTable({
   ...props
 }: Props) {
   const router = useRouter();
+  const returnTo = buildAdminListHref(BASE_PATH, query);
   const [selectedBoardGame, setSelectedBoardGame] =
     useState<BoardGameWithCategoryAndLocation | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -148,16 +150,16 @@ export function BoardGameTable({
                       boardGame={game}
                       className="size-10 shrink-0 rounded-md border border-(--border) object-cover"
                     />
-                    <span className="truncate font-medium">{game.name}</span>
+                    <span className="min-w-0 wrap-anywhere font-medium">{game.name}</span>
                   </div>
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <BoardGameStatusBadge status={game.status} />
                 </TableCell>
-                <TableCell className="whitespace-nowrap">
+                <TableCell className="max-w-48 wrap-anywhere">
                   {game.location.name}
                 </TableCell>
-                <TableCell className="whitespace-nowrap">
+                <TableCell className="max-w-48 wrap-anywhere">
                   {game.category.name}
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
@@ -166,7 +168,7 @@ export function BoardGameTable({
                 <TableCell className="whitespace-nowrap text-right">
                   <BoardGameRowActions
                     boardGame={game}
-                    onDelete={openDeleteDialog}
+                    onDelete={openDeleteDialog} returnTo={returnTo}
                   />
                 </TableCell>
               </TableRow>
@@ -188,7 +190,7 @@ export function BoardGameTable({
                   className="size-12 shrink-0 rounded-md border border-(--border) object-cover"
                 />
                 <div className="min-w-0 flex-1">
-                  <h2 className="truncate font-semibold">{game.name}</h2>
+                  <h2 className="wrap-anywhere font-semibold">{game.name}</h2>
                   <p className="mt-1 text-sm text-(--muted)">
                     社產編號 #{game.inventory_number}
                   </p>
@@ -204,7 +206,7 @@ export function BoardGameTable({
             <p className="text-xs text-(--muted)">
               更新：{formatDateTime(game.updated_at)}
             </p>
-            <BoardGameRowActions boardGame={game} onDelete={openDeleteDialog} />
+            <BoardGameRowActions boardGame={game} onDelete={openDeleteDialog} returnTo={returnTo} />
           </Card>
         ))}
       </div>
@@ -228,14 +230,16 @@ export function BoardGameTable({
 function BoardGameRowActions({
   boardGame,
   onDelete,
+  returnTo,
 }: {
   boardGame: BoardGameWithCategoryAndLocation;
+  returnTo: string;
   onDelete: (boardGame: BoardGameWithCategoryAndLocation) => void;
 }) {
   return (
     <div className="flex flex-wrap justify-end gap-2">
       <ButtonLink
-        href={`/admin/board-games/${boardGame.id}/edit`}
+        href={buildAdminReturnHref(`/admin/board-games/${boardGame.id}/edit`, returnTo, BASE_PATH)}
         variant="outline"
         size="sm"
         className="rounded-lg"

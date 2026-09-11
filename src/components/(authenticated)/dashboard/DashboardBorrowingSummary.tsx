@@ -79,7 +79,7 @@ function BorrowingRow({
     <li className="rounded-xl bg-(--surface-subtle) px-3 py-2.5">
       <div className="flex flex-wrap items-start justify-between gap-1.5">
         <div className="min-w-0 flex-1">
-          <p className="wrap-break-word font-semibold leading-6 text-(--text-primary)">
+          <p className="wrap-anywhere font-semibold leading-6 text-(--text-primary)">
             {borrowing.board_game.name}
           </p>
           <p className="mt-1 text-xs text-(--text-muted)">
@@ -104,7 +104,7 @@ function BorrowingRow({
             )}
             {dueTime.relative}
           </p>
-          <p className="wrap-break-word text-sm text-(--text-muted)">
+          <p className="wrap-anywhere text-sm text-(--text-muted)">
             {dueTime.absolute
               ? isOverdue
                 ? `應於 ${dueTime.absolute} 前歸還`

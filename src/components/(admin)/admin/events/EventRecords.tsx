@@ -1,5 +1,6 @@
 "use client";
 
+import { buildAdminReturnHref } from "@/utils/admin-return";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -29,7 +30,7 @@ type EventFormValues = {
   check_in_closes_at: string;
 };
 
-export function EventRecords({ events, hasQuery = false }: { events: Event[]; hasQuery?: boolean }) {
+export function EventRecords({ events, hasQuery = false, returnTo = "/admin/events" }: { events: Event[]; hasQuery?: boolean; returnTo?: string }) {
   const router = useRouter();
   const [selectedEvent, setSelectedEvent] = useState<{ event: Event; action: "edit" | "delete" } | null>(null);
   const [values, setValues] = useState<EventFormValues>({
@@ -161,7 +162,7 @@ export function EventRecords({ events, hasQuery = false }: { events: Event[]; ha
             {events.map((event) => (
               <TableRow key={event.id}>
                 <TableCell className="min-w-64">
-                  <Link className="font-medium hover:underline" href={`/admin/events/${event.id}`}>
+                  <Link className="wrap-anywhere font-medium hover:underline" href={buildAdminReturnHref(`/admin/events/${event.id}`, returnTo, "/admin/events")}>
                     {event.name}
                   </Link>
                 </TableCell>
@@ -171,7 +172,7 @@ export function EventRecords({ events, hasQuery = false }: { events: Event[]; ha
                   <EventStatusBadge event={event} />
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
-                  <EventRowActions event={event} onEdit={openEditDialog} onDelete={openDeleteDialog} />
+                  <EventRowActions event={event} onEdit={openEditDialog} onDelete={openDeleteDialog} returnTo={returnTo} />
                 </TableCell>
               </TableRow>
             ))}
@@ -184,7 +185,7 @@ export function EventRecords({ events, hasQuery = false }: { events: Event[]; ha
           <Card key={event.id} className="w-full min-w-0 max-w-full p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <Link className="block truncate font-semibold" href={`/admin/events/${event.id}`}>
+                <Link className="block wrap-anywhere font-semibold" href={buildAdminReturnHref(`/admin/events/${event.id}`, returnTo, "/admin/events")}>
                   {event.name}
                 </Link>
                 <p className="text-sm text-(--muted)">
@@ -196,7 +197,7 @@ export function EventRecords({ events, hasQuery = false }: { events: Event[]; ha
               </span>
             </div>
             <div className="mt-3 flex gap-2">
-              <EventRowActions event={event} onEdit={openEditDialog} onDelete={openDeleteDialog} />
+              <EventRowActions event={event} onEdit={openEditDialog} onDelete={openDeleteDialog} returnTo={returnTo} />
             </div>
           </Card>
         ))}
@@ -204,7 +205,7 @@ export function EventRecords({ events, hasQuery = false }: { events: Event[]; ha
 
       <Modal open={editingEvent !== null} onClose={closeEditDialog} title="編輯活動">
         <form onSubmit={saveEvent} className="space-y-4">
-          <Field label="活動名稱" htmlFor="event-name">
+          <Field label="活動名稱" htmlFor="event-name" required>
             <Input
               id="event-name"
               className="w-full"
@@ -223,7 +224,7 @@ export function EventRecords({ events, hasQuery = false }: { events: Event[]; ha
               onChange={(event) => setValues((current) => ({ ...current, description: event.target.value }))}
             />
           </Field>
-          <Field label="開始時間" htmlFor="event-start-time">
+          <Field label="開始時間" htmlFor="event-start-time" required>
             <Input
               id="event-start-time"
               className="w-full"
@@ -234,7 +235,7 @@ export function EventRecords({ events, hasQuery = false }: { events: Event[]; ha
               onChange={(event) => setValues((current) => ({ ...current, start_time: event.target.value }))}
             />
           </Field>
-          <Field label="結束時間" htmlFor="event-end-time">
+          <Field label="結束時間" htmlFor="event-end-time" required>
             <Input
               id="event-end-time"
               className="w-full"
@@ -268,7 +269,7 @@ export function EventRecords({ events, hasQuery = false }: { events: Event[]; ha
             </label>
             {values.selfCheckInEnabled ? (
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <Field label="簽到開始" htmlFor="edit-event-check-in-opens-at">
+                <Field label="簽到開始" htmlFor="edit-event-check-in-opens-at" required>
                   <Input
                     id="edit-event-check-in-opens-at"
                     className="w-full"
@@ -284,7 +285,7 @@ export function EventRecords({ events, hasQuery = false }: { events: Event[]; ha
                     }
                   />
                 </Field>
-                <Field label="簽到截止" htmlFor="edit-event-check-in-closes-at">
+                <Field label="簽到截止" htmlFor="edit-event-check-in-closes-at" required>
                   <Input
                     id="edit-event-check-in-closes-at"
                     className="w-full"
@@ -335,14 +336,16 @@ function EventRowActions({
   event,
   onEdit,
   onDelete,
+  returnTo,
 }: {
   event: Event;
   onEdit: (event: Event) => void;
   onDelete: (event: Event) => void;
+  returnTo: string;
 }) {
   return (
     <div className="flex shrink-0 flex-wrap gap-2">
-      <ButtonLink href={`/admin/events/${event.id}`} size="sm" variant="outline">
+      <ButtonLink href={buildAdminReturnHref(`/admin/events/${event.id}`, returnTo, "/admin/events")} size="sm" variant="outline">
         簽到管理
       </ButtonLink>
       <Button type="button" size="sm" variant="outline" onClick={() => onEdit(event)}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { getAdminReturnPath } from "@/utils/admin-return";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormFeedback } from "@/components/FormFeedback";
@@ -33,6 +34,7 @@ type BoardGameFormValues = {
 
 type BoardGameFormProps = {
   mode: BoardGameFormMode;
+  returnTo?: string;
   boardGameId?: string;
   categories: BoardGameCategory[];
   locations: BoardGameLocation[];
@@ -101,8 +103,10 @@ export function BoardGameForm({
   categories,
   locations,
   initialValues,
+  returnTo,
 }: BoardGameFormProps) {
   const router = useRouter();
+  const returnHref = getAdminReturnPath(returnTo, "/admin/board-games");
   const [values, setValues] = useState<BoardGameFormValues>(() =>
     buildInitialValues(initialValues),
   );
@@ -175,7 +179,7 @@ export function BoardGameForm({
         });
       }
 
-      router.push("/admin/board-games");
+      router.push(returnHref);
       router.refresh();
     } catch (err) {
       setFormError(
@@ -195,7 +199,7 @@ export function BoardGameForm({
             <FieldInput field={{ id: "name", label: "桌遊名稱", type: "text", required: true, placeholder: "請輸入桌遊名稱", error: errors.name }} value={values.name} onChange={handleChange} />
             <FieldInput field={{ id: "inventory_number", label: "社產編號", type: "number", required: true, placeholder: "例如：101", error: errors.inventory_number }} value={values.inventory_number} onChange={handleChange} />
           </div>
-          <Field label="狀態" htmlFor="status" error={errors.status}>
+          <Field label="狀態" htmlFor="status" error={errors.status} required>
             <Select id="status" name="status" value={values.status} onChange={handleChange} required invalid={!!errors.status}>
               {statusOptions.map((status) => <option key={status} value={status}>{BOARD_GAME_STATUS_LABEL[status]}</option>)}
             </Select>
@@ -205,13 +209,13 @@ export function BoardGameForm({
         <section className="space-y-4" aria-labelledby="board-game-classification">
           <h2 id="board-game-classification" className="border-b border-(--border-default) pb-2 text-base font-semibold text-(--text-primary)">種類與位置</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="種類" htmlFor="category_id" error={errors.category_id}>
+            <Field label="種類" htmlFor="category_id" error={errors.category_id} required>
               <Select id="category_id" name="category_id" value={values.category_id} onChange={handleChange} required invalid={!!errors.category_id}>
                 <option value="">請選擇種類</option>
                 {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
               </Select>
             </Field>
-            <Field label="位置" htmlFor="location_id" error={errors.location_id}>
+            <Field label="位置" htmlFor="location_id" error={errors.location_id} required>
               <Select id="location_id" name="location_id" value={values.location_id} onChange={handleChange} required invalid={!!errors.location_id}>
                 <option value="">請選擇位置</option>
                 {locations.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}
@@ -231,7 +235,7 @@ export function BoardGameForm({
         <FormFeedback error={formError} />
 
         <div className="flex flex-col gap-3 border-t border-(--border-default) pt-4 sm:flex-row sm:justify-end">
-          <Button type="button" variant="outline" onClick={() => router.push("/admin/board-games")} disabled={isSubmitting}>取消</Button>
+          <Button type="button" variant="outline" onClick={() => router.push(returnHref)} disabled={isSubmitting}>取消</Button>
           <Button type="submit" disabled={isSubmitting} isLoading={isSubmitting}>
             {isSubmitting ? mode === "create" ? "新增中..." : "儲存中..." : mode === "create" ? "新增桌遊" : "儲存變更"}
           </Button>

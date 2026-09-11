@@ -1,5 +1,5 @@
 import "server-only";
-import { User } from "@/types/database";
+import type { User } from "@/types/database";
 import { throwRepositoryError } from "./shared/errors";
 import { supabase } from "@/libs/supabase/server";
 import {
@@ -9,6 +9,8 @@ import {
 import { buildIlikeSearch } from "./shared/search";
 import { OrderOptions, PaginationQuery } from "./shared/types";
 
+export type UserEmailVerificationFilter = "verified" | "unverified";
+
 type CreateUserInput = Pick<User, "email" | "name">;
 type UpdateUserInput = Partial<Pick<User, "name" | "avatar">>;
 
@@ -16,6 +18,7 @@ type FindManyUsersOptions = PaginationQuery &
   OrderOptions<"name" | "email" | "created_at" | "updated_at"> & {
     search?: string;
     userIds?: string[];
+    emailVerification?: UserEmailVerificationFilter;
   };
 
 export const usersRepository = {
@@ -54,6 +57,13 @@ export const usersRepository = {
         query = query.or(buildIlikeSearch(["name", "email"], keyword));
       }
     }
+
+    if (options.emailVerification === "verified") {
+      query = query.not("email_verified_at", "is", null);
+    } else if (options.emailVerification === "unverified") {
+      query = query.is("email_verified_at", null);
+    }
+
     query = query
       .order(orderBy, { ascending: orderDirection === "asc" })
       .range(from, to);

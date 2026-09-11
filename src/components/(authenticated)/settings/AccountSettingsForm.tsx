@@ -28,6 +28,7 @@ type AccountSettingsFormProps = React.HTMLAttributes<HTMLElement> & {
 
 const nameField: FieldInputField = {
   id: "name",
+  required: true,
   label: "使用者名稱",
   type: "text",
   autoComplete: "nickname",

@@ -166,7 +166,7 @@ export function CategoryRecords({ items, hasQuery = false }: { items: CategoryRe
 
       <Modal open={editing !== null} onClose={closeEdit} title="編輯桌遊分類">
         <form onSubmit={saveEdit} className="space-y-4">
-          <Field label="名稱" htmlFor="category-name">
+          <Field label="名稱" htmlFor="category-name" required>
             <Input
               id="category-name"
               className="w-full"

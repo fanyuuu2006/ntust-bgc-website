@@ -1,3 +1,4 @@
+import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
 import Link from "next/link";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
@@ -81,6 +82,7 @@ export default async function AdminAnnouncementsPage({
     orderDirection,
     pageSize,
   };
+  const returnTo = buildAdminListHref("/admin/announcements", { ...query, page });
   const clearSearchParams = new URLSearchParams();
   if (params.status) clearSearchParams.set("status", params.status);
   if (params.orderBy) clearSearchParams.set("orderBy", params.orderBy);
@@ -97,7 +99,7 @@ export default async function AdminAnnouncementsPage({
       <HeadingSection
         title="公告管理"
         description="管理公告草稿與發布狀態。"
-        actions={<ButtonLink href="/admin/announcements/new">新增公告</ButtonLink>}
+        actions={<ButtonLink href={buildAdminReturnHref("/admin/announcements/new", returnTo, "/admin/announcements")}>新增公告</ButtonLink>}
       />
 
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
@@ -148,14 +150,14 @@ export default async function AdminAnnouncementsPage({
           />
         ) : (
           <>
-            <div className="grid gap-3 lg:hidden">
+            <div className="grid min-w-0 grid-cols-1 gap-3 lg:hidden">
               {result.data.map((announcement) => (
                 <Card key={announcement.id} className="rounded-xl p-4">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <Link
-                        href={"/admin/announcements/" + announcement.id + "/edit"}
-                        className="block truncate font-semibold hover:underline"
+                        href={buildAdminReturnHref(`/admin/announcements/${announcement.id}/edit`, returnTo, "/admin/announcements")}
+                        className="block wrap-anywhere font-semibold hover:underline"
                       >
                         {announcement.title}
                       </Link>
@@ -168,7 +170,7 @@ export default async function AdminAnnouncementsPage({
                     建立於 {formatAdminDateTime(announcement.created_at)}
                   </p>
                   <ButtonLink
-                    href={"/admin/announcements/" + announcement.id + "/edit"}
+                    href={buildAdminReturnHref(`/admin/announcements/${announcement.id}/edit`, returnTo, "/admin/announcements")}
                     variant="outline"
                     size="sm"
                     className="mt-3"
@@ -179,8 +181,8 @@ export default async function AdminAnnouncementsPage({
               ))}
             </div>
 
-            <Card className="hidden overflow-x-auto rounded-xl p-0 lg:block">
-              <Table className="min-w-[820px]">
+            <Card className="hidden rounded-xl p-0 lg:block">
+              <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
                     <SortableTableHeader
@@ -189,47 +191,50 @@ export default async function AdminAnnouncementsPage({
                       basePath="/admin/announcements"
                       query={query}
                     />
-                    <TableHead>狀態</TableHead>
+                    <TableHead className="w-24">狀態</TableHead>
                     <SortableTableHeader
+                      className="w-30"
                       label="建立時間"
                       column="created_at"
                       basePath="/admin/announcements"
                       query={query}
                     />
                     <SortableTableHeader
+                      className="w-30"
                       label="更新時間"
                       column="updated_at"
                       basePath="/admin/announcements"
                       query={query}
                     />
                     <SortableTableHeader
+                      className="w-30"
                       label="發布時間"
                       column="published_at"
                       basePath="/admin/announcements"
                       query={query}
                     />
-                    <TableHead className="text-right">操作</TableHead>
+                    <TableHead className="w-24 text-right">操作</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {result.data.map((announcement) => (
                     <TableRow key={announcement.id}>
-                      <TableCell className="font-medium">{announcement.title}</TableCell>
+                      <TableCell className="wrap-anywhere font-medium">{announcement.title}</TableCell>
                       <TableCell>
                         <AnnouncementStatusBadge published={announcement.is_published} />
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className="whitespace-normal tabular-nums">
                         {formatAdminDateTime(announcement.created_at)}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className="whitespace-normal tabular-nums">
                         {formatAdminDateTime(announcement.updated_at)}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className="whitespace-normal tabular-nums">
                         {formatAdminDateTime(announcement.published_at)}
                       </TableCell>
                       <TableCell className="text-right">
                         <ButtonLink
-                          href={"/admin/announcements/" + announcement.id + "/edit"}
+                          href={buildAdminReturnHref(`/admin/announcements/${announcement.id}/edit`, returnTo, "/admin/announcements")}
                           variant="outline"
                           size="sm"
                         >

@@ -63,7 +63,7 @@ export function AdminUserPicker({
 
   return (
     <div
-      className="relative space-y-2"
+      className="relative min-w-0 max-w-full space-y-2"
       onKeyDown={(event) => {
         if (event.key === "Escape" && hasOpenResultPanel) {
           event.preventDefault();
@@ -185,7 +185,7 @@ function UserIdentity({ user }: { user: AdminUserPickerItem }) {
 
   return (
     <span className="block min-w-0 text-sm leading-5">
-      <span className="block break-words font-semibold text-(--text-primary)">
+      <span className="block wrap-anywhere font-semibold text-(--text-primary)">
         {primary}
       </span>
       {secondary ? (

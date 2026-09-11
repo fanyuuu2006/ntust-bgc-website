@@ -67,12 +67,12 @@ export default async function AnnouncementDetailPage({
               >
                 {formatDate(publishedAt)}
               </time>
-              <h1 className="mt-2 break-words text-2xl leading-tight font-bold text-(--text-primary) sm:text-3xl">
+              <h1 className="mt-2 wrap-anywhere text-2xl leading-tight font-bold text-(--text-primary) sm:text-3xl">
                 {announcement.title}
               </h1>
             </header>
 
-            <div className="mt-5 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-base leading-7 text-(--text-primary)">
+            <div className="mt-5 whitespace-pre-wrap wrap-anywhere [overflow-wrap:anywhere] text-base leading-7 text-(--text-primary)">
               {announcement.content}
             </div>
           </article>

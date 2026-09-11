@@ -135,7 +135,7 @@ export function Modal({
     >
       <div className="flex min-w-0 items-start justify-between gap-4 border-b border-(--border-default) px-5 py-4">
         <div className="min-w-0">
-          <h2 id={titleId} className="break-words text-lg font-bold">
+          <h2 id={titleId} className="wrap-anywhere text-lg font-bold">
             {title}
           </h2>
           {description ? (
@@ -156,7 +156,7 @@ export function Modal({
           <X aria-hidden="true" className="size-4" />
         </Button>
       </div>
-      <div className={cn("min-w-0 max-h-[75dvh] overflow-y-auto p-5", contentClassName)}>
+      <div className={cn("min-w-0 max-w-full max-h-[75dvh] overflow-y-auto p-5", contentClassName)}>
         {children}
       </div>
     </dialog>

@@ -1,3 +1,5 @@
+import { getLatestVerificationForAdmin } from "@/services/email-verification/email-verification-operations.service";
+import { getAdminReturnPath } from "@/utils/admin-return";
 import { notFound } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import {
@@ -5,6 +7,7 @@ import {
   MembershipTypeLabel,
 } from "@/components/(admin)/admin/memberships/MemberStatusBadge";
 import { UserProfileEditButton } from "@/components/(admin)/admin/users/UserProfileEditButton";
+import { EmailVerificationBadge } from "@/components/(admin)/admin/users/EmailVerificationBadge";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -15,13 +18,17 @@ const MISSING_VALUE = "尚未填寫";
 
 export default async function AdminUserDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ returnTo?: string | string[] }>;
 }) {
   const { id } = await params;
+  const returnTo = getAdminReturnPath((await searchParams).returnTo, "/admin/users");
   const user = await usersService.getUserForAdmin(id);
 
   if (!user) notFound();
+  const verification = await getLatestVerificationForAdmin(id);
 
   return (
     <>
@@ -31,7 +38,7 @@ export default async function AdminUserDetailPage({
         actions={
           <div className="flex flex-wrap gap-2">
             <UserProfileEditButton userId={user.id} profile={user.profile} />
-            <ButtonLink href="/admin/users" variant="outline">
+            <ButtonLink href={returnTo} variant="outline">
               返回使用者管理
             </ButtonLink>
           </div>
@@ -40,11 +47,36 @@ export default async function AdminUserDetailPage({
 
       <section className="space-y-8 px-4 pb-6 sm:px-6 lg:px-8">
         <DetailSection title="帳號資料">
-          <Card className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
+          <Card className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
             <Info label="使用者名稱" value={user.name} />
             <Info label="Email" value={user.email} />
+            <div>
+              <dt className="text-sm text-(--text-muted)">Email 驗證</dt>
+              <dd className="mt-1 space-y-1.5">
+                <EmailVerificationBadge verifiedAt={user.email_verified_at} />
+                {user.email_verified_at ? (
+                  <p className="text-sm text-(--text-muted)">
+                    {formatDateTime(user.email_verified_at)}
+                  </p>
+                ) : null}
+              </dd>
+            </div>
             <Info label="建立時間" value={formatDateTime(user.created_at)} />
             <Info label="更新時間" value={formatDateTime(user.updated_at)} />
+          </Card>
+        </DetailSection>
+
+        <DetailSection title="最近一次 Email 驗證連結">
+          <Card className="p-5">
+            <p className="mb-3 text-sm text-(--text-muted)">僅顯示最近一次連結的紀錄；建立紀錄不代表驗證信已送達。重寄取代的連結也會標記為已使用／失效。</p>
+            {verification ? (
+              <dl className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Info label="連結狀態" value={{ active: "有效", expired: "已過期", consumed: "已使用／失效" }[verification.status]} />
+                <Info label="建立時間" value={formatDateTime(verification.created_at)} />
+                <Info label="到期時間" value={formatDateTime(verification.expires_at)} />
+                <Info label="使用／失效時間" value={verification.consumed_at ? formatDateTime(verification.consumed_at) : "尚未使用"} />
+              </dl>
+            ) : <p className="text-sm text-(--text-muted)">尚無驗證連結紀錄</p>}
           </Card>
         </DetailSection>
 
@@ -133,9 +165,9 @@ function DetailSection({
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div className="min-w-0">
       <dt className="text-sm text-(--text-muted)">{label}</dt>
-      <dd className="mt-1 wrap-break-word font-medium text-(--text-primary)">{value}</dd>
+      <dd className="mt-1 wrap-anywhere font-medium text-(--text-primary)">{value}</dd>
     </div>
   );
 }

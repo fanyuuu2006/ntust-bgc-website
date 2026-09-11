@@ -8,7 +8,7 @@ test("event records expose an explicit attendance-management action instead of t
   const records = await readSource("src/components/(admin)/admin/events/EventRecords.tsx");
 
   assert.match(records, /簽到管理/);
-  assert.match(records, /href=\{`\/admin\/events\/\$\{event\.id\}`\}/);
+  assert.match(records, /buildAdminReturnHref\(`\/admin\/events\/\$\{event\.id\}`, returnTo/);
 });
 
 test("event attendance detail uses URL-authoritative search and pagination without loading a client-side user list", async () => {

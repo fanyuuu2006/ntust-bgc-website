@@ -37,14 +37,14 @@ export function BoardGameCard({ boardGame }: BoardGameCardProps) {
       <div className="flex min-w-0 flex-1 flex-col p-3">
         <h2
           title={boardGame.name}
-          className="line-clamp-2 min-h-10 min-w-0 wrap-break-word text-sm leading-snug font-semibold text-(--text-primary) transition-colors group-hover:text-(--interactive-primary) sm:min-h-11 sm:text-base"
+          className="line-clamp-2 min-h-10 min-w-0 wrap-anywhere text-sm leading-snug font-semibold text-(--text-primary) transition-colors group-hover:text-(--interactive-primary) sm:min-h-11 sm:text-base"
         >
           {boardGame.name}
         </h2>
 
         <div className="mt-2 flex min-w-0 items-start justify-between gap-2 text-xs leading-5 sm:text-sm">
           {metadata.length > 0 ? (
-            <span className="min-w-0 wrap-break-word text-(--text-secondary)">
+            <span className="min-w-0 wrap-anywhere text-(--text-secondary)">
               {metadata.join(" · ")}
             </span>
           ) : null}

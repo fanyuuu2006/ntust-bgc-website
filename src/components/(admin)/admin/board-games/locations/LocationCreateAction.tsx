@@ -63,7 +63,7 @@ export function LocationCreateAction() {
       <Modal open={open} onClose={closeDialog} title="新增桌遊位置">
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormFeedback error={error} />
-          <Field label="名稱" htmlFor="create-location-name">
+          <Field label="名稱" htmlFor="create-location-name" required>
             <Input
               id="create-location-name"
               className="w-full"

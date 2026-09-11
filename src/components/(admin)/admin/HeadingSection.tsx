@@ -22,7 +22,7 @@ export const HeadingSection = ({
         className,
       )}
     >
-      <div className="min-w-0">
+      <div className="min-w-0 wrap-anywhere">
         <h1 className="text-xl font-semibold leading-tight text-(--text-primary) sm:text-2xl">
           {title}
         </h1>

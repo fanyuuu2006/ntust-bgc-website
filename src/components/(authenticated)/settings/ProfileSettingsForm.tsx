@@ -22,6 +22,7 @@ type ProfileField = Omit<FieldInputField, "id"> & {
 const fields: ProfileField[] = [
   {
     id: "phone",
+    required: true,
     label: "手機號碼",
     type: "tel",
     autoComplete: "tel",

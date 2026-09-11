@@ -166,7 +166,7 @@ export function LocationRecords({ items, hasQuery = false }: { items: LocationRe
 
       <Modal open={editing !== null} onClose={closeEdit} title="編輯桌遊位置">
         <form onSubmit={saveEdit} className="space-y-4">
-          <Field label="名稱" htmlFor="location-name">
+          <Field label="名稱" htmlFor="location-name" required>
             <Input
               id="location-name"
               className="w-full"

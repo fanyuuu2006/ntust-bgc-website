@@ -55,7 +55,7 @@ export function PasswordSettingsForm() {
   const [isLoading, setIsLoading] = useState(false);
   const isDirty = Object.values(values).some(Boolean);
   const fields = useMemo(
-    () => baseFields.map((field) => ({ ...field, disabled: isLoading })),
+    () => baseFields.map((field) => ({ ...field, required: true, disabled: isLoading })),
     [isLoading],
   );
 

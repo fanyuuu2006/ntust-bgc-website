@@ -81,9 +81,9 @@ export function OfficerActions({ years }: { years: AcademicYear[] }) {
               }
             />
           </Field>
-          <Field label="學年度" htmlFor="officer-year">
+          <Field label="學年度" htmlFor="officer-year" required>
             <Select
-              id="officer-year"
+              id="officer-year" required
               className="w-full"
               value={values.academic_year_id}
               disabled={busy}
@@ -96,7 +96,7 @@ export function OfficerActions({ years }: { years: AcademicYear[] }) {
               ))}
             </Select>
           </Field>
-          <Field label="職位" htmlFor="officer-title">
+          <Field label="職位" htmlFor="officer-title" required>
             <Input
               id="officer-title"
               className="w-full"

@@ -63,7 +63,7 @@ export function CategoryCreateAction() {
       <Modal open={open} onClose={closeDialog} title="新增桌遊分類">
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormFeedback error={error} />
-          <Field label="名稱" htmlFor="create-category-name">
+          <Field label="名稱" htmlFor="create-category-name" required>
             <Input
               id="create-category-name"
               className="w-full"

@@ -20,23 +20,23 @@ export function AnnouncementRow({
   const Heading = headingLevel === 2 ? "h2" : "h3";
 
   return (
-    <article>
+    <article className="min-w-0 max-w-full">
       <Link
         href={`/announcements/${announcement.id}`}
         className={cn(
-          "group grid min-w-0 gap-1.5 px-2 transition-colors hover:bg-(--surface-subtle) focus-visible:bg-(--surface-subtle) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary) sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-6",
+          "group grid min-w-0 grid-cols-1 gap-1.5 px-2 transition-colors hover:bg-(--surface-subtle) focus-visible:bg-(--surface-subtle) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary) sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-6",
           density === "compact" ? "py-3 sm:py-3.5" : "py-3.5 sm:py-4",
         )}
       >
         <div className="min-w-0">
           <Heading
             title={announcement.title}
-            className="line-clamp-2 break-words text-base leading-6 font-semibold text-(--text-primary) transition-colors group-hover:text-(--interactive-primary) sm:text-lg"
+            className="line-clamp-2 wrap-anywhere text-base leading-6 font-semibold text-(--text-primary) transition-colors group-hover:text-(--interactive-primary) sm:text-lg"
           >
             {announcement.title}
           </Heading>
           {announcement.content ? (
-            <p className="mt-1 line-clamp-2 break-words text-sm leading-6 text-(--text-secondary)">
+            <p className="mt-1 line-clamp-2 wrap-anywhere text-sm leading-6 text-(--text-secondary)">
               {announcement.content}
             </p>
           ) : null}

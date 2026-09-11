@@ -354,19 +354,4 @@ export const boardGameBorrowingsRepository = {
     return data;
   },
 
-  deleteTransactionally: async (id: BoardGameBorrowingId): Promise<void> => {
-    const { error } = await supabase.rpc("delete_board_game_borrowing", {
-      p_borrowing_id: id,
-    });
-
-    if (error) throwRepositoryError("刪除借用紀錄失敗", error);
-  },
-
-  deleteById: async (id: BoardGameBorrowingId): Promise<void> => {
-    const { error } = await supabase
-      .from("board_game_borrowings")
-      .delete()
-      .eq("id", id);
-    if (error) throwRepositoryError("刪除借用紀錄失敗", error);
-  },
 };

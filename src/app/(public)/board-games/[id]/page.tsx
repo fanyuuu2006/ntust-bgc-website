@@ -101,23 +101,23 @@ export default async function BoardGameDetailPage({
             <div className="min-w-0">
               <header className="min-w-0 space-y-2">
                 <BoardGameStatusBadge status={boardGame.status} />
-                <h1 className="break-words text-2xl leading-tight font-semibold text-(--text-primary) sm:text-3xl">
+                <h1 className="wrap-anywhere text-2xl leading-tight font-semibold text-(--text-primary) sm:text-3xl">
                   {boardGame.name}
                 </h1>
               </header>
 
               <dl className="mt-5 grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 py-1 text-sm">
                 <dt className="text-(--text-muted)">分類</dt>
-                <dd className="min-w-0 break-words font-medium text-(--text-primary)">
+                <dd className="min-w-0 wrap-anywhere font-medium text-(--text-primary)">
                   {boardGame.category.name}
                 </dd>
                 <dt className="text-(--text-muted)">位置</dt>
-                <dd className="min-w-0 break-words font-medium text-(--text-primary)">
+                <dd className="min-w-0 wrap-anywhere font-medium text-(--text-primary)">
                   {boardGame.location.name}
                 </dd>
                 <dt className="text-(--text-muted)">社產編號</dt>
-                <dd className="min-w-0 break-words font-medium text-(--text-primary)">
-                  #{String(boardGame.inventory_number).padStart(3, "0")}
+                <dd className="min-w-0 wrap-anywhere font-medium text-(--text-primary)">
+                  #{boardGame.inventory_number}
                 </dd>
               </dl>
 
@@ -153,7 +153,7 @@ export default async function BoardGameDetailPage({
             >
               桌遊介紹
             </h2>
-            <p className="mt-3 break-words whitespace-pre-wrap text-base leading-7 text-(--text-secondary) [overflow-wrap:anywhere]">
+            <p className="mt-3 wrap-anywhere whitespace-pre-wrap text-base leading-7 text-(--text-secondary) [overflow-wrap:anywhere]">
               {description || "目前尚未補充這款桌遊的介紹。"}
             </p>
           </section>

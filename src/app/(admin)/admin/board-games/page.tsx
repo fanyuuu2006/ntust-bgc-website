@@ -1,3 +1,4 @@
+import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { BoardGameTable } from "@/components/(admin)/admin/board-games/BoardGameTable";
 import { BoardGameSearchForm } from "@/components/(admin)/admin/board-games/BoardGameSearchForm";
@@ -99,7 +100,7 @@ export default async function BoardGamesAdminPage({
         title="桌遊管理"
         description="管理社團桌遊、社產編號與基本資訊。"
         actions={
-          <ButtonLink href="/admin/board-games/new">
+          <ButtonLink href={buildAdminReturnHref("/admin/board-games/new", buildAdminListHref(BASE_PATH, query), BASE_PATH)}>
             <Plus aria-hidden="true" className="size-4" />
             新增桌遊
           </ButtonLink>

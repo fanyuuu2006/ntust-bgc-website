@@ -22,7 +22,7 @@ export function Field({
   const errorId = error ? `${htmlFor}-error` : undefined;
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)} {...props}>
+    <div className={cn("flex min-w-0 max-w-full flex-col gap-1.5 wrap-anywhere", className)} {...props}>
       <label
         htmlFor={htmlFor}
         className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 text-sm font-medium leading-snug text-(--text-primary)"
