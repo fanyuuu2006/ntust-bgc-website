@@ -74,14 +74,14 @@ export function MembershipCreateButton({
               }
             />
           </Field>
-          <Field label="學年度" htmlFor="membership-year">
+          <Field label="學年度" htmlFor="membership-year" required>
             <Select id="membership-year" required value={values.academic_year_id} disabled={busy} onChange={(event) => setValues((current) => ({ ...current, academic_year_id: event.target.value }))}>
               {years.map((year) => <option key={year.id} value={year.id}>{year.year} 學年度{year.is_current ? "（目前）" : ""}</option>)}
             </Select>
           </Field>
           <p className="text-sm text-(--muted)">社員類型會依該使用者的幹部職位紀錄自動判定。</p>
-          <Field label="狀態" htmlFor="membership-status">
-            <Select id="membership-status" value={values.status} disabled={busy} onChange={(event) => setValues((current) => ({ ...current, status: event.target.value as MembershipStatus }))}>
+          <Field label="狀態" htmlFor="membership-status" required>
+            <Select id="membership-status" required value={values.status} disabled={busy} onChange={(event) => setValues((current) => ({ ...current, status: event.target.value as MembershipStatus }))}>
               <option value="pending">待審核</option><option value="active">有效</option><option value="expired">已過期</option><option value="suspended">已停權</option><option value="cancelled">已取消</option>
             </Select>
           </Field>

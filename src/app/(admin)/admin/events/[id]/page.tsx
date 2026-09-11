@@ -73,7 +73,7 @@ export default async function AdminEventDetailPage({
           </div>
           <ButtonLink href={returnTo} size="sm" variant="outline">返回活動管理</ButtonLink>
         </div>
-        {event.description ? <p className="whitespace-pre-wrap text-sm leading-7 text-(--text-muted)">{event.description}</p> : null}
+        {event.description ? <p className="whitespace-pre-wrap wrap-anywhere text-sm leading-7 text-(--text-muted)">{event.description}</p> : null}
         <AdminToolbar className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <form className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]" aria-label="搜尋簽到名單">
             <PreservedQueryFields query={{ returnTo, search: query.search, orderDirection, pageSize }} ownedKeys={["search"]} />

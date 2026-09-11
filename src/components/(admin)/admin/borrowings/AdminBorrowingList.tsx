@@ -260,7 +260,7 @@ export function AdminBorrowingList({
               <TableBody>
                 {borrowings.map((borrowing) => (
                   <TableRow key={borrowing.id}>
-                    <TableCell className="min-w-56">
+                    <TableCell className="min-w-56 max-w-80">
                       <BoardGameSummary borrowing={borrowing} />
                     </TableCell>
                     <TableCell className="min-w-56">
@@ -293,7 +293,7 @@ export function AdminBorrowingList({
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <BoardGameSummary
                     borrowing={borrowing}
-                    titleClassName="line-clamp-2"
+                    titleClassName="wrap-anywhere"
                   />
                   <BorrowingStatusBadge
                     status={borrowing.status}
@@ -319,9 +319,11 @@ export function AdminBorrowingList({
       >
         <div className="space-y-4">
           {selected ? <CheckoutContext borrowing={selected.borrowing} /> : null}
-          <Field label="預計歸還時間（台北時間）" htmlFor="borrowing-due-at">
+          <Field label="預計歸還時間（台北時間）" htmlFor="borrowing-due-at" required>
             <Input
               id="borrowing-due-at"
+              required
+              aria-required="true"
               autoFocus
               className="w-full"
               type="datetime-local"
@@ -453,7 +455,7 @@ function BorrowingActions({
 
 function BoardGameSummary({
   borrowing,
-  titleClassName = "truncate",
+  titleClassName = "wrap-anywhere",
 }: {
   borrowing: BoardGameBorrowingForAdmin;
   titleClassName?: string;
@@ -478,10 +480,10 @@ function BorrowerSummary({
 }) {
   return (
     <div className="min-w-0">
-      <p className="truncate font-medium text-(--text-primary)">
+      <p className="wrap-anywhere font-medium text-(--text-primary)">
         {getBorrowerName(borrowing)}
       </p>
-      <p className="truncate text-xs text-(--text-muted)">
+      <p className="wrap-anywhere text-xs text-(--text-muted)">
         {borrowing.user.email}
       </p>
       <div className="mt-1">
@@ -579,7 +581,7 @@ function Timeline({
   return (
     <div className="min-w-0">
       <p className="text-xs text-(--text-muted)">{label}</p>
-      <p className="mt-0.5 wrap-break-word text-sm text-(--text-primary)">
+      <p className="mt-0.5 wrap-anywhere text-sm text-(--text-primary)">
         {value}
       </p>
       {details.filter(Boolean).map((detail) => (
@@ -618,7 +620,7 @@ function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
       <dt className="text-xs text-(--text-muted)">{label}</dt>
-      <dd className="mt-0.5 wrap-break-word text-(--text-primary)">{value}</dd>
+      <dd className="mt-0.5 wrap-anywhere text-(--text-primary)">{value}</dd>
     </div>
   );
 }

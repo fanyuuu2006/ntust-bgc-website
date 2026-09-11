@@ -74,7 +74,7 @@ test("dashboard current-record surfaces stay compact, responsive, and domain-spe
   assert.match(borrowings, /目前沒有進行中的借用/);
   assert.match(borrowings, /flex flex-col gap-1\.5/);
   assert.doesNotMatch(borrowings, /grid-cols-|min-\[420px\]:flex-row/);
-  assert.match(borrowings, /wrap-break-word/);
+  assert.match(borrowings, /wrap-anywhere/);
   assert.doesNotMatch(borrowings, /EmptyState|truncate|borrowings\.slice/);
   assert.match(membership, /min-w-0/);
   assert.match(membership, /shrink-0 px-0/);

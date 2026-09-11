@@ -150,14 +150,14 @@ export default async function AdminAnnouncementsPage({
           />
         ) : (
           <>
-            <div className="grid gap-3 lg:hidden">
+            <div className="grid min-w-0 grid-cols-1 gap-3 lg:hidden">
               {result.data.map((announcement) => (
                 <Card key={announcement.id} className="rounded-xl p-4">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <Link
                         href={buildAdminReturnHref(`/admin/announcements/${announcement.id}/edit`, returnTo, "/admin/announcements")}
-                        className="block truncate font-semibold hover:underline"
+                        className="block wrap-anywhere font-semibold hover:underline"
                       >
                         {announcement.title}
                       </Link>
@@ -181,8 +181,8 @@ export default async function AdminAnnouncementsPage({
               ))}
             </div>
 
-            <Card className="hidden overflow-x-auto rounded-xl p-0 lg:block">
-              <Table className="min-w-[820px]">
+            <Card className="hidden rounded-xl p-0 lg:block">
+              <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
                     <SortableTableHeader
@@ -191,42 +191,45 @@ export default async function AdminAnnouncementsPage({
                       basePath="/admin/announcements"
                       query={query}
                     />
-                    <TableHead>狀態</TableHead>
+                    <TableHead className="w-24">狀態</TableHead>
                     <SortableTableHeader
+                      className="w-30"
                       label="建立時間"
                       column="created_at"
                       basePath="/admin/announcements"
                       query={query}
                     />
                     <SortableTableHeader
+                      className="w-30"
                       label="更新時間"
                       column="updated_at"
                       basePath="/admin/announcements"
                       query={query}
                     />
                     <SortableTableHeader
+                      className="w-30"
                       label="發布時間"
                       column="published_at"
                       basePath="/admin/announcements"
                       query={query}
                     />
-                    <TableHead className="text-right">操作</TableHead>
+                    <TableHead className="w-24 text-right">操作</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {result.data.map((announcement) => (
                     <TableRow key={announcement.id}>
-                      <TableCell className="font-medium">{announcement.title}</TableCell>
+                      <TableCell className="wrap-anywhere font-medium">{announcement.title}</TableCell>
                       <TableCell>
                         <AnnouncementStatusBadge published={announcement.is_published} />
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className="whitespace-normal tabular-nums">
                         {formatAdminDateTime(announcement.created_at)}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className="whitespace-normal tabular-nums">
                         {formatAdminDateTime(announcement.updated_at)}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className="whitespace-normal tabular-nums">
                         {formatAdminDateTime(announcement.published_at)}
                       </TableCell>
                       <TableCell className="text-right">

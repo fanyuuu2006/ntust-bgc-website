@@ -149,9 +149,9 @@ function DetailSection({
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div className="min-w-0">
       <dt className="text-sm text-(--text-muted)">{label}</dt>
-      <dd className="mt-1 wrap-break-word font-medium text-(--text-primary)">{value}</dd>
+      <dd className="mt-1 wrap-anywhere font-medium text-(--text-primary)">{value}</dd>
     </div>
   );
 }

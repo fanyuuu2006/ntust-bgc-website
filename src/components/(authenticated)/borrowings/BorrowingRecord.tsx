@@ -88,9 +88,9 @@ function BorrowingLifecycle({
           ) : (
             <CalendarClock aria-hidden="true" className="size-4 shrink-0" />
           )}
-          <span className="break-words">{due.relative}</span>
+          <span className="wrap-anywhere">{due.relative}</span>
         </p>
-        <p className="break-words text-xs leading-5 text-(--text-muted)">
+        <p className="wrap-anywhere text-xs leading-5 text-(--text-muted)">
           {due.absolute ? `歸還期限：${due.absolute}` : "尚未設定歸還期限"}
         </p>
       </div>
@@ -127,9 +127,9 @@ function LifecycleMessage({
 }) {
   return (
     <div className="min-w-0 space-y-1">
-      <p className="break-words text-sm font-medium text-(--text-secondary)">{message}</p>
+      <p className="wrap-anywhere text-sm font-medium text-(--text-secondary)">{message}</p>
       {timestamp ? (
-        <p className="break-words text-xs leading-5 text-(--text-muted)">
+        <p className="wrap-anywhere text-xs leading-5 text-(--text-muted)">
           {timestampLabel}：{formatDateTime(timestamp)}
         </p>
       ) : null}

@@ -188,8 +188,8 @@ export function AttendanceRecords({
 
       <Modal open={editingAttendance !== null} onClose={closeEditDialog} title="編輯簽到紀錄">
         <form onSubmit={saveAttendance} className="space-y-4">
-          <Field label="狀態" htmlFor="attendance-status">
-            <Select id="attendance-status" className="w-full" value={values.status} disabled={isSaving} onChange={(event) => setValues((current) => ({ ...current, status: event.target.value as AttendanceRecord["status"] }))}>
+          <Field label="狀態" htmlFor="attendance-status" required>
+            <Select id="attendance-status" required className="w-full" value={values.status} disabled={isSaving} onChange={(event) => setValues((current) => ({ ...current, status: event.target.value as AttendanceRecord["status"] }))}>
               {Object.entries(ATTENDANCE_STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             </Select>
           </Field>

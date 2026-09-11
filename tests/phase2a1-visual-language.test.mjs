@@ -50,5 +50,5 @@ test("primitive styles remain intrinsic and do not impose parent layout", async 
   ]);
 
   assert.doesNotMatch(button, /w-full|mx-auto|grid-column/);
-  assert.doesNotMatch(card, /w-full|mx-auto|grid-column/);
+  assert.doesNotMatch(card, /(?<![-\w])w-full|mx-auto|grid-column/);
 });

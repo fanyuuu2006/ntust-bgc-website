@@ -96,13 +96,13 @@ export function AcademicYearActions({ year }: { year?: AcademicYear }) {
 
       <Modal open={formOpen} onClose={closeForm} title={year ? "編輯學年度" : "新增學年度"}>
         <form onSubmit={save} className="space-y-4">
-          <Field label="學年度" htmlFor="academic-year" hint="例如：115">
+          <Field label="學年度" htmlFor="academic-year" hint="例如：115" required>
             <Input id="academic-year" autoFocus required pattern="\d{3}" className="w-full" value={values.year} onChange={(event) => setValues({ ...values, year: event.target.value })} />
           </Field>
-          <Field label="開始日期" htmlFor="academic-year-start">
+          <Field label="開始日期" htmlFor="academic-year-start" required>
             <Input id="academic-year-start" required type="date" className="w-full" value={values.start_date} onChange={(event) => setValues({ ...values, start_date: event.target.value })} />
           </Field>
-          <Field label="結束日期" htmlFor="academic-year-end">
+          <Field label="結束日期" htmlFor="academic-year-end" required>
             <Input id="academic-year-end" required type="date" className="w-full" value={values.end_date} onChange={(event) => setValues({ ...values, end_date: event.target.value })} />
           </Field>
           <FormFeedback error={formError} />

@@ -88,7 +88,7 @@ export function EventActions() {
 
       <Modal open={open} onClose={closeCreateDialog} title="新增活動">
         <form onSubmit={createEvent} className="space-y-4">
-          <Field label="活動名稱" htmlFor="event-name">
+          <Field label="活動名稱" htmlFor="event-name" required>
             <Input
               id="event-name"
               className="w-full"
@@ -107,7 +107,7 @@ export function EventActions() {
               onChange={(event) => setValues((current) => ({ ...current, description: event.target.value }))}
             />
           </Field>
-          <Field label="開始時間" htmlFor="event-start-time">
+          <Field label="開始時間" htmlFor="event-start-time" required>
             <Input
               id="event-start-time"
               className="w-full"
@@ -118,7 +118,7 @@ export function EventActions() {
               onChange={(event) => setValues((current) => ({ ...current, start_time: event.target.value }))}
             />
           </Field>
-          <Field label="結束時間" htmlFor="event-end-time">
+          <Field label="結束時間" htmlFor="event-end-time" required>
             <Input
               id="event-end-time"
               className="w-full"
@@ -152,7 +152,7 @@ export function EventActions() {
             </label>
             {values.selfCheckInEnabled ? (
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <Field label="簽到開始" htmlFor="event-check-in-opens-at">
+                <Field label="簽到開始" htmlFor="event-check-in-opens-at" required>
                   <Input
                     id="event-check-in-opens-at"
                     className="w-full"
@@ -168,7 +168,7 @@ export function EventActions() {
                     }
                   />
                 </Field>
-                <Field label="簽到截止" htmlFor="event-check-in-closes-at">
+                <Field label="簽到截止" htmlFor="event-check-in-closes-at" required>
                   <Input
                     id="event-check-in-closes-at"
                     className="w-full"

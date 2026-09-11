@@ -63,7 +63,7 @@ export const FieldInput = ({
       className={className}
       {...rest}
     >
-      <div className="relative">
+      <div className="relative min-w-0 max-w-full">
         <Input
           id={field.id}
           name={field.id}

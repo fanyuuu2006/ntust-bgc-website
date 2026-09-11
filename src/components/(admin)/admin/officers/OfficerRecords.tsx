@@ -143,8 +143,8 @@ export function OfficerRecords({
             {officers.map((officer) => (
               <TableRow key={officer.id}>
                 <TableCell className="min-w-52">
-                  <p className="truncate">{officer.user.name}</p>
-                  <p className="truncate text-xs text-(--muted)">{officer.user.email}</p>
+                  <p className="wrap-anywhere">{officer.user.name}</p>
+                  <p className="wrap-anywhere text-xs text-(--muted)">{officer.user.email}</p>
                 </TableCell>
                 <TableCell className="min-w-32">{officer.title}</TableCell>
                 <TableCell className="whitespace-nowrap">{officer.academic_year?.year ?? "—"}</TableCell>
@@ -161,8 +161,8 @@ export function OfficerRecords({
         {officers.map((officer) => (
           <Card key={officer.id} className="w-full min-w-0 max-w-full p-4">
             <div className="min-w-0">
-              <p className="truncate font-semibold">{officer.user.name}</p>
-              <p className="truncate text-sm text-(--muted)">{officer.user.email}</p>
+              <p className="wrap-anywhere font-semibold">{officer.user.name}</p>
+              <p className="wrap-anywhere text-sm text-(--muted)">{officer.user.email}</p>
               <p>{officer.title} · {officer.academic_year?.year ?? "—"}</p>
             </div>
             <div className="mt-3 flex min-w-0 max-w-full flex-wrap gap-2">
@@ -174,9 +174,9 @@ export function OfficerRecords({
 
       <Modal open={editingOfficer !== null} onClose={closeEditDialog} title="編輯幹部職位">
         <form onSubmit={saveOfficer} className="space-y-4">
-          <Field label="學年度" htmlFor="officer-year">
+          <Field label="學年度" htmlFor="officer-year" required>
             <Select
-              id="officer-year"
+              id="officer-year" required
               className="w-full"
               value={values.academic_year_id}
               disabled={isSaving}
@@ -189,7 +189,7 @@ export function OfficerRecords({
               ))}
             </Select>
           </Field>
-          <Field label="職位" htmlFor="officer-title">
+          <Field label="職位" htmlFor="officer-title" required>
             <Input
               id="officer-title"
               className="w-full"

@@ -162,7 +162,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
             {events.map((event) => (
               <TableRow key={event.id}>
                 <TableCell className="min-w-64">
-                  <Link className="font-medium hover:underline" href={buildAdminReturnHref(`/admin/events/${event.id}`, returnTo, "/admin/events")}>
+                  <Link className="wrap-anywhere font-medium hover:underline" href={buildAdminReturnHref(`/admin/events/${event.id}`, returnTo, "/admin/events")}>
                     {event.name}
                   </Link>
                 </TableCell>
@@ -185,7 +185,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
           <Card key={event.id} className="w-full min-w-0 max-w-full p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <Link className="block truncate font-semibold" href={buildAdminReturnHref(`/admin/events/${event.id}`, returnTo, "/admin/events")}>
+                <Link className="block wrap-anywhere font-semibold" href={buildAdminReturnHref(`/admin/events/${event.id}`, returnTo, "/admin/events")}>
                   {event.name}
                 </Link>
                 <p className="text-sm text-(--muted)">
@@ -205,7 +205,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
 
       <Modal open={editingEvent !== null} onClose={closeEditDialog} title="編輯活動">
         <form onSubmit={saveEvent} className="space-y-4">
-          <Field label="活動名稱" htmlFor="event-name">
+          <Field label="活動名稱" htmlFor="event-name" required>
             <Input
               id="event-name"
               className="w-full"
@@ -224,7 +224,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
               onChange={(event) => setValues((current) => ({ ...current, description: event.target.value }))}
             />
           </Field>
-          <Field label="開始時間" htmlFor="event-start-time">
+          <Field label="開始時間" htmlFor="event-start-time" required>
             <Input
               id="event-start-time"
               className="w-full"
@@ -235,7 +235,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
               onChange={(event) => setValues((current) => ({ ...current, start_time: event.target.value }))}
             />
           </Field>
-          <Field label="結束時間" htmlFor="event-end-time">
+          <Field label="結束時間" htmlFor="event-end-time" required>
             <Input
               id="event-end-time"
               className="w-full"
@@ -269,7 +269,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
             </label>
             {values.selfCheckInEnabled ? (
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <Field label="簽到開始" htmlFor="edit-event-check-in-opens-at">
+                <Field label="簽到開始" htmlFor="edit-event-check-in-opens-at" required>
                   <Input
                     id="edit-event-check-in-opens-at"
                     className="w-full"
@@ -285,7 +285,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
                     }
                   />
                 </Field>
-                <Field label="簽到截止" htmlFor="edit-event-check-in-closes-at">
+                <Field label="簽到截止" htmlFor="edit-event-check-in-closes-at" required>
                   <Input
                     id="edit-event-check-in-closes-at"
                     className="w-full"

@@ -150,16 +150,16 @@ export function BoardGameTable({
                       boardGame={game}
                       className="size-10 shrink-0 rounded-md border border-(--border) object-cover"
                     />
-                    <span className="truncate font-medium">{game.name}</span>
+                    <span className="min-w-0 wrap-anywhere font-medium">{game.name}</span>
                   </div>
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <BoardGameStatusBadge status={game.status} />
                 </TableCell>
-                <TableCell className="whitespace-nowrap">
+                <TableCell className="max-w-48 wrap-anywhere">
                   {game.location.name}
                 </TableCell>
-                <TableCell className="whitespace-nowrap">
+                <TableCell className="max-w-48 wrap-anywhere">
                   {game.category.name}
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
@@ -190,7 +190,7 @@ export function BoardGameTable({
                   className="size-12 shrink-0 rounded-md border border-(--border) object-cover"
                 />
                 <div className="min-w-0 flex-1">
-                  <h2 className="truncate font-semibold">{game.name}</h2>
+                  <h2 className="wrap-anywhere font-semibold">{game.name}</h2>
                   <p className="mt-1 text-sm text-(--muted)">
                     社產編號 #{game.inventory_number}
                   </p>
