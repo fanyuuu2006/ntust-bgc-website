@@ -153,7 +153,7 @@ test("Admin users list exposes compact verification visibility on desktop and mo
   assert.match(page, /QueryEmptyState/);
 });
 
-test("Admin user detail reports verification state without token infrastructure", async () => {
+test("Admin user detail reports account verification without exposing token material", async () => {
   const page = await readSource("src/app/(admin)/admin/users/[id]/page.tsx");
 
   assert.match(page, /EmailVerificationBadge/);
@@ -161,7 +161,7 @@ test("Admin user detail reports verification state without token infrastructure"
   assert.match(page, /formatDateTime\(user\.email_verified_at\)/);
   assert.doesNotMatch(
     page,
-    /token_hash|verification_tokens|consumed_at|expires_at|Brevo|provider/i,
+    /token_hash|verification_tokens|rawToken|Brevo|provider/i,
   );
 });
 

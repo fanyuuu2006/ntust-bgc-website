@@ -1,3 +1,4 @@
+import { getLatestVerificationForAdmin } from "@/services/email-verification/email-verification-operations.service";
 import { getAdminReturnPath } from "@/utils/admin-return";
 import { notFound } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
@@ -27,6 +28,7 @@ export default async function AdminUserDetailPage({
   const user = await usersService.getUserForAdmin(id);
 
   if (!user) notFound();
+  const verification = await getLatestVerificationForAdmin(id);
 
   return (
     <>
@@ -61,6 +63,20 @@ export default async function AdminUserDetailPage({
             </div>
             <Info label="建立時間" value={formatDateTime(user.created_at)} />
             <Info label="更新時間" value={formatDateTime(user.updated_at)} />
+          </Card>
+        </DetailSection>
+
+        <DetailSection title="最近一次 Email 驗證連結">
+          <Card className="p-5">
+            <p className="mb-3 text-sm text-(--text-muted)">僅顯示最近一次連結的紀錄；建立紀錄不代表驗證信已送達。重寄取代的連結也會標記為已使用／失效。</p>
+            {verification ? (
+              <dl className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Info label="連結狀態" value={{ active: "有效", expired: "已過期", consumed: "已使用／失效" }[verification.status]} />
+                <Info label="建立時間" value={formatDateTime(verification.created_at)} />
+                <Info label="到期時間" value={formatDateTime(verification.expires_at)} />
+                <Info label="使用／失效時間" value={verification.consumed_at ? formatDateTime(verification.consumed_at) : "尚未使用"} />
+              </dl>
+            ) : <p className="text-sm text-(--text-muted)">尚無驗證連結紀錄</p>}
           </Card>
         </DetailSection>
 

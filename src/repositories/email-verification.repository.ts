@@ -12,6 +12,22 @@ export type ConsumeEmailVerificationTokenResult = "verified" | "invalid";
 export type InspectEmailVerificationTokenResult = "valid" | "invalid";
 
 export const emailVerificationRepository = {
+  findLatestMetadataByUserId: async (userId: string): Promise<{
+    created_at: string;
+    expires_at: string;
+    consumed_at: string | null;
+  } | null> => {
+    const { data, error } = await supabase
+      .from("email_verification_tokens")
+      .select("created_at, expires_at, consumed_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throwRepositoryError("取得最新 Email 驗證狀態失敗", error);
+    return data;
+  },
+
   issue: async (input: {
     userId: string;
     tokenHash: string;
