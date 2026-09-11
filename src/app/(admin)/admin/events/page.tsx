@@ -1,3 +1,4 @@
+import { buildAdminListHref } from "@/utils/admin-return";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
@@ -95,6 +96,7 @@ export default async function AdminEventsPage({
         </AdminToolbar>
         <EventRecords
           events={result.data}
+          returnTo={buildAdminListHref("/admin/events", { search: params.search, status, orderBy, orderDirection, page, pageSize })}
           hasQuery={Boolean(params.search || status || Number(params.page) > 1)}
         />
         <Pagination

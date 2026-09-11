@@ -1,5 +1,6 @@
 "use client";
 
+import { buildAdminReturnHref } from "@/utils/admin-return";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -39,11 +40,13 @@ export function AttendanceRecords({
   eventName,
   records,
   hasQuery = false,
+  returnTo = "/admin/events",
 }: {
   eventId: string;
   eventName: string;
   records: AttendanceRecord[];
   hasQuery?: boolean;
+  returnTo?: string;
 }) {
   const router = useRouter();
   const [selectedAttendance, setSelectedAttendance] = useState<{ record: AttendanceRecord; action: "edit" | "delete" } | null>(null);
@@ -125,7 +128,7 @@ export function AttendanceRecords({
     return hasQuery ? (
       <QueryEmptyState
         title="找不到符合條件的簽到紀錄"
-        clearHref={`/admin/events/${eventId}`}
+        clearHref={buildAdminReturnHref(`/admin/events/${eventId}`, returnTo, "/admin/events")}
       />
     ) : (
       <EmptyState title="目前還沒有簽到紀錄" description="可由上方按鈕手動新增簽到紀錄。" />

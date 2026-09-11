@@ -1,5 +1,6 @@
 "use client";
 
+import { getAdminReturnPath } from "@/utils/admin-return";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormFeedback } from "@/components/FormFeedback";
@@ -33,6 +34,7 @@ type BoardGameFormValues = {
 
 type BoardGameFormProps = {
   mode: BoardGameFormMode;
+  returnTo?: string;
   boardGameId?: string;
   categories: BoardGameCategory[];
   locations: BoardGameLocation[];
@@ -101,8 +103,10 @@ export function BoardGameForm({
   categories,
   locations,
   initialValues,
+  returnTo,
 }: BoardGameFormProps) {
   const router = useRouter();
+  const returnHref = getAdminReturnPath(returnTo, "/admin/board-games");
   const [values, setValues] = useState<BoardGameFormValues>(() =>
     buildInitialValues(initialValues),
   );
@@ -175,7 +179,7 @@ export function BoardGameForm({
         });
       }
 
-      router.push("/admin/board-games");
+      router.push(returnHref);
       router.refresh();
     } catch (err) {
       setFormError(
@@ -231,7 +235,7 @@ export function BoardGameForm({
         <FormFeedback error={formError} />
 
         <div className="flex flex-col gap-3 border-t border-(--border-default) pt-4 sm:flex-row sm:justify-end">
-          <Button type="button" variant="outline" onClick={() => router.push("/admin/board-games")} disabled={isSubmitting}>取消</Button>
+          <Button type="button" variant="outline" onClick={() => router.push(returnHref)} disabled={isSubmitting}>取消</Button>
           <Button type="submit" disabled={isSubmitting} isLoading={isSubmitting}>
             {isSubmitting ? mode === "create" ? "新增中..." : "儲存中..." : mode === "create" ? "新增桌遊" : "儲存變更"}
           </Button>

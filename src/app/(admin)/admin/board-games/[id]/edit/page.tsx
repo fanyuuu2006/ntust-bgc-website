@@ -1,3 +1,4 @@
+import { getAdminReturnPath } from "@/utils/admin-return";
 import { ButtonLink } from "@/components/ui/Button";
 import { notFound } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
@@ -7,12 +8,15 @@ import { boardGamesService } from "@/services/board-games/board-games.service";
 
 type BoardGameEditPageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ returnTo?: string | string[] }>;
 };
 
 export default async function BoardGameEditPage({
   params,
+  searchParams,
 }: BoardGameEditPageProps) {
   const { id } = await params;
+  const returnTo = getAdminReturnPath((await searchParams).returnTo, "/admin/board-games");
 
   let boardGame;
 
@@ -36,7 +40,7 @@ export default async function BoardGameEditPage({
         title="編輯桌遊"
         description={`更新「${boardGame.name}」的基本與管理資訊。`}
         actions={
-          <ButtonLink href="/admin/board-games" variant="outline">
+          <ButtonLink href={returnTo} variant="outline">
             返回列表
           </ButtonLink>
         }
@@ -44,6 +48,7 @@ export default async function BoardGameEditPage({
 
       <section className="mx-auto w-full max-w-3xl px-4 pb-8 sm:px-6 lg:px-8">
         <BoardGameForm
+          returnTo={returnTo}
           mode="edit"
           boardGameId={id}
           categories={categories}

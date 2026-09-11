@@ -1,3 +1,4 @@
+import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
 import Link from "next/link";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
@@ -81,6 +82,7 @@ export default async function AdminAnnouncementsPage({
     orderDirection,
     pageSize,
   };
+  const returnTo = buildAdminListHref("/admin/announcements", { ...query, page });
   const clearSearchParams = new URLSearchParams();
   if (params.status) clearSearchParams.set("status", params.status);
   if (params.orderBy) clearSearchParams.set("orderBy", params.orderBy);
@@ -97,7 +99,7 @@ export default async function AdminAnnouncementsPage({
       <HeadingSection
         title="公告管理"
         description="管理公告草稿與發布狀態。"
-        actions={<ButtonLink href="/admin/announcements/new">新增公告</ButtonLink>}
+        actions={<ButtonLink href={buildAdminReturnHref("/admin/announcements/new", returnTo, "/admin/announcements")}>新增公告</ButtonLink>}
       />
 
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
@@ -154,7 +156,7 @@ export default async function AdminAnnouncementsPage({
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <Link
-                        href={"/admin/announcements/" + announcement.id + "/edit"}
+                        href={buildAdminReturnHref(`/admin/announcements/${announcement.id}/edit`, returnTo, "/admin/announcements")}
                         className="block truncate font-semibold hover:underline"
                       >
                         {announcement.title}
@@ -168,7 +170,7 @@ export default async function AdminAnnouncementsPage({
                     建立於 {formatAdminDateTime(announcement.created_at)}
                   </p>
                   <ButtonLink
-                    href={"/admin/announcements/" + announcement.id + "/edit"}
+                    href={buildAdminReturnHref(`/admin/announcements/${announcement.id}/edit`, returnTo, "/admin/announcements")}
                     variant="outline"
                     size="sm"
                     className="mt-3"
@@ -229,7 +231,7 @@ export default async function AdminAnnouncementsPage({
                       </TableCell>
                       <TableCell className="text-right">
                         <ButtonLink
-                          href={"/admin/announcements/" + announcement.id + "/edit"}
+                          href={buildAdminReturnHref(`/admin/announcements/${announcement.id}/edit`, returnTo, "/admin/announcements")}
                           variant="outline"
                           size="sm"
                         >

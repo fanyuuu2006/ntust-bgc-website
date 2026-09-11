@@ -1,3 +1,4 @@
+import { getAdminReturnPath } from "@/utils/admin-return";
 import { notFound } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import {
@@ -16,10 +17,13 @@ const MISSING_VALUE = "尚未填寫";
 
 export default async function AdminUserDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ returnTo?: string | string[] }>;
 }) {
   const { id } = await params;
+  const returnTo = getAdminReturnPath((await searchParams).returnTo, "/admin/users");
   const user = await usersService.getUserForAdmin(id);
 
   if (!user) notFound();
@@ -32,7 +36,7 @@ export default async function AdminUserDetailPage({
         actions={
           <div className="flex flex-wrap gap-2">
             <UserProfileEditButton userId={user.id} profile={user.profile} />
-            <ButtonLink href="/admin/users" variant="outline">
+            <ButtonLink href={returnTo} variant="outline">
               返回使用者管理
             </ButtonLink>
           </div>

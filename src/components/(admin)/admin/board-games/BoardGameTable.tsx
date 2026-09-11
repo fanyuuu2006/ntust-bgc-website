@@ -1,5 +1,6 @@
 "use client";
 
+import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BASE_PATH } from "@/app/(admin)/admin/board-games/constants";
@@ -39,6 +40,7 @@ export function BoardGameTable({
   ...props
 }: Props) {
   const router = useRouter();
+  const returnTo = buildAdminListHref(BASE_PATH, query);
   const [selectedBoardGame, setSelectedBoardGame] =
     useState<BoardGameWithCategoryAndLocation | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -166,7 +168,7 @@ export function BoardGameTable({
                 <TableCell className="whitespace-nowrap text-right">
                   <BoardGameRowActions
                     boardGame={game}
-                    onDelete={openDeleteDialog}
+                    onDelete={openDeleteDialog} returnTo={returnTo}
                   />
                 </TableCell>
               </TableRow>
@@ -204,7 +206,7 @@ export function BoardGameTable({
             <p className="text-xs text-(--muted)">
               更新：{formatDateTime(game.updated_at)}
             </p>
-            <BoardGameRowActions boardGame={game} onDelete={openDeleteDialog} />
+            <BoardGameRowActions boardGame={game} onDelete={openDeleteDialog} returnTo={returnTo} />
           </Card>
         ))}
       </div>
@@ -228,14 +230,16 @@ export function BoardGameTable({
 function BoardGameRowActions({
   boardGame,
   onDelete,
+  returnTo,
 }: {
   boardGame: BoardGameWithCategoryAndLocation;
+  returnTo: string;
   onDelete: (boardGame: BoardGameWithCategoryAndLocation) => void;
 }) {
   return (
     <div className="flex flex-wrap justify-end gap-2">
       <ButtonLink
-        href={`/admin/board-games/${boardGame.id}/edit`}
+        href={buildAdminReturnHref(`/admin/board-games/${boardGame.id}/edit`, returnTo, BASE_PATH)}
         variant="outline"
         size="sm"
         className="rounded-lg"

@@ -1,3 +1,4 @@
+import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
@@ -175,7 +176,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                     <Info label="建立時間" value={formatDateTime(user.created_at)} />
                   </dl>
                   <ButtonLink
-                    href={"/admin/users/" + user.id}
+                    href={buildAdminReturnHref(`/admin/users/${user.id}`, buildAdminListHref("/admin/users", { ...query, page, pageSize }), "/admin/users")}
                     variant="outline"
                     size="sm"
                   >
@@ -234,7 +235,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                       </TableCell>
                       <TableCell className="text-right">
                         <ButtonLink
-                          href={"/admin/users/" + user.id}
+                          href={buildAdminReturnHref(`/admin/users/${user.id}`, buildAdminListHref("/admin/users", { ...query, page, pageSize }), "/admin/users")}
                           variant="outline"
                           size="sm"
                         >
