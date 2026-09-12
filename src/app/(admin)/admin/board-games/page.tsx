@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { BoardGameTable } from "@/components/(admin)/admin/board-games/BoardGameTable";
@@ -33,7 +34,7 @@ type BoardGamesAdminPageProps = {
   searchParams: Promise<BoardGamesSearchParams>;
 };
 
-export default async function BoardGamesAdminPage({
+async function BoardGamesAdminPage({
   searchParams,
 }: BoardGamesAdminPageProps) {
   const parsed = listAdminBoardGamesQuerySchema.safeParse(await searchParams);
@@ -135,3 +136,5 @@ export default async function BoardGamesAdminPage({
     </>
   );
 }
+
+export default withServerErrorReference(BoardGamesAdminPage, "/admin/board-games");

@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { MembershipStatusBadge } from "@/components/MembershipStatusBadge";
 import { Pagination } from "@/components/Pagination/Pagination";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
@@ -19,7 +20,7 @@ export type MembershipRecordsResultQuery = {
   orderDirection: "asc" | "desc";
 };
 
-export async function MembershipRecordsResults({
+async function MembershipRecordsResultsContent({
   userId,
   currentMembershipId,
   query,
@@ -107,3 +108,5 @@ export async function MembershipRecordsResults({
     </>
   );
 }
+
+export const MembershipRecordsResults = withServerErrorReference(MembershipRecordsResultsContent, "/memberships");

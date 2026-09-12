@@ -1,3 +1,4 @@
+import { reportUnexpectedError } from "@/libs/observability/report";
 import { Session, User } from "@/types/database";
 import {
   changePasswordSchema,
@@ -137,7 +138,7 @@ export const authService = {
           last_accessed_at: new Date(now).toISOString(),
         })
         .catch((error) => {
-          console.error("[Auth] 更新 Session 最後存取時間失敗", error);
+          reportUnexpectedError(error, { context: "auth.session-touch" });
         });
     }
 

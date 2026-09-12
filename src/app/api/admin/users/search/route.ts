@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextResponse } from "next/server";
 import { ZodError, z } from "zod";
 
@@ -6,6 +7,7 @@ import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
 import { usersService } from "@/services/users/users.service";
 
 export async function GET(request: Request) {
+  try {
   const authorization = await authorizeVerifiedRequest();
   if (authorization.response) return authorization.response;
   const { user } = authorization;
@@ -29,10 +31,11 @@ export async function GET(request: Request) {
       );
     }
 
-    console.error("[GET /api/admin/users/search]", error);
-    return NextResponse.json(
-      { message: "搜尋使用者失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[GET /api/admin/users/search]", error, "搜尋使用者失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[GET /api/admin/users/search]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

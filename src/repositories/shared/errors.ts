@@ -9,6 +9,5 @@ export class RepositoryError extends Error {
 }
 
 export function throwRepositoryError(context: string, error: unknown): never {
-  console.error(`[Repository] ${context}:`, error);
   throw new RepositoryError(context, error);
 }

@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -18,7 +19,7 @@ import { getBoardGameDetail } from "./board-game-detail";
 
 type BoardGameDetailPageProps = { params: Promise<{ id: string }> };
 
-export async function generateMetadata({
+async function generateMetadataContent({
   params,
 }: BoardGameDetailPageProps): Promise<Metadata> {
   const { id } = await params;
@@ -46,7 +47,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function BoardGameDetailPage({
+async function BoardGameDetailPage({
   params,
 }: BoardGameDetailPageProps) {
   const { id } = await params;
@@ -162,3 +163,6 @@ export default async function BoardGameDetailPage({
     </section>
   );
 }
+
+export const generateMetadata = withServerErrorReference(generateMetadataContent, "/board-games/[id]");
+export default withServerErrorReference(BoardGameDetailPage, "/board-games/[id]");

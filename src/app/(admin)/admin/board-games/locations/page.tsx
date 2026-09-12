@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { LocationCreateAction } from "@/components/(admin)/admin/board-games/locations/LocationCreateAction";
@@ -13,7 +14,7 @@ import {
 } from "@/libs/query-params";
 import { parsePage } from "@/utils/pagination";
 
-export default async function BoardGameLocationsPage({
+async function BoardGameLocationsPage({
   searchParams,
 }: {
   searchParams: Promise<{ search?: QueryParamValue; page?: QueryParamValue; pageSize?: QueryParamValue }>;
@@ -78,3 +79,5 @@ export default async function BoardGameLocationsPage({
     </>
   );
 }
+
+export default withServerErrorReference(BoardGameLocationsPage, "/admin/board-games/locations");

@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
@@ -25,10 +26,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ message: error.message }, { status: 401 });
     }
 
-    console.error("[PATCH /api/auth/password]", error);
-    return NextResponse.json(
-      { message: "更新密碼失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[PATCH /api/auth/password]", error, "更新密碼失敗，請稍後再試");
   }
 }

@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -19,7 +20,7 @@ function maskEmail(email: string): string {
   return `${visible}***@${domain}`;
 }
 
-export default async function EmailVerificationPendingPage() {
+async function EmailVerificationPendingPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?returnTo=%2Fverify-email%2Fpending");
   if (user.email_verified_at) redirect("/dashboard");
@@ -58,3 +59,5 @@ export default async function EmailVerificationPendingPage() {
     </section>
   );
 }
+
+export default withServerErrorReference(EmailVerificationPendingPage, "/verify-email/pending");

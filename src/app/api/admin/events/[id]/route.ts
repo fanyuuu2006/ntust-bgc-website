@@ -7,6 +7,7 @@ import { eventsService } from "@/services/events/events.service";
 import { unexpectedErrorResponse } from "@/libs/api/server-response";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
   const authorization = await authorizeAdminRequest("沒有管理權限");
   if (authorization.response) return authorization.response;
   try {
@@ -20,9 +21,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (error instanceof EventNotFoundError) return NextResponse.json({ message: error.message }, { status: 404 });
     return unexpectedErrorResponse("[PATCH /api/admin/events/[id]]", error, "更新活動失敗，請稍後再試");
   }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[PATCH /api/admin/events/[id]]", error, "操作暫時無法完成，請稍後再試。");
+  }
 }
 
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
   const authorization = await authorizeAdminRequest("沒有管理權限");
   if (authorization.response) return authorization.response;
   try {
@@ -33,5 +39,9 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
     if (error instanceof EventNotFoundError) return NextResponse.json({ message: error.message }, { status: 404 });
     if (error instanceof EventHasAttendanceRecordsError) return NextResponse.json({ message: error.message }, { status: 409 });
     return unexpectedErrorResponse("[DELETE /api/admin/events/[id]]", error, "刪除活動失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[DELETE /api/admin/events/[id]]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

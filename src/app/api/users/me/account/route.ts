@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
@@ -14,7 +15,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ data: updated });
   } catch (error) {
-    console.error("[PATCH /api/users/me/account]", error);
+
     if (error instanceof ZodError) {
       return NextResponse.json(
         { message: "輸入資料格式不正確", errors: z.treeifyError(error) },
@@ -22,9 +23,6 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { message: "更新帳號資訊失敗，請稍後再試" },
-      { status: 500 },
-    );
+    return unexpectedErrorResponse("[PATCH /api/users/me/account]", error, "更新帳號資訊失敗，請稍後再試");
   }
 }

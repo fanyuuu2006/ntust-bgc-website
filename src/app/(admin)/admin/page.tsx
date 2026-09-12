@@ -1,9 +1,10 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 
-export default async function AdminPage() {
+async function AdminPage() {
   const [totalGames, pendingBorrowings, approvedBorrowings, borrowedGames] = await Promise.all([
     boardGamesService.countAllBoardGames(),
     boardGamesService.countBorrowingsByStatus("pending"),
@@ -79,3 +80,5 @@ function OperationalSummary({
     </Card>
   );
 }
+
+export default withServerErrorReference(AdminPage, "/admin");

@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { getAdminReturnPath } from "@/utils/admin-return";
 import { notFound } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
@@ -19,7 +20,7 @@ import {
 import { formatDateTime } from "@/utils/date";
 import { parsePage } from "@/utils/pagination";
 
-export default async function AdminEventDetailPage({
+async function AdminEventDetailPage({
   params,
   searchParams,
 }: {
@@ -97,3 +98,5 @@ export default async function AdminEventDetailPage({
     </>
   );
 }
+
+export default withServerErrorReference(AdminEventDetailPage, "/admin/events/[id]");

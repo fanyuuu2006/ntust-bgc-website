@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { AcademicYearActions } from "@/components/(admin)/admin/academic-years/AcademicYearActions";
 import { AcademicYearRecords } from "@/components/(admin)/admin/academic-years/AcademicYearRecords";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
@@ -13,7 +14,7 @@ import {
 } from "@/libs/query-params";
 import { parsePage } from "@/utils/pagination";
 
-export default async function AcademicYearsPage({
+async function AcademicYearsPage({
   searchParams,
 }: {
   searchParams: Promise<{ search?: QueryParamValue; page?: QueryParamValue; pageSize?: QueryParamValue }>;
@@ -70,3 +71,5 @@ export default async function AcademicYearsPage({
     </>
   );
 }
+
+export default withServerErrorReference(AcademicYearsPage, "/admin/academic-years");

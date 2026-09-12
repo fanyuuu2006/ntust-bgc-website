@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { BorrowingRecord } from "@/components/(authenticated)/borrowings/BorrowingRecord";
 import { Pagination } from "@/components/Pagination/Pagination";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
@@ -18,7 +19,7 @@ export type BorrowingsResultQuery = {
   orderDirection: "asc" | "desc";
 };
 
-export async function BorrowingsResults({
+async function BorrowingsResultsContent({
   userId,
   query,
   pageSizeOptions,
@@ -82,3 +83,5 @@ export async function BorrowingsResults({
     </>
   );
 }
+
+export const BorrowingsResults = withServerErrorReference(BorrowingsResultsContent, "/borrowings");

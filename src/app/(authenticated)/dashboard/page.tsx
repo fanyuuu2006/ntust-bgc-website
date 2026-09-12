@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import Link from "next/link";
 import { ArrowRight, Megaphone } from "lucide-react";
 
@@ -14,7 +15,7 @@ import { eventsService } from "@/services/events/events.service";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { formatDate } from "@/utils/date";
 
-export default async function DashboardPage() {
+async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
@@ -108,3 +109,5 @@ export default async function DashboardPage() {
     </section>
   );
 }
+
+export default withServerErrorReference(DashboardPage, "/dashboard");

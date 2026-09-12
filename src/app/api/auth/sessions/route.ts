@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextResponse } from "next/server";
 import { getSessionTokenFromCookie } from "@/libs/auth";
 import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
@@ -19,10 +20,7 @@ export async function DELETE() {
 
     return NextResponse.json({ data: { success: true } });
   } catch (error) {
-    console.error("[DELETE /api/auth/sessions]", error);
-    return NextResponse.json(
-      { message: "登出其他裝置失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[DELETE /api/auth/sessions]", error, "登出其他裝置失敗，請稍後再試");
   }
 }

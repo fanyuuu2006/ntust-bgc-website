@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { Pagination } from "@/components/Pagination/Pagination";
 import { BoardGameSearchForm } from "@/components/(public)/board-games/BoardGameSearchForm";
@@ -28,7 +29,7 @@ type BoardGamesPageProps = {
   searchParams: Promise<PublicBoardGamesSearchParams>;
 };
 
-export async function generateMetadata({
+async function generateMetadataContent({
   searchParams,
 }: BoardGamesPageProps): Promise<Metadata> {
   const params = await searchParams;
@@ -46,7 +47,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function BoardGamesPage({
+async function BoardGamesPage({
   searchParams,
 }: BoardGamesPageProps) {
   const params = await searchParams;
@@ -137,3 +138,6 @@ export default async function BoardGamesPage({
     </section>
   );
 }
+
+export const generateMetadata = withServerErrorReference(generateMetadataContent, "/board-games");
+export default withServerErrorReference(BoardGamesPage, "/board-games");

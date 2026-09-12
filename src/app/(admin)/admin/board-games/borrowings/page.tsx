@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { AdminBorrowingList } from "@/components/(admin)/admin/borrowings/AdminBorrowingList";
 import { Pagination } from "@/components/Pagination/Pagination";
@@ -10,7 +11,7 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function AdminBorrowingsPage({ searchParams }: Props) {
+async function AdminBorrowingsPage({ searchParams }: Props) {
   const parsed = listBorrowingsQuerySchema.safeParse(await searchParams);
   const query = parsed.success ? parsed.data : {};
   const page = query.page ?? 1;
@@ -43,3 +44,5 @@ export default async function AdminBorrowingsPage({ searchParams }: Props) {
     </>
   );
 }
+
+export default withServerErrorReference(AdminBorrowingsPage, "/admin/board-games/borrowings");

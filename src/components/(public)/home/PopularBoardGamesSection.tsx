@@ -1,3 +1,4 @@
+import { reportUnexpectedError } from "@/libs/observability/report";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Suspense } from "react";
@@ -50,7 +51,7 @@ async function PopularBoardGamesContent() {
       limit: 6,
     });
   } catch (error) {
-    console.error("[Homepage] 讀取熱門桌遊失敗", error);
+    reportUnexpectedError(error, { context: "home.board-games" });
   }
 
   if (!boardGames) {

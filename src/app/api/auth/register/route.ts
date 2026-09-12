@@ -1,3 +1,5 @@
+import { reportUnexpectedError } from "@/libs/observability/report";
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 import { authService } from "@/services/auth/auth.service";
@@ -9,6 +11,7 @@ import { emailVerificationService } from "@/services/email-verification/email-ve
 const REGISTRATION_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 
 export async function POST(request: Request) {
+  try {
   const rateLimit = checkRateLimit(
     `auth:register:${getRequestIp(request)}`,
     REGISTRATION_RATE_LIMIT,
@@ -59,9 +62,9 @@ export async function POST(request: Request) {
     let emailVerification: "sent" | "delivery_failed" = "sent";
     try {
       await emailVerificationService.request(user);
-    } catch {
+    } catch (error) {
       // The account is already committed. Keep it usable and offer resend later.
-      console.error("[EmailVerification] Initial verification delivery failed");
+      reportUnexpectedError(error, { context: "email.initial-delivery" });
       emailVerification = "delivery_failed";
     }
 
@@ -77,7 +80,7 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("[POST /api/auth/register]", error);
+
     if (error instanceof ZodError) {
       return NextResponse.json(
         {
@@ -92,9 +95,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: error.message }, { status: 409 });
     }
 
-    return NextResponse.json(
-      { message: "註冊失敗，請稍後再試" },
-      { status: 500 },
-    );
+    return unexpectedErrorResponse("[POST /api/auth/register]", error, "註冊失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[POST /api/auth/register]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

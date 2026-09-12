@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
@@ -13,6 +14,7 @@ import { boardGamesService } from "@/services/board-games/board-games.service";
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(request: NextRequest, { params }: RouteContext) {
+  try {
   const authorization = await authorizeVerifiedRequest();
   if (authorization.response) return authorization.response;
   const { user } = authorization;
@@ -29,7 +31,11 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     if (error instanceof ZodError) return NextResponse.json({ message: "輸入資料格式不正確", errors: z.treeifyError(error) }, { status: 400 });
     if (error instanceof BoardNotFoundError) return NextResponse.json({ message: error.message }, { status: 404 });
     if (error instanceof BoardGameNotAvailableForBorrowingError || error instanceof BoardGameBorrowingConflictError) return NextResponse.json({ message: error.message }, { status: 409 });
-    console.error("[POST /api/board-games/[id]/borrow]", error);
-    return NextResponse.json({ message: "提出借用申請失敗，請稍後再試" }, { status: 500 });
+
+    return unexpectedErrorResponse("[POST /api/board-games/[id]/borrow]", error, "提出借用申請失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[POST /api/board-games/[id]/borrow]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

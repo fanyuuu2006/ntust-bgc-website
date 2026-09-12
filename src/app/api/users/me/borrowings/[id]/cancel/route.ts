@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
@@ -12,6 +13,7 @@ import { boardGamesService } from "@/services/board-games/board-games.service";
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(_request: Request, { params }: RouteContext) {
+  try {
   const authorization = await authorizeVerifiedRequest();
   if (authorization.response) return authorization.response;
   const { user } = authorization;
@@ -34,7 +36,11 @@ export async function POST(_request: Request, { params }: RouteContext) {
       return NextResponse.json({ message: error.message }, { status: 409 });
     }
 
-    console.error("[POST /api/users/me/borrowings/[id]/cancel]", error);
-    return NextResponse.json({ message: "取消借用申請失敗，請稍後再試" }, { status: 500 });
+
+    return unexpectedErrorResponse("[POST /api/users/me/borrowings/[id]/cancel]", error, "取消借用申請失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[POST /api/users/me/borrowings/[id]/cancel]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

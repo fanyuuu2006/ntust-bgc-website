@@ -1,8 +1,10 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/libs/auth";
 
 export async function GET() {
+  try {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -24,4 +26,8 @@ export async function GET() {
       avatar: user.avatar,
     },
   });
+
+  } catch (error) {
+    return unexpectedErrorResponse("[GET /api/auth/me]", error, "操作暫時無法完成，請稍後再試。");
+  }
 }

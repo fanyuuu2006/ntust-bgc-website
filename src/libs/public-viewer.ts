@@ -1,3 +1,4 @@
+import { reportUnexpectedError } from "@/libs/observability/report";
 import "server-only";
 
 import { cache } from "react";
@@ -34,7 +35,7 @@ export const resolvePublicViewer = cache(
         throw error;
       }
 
-      console.error("[PublicViewer] Optional viewer resolution unavailable");
+      reportUnexpectedError(error, { context: "public.viewer" });
       return { status: "unavailable", user: null, isAdmin: false };
     }
   },

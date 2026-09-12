@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
@@ -14,6 +15,7 @@ import {
 import { membershipService } from "@/services/memberships/memberships.service";
 
 export async function POST(request: Request) {
+  try {
   const authorization = await authorizeVerifiedRequest();
   if (authorization.response) return authorization.response;
   const { user } = authorization;
@@ -87,10 +89,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: error.message }, { status: 409 });
     }
 
-    console.error("[POST /api/memberships/activate]", error);
-    return NextResponse.json(
-      { message: "啟用社員資格失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[POST /api/memberships/activate]", error, "啟用社員資格失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[POST /api/memberships/activate]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
@@ -45,7 +46,7 @@ const BASE_PATH = "/admin/users";
 const SORT_FIELDS = ["name", "created_at"] as const;
 const MISSING_VALUE = "尚未填寫";
 
-export default async function AdminUsersPage({ searchParams }: Props) {
+async function AdminUsersPage({ searchParams }: Props) {
   const rawParams = await searchParams;
   const params = {
     search: readSingleQueryValue(rawParams.search),
@@ -280,3 +281,5 @@ function Info({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+export default withServerErrorReference(AdminUsersPage, "/admin/users");
