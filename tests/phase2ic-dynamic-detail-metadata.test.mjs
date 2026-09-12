@@ -50,7 +50,7 @@ test("announcement detail metadata shares one cached published-only resolver", a
     readSource("src/app/(public)/announcements/[id]/announcement-detail.ts"),
   ]);
 
-  assert.match(page, /export async function generateMetadata/);
+  assert.match(page, /export const generateMetadata = withServerErrorReference\(generateMetadataContent/);
   assert.equal((page.match(/await getPublishedAnnouncement\(id\)/g) ?? []).length, 2);
   assert.match(page, /const canonical = `\/announcements\/\$\{announcement\.id\}`/);
   assert.match(page, /alternates:\s*\{ canonical \}/);
@@ -71,7 +71,7 @@ test("board-game detail metadata shares identity only and safely omits invalid i
     readSource("src/app/(public)/board-games/[id]/board-game-detail.ts"),
   ]);
 
-  assert.match(page, /export async function generateMetadata/);
+  assert.match(page, /export const generateMetadata = withServerErrorReference\(generateMetadataContent/);
   assert.equal((page.match(/await getBoardGameDetail\(id\)/g) ?? []).length, 2);
   assert.match(page, /const canonical = `\/board-games\/\$\{boardGame\.id\}`/);
   assert.match(page, /alternates:\s*\{ canonical \}/);
@@ -79,8 +79,8 @@ test("board-game detail metadata shares identity only and safely omits invalid i
   assert.match(page, /const normalizedName = createMetadataDescription\(boardGame\.name\)/);
   assert.match(page, /查看「\$\{normalizedName\}」的分類、位置與借用資訊。/);
   const metadataImplementation = page.slice(
-    page.indexOf("export async function generateMetadata"),
-    page.indexOf("export default"),
+    page.indexOf("async function generateMetadataContent"),
+    page.indexOf("async function BoardGameDetailPage"),
   );
   assert.doesNotMatch(metadataImplementation, /getCurrentUser|membershipService|OpenBorrowing/);
   assert.doesNotMatch(page, /popularity|completedBorrowCount/);

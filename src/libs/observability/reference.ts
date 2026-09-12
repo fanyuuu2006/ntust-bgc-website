@@ -17,4 +17,3 @@ export function readErrorReference(message: string) {
     ? { message: message.slice(0, match.index), errorId: match[1] }
     : { message, errorId: undefined };
 }
-

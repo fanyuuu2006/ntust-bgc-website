@@ -85,11 +85,11 @@ test("query-heavy authenticated routes stream only server-rendered result region
   assert.match(borrowingsPage, /<BorrowingsToolbar[\s\S]*?<Suspense/);
   assert.match(membershipsPage, /<MembershipRecordsToolbar[\s\S]*?<Suspense/);
 
-  assert.match(borrowingResults, /export async function BorrowingsResults/);
+  assert.match(borrowingResults, /export const BorrowingsResults = withServerErrorReference\(BorrowingsResultsContent/);
   assert.equal((borrowingResults.match(/getBorrowingsByUserId\(/g) ?? []).length, 1);
   assert.doesNotMatch(borrowingResults, /"use client"|fetch\(|useEffect|useSearchParams/);
 
-  assert.match(membershipResults, /export async function MembershipRecordsResults/);
+  assert.match(membershipResults, /export const MembershipRecordsResults = withServerErrorReference\(MembershipRecordsResultsContent/);
   assert.equal((membershipResults.match(/listMembershipRecordsByUserId\(/g) ?? []).length, 1);
   assert.doesNotMatch(membershipResults, /"use client"|fetch\(|useEffect|useSearchParams/);
 });

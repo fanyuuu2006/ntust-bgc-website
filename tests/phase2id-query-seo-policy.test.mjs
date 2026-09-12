@@ -112,7 +112,7 @@ test("list pages derive query-aware robots without changing their base canonical
     [announcements, "/announcements"],
     [boardGames, "/board-games"],
   ]) {
-    assert.match(source, /export async function generateMetadata/);
+    assert.match(source, /export const generateMetadata = withServerErrorReference\(generateMetadataContent/);
     assert.match(source, /classifyQuerySeo\(/);
     assert.match(
       source,
@@ -123,7 +123,7 @@ test("list pages derive query-aware robots without changing their base canonical
       /indexable[\s\S]*?robots:\s*\{\s*index:\s*false,\s*follow:\s*true/,
     );
     assert.doesNotMatch(
-      source.slice(0, source.indexOf("export default")),
+      source.slice(0, source.search(/async function (AnnouncementsPage|BoardGamesPage)/)),
       /Service\.|Repository\.|listPublished\(|listBoardGameDiscovery\(/,
     );
   }
