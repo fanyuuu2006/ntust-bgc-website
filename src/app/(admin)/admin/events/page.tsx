@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { buildAdminListHref } from "@/utils/admin-return";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
@@ -17,7 +18,7 @@ import {
 import { parsePage } from "@/utils/pagination";
 const ORDER_FIELDS = ["name", "start_time", "end_time", "created_at"] as const;
 type Status = "upcoming" | "ongoing" | "ended";
-export default async function AdminEventsPage({
+async function AdminEventsPage({
   searchParams,
 }: {
   searchParams: Promise<{
@@ -112,3 +113,5 @@ export default async function AdminEventsPage({
     </>
   );
 }
+
+export default withServerErrorReference(AdminEventsPage, "/admin/events");

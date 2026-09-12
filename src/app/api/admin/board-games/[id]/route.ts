@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 import { isAdminByUserId } from "@/libs/auth";
@@ -14,6 +15,7 @@ import {
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(_request: NextRequest, { params }: RouteContext) {
+  try {
   const authorization = await authorizeVerifiedRequest();
   if (authorization.response) return authorization.response;
   const { user } = authorization;
@@ -36,15 +38,17 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ message: error.message }, { status: 404 });
     }
 
-    console.error("[GET /api/admin/board-games/[id]]", error);
-    return NextResponse.json(
-      { message: "取得桌遊資料失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[GET /api/admin/board-games/[id]]", error, "取得桌遊資料失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[GET /api/admin/board-games/[id]]", error, "操作暫時無法完成，請稍後再試。");
   }
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
+  try {
   const authorization = await authorizeVerifiedRequest();
   if (authorization.response) return authorization.response;
   const { user } = authorization;
@@ -83,15 +87,17 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
 
-    console.error("[PATCH /api/admin/board-games/[id]]", error);
-    return NextResponse.json(
-      { message: "更新桌遊失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[PATCH /api/admin/board-games/[id]]", error, "更新桌遊失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[PATCH /api/admin/board-games/[id]]", error, "操作暫時無法完成，請稍後再試。");
   }
 }
 
 export async function DELETE(_request: NextRequest, { params }: RouteContext) {
+  try {
   const authorization = await authorizeVerifiedRequest();
   if (authorization.response) return authorization.response;
   const { user } = authorization;
@@ -117,10 +123,11 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ message: error.message }, { status: 409 });
     }
 
-    console.error("[DELETE /api/admin/board-games/[id]]", error);
-    return NextResponse.json(
-      { message: "刪除桌遊失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[DELETE /api/admin/board-games/[id]]", error, "刪除桌遊失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[DELETE /api/admin/board-games/[id]]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

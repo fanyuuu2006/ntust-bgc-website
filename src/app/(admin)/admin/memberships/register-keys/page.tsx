@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { RegisterKeyFilterBar } from "@/components/(admin)/admin/memberships/RegisterKeyFilterBar";
 import { RegisterKeyGenerateForm } from "@/components/(admin)/admin/memberships/RegisterKeyGenerateForm";
@@ -11,7 +12,7 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function MembershipRegisterKeysPage({ searchParams }: Props) {
+async function MembershipRegisterKeysPage({ searchParams }: Props) {
   const parsed = listMembershipRegisterKeysQuerySchema.safeParse(
     await searchParams,
   );
@@ -62,3 +63,5 @@ export default async function MembershipRegisterKeysPage({ searchParams }: Props
     </>
   );
 }
+
+export default withServerErrorReference(MembershipRegisterKeysPage, "/admin/memberships/register-keys");

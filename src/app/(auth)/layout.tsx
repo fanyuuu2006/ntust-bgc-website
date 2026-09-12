@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { WebsiteShell } from "@/components/layouts/WebsiteShell";
 import { getCurrentUser } from "@/libs/auth";
 import type { Metadata } from "next";
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function AuthLayout({
+async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -31,3 +32,5 @@ export default async function AuthLayout({
     </WebsiteShell>
   );
 }
+
+export default withServerErrorReference(AuthLayout, "/");

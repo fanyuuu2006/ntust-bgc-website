@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { CategoryCreateAction } from "@/components/(admin)/admin/board-games/categories/CategoryCreateAction";
@@ -13,7 +14,7 @@ import {
 } from "@/libs/query-params";
 import { parsePage } from "@/utils/pagination";
 
-export default async function BoardGameCategoriesPage({
+async function BoardGameCategoriesPage({
   searchParams,
 }: {
   searchParams: Promise<{ search?: QueryParamValue; page?: QueryParamValue; pageSize?: QueryParamValue }>;
@@ -78,3 +79,5 @@ export default async function BoardGameCategoriesPage({
     </>
   );
 }
+
+export default withServerErrorReference(BoardGameCategoriesPage, "/admin/board-games/categories");

@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { AlertCircle, ShieldCheck, UserRoundCog } from "lucide-react";
 
 import { AccountSettingsForm } from "@/components/(authenticated)/settings/AccountSettingsForm";
@@ -9,7 +10,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { getCurrentUser } from "@/libs/auth";
 import { usersService } from "@/services/users/users.service";
 
-export default async function SettingsPage() {
+async function SettingsPage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
@@ -71,3 +72,5 @@ export default async function SettingsPage() {
     </section>
   );
 }
+
+export default withServerErrorReference(SettingsPage, "/settings");

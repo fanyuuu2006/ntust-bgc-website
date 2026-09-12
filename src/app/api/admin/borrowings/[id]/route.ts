@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
@@ -21,6 +22,7 @@ import { parsePositiveIntegerId } from "@/libs/zod/ids";
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
+  try {
   const authorization = await authorizeVerifiedRequest();
   if (authorization.response) return authorization.response;
   const { user } = authorization;
@@ -49,7 +51,11 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     if (error instanceof ZodError) return NextResponse.json({ message: "輸入資料格式不正確", errors: z.treeifyError(error) }, { status: 400 });
     if (error instanceof BorrowingNotFoundError) return NextResponse.json({ message: error.message }, { status: 404 });
     if (error instanceof BorrowingStatusTransitionError || error instanceof BorrowingDueDateError || error instanceof BorrowingWorkflowConflictError || error instanceof BoardGameHasOpenBorrowingError || error instanceof BoardGameNotAvailableForBorrowingError) return NextResponse.json({ message: error.message }, { status: 409 });
-    console.error("[PATCH /api/admin/borrowings/[id]]", error);
-    return NextResponse.json({ message: "更新借用紀錄失敗，請稍後再試" }, { status: 500 });
+
+    return unexpectedErrorResponse("[PATCH /api/admin/borrowings/[id]]", error, "更新借用紀錄失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[PATCH /api/admin/borrowings/[id]]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

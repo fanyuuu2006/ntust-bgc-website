@@ -1,3 +1,6 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
+import { ErrorReference } from "@/components/ErrorReference";
+import { isErrorId } from "@/libs/observability/reference";
 import type { Metadata } from "next";
 
 import { AuthCard } from "@/components/(auth)/AuthCard";
@@ -15,15 +18,22 @@ type VerifyEmailPageProps = {
   searchParams: Promise<{
     token?: string | string[];
     result?: string | string[];
+    errorId?: string | string[];
   }>;
 };
 
-export default async function VerifyEmailPage({
+async function VerifyEmailPage({
   searchParams,
 }: VerifyEmailPageProps) {
   const params = await searchParams;
   const token = typeof params.token === "string" ? params.token : "";
   const result = typeof params.result === "string" ? params.result : "";
+  if (result === "error" && isErrorId(params.errorId)) {
+    return <section className="container max-w-xl py-8"><AuthCard title="Email 驗證暫時無法完成" description="請稍後從原驗證信重新開啟連結，再試一次。">
+      <ErrorReference errorId={params.errorId} />
+      <ButtonLink href="/login" variant="outline" className="mt-4">返回登入</ButtonLink>
+    </AuthCard></section>;
+  }
   const tokenState = token
     ? await emailVerificationService.inspect(token)
     : "invalid";
@@ -86,3 +96,5 @@ export default async function VerifyEmailPage({
     </section>
   );
 }
+
+export default withServerErrorReference(VerifyEmailPage, "/verify-email");

@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
@@ -8,6 +9,7 @@ import { boardGamesService } from "@/services/board-games/board-games.service";
 import { listBorrowingsQuerySchema } from "@/services/board-games/board-games.schema";
 
 export async function GET(request: NextRequest) {
+  try {
   const authorization = await authorizeVerifiedRequest();
   if (authorization.response) return authorization.response;
   const { user } = authorization;
@@ -36,10 +38,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.error("[GET /api/admin/borrowings]", error);
-    return NextResponse.json(
-      { message: "取得借用列表失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[GET /api/admin/borrowings]", error, "取得借用列表失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[GET /api/admin/borrowings]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

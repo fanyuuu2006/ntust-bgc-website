@@ -10,6 +10,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string; attendanceId: string }> },
 ) {
+  try {
   const authorization = await authorizeAdminRequest("沒有管理權限");
   if (authorization.response) return authorization.response;
 
@@ -28,12 +29,17 @@ export async function PATCH(
     }
     return unexpectedErrorResponse("[PATCH /api/admin/events/[id]/attendances/[attendanceId]]", error, "更新簽到失敗，請稍後再試");
   }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[PATCH /api/admin/events/[id]/attendances/[attendanceId]]", error, "操作暫時無法完成，請稍後再試。");
+  }
 }
 
 export async function DELETE(
   _: Request,
   { params }: { params: Promise<{ id: string; attendanceId: string }> },
 ) {
+  try {
   const authorization = await authorizeAdminRequest("沒有管理權限");
   if (authorization.response) return authorization.response;
 
@@ -50,5 +56,9 @@ export async function DELETE(
       return NextResponse.json({ message: error.message }, { status: 404 });
     }
     return unexpectedErrorResponse("[DELETE /api/admin/events/[id]/attendances/[attendanceId]]", error, "刪除簽到失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[DELETE /api/admin/events/[id]/attendances/[attendanceId]]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

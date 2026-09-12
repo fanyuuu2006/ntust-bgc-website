@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { getAdminReturnPath } from "@/utils/admin-return";
 import { ButtonLink } from "@/components/ui/Button";
 import { notFound } from "next/navigation";
@@ -11,7 +12,7 @@ type BoardGameEditPageProps = {
   searchParams: Promise<{ returnTo?: string | string[] }>;
 };
 
-export default async function BoardGameEditPage({
+async function BoardGameEditPage({
   params,
   searchParams,
 }: BoardGameEditPageProps) {
@@ -67,3 +68,5 @@ export default async function BoardGameEditPage({
     </>
   );
 }
+
+export default withServerErrorReference(BoardGameEditPage, "/admin/board-games/[id]/edit");

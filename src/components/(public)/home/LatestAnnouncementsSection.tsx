@@ -1,3 +1,4 @@
+import { reportUnexpectedError } from "@/libs/observability/report";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Suspense } from "react";
@@ -51,7 +52,7 @@ async function LatestAnnouncementsContent() {
       pageSize: 3,
     });
   } catch (error) {
-    console.error("[Homepage] 讀取最新公告失敗", error);
+    reportUnexpectedError(error, { context: "home.announcements" });
   }
 
   if (!announcements) {

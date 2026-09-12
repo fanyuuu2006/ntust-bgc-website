@@ -1,3 +1,5 @@
+import { ErrorReference } from "@/components/ErrorReference";
+import { readErrorReference } from "@/libs/observability/reference";
 import { cn } from "@/utils/className";
 import React from "react";
 
@@ -20,6 +22,7 @@ export const FormFeedback = ({
   className,
   ...props
 }: FormFeedbackProps) => {
+  const reference = error ? readErrorReference(error) : null;
   return (
     <div
       aria-live="polite"
@@ -29,9 +32,10 @@ export const FormFeedback = ({
     >
       {error && (
         <p role="alert" className="text-sm text-(--status-danger)">
-          {error}
+          {reference?.message}
         </p>
       )}
+      {reference?.errorId && <ErrorReference key={reference.errorId} errorId={reference.errorId} />}
       {success && (
         <p role="status" className="text-sm text-(--status-success)">
           {success}

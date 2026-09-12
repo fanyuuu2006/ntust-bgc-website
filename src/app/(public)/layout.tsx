@@ -1,7 +1,8 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { WebsiteShell } from "@/components/layouts/WebsiteShell";
 import { resolvePublicViewer } from "@/libs/public-viewer";
 
-export default async function PublicLayout({
+async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -15,3 +16,5 @@ export default async function PublicLayout({
     </WebsiteShell>
   );
 }
+
+export default withServerErrorReference(PublicLayout, "/");

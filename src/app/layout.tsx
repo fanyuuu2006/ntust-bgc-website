@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 export { metadata } from "@/libs/metadata";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
@@ -12,7 +13,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export default function RootLayout({
+function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -27,3 +28,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+export default withServerErrorReference(RootLayout, "/");

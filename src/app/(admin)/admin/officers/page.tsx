@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { z } from "zod";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
@@ -19,7 +20,7 @@ import { parsePage } from "@/utils/pagination";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
 
-export default async function OfficersPage({
+async function OfficersPage({
   searchParams,
 }: {
   searchParams: Promise<{
@@ -84,3 +85,5 @@ export default async function OfficersPage({
     </>
   );
 }
+
+export default withServerErrorReference(OfficersPage, "/admin/officers");

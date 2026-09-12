@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { MembershipActivationForm } from "@/components/(authenticated)/memberships/MembershipActivationForm";
@@ -38,7 +39,7 @@ type MembershipsPageProps = {
   searchParams: Promise<MembershipSearchParams>;
 };
 
-export default async function MembershipsPage({
+async function MembershipsPage({
   searchParams,
 }: MembershipsPageProps) {
   const user = await getCurrentUser();
@@ -150,3 +151,5 @@ function normalizePositiveInteger(value: string | undefined) {
   const parsed = Number(value);
   return Number.isInteger(parsed) && parsed > 0 ? String(parsed) : undefined;
 }
+
+export default withServerErrorReference(MembershipsPage, "/memberships");

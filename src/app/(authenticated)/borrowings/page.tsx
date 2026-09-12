@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { Suspense } from "react";
 import { ArrowUpDown } from "lucide-react";
 import type { Metadata } from "next";
@@ -82,7 +83,7 @@ function normalizeSort(value?: QueryParamValue) {
   return { option, orderBy, orderDirection };
 }
 
-export default async function BorrowingsPage({
+async function BorrowingsPage({
   searchParams,
 }: BorrowingsPageProps) {
   const user = await getCurrentUser();
@@ -265,3 +266,5 @@ function BorrowingsToolbar({
     </div>
   );
 }
+
+export default withServerErrorReference(BorrowingsPage, "/borrowings");

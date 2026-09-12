@@ -7,6 +7,7 @@ import { EmailVerificationCooldownError } from "@/services/email-verification/em
 import { emailVerificationService } from "@/services/email-verification/email-verification.service";
 
 export async function POST() {
+  try {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ message: "請先登入" }, { status: 401 });
@@ -28,11 +29,7 @@ export async function POST() {
     }
 
     if (error instanceof TransactionalEmailDeliveryError) {
-      console.error("[EmailVerification] Resend delivery failed");
-      return NextResponse.json(
-        { message: "驗證信暫時無法寄出，請稍後再試" },
-        { status: 503 },
-      );
+      return unexpectedErrorResponse("[POST /api/auth/email-verification/resend]", error, "驗證信暫時無法寄出，請稍後再試", 503);
     }
 
     return unexpectedErrorResponse(
@@ -40,5 +37,9 @@ export async function POST() {
       error,
       "重新寄送驗證信失敗，請稍後再試",
     );
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[POST /api/auth/email-verification/resend]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

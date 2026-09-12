@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { MembershipCreateButton } from "@/components/(admin)/admin/memberships/MembershipCreateButton";
 import { MembershipRecords } from "@/components/(admin)/admin/memberships/MembershipRecords";
@@ -11,7 +12,7 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function MembershipsPage({ searchParams }: Props) {
+async function MembershipsPage({ searchParams }: Props) {
   const parsed = listAdminMembershipsQuerySchema.safeParse(await searchParams);
   const query = parsed.success ? parsed.data : {};
   const page = query.page ?? 1;
@@ -58,3 +59,5 @@ export default async function MembershipsPage({ searchParams }: Props) {
     </>
   );
 }
+
+export default withServerErrorReference(MembershipsPage, "/admin/memberships");

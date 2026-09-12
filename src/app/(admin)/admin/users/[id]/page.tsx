@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { getLatestVerificationForAdmin } from "@/services/email-verification/email-verification-operations.service";
 import { getAdminReturnPath } from "@/utils/admin-return";
 import { notFound } from "next/navigation";
@@ -16,7 +17,7 @@ import { formatDateTime } from "@/utils/date";
 
 const MISSING_VALUE = "尚未填寫";
 
-export default async function AdminUserDetailPage({
+async function AdminUserDetailPage({
   params,
   searchParams,
 }: {
@@ -171,3 +172,5 @@ function Info({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+export default withServerErrorReference(AdminUserDetailPage, "/admin/users/[id]");

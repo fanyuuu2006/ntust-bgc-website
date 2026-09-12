@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
@@ -35,6 +36,7 @@ async function requireAdmin() {
 }
 
 export async function GET(request: NextRequest) {
+  try {
   const { response } = await requireAdmin();
 
   if (response) {
@@ -54,15 +56,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.error("[GET /api/admin/members/register-keys]", error);
-    return NextResponse.json(
-      { message: "查詢社員註冊序號失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[GET /api/admin/members/register-keys]", error, "查詢社員註冊序號失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[GET /api/admin/members/register-keys]", error, "操作暫時無法完成，請稍後再試。");
   }
 }
 
 export async function POST(request: Request) {
+  try {
   const { user, response } = await requireAdmin();
 
   if (response || !user) {
@@ -100,13 +104,14 @@ export async function POST(request: Request) {
     }
 
     if (error instanceof RegisterKeySecretNotConfiguredError) {
-      return NextResponse.json({ message: error.message }, { status: 500 });
+      return unexpectedErrorResponse("[POST /api/admin/members/register-keys]", error, error.message);
     }
 
-    console.error("[POST /api/admin/members/register-keys]", error);
-    return NextResponse.json(
-      { message: "產生社員註冊序號失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[POST /api/admin/members/register-keys]", error, "產生社員註冊序號失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[POST /api/admin/members/register-keys]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

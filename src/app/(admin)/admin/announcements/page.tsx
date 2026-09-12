@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
 import Link from "next/link";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
@@ -31,7 +32,7 @@ import { parsePage } from "@/utils/pagination";
 
 const fields = ["title", "created_at", "updated_at", "published_at"] as const;
 
-export default async function AdminAnnouncementsPage({
+async function AdminAnnouncementsPage({
   searchParams,
 }: {
   searchParams: Promise<{
@@ -263,3 +264,5 @@ export default async function AdminAnnouncementsPage({
     </>
   );
 }
+
+export default withServerErrorReference(AdminAnnouncementsPage, "/admin/announcements");

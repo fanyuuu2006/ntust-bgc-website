@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 
-import { unexpectedErrorResponse } from "@/libs/api/server-response";
+import { reportUnexpectedError } from "@/libs/observability/report";
 import { emailVerificationService } from "@/services/email-verification/email-verification.service";
 
-function verificationPage(request: Request, result: "success" | "invalid") {
+function verificationPage(request: Request, result: "success" | "invalid" | "error", errorId?: string) {
   const location = new URL("/verify-email", request.url);
   location.searchParams.set("result", result);
+  if (errorId) location.searchParams.set("errorId", errorId);
   return NextResponse.redirect(location, { status: 303 });
 }
 
@@ -21,10 +22,7 @@ export async function POST(request: Request) {
       result === "verified" ? "success" : "invalid",
     );
   } catch (error) {
-    return unexpectedErrorResponse(
-      "[POST /api/auth/email-verification/confirm]",
-      error,
-      "Email 驗證失敗，請稍後再試",
-    );
+    const errorId = reportUnexpectedError(error, { context: "[POST /api/auth/email-verification/confirm]" });
+    return verificationPage(request, "error", errorId);
   }
 }

@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextResponse } from "next/server";
 import { getSessionTokenFromCookie, SESSION_COOKIE_NAME } from "@/libs/auth";
 import { authService } from "@/services/auth/auth.service";
@@ -18,10 +19,7 @@ export async function POST() {
 
     return response;
   } catch (error) {
-    console.error("[POST /api/auth/logout]", error);
-    return NextResponse.json(
-      { message: "登出失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[POST /api/auth/logout]", error, "登出失敗，請稍後再試");
   }
 }

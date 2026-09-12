@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { CircleAlert } from "lucide-react";
 
 import { ProfileClubFootprint } from "@/components/(authenticated)/profile/ProfileClubFootprint";
@@ -12,7 +13,7 @@ import { eventsService } from "@/services/events/events.service";
 import { profileService } from "@/services/profile/profile.service";
 import { usersService } from "@/services/users/users.service";
 
-export default async function ProfilePage() {
+async function ProfilePage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
@@ -76,3 +77,5 @@ export default async function ProfilePage() {
     </section>
   );
 }
+
+export default withServerErrorReference(ProfilePage, "/profile");

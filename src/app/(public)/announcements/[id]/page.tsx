@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -13,7 +14,7 @@ type AnnouncementDetailPageProps = {
   params: Promise<{ id: string }>;
 };
 
-export async function generateMetadata({
+async function generateMetadataContent({
   params,
 }: AnnouncementDetailPageProps): Promise<Metadata> {
   const { id } = await params;
@@ -37,7 +38,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function AnnouncementDetailPage({
+async function AnnouncementDetailPage({
   params,
 }: AnnouncementDetailPageProps) {
   const { id } = await params;
@@ -81,3 +82,6 @@ export default async function AnnouncementDetailPage({
     </section>
   );
 }
+
+export const generateMetadata = withServerErrorReference(generateMetadataContent, "/announcements/[id]");
+export default withServerErrorReference(AnnouncementDetailPage, "/announcements/[id]");

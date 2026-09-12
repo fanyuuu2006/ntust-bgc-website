@@ -1,3 +1,4 @@
+import { load } from "./helpers/load-app-module.mjs";
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -17,7 +18,7 @@ async function loadCommonJsModule(path, overrides = {}) {
     },
   }).outputText;
   const runtimeModule = { exports: {} };
-  const localRequire = (specifier) => overrides[specifier] ?? nodeRequire(specifier);
+  const localRequire = (specifier) => overrides[specifier] ?? (specifier === "@/libs/observability/report" ? load("src/libs/observability/report.ts") : nodeRequire(specifier));
   new Function("exports", "module", "require", javascript)(
     runtimeModule.exports,
     runtimeModule,
@@ -99,11 +100,14 @@ test("unknown errors are logged server-side and receive a generic 500 response",
     );
 
     assert.deepEqual(response, {
-      body: { message: "操作失敗，請稍後再試" },
+      body: { message: "操作失敗，請稍後再試", errorId: response.body.errorId },
       status: 500,
     });
     assert.equal(JSON.stringify(response).includes(internal.message), false);
-    assert.deepEqual(logged, [["[test]", internal]]);
+    assert.match(response.body.errorId, /^[0-9a-f-]{36}$/);
+    assert.equal(logged.length, 1);
+    assert.ok(JSON.stringify(logged).includes(response.body.errorId));
+    assert.ok(!JSON.stringify(logged).includes(internal.message));
   } finally {
     console.error = originalConsoleError;
   }
@@ -165,5 +169,5 @@ test("logout exposes recoverable feedback and cannot be submitted twice", async 
   assert.match(component, /FormFeedback/);
   assert.match(component, /finally[\s\S]*setIsLoading\(false\)/);
   assert.match(route, /try[\s\S]*authService\.logout[\s\S]*catch/);
-  assert.match(route, /登出失敗，請稍後再試[\s\S]*status: 500/);
+  assert.match(route, /unexpectedErrorResponse[\s\S]*登出失敗，請稍後再試/);
 });

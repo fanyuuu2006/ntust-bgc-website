@@ -1,3 +1,4 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { AnnouncementList } from "@/components/(public)/announcements/AnnouncementList";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination/Pagination";
@@ -31,7 +32,7 @@ type Props = {
   searchParams: Promise<AnnouncementsSearchParams>;
 };
 
-export async function generateMetadata({
+async function generateMetadataContent({
   searchParams,
 }: Props): Promise<Metadata> {
   const params = await searchParams;
@@ -48,7 +49,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function AnnouncementsPage({ searchParams }: Props) {
+async function AnnouncementsPage({ searchParams }: Props) {
   const params = await searchParams;
   const page = parsePage(params.page);
   const pageSize = normalizePageSizeOption(params.pageSize, [10, 20, 50], 10);
@@ -133,3 +134,6 @@ export default async function AnnouncementsPage({ searchParams }: Props) {
     </section>
   );
 }
+
+export const generateMetadata = withServerErrorReference(generateMetadataContent, "/announcements");
+export default withServerErrorReference(AnnouncementsPage, "/announcements");

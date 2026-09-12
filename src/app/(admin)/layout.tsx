@@ -1,8 +1,9 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { AdminShell } from "@/components/layouts/AdminShell";
 import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
 import { redirect } from "next/navigation";
 
-export default async function AdminLayout({
+async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -25,3 +26,5 @@ export default async function AdminLayout({
 
   return <AdminShell user={user}>{children}</AdminShell>;
 }
+
+export default withServerErrorReference(AdminLayout, "/");

@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 import { isAdminByUserId } from "@/libs/auth";
@@ -12,6 +13,7 @@ import {
 } from "@/services/board-games/board-games.errors";
 
 export async function GET(request: NextRequest) {
+  try {
   const authorization = await authorizeVerifiedRequest();
   if (authorization.response) return authorization.response;
   const { user } = authorization;
@@ -40,15 +42,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.error("[GET /api/admin/board-games]", error);
-    return NextResponse.json(
-      { message: "取得桌遊列表失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[GET /api/admin/board-games]", error, "取得桌遊列表失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[GET /api/admin/board-games]", error, "操作暫時無法完成，請稍後再試。");
   }
 }
 
 export async function POST(request: NextRequest) {
+  try {
   const authorization = await authorizeVerifiedRequest();
   if (authorization.response) return authorization.response;
   const { user } = authorization;
@@ -83,10 +87,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
 
-    console.error("[POST /api/admin/board-games]", error);
-    return NextResponse.json(
-      { message: "新增桌遊失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[POST /api/admin/board-games]", error, "新增桌遊失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[POST /api/admin/board-games]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextResponse } from "next/server";
 
 import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
@@ -13,6 +14,7 @@ export async function POST(
   _: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  try {
   const authorization = await authorizeVerifiedRequest();
   if (authorization.response) return authorization.response;
   const { user } = authorization;
@@ -37,10 +39,11 @@ export async function POST(
       return NextResponse.json({ message: error.message }, { status: 409 });
     }
 
-    console.error("[POST /api/events/[id]/check-in]", error);
-    return NextResponse.json(
-      { message: "簽到失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[POST /api/events/[id]/check-in]", error, "簽到失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[POST /api/events/[id]/check-in]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

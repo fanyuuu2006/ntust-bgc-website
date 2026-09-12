@@ -16,9 +16,10 @@ test("authenticated routes provide page or result-shaped busy states and a share
   ]);
 
   assert.match(errorBoundary, /"use client"/);
-  assert.match(errorBoundary, /role="alert"/);
-  assert.match(errorBoundary, /reset\(\)/);
-  assert.match(errorBoundary, /重新載入/);
+  const errorState = await readSource("src/components/UnexpectedErrorState.tsx");
+  assert.match(errorState, /role="alert"/);
+  assert.match(errorState, /onClick=\{reset\}/);
+  assert.match(errorBoundary, /UnexpectedErrorState/);
 
   for (const loadingState of loadingStates) {
     assert.match(loadingState, /aria-busy="true"/);

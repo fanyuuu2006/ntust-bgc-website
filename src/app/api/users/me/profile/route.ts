@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
@@ -27,6 +28,7 @@ async function requireUser(): Promise<User | NextResponse> {
 }
 
 export async function GET() {
+  try {
   const authResult = await requireUser();
   if (authResult instanceof NextResponse) {
     return authResult;
@@ -38,16 +40,18 @@ export async function GET() {
 
     return NextResponse.json({ data: profile }, { status: 200 });
   } catch (error) {
-    console.error("[GET /api/users/me/profile]", error);
 
-    return NextResponse.json(
-      { message: "取得個人資料失敗，請稍後再試" },
-      { status: 500 },
-    );
+
+    return unexpectedErrorResponse("[GET /api/users/me/profile]", error, "取得個人資料失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[GET /api/users/me/profile]", error, "操作暫時無法完成，請稍後再試。");
   }
 }
 
 export async function PATCH(request: Request) {
+  try {
   const authResult = await requireUser();
   if (authResult instanceof NextResponse) {
     return authResult;
@@ -66,7 +70,7 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ data: profile }, { status: 200 });
   } catch (error) {
-    console.error("[PATCH /api/users/me/profile]", error);
+
     if (error instanceof ZodError) {
       return NextResponse.json(
         { message: "輸入資料格式不正確", errors: z.treeifyError(error) },
@@ -78,9 +82,10 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ message: "找不到個人資料" }, { status: 404 });
     }
 
-    return NextResponse.json(
-      { message: "更新個人資料失敗，請稍後再試" },
-      { status: 500 },
-    );
+    return unexpectedErrorResponse("[PATCH /api/users/me/profile]", error, "更新個人資料失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[PATCH /api/users/me/profile]", error, "操作暫時無法完成，請稍後再試。");
   }
 }

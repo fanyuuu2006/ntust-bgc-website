@@ -1,10 +1,11 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { getAdminReturnPath } from "@/utils/admin-return";
 import { ButtonLink } from "@/components/ui/Button";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { BoardGameForm } from "@/components/(admin)/admin/board-games/BoardGameForm";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 
-export default async function NewBoardGamePage({ searchParams }: { searchParams: Promise<{ returnTo?: string | string[] }> }) {
+async function NewBoardGamePage({ searchParams }: { searchParams: Promise<{ returnTo?: string | string[] }> }) {
   const returnTo = getAdminReturnPath((await searchParams).returnTo, "/admin/board-games");
   const [categories, locations, nextInventoryNumber] = await Promise.all([
     boardGamesService.listCategories(),
@@ -30,3 +31,5 @@ export default async function NewBoardGamePage({ searchParams }: { searchParams:
     </>
   );
 }
+
+export default withServerErrorReference(NewBoardGamePage, "/admin/board-games/new");

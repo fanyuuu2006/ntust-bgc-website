@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { SESSION_COOKIE_NAME } from "@/libs/auth";
@@ -31,7 +32,7 @@ export async function DELETE(
 
     return NextResponse.json({ data: { success: true } });
   } catch (error) {
-    console.error("[DELETE /api/auth/sessions/[id]]", error);
+
     if (error instanceof SessionNotFoundError) {
       return NextResponse.json({ message: error.message }, { status: 404 });
     }
@@ -39,9 +40,6 @@ export async function DELETE(
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { message: "登出裝置失敗，請稍後再試" },
-      { status: 500 },
-    );
+    return unexpectedErrorResponse("[DELETE /api/auth/sessions/[id]]", error, "登出裝置失敗，請稍後再試");
   }
 }

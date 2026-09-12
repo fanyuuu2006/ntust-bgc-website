@@ -1,3 +1,4 @@
+import { load } from "./helpers/load-app-module.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -19,6 +20,8 @@ async function loadCommonJsModule(path, overrides = {}, options = {}) {
   }).outputText;
   const runtimeModule = { exports: {} };
   const localRequire = (specifier) => {
+    if (specifier === "@/libs/observability/server-render") return { withServerErrorReference: (operation) => operation };
+    if (specifier === "@/libs/observability/report") return load("src/libs/observability/report.ts");
     if (specifier.endsWith(".css")) return {};
     if (specifier in overrides) return overrides[specifier];
     if (options.allowNodeRequire) return nodeRequire(specifier);

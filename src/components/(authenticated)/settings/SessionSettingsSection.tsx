@@ -1,9 +1,10 @@
+import { withServerErrorReference } from "@/libs/observability/server-render";
 import { getSessionTokenFromCookie } from "@/libs/auth";
 import { authService } from "@/services/auth/auth.service";
 import type { UUID } from "@/types/database";
 import { SessionList } from "./SessionList";
 
-export async function SessionSettingsSection({ userId }: { userId: UUID }) {
+async function SessionSettingsSectionContent({ userId }: { userId: UUID }) {
   const token = await getSessionTokenFromCookie();
 
   return (
@@ -29,3 +30,5 @@ export async function SessionSettingsSection({ userId }: { userId: UUID }) {
     </section>
   );
 }
+
+export const SessionSettingsSection = withServerErrorReference(SessionSettingsSectionContent, "/settings");

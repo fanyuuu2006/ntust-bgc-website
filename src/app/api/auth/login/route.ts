@@ -1,3 +1,4 @@
+import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
@@ -9,6 +10,7 @@ import { checkRateLimit, getRequestIp } from "@/libs/security/rate-limit";
 const LOGIN_RATE_LIMIT = { limit: 10, windowMs: 15 * 60 * 1000 };
 
 export async function POST(request: Request) {
+  try {
   const rateLimit = checkRateLimit(
     `auth:login:${getRequestIp(request)}`,
     LOGIN_RATE_LIMIT,
@@ -67,7 +69,7 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
-    console.error("[POST /api/auth/login]", error);
+
     if (error instanceof ZodError) {
       return NextResponse.json(
         {
@@ -91,13 +93,10 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json(
-      {
-        message: "登入失敗，請稍後再試",
-      },
-      {
-        status: 500,
-      },
-    );
+    return unexpectedErrorResponse("[POST /api/auth/login]", error, "登入失敗，請稍後再試");
+  }
+
+  } catch (error) {
+    return unexpectedErrorResponse("[POST /api/auth/login]", error, "操作暫時無法完成，請稍後再試。");
   }
 }
