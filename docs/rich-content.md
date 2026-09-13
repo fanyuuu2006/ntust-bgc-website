@@ -1,4 +1,348 @@
-# 公告 Rich Content
+# Rich Content：公告、桌遊與活動
+
+## Phase 3E-E：Link Modal、中文註解與遠端 migration 完成
+
+本節是最新狀態；下方 3E-D「尚未套用」保留當時唯讀診斷紀錄，不代表目前狀態。
+
+### Link 與維護文件
+
+連結設定改用既有 Modal，開啟前保存 selection 範圍；既有連結先延伸至完整 mark。
+套用／移除時還原該範圍，native Dialog 關閉後才恢復 editor 焦點，不讓 URL 輸入框
+改變連結套用位置。取消不改文件；無選字且不在 link 內時顯示提示，不插入 URL 或空 anchor。
+仍只接受 http／https，拒絕帳密與不安全 scheme。活動外層 Modal 不會因內層 Link 關閉而關閉。
+
+我們維護的 Rich Content source JSDoc／註解已改用繁體中文，聚焦安全責任、資料契約與
+非直觀行為；不翻譯第三方 Tiptap 原始碼，也不改已驗證 migration 的英文 SQL comments。
+公開 API 名稱、provider、Tiptap 術語與標準識別字保留原文。
+
+### 2026-09-14 migration 執行紀錄
+
+已核對 linked project、SUPABASE_URL 與 DATABASE_URL 的 project reference，皆為
+`gcydchpuckbmctcjpokz`。操作採既有 Supabase CLI workflow：
+
+1. 套用前 lint、TypeScript、492/492 tests、diff check 全通過；production audit 0。
+2. `npx supabase db push --linked --dry-run` 僅列出以下兩份，seeds/roles 為空：
+   - `202609130001_add_announcement_rich_content.sql`
+   - `202609130002_add_rich_descriptions.sql`
+3. USER 明確授權且前提成立後，執行 `npx supabase db push --linked`，兩份成功套用。
+4. 唯讀 verification 確認欄位、NOT NULL/default、六個 constraints、migration history 正確。
+   三張表 PostgREST select 新欄位、limit=0 全部回 200，**沒有執行 schema-cache reload**。
+5. 套用前後筆數：公告 1、桌遊 607、活動 1；依 ID 排序的原 content/description 摘要校驗值全部一致。
+   舊 rows 皆為 plain_text，新 JSON 欄位為 null。未改寫內容、未 seed、未代 USER PATCH 公告 5。
+
+001 與 checkpoint 相同；002 與先前隔離 PostgreSQL 驗證內嵌 SQL 相同。
+套用時檔案 SHA-256（之後不得改寫已部署 migration）：
+
+- 001: `E7E5F4E3B6AA83F9DDD815A1E2CBDDACD94E703E6F17C5B26F60E6D64C0440A7`
+- 002: `961E040251970B10595895CFF73C452CEDF91F3B75B4F7E175EEE5F69D289A72`
+
+回退 application 不 DROP 新欄位；保留資料，後續修正使用新 forward migration。
+原 PGRST204 缺欄位 blocker 已解除；真正 PATCH／reload／public rendering 留給 USER 按儲存驗收。
+若有新錯誤仍使用既有 Error ID，不 suppress、不增加 generic retry。
+
+### 人工驗收
+
+在公告 5 的編輯頁選字 → Link → 輸入安全 URL → 套用；將游標放回連結測試預填、更新、移除與取消。
+無選字時應顯示提示；javascript/data/含帳密 URL 應顯示驗證訊息。
+活動 Modal 中開關 Link，外層表單要保留。桌面／375px／320px 確認欄位與按鈕不溢出。
+再由 USER 自行執行格式／媒體 → Preview → 儲存變更 → reload → 公開詳情。
+Agent 未提交、部署網站或代為修改公告內容。
+
+## Phase 3E-D：未儲存預覽與 schema readiness
+
+### 預覽
+
+公告、桌遊與活動欄位標題旁的「預覽」直接讀取目前 form state（含未儲存標題）。
+共用 `RichContentPreview` → 驗證 JSON → 同一 `RichTextRenderer`。
+不 fetch、不建立 draft、不寫 localStorage、不儲存 DB。Editor 保持掛載；預覽關閉時
+卸載播放器，避免隱藏 iframe 繼續播放。Editor 仍只用精簡媒體卡，預覽才載入真實播放器。
+
+使用既有 Modal（max-w-3xl），文章在 70dvh 上限內捲動，手機減少內距。
+採 Modal 而非切換 editor 模式，避免重建 Tiptap／selection；標題與關閉按鈕留在捲動區外。
+空白內容顯示「目前沒有可預覽的內容」。非法 document 顯示本地安全訊息；非預期 render
+exception 由局部 boundary 回報 Error ID，不卸載編輯表單、不暴露 raw cause。
+Preview 的小型 React class 僅是 React error boundary；Editor 與 Preview 主元件仍為 FC/hooks。
+
+### 2026-09-14 唯讀診斷結果
+
+localhost 的 Next development env 指向遠端 Supabase，並非本機 Supabase。
+直接 SQL 的 information_schema 與 API 零筆 select 一致：
+
+| Table | 已有舊欄位 | 缺少欄位 |
+| --- | --- | --- |
+| announcements | content | content_format、rich_content |
+| board_games | description | description_format、rich_description |
+| events | description | description_format、rich_description |
+
+migration history 共 16 筆，最新 202609080001；001/002 Rich Content migration 都不在其中。
+公告 PATCH 經 service 驗證後實際包含 content、content_format、rich_content，
+Repository 直接 update；程式已使用新欄位，DB 未升級，造成 code/schema drift。
+原始 incident 未保留 missing-column message，不能追溯它第一個回報哪個欄位；
+但兩個新欄位都已透過唯讀查詢確認不存在，不是僅 schema cache stale。
+GET 的逐欄查詢回傳 42703 column does not exist；沒有為重現 PGRST204 對遠端送 PATCH。
+
+未執行遠端 migration、DDL、schema-cache reload 或資料修改。未更換 localhost DB 設定。
+因此此連線上的儲存／重載驗收仍等待 migration 授權；未儲存預覽不受影響。
+
+### PGRST204 排查順序
+
+Application RichContent code requires the corresponding migrations.
+PGRST204 during create/update commonly indicates code/schema drift.
+它不是 transient network error，不適用 PGRST303 read retry；應用層仍回安全 500 + Error ID。
+
+1. 先辨識 Next development env 實際連線；不要因網站網址是 localhost 就認定 DB 是 local。
+2. 唯讀檢查 supabase_migrations.schema_migrations；舊 history 不完整時不得僅靠檔案存在推論已套用。
+3. 唯讀檢查 information_schema.columns；搭配 PostgREST select=欄位&limit=0，不取得公告內容。
+4. 在已授權環境依序執行既有 migration，不 ad-hoc ALTER、不重跑整份 snapshot：
+   - supabase/migrations/202609130001_add_announcement_rich_content.sql
+   - supabase/migrations/202609130002_add_rich_descriptions.sql
+   然後執行 supabase/verification/ 同版本 SQL；保留舊內容與筆數。
+5. **只有 migration 已套且欄位存在、PostgREST 仍 stale 時**，才執行
+   `NOTIFY pgrst, 'reload schema';`，再重查。不能以 reload 代替缺少 migration。
+
+Repository 目前沒有 Supabase CLI local config；README 的 canonical 流程是 migration SQL +
+對應 verification SQL。shared/production 的套用須另有明確授權，本次不自動初始化／seed DB。
+
+參考：[PostgREST errors](https://docs.postgrest.org/en/v12/references/errors.html)、
+[PostgREST schema cache](https://docs.postgrest.org/en/v12/references/schema_cache.html)。
+
+### 人工驗收
+
+在 /admin/announcements/new、桌遊 new/edit、活動新增／編輯：
+
+1. 改標題、輸入未儲存 H2/H3/H4、清單、引言、粗斜體與連結，再預覽；應顯示新版本。
+2. 預覽 YouTube、Bilibili、HTTPS video/audio；確認不 autoplay、播放器可操作。
+3. 桌面／375px／320px：文章內捲、標題／關閉可達、長 URL 與媒體不撐寬頁面。
+4. 關閉後 editor 內容不變；活動外層 Modal 仍開啟；再開預覽仍是同份未儲存內容。
+5. DB migration 在已授權測試環境套用後，再驗 save → reload → public detail。
+
+本輪瀏覽器／實際影音播放不能由 jsdom 測試證明，須人工 QA。
+
+## Phase 3E-C：Provider 輸入與精簡編輯區
+
+此節取代下方 3E-B 的媒體輸入與 editor 版面描述；儲存欄位與 migration 不變。
+
+- `resolveMediaInput()` 是小型正規化邊界：URL／官方 iframe → provider ID 或直接檔案 URL。
+  新增 Bilibili 時沿用 `videoEmbed.attrs.provider/videoId`，provider 可為 youtube、bilibili；
+  direct video/audio 維持既有節點。Server 仍驗證精確 allowlist，並衍生搜尋文字。
+- YouTube 接受 watch、youtu.be、embed 與 youtube-nocookie embed；Bilibili 接受
+  `/video/BV…` 與 `player.bilibili.com/player.html?bvid=…`。
+  BV 僅接受 BV 加 10 位英數；追蹤、自動播放、分 P 等參數不儲存，不宣稱支援 AV/OGV/b23 短網址。
+- iframe 輸入上限 8192 字元，只接受單一、空內容的 iframe，且 src 必須唯一並加引號。
+  不掛載輸入 HTML；只抽取 src、處理常見 URL entity，再執行同一 hostname/ID 驗證。
+  iframe 的 width、style、事件、allow 等全部丟棄。多個 iframe、script、子元素、未知來源拒絕。
+  protocol-relative src 僅在 iframe 輸入補成 HTTPS；原始 HTML 永不持久化。
+- 新插入的直接影片依 mp4/webm/ogv/mov/m4v 路徑副檔名辨識；音訊依
+  mp3/ogg/oga/wav/m4a/aac/flac。HTTPS、無帳密、最長 2048 字元。
+  Spotify／Apple Music／SoundCloud 頁面不當音訊檔；需未來明確 provider adapter。
+  舊 v1 無副檔名 HTTPS direct node 仍可讀取，避免破壞既存內容；更新時須符合新輸入規則。
+  副檔名不是 MIME/codec 保證，server 不下載或代理 URL，實際播放需人工確認。
+
+### Renderer、隱私與 CSP
+
+YouTube 使用 youtube-nocookie；Bilibili 使用
+`https://player.bilibili.com/player.html?bvid=ID&autoplay=0`。
+兩者 16:9、lazy、具 title/allowFullScreen、strict-origin-when-cross-origin。
+Bilibili 只授予 fullscreen；YouTube 保留 fullscreen、picture-in-picture、encrypted-media。
+不授予 camera/microphone/geolocation/autoplay，不接受使用者 iframe attributes。
+沒有盲加可能破壞播放器 scripts/same-origin 的 sandbox；這不是可執行任意 HTML 的框架。
+公開播放器仍會向第三方發送請求；editor 只顯示本地 preview，不連線播放器。
+直接影音保留 controls、preload=metadata，無 autoplay。
+
+本次重新搜尋原始碼仍未找到 CSP，未新增／放寬任何 header。
+若部署層有政策，frame-src 需精確合併
+`https://www.youtube-nocookie.com https://player.bilibili.com`，保留既有必要 origin。
+media-src 應允許實際檔案 origin；任意 HTTPS 來源意味 `media-src https:` 的較廣政策，
+應由部署決策明確採用，本次未擅自設定。不可使用 frame-src *。
+
+官方參考：[Bilibili 外鏈播放器參數](https://player.bilibili.com/)、
+[YouTube 嵌入與隱私強化模式](https://support.google.com/youtube/answer/171780)。
+
+### 編輯與捲動所有權
+
+媒體設定改用既有 native Modal，預設自動辨識，輸入可貼分享網址或官方 iframe。
+無效輸入是本地 MediaInputError／server Zod 400，不產生 incident Error ID。
+媒體 atom 顯示 provider、精簡來源與就近的編輯／移除；不自動載入外部 player。
+巢狀 Modal 的 close/cancel 停止 React 事件傳播，避免關閉活動編輯表單。
+
+Toolbar 在內容 viewport 外，內容手機最大 50dvh、桌面 60dvh，可獨立縱向捲動；
+頁面仍可捲動。手機 toolbar 分層級／history 與可水平捲動的次要控制列，維持可按大小。
+只收斂 editor 內文間距，不更改 public typography。Toolbar focus 不主動捲動整頁。
+本輪不加入 sticky form actions；先由有界 editor 消除長文造成的無限表單高度，
+保留公告／桌遊／活動各自既有儲存、取消與獨立刪除流程。
+
+### 人工 QA（尚未宣稱視覺或播放 PASS）
+
+瀏覽器 connector 未提供可用 browser。單元測試使用真實 Tiptap/React/jsdom，
+只證明 commands、JSON、DOM、Dialog 事件與 server validation；不證明 layout 或播放。
+在已套 migration 的本機測試 DB 使用公告 new/edit、桌遊 new/edit、活動編輯：
+
+1. 桌面／375px／320px：貼長文，確認 toolbar 方便存取、內容內捲、頁面也可捲，無水平溢出。
+2. 在文末選字套粗體/H4，確認 selection 保留、游標可見；儲存／取消可達。
+3. 開媒體 Modal 不推動文稿；貼長 URL/iframe，確認欄位、按鈕與內部捲動可用。
+4. 分別插入 YouTube 分享 URL/iframe、Bilibili BV URL/player iframe、HTTPS mp4/mp3；
+   編輯／移除，再 save → reload → public render，核對結構與實際播放。
+5. 輸入假 provider 網域、script、多 iframe、Spotify 頁面，應是可修正驗證訊息且無 Error ID。
+6. 活動 Modal 內開／關媒體 Dialog，確認外層表單與未儲存內容保留。
+7. legacy 文字、H2/H3/H4、搜尋／摘要／SEO、returnTo 維持；僅用本機資料，不操作 production。
+
+## Phase 3E-B：跨內容欄位與媒體
+
+Phase 3E checkpoint：`8bf94c4 feat(content): add rich announcement editing`。
+提交前重新驗證 450/450、lint、TypeScript、diff check、production audit 0。
+下方 Phase 3E/UX 章節保留當時的決策與證據；本節描述擴充後行為。
+
+### 語意與共用邊界
+
+- entity title 由詳情頁擁有 H1。工具列明確標為「內文／H2 標題／H3 標題／H4 標題」。
+  schema、Tiptap 與 renderer 同步只允許 2/3/4，沒有開放 H1/H5/H6。
+- 一個 `RichTextEditor`、一個 SSR `RichTextRenderer`、一套 `.rich-content` typography。
+  H4 1.05rem，低於 H2/H3；外層頁面仍擁有寬度與間距。
+- Editor 保持 React FC/hooks；媒體使用 Tiptap selectable atom。沒有新增 editor 套件。
+- 未預先建立 `review` profile。未來 review 應以段落、粗斜體、連結為限，同時限制
+  editor extensions 與 server allowlist；不能只隱藏工具列。本輪沒有評論／評分功能。
+
+### 媒體契約
+
+```ts
+{ type: "videoEmbed", attrs: { provider: "youtube", videoId: "dQw4w9WgXcQ" } }
+{ type: "videoEmbed", attrs: { provider: "direct", src: "https://example.com/video.mp4" } }
+{ type: "audioEmbed", attrs: { src: "https://example.com/audio.mp3" } }
+```
+
+`normalizeMedia()` 僅接受 HTTPS、無帳密、無空白／控制字元、最多 2048 字元。
+YouTube 嚴格比對 `youtube.com`、`www.youtube.com`、`m.youtube.com` 的 `/watch`，
+以及 `youtu.be/ID`；ID 為 11 位英數、`_`、`-`。追蹤／播放起點參數不儲存。
+非 YouTube 來源不能當作 YouTube iframe；direct 媒體只會進 video/audio。
+Server 再次檢查精確 attributes，不接受事件、style、iframe HTML 或任意 provider。
+
+公開 renderer 自行組成 `https://www.youtube-nocookie.com/embed/ID`，16:9、lazy、
+具 title、fullscreen、`strict-origin-when-cross-origin`。不載入 YouTube API script。
+採 privacy-enhanced origin，**仍會有第三方請求**，不宣稱消除追蹤或 cookie。
+直接媒體用原生 controls、`preload="metadata"`，不 autoplay；不先由 server 下載 URL。
+HTTPS 並不保證網址可播放：檔案 codec、MIME、來源防盜連及有效期限仍由提供者決定。
+不要貼需保密的簽名網址；已發布文件中的媒體 URL 對讀者可見。
+
+編輯器只有一個「新增或編輯媒體」按鈕，打開正常文件流中的類型／URL 面板。
+媒體以可選取卡顯示來源，不在 editor 發起外部播放器請求；選取後可替換、移除，
+或使用 Delete/Backspace。公開頁才顯示播放器。沒有裁切／縮放／上傳功能。
+貼上任意 iframe/video HTML 不會建立媒體，須經工具列插入；JSON 重載保留媒體。
+媒體的 canonical URL 作為可搜尋文字 companion；純媒體公告也算有意義內容。
+
+### CSP 稽核
+
+原始碼的 `next.config.ts`、layouts 與 route/header helper 沒有 CSP 設定，repository
+也沒有 `vercel.json`。本輪沒有新增或放寬 CSP，**origin 變更為無**。
+無法由 repository 證明部署平台／proxy 是否另加 header，部署前須查實際 response。
+若平台已有 CSP，需合併允許 `frame-src https://www.youtube-nocookie.com`，並保留
+既有 Turnstile 等必要 frame origins；不要改成 `frame-src *`。
+直接媒體需要其實際 HTTPS origin 在 `media-src` 內。若營運要求任意 HTTPS 媒體，
+應明確評估 `media-src https:`；本輪未擅自替平台設定這項政策。
+
+參考：[Tiptap Node API](https://tiptap.dev/docs/editor/extensions/custom-extensions/create-new/node)、
+[YouTube player parameters](https://developers.google.com/youtube/player_parameters)、
+[YouTube privacy-enhanced mode](https://support.google.com/youtube/answer/171780)。
+
+### 桌遊／活動資料與向後相容
+
+稽核結果：兩者 `description text` 都可為 null，舊 Service 上限 2000 字，搜尋皆使用
+`name/description ilike`。桌遊完整內容在公開詳情；活動完整內容目前在 Admin 詳情，
+沒有獨立公開／會員活動詳情 route。活動清單、社員 Dashboard 主要列名稱與時間。
+
+| 欄位 | 用途 |
+| --- | --- |
+| `description` | 舊文字保留；rich 寫入時 server 衍生，供搜尋／摘要／桌遊 SEO |
+| `description_format` | `plain_text` 預設或 `rich_text_v1` |
+| `rich_description` | nullable JSONB canonical document |
+
+公告維持原來的 `content/content_format/rich_content`；描述欄依同樣命名規則使用
+`description/description_format/rich_description`，不建立通用 CMS table。
+`storedDescription()` 只映射欄名。legacy converter 不解讀 HTML/Markdown，仍以
+雙換行為段落、單換行為 hardBreak，保留空行（CR/CRLF 正規化 LF）。
+
+`descriptionFields`／`validateDescription`／`canonicalizeDescription` 在 domain schema
+驗證後衍生 companion，不信任 client 傳來的文字。Rich 上限沿用 20,000 字元／120,000
+UTF-8 bytes／4000 nodes／16 層；舊純文字 API 仍限 2000 字。
+可選描述允許空白 editor，會同步轉為 `description=null, plain_text, rich_description=null`。
+只修改名稱／時間的 PATCH 不會清空描述。未知版本可安全閱讀 companion，但 UI 阻止覆寫。
+
+桌遊 new/edit 保留原有欄位、inventory、驗證與 returnTo；活動 create/edit 沿用 modal，
+只擴為既有 lg 尺寸以容納 editor，關閉時卸載 editor 避免下次開啟沿用舊文件。
+失敗不重設內容；活動仍 refresh 同一列表。類別／位置等簡短說明繼續用純文字。
+Public renderer 不 import editor，Tiptap 只由 Admin dynamic import；沒有把讀取頁改為 Client。
+
+### Migration 與驗證限制
+
+新增 `202609130002_add_rich_descriptions.sql`，不修改已 checkpoint 的 001。
+順序為 001 公告 → 002 桌遊／活動 → 新程式；兩個 migration **均未套遠端**。
+新 SQL 只有 additive columns／constraints／comments，沒有 UPDATE legacy 文字。
+canonical snapshot 明確標記待套用目標，不代表 remote 現況。
+回退到舊版本時應暫停 rich 編輯，保留 JSON 欄位，避免舊後端使 companion 不同步。
+
+本輪使用隔離本機 PostgreSQL 18（127.0.0.1:55439）的 `phase3eb_qa` schema，
+將 SQL 的 public qualifier 替換為測試 schema 後執行，檢查舊文字/null、預設、
+rich 寫入、invalid format/root/null 拒絕。另以真實 server schema → JSONB → reload
+驗證 H4/YouTube/video/audio 與 companion，測試後已停止 DB。未使用 production 憑證。
+這不是遠端 migration／完整應用程式儲存的驗收證據。
+
+### 人工 QA
+
+本輪 browser connector 回傳空 browser 清單，因此不宣稱視覺、播放或 touch PASS。
+請在已套 001/002 的 **local/test DB** 執行 `npm run dev`：
+
+1. 公告、桌遊、活動各建立測試內容：H2「介紹」、正文粗斜體、清單、YouTube、音訊、
+   引言、HR、H3/H4「注意事項」。選取媒體 → 檢查 URL → 替換／移除 → Undo/Redo。
+2. 儲存、重新開啟 editor，比對結構；桌遊公開詳情／公告詳情／活動 Admin 詳情確認播放器。
+   YouTube 是否允許該影片嵌入、直接媒體 codec 是否支援，須以可公開播放來源實測。
+3. 舊多行描述：未儲存前文字不變；套格式儲存後文字／空行保留。清空可選描述應成功。
+4. 320／375／768／1440px：工具列換行、URL 面板不超寬；UUID/長 URL 可換行；
+   YouTube 16:9、audio/video controls 可操作；modal/document 可捲至儲存／取消。
+5. 模擬 local API 失敗後 editor 內容留存；桌遊儲存／取消保留原 list query；活動不離開列表。
+6. 公開頁關閉 JavaScript 仍可讀；Network 不應下載 Tiptap editor chunk。摘要／SEO 不含 JSON。
+
+本輪未 commit Phase 3E-B、未 push、未部署、未套遠端 migration。
+
+驗證結果：起始 7 組 RED 全部失敗（缺少 H4／媒體／domain rich persistence）；
+最終 focused 48/48、全回歸 464/464（checkpoint 450 + 14）。lint／TypeScript／
+diff check PASS；production audit critical/high/moderate/low/total 全部 0。
+新增測試涵蓋真實 Tiptap 媒體替換／刪除與重載、domain schema／Service companion、
+表單失敗保留與 return context。修正舊測試的 import loader 與已移往 renderer 的樣式斷言；
+未移除原 domain/security 測試。未重跑 build。
+
+本輪 30 個檔案（不含 ignored `.temp` 本機驗證紀錄）：
+
+```text
+docs/rich-content.md
+src/components/RichTextEditor.tsx
+src/components/RichTextRenderer.tsx
+src/libs/rich-content/content.ts
+src/libs/rich-content/editor-document.ts
+src/libs/rich-content/media.ts
+src/libs/rich-content/editor-media.ts
+src/libs/rich-content/description.ts
+src/styles/globals.css
+src/types/database.tsx
+src/services/board-games/board-games.schema.ts
+src/services/events/events.schema.ts
+src/repositories/board-games.repository.ts
+src/repositories/events.repository.ts
+src/components/(admin)/admin/board-games/BoardGameForm.tsx
+src/components/(admin)/admin/events/EventActions.tsx
+src/components/(admin)/admin/events/EventRecords.tsx
+src/app/(admin)/admin/board-games/[id]/edit/page.tsx
+src/app/(admin)/admin/events/[id]/page.tsx
+src/app/(public)/board-games/[id]/page.tsx
+supabase/README.md
+supabase/schema/canonical-public-schema.sql
+supabase/migrations/202609130002_add_rich_descriptions.sql
+supabase/verification/202609130002_rich_descriptions.sql
+tests/phase2hf-board-game-detail.test.mjs
+tests/phase2jc-query-contract.test.mjs
+tests/phase2ka0-public-auth-blast-radius.test.mjs
+tests/phase3e-rich-content.test.mjs
+tests/phase3e-editor-ux.test.mjs
+tests/phase3eb-rich-expansion.test.mjs
+```
 
 ## React 與資料流（Phase 3E-UX）
 
@@ -257,3 +601,12 @@ tests/phase2hd-announcements-editorial.test.mjs
 tests/phase2hi4-public-detail-convergence.test.mjs
 docs/rich-content.md
 ```
+
+
+### Link Modal：選取、游標插入與改名
+
+連結操作支援三種情況：選取文字後新增、在空游標位置直接插入，以及編輯既有連結。Modal 皆提供「顯示文字」與「連結網址」；既有連結會展開完整 mark 範圍並預填文字與網址。
+
+套用時使用開啟 Modal 前保存的範圍。顯示文字未改動時只更新 link mark，保留原有格式；改名或新增文字時，以單一 ProseMirror transaction 替換範圍，保留起點的非連結 marks。完成後游標位於連結後方，stored marks 明確排除 link，避免後續輸入沿用網址。移除連結只移除 mark，取消不改文件。
+
+網址仍須通過既有 HTTP(S) 與禁止帳密的驗證；空白顯示文字與不安全網址只顯示欄位錯誤。此調整不涉及 schema、renderer 或資料庫。

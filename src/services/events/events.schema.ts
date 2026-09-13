@@ -1,18 +1,12 @@
 import { z } from "zod";
-
-const eventDescriptionSchema = z
-  .string()
-  .trim()
-  .max(2000, "活動描述不可超過 2000 字")
-  .nullish()
-  .transform((value) => value?.trim() || null);
+import { descriptionFields, validateDescription, canonicalizeDescription } from "@/libs/rich-content/description";
 
 const checkInTimeSchema = z.iso.datetime().nullable().optional();
 
 export const createEventSchema = z
   .object({
     name: z.string().trim().min(1, "活動名稱不可為空").max(100, "活動名稱不可超過 100 字"),
-    description: eventDescriptionSchema,
+    ...descriptionFields,
     start_time: z.iso.datetime({ message: "活動開始時間格式不正確" }),
     end_time: z.iso.datetime({ message: "活動結束時間格式不正確" }),
     check_in_opens_at: checkInTimeSchema,
@@ -21,12 +15,12 @@ export const createEventSchema = z
   .refine((data) => new Date(data.end_time) > new Date(data.start_time), {
     message: "活動結束時間必須晚於開始時間",
     path: ["end_time"],
-  });
+  }).superRefine(validateDescription).transform(canonicalizeDescription);
 
 export const updateEventSchema = z
   .object({
     name: z.string().trim().min(1, "活動名稱不可為空").max(100, "活動名稱不可超過 100 字"),
-    description: eventDescriptionSchema.optional(),
+    ...descriptionFields,
     start_time: z.iso.datetime({ message: "活動開始時間格式不正確" }),
     end_time: z.iso.datetime({ message: "活動結束時間格式不正確" }),
     check_in_opens_at: checkInTimeSchema,
@@ -39,7 +33,7 @@ export const updateEventSchema = z
       !data.end_time ||
       new Date(data.end_time) > new Date(data.start_time),
     { message: "活動結束時間必須晚於開始時間", path: ["end_time"] },
-  );
+  ).superRefine(validateDescription).transform(canonicalizeDescription);
 
 export const attendanceInputSchema = z.object({
   user_id: z.uuid(),

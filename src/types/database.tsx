@@ -215,6 +215,8 @@ export type BoardGame = {
   id: UUID;
   name: string;
   description: string | null;
+  description_format: "plain_text" | "rich_text_v1";
+  rich_description: unknown | null;
   image: string | null;
   created_at: Timestamp;
   updated_at: Timestamp;
@@ -253,6 +255,8 @@ export type Event = {
   id: UUID;
   name: string;
   description: string | null;
+  description_format: "plain_text" | "rich_text_v1";
+  rich_description: unknown | null;
   start_time: Timestamp;
   end_time: Timestamp;
   check_in_opens_at: Timestamp | null;

@@ -116,7 +116,7 @@ test("public renderer has no editor runtime, raw HTML sink or client boundary", 
     assert.doesNotMatch(readFileSync(path, "utf8"), /@tiptap|dangerouslySetInnerHTML|["']use client["']/);
   }
   const editor = readFileSync("src/components/RichTextEditor.tsx", "utf8");
-  assert.match(editor, /levels: \[2, 3\]/);
+  assert.match(editor, /levels: \[2, 3, 4\]/);
   assert.match(editor, /immediatelyRender: false/);
   assert.match(editor, /aria-pressed/);
   assert.match(editor, /isAllowedUri: isSafeRichLink/);
@@ -188,7 +188,7 @@ test("empty editor cannot submit and cancel still preserves source list", async 
   h.find(h.tree(), (e) => e.type === "form").props.onSubmit({ preventDefault() {} });
   await new Promise(setImmediate);
   assert.equal(h.calls.length, 0);
-  assert.ok(h.find(h.tree(), (e) => e.props.error === "請輸入公告內容"));
+  assert.ok(h.find(h.tree(), (e) => e.props.error === "請輸入內容"));
   h.find(h.tree(), (e) => e.props.children === "取消").props.onClick();
   assert.deepEqual(h.navigations, ["/admin/announcements?search=club&page=2"]);
 });

@@ -237,6 +237,8 @@ test("board-game detail keeps core content but skips personalization when viewer
         BoardGameStatusBadge: "BoardGameStatusBadge",
       },
       "@/components/BoardGameImage": { BoardGameImage: "BoardGameImage" },
+      "@/components/RichTextRenderer": { RichTextRenderer: "RichTextRenderer" },
+      "@/libs/rich-content/description": { storedDescription: (value) => ({ content: value.description }) },
       "@/components/ui/Button": { ButtonLink: "ButtonLink" },
       "@/libs/public-viewer": {
         resolvePublicViewer: async () => ({

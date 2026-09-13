@@ -37,8 +37,9 @@ test("public board-game detail is an image-led page flow rather than a giant car
   assert.match(page, /<h2[^>]*id="board-game-description"/);
   assert.match(page, /桌遊介紹/);
   assert.match(page, /目前尚未補充這款桌遊的介紹。/);
-  assert.match(page, /whitespace-pre-wrap/);
-  assert.match(page, /break-words|overflow-wrap/);
+  assert.match(page, /<RichTextRenderer/);
+  assert.match(await readSource("src/components/RichTextRenderer.tsx"), /whitespace-pre-wrap/);
+  assert.match(await readSource("src/components/RichTextRenderer.tsx"), /wrap-anywhere|break-words|overflow-wrap/);
   assert.doesNotMatch(page, /"use client"|useEffect|fetch\(/);
 });
 

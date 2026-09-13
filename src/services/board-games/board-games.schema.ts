@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { descriptionFields, validateDescription, canonicalizeDescription } from "@/libs/rich-content/description";
 import { readSingleQueryValue } from "@/libs/query-params";
 
 export const boardGameStatusSchema = z.enum([
@@ -44,17 +45,18 @@ const optionalImage = z.preprocess(
   z.union([z.url("請輸入有效的圖片網址"), z.null()]).optional(),
 );
 
-export const createBoardGameSchema = z.object({
+const boardGameInputSchema = z.object({
   name: z.string().trim().min(1, "請輸入名稱").max(100, "名稱不可超過 100 字"),
   inventory_number: z.number().int().min(1, "請輸入有效的社產編號"),
   category_id: z.uuid("請選擇分類"),
   location_id: z.uuid("請選擇位置"),
-  description: nullableText(2000),
+  ...descriptionFields,
   image: optionalImage,
   status: boardGameStatusSchema.default("available"),
 });
 
-export const updateBoardGameSchema = createBoardGameSchema.partial();
+export const createBoardGameSchema = boardGameInputSchema.superRefine(validateDescription).transform(canonicalizeDescription);
+export const updateBoardGameSchema = boardGameInputSchema.partial().superRefine(validateDescription).transform(canonicalizeDescription);
 
 export const listBoardGamesQuerySchema = z.object({
   page: optionalQueryField(z.coerce.number().int().min(1)),

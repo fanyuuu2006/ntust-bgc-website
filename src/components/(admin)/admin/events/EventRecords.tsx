@@ -11,18 +11,24 @@ import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { RichContentPreview } from "@/components/RichContentPreview";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
-import { Textarea } from "@/components/ui/Textarea";
+import dynamic from "next/dynamic";
+import { editableRichContent, readRichContent } from "@/libs/rich-content/content";
+import { storedDescription } from "@/libs/rich-content/description";
 import { apiClient } from "@/libs/api/client";
 import type { Event } from "@/types/database";
 import { formatAdminDateTime } from "@/utils/date";
 import { EventStatusBadge } from "./EventStatusBadge";
 
+// Editor runtime 僅供管理端編輯，不帶入伺服器渲染的閱讀頁面。
+const RichTextEditor = dynamic(() => import("@/components/RichTextEditor").then((module) => module.RichTextEditor), { ssr: false });
+
 type EventFormValues = {
   name: string;
-  description: string;
+  description: unknown;
   start_time: string;
   end_time: string;
   selfCheckInEnabled: boolean;
@@ -35,7 +41,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
   const [selectedEvent, setSelectedEvent] = useState<{ event: Event; action: "edit" | "delete" } | null>(null);
   const [values, setValues] = useState<EventFormValues>({
     name: "",
-    description: "",
+    description: editableRichContent(),
     start_time: "",
     end_time: "",
     selfCheckInEnabled: false,
@@ -48,13 +54,14 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const editingEvent = selectedEvent?.action === "edit" ? selectedEvent.event : null;
+  const unsupportedDescription = !!editingEvent?.description_format && editingEvent.description_format !== "plain_text" && !readRichContent(storedDescription(editingEvent));
   const deletingEvent = selectedEvent?.action === "delete" ? selectedEvent.event : null;
 
   const openEditDialog = (event: Event) => {
     setSelectedEvent({ event, action: "edit" });
     setValues({
       name: event.name,
-      description: event.description ?? "",
+      description: editableRichContent(storedDescription(event)),
       start_time: event.start_time.slice(0, 16),
       end_time: event.end_time.slice(0, 16),
       selfCheckInEnabled:
@@ -87,6 +94,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
   const saveEvent = async (formEvent: React.FormEvent<HTMLFormElement>) => {
     formEvent.preventDefault();
     if (!editingEvent) return;
+    if (unsupportedDescription) { setEditError("此描述格式暫不支援編輯，原始資料不會被覆寫。"); return; }
 
     setIsSaving(true);
     setEditError(null);
@@ -96,7 +104,8 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
         method: "PATCH",
         body: {
           name: values.name,
-          description: values.description || null,
+          description_format: "rich_text_v1",
+          rich_description: values.description,
           start_time: new Date(values.start_time).toISOString(),
           end_time: new Date(values.end_time).toISOString(),
           check_in_opens_at: values.selfCheckInEnabled
@@ -203,7 +212,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
         ))}
       </div>
 
-      <Modal open={editingEvent !== null} onClose={closeEditDialog} title="編輯活動">
+      <Modal size="lg" open={editingEvent !== null} onClose={closeEditDialog} title="編輯活動">
         <form onSubmit={saveEvent} className="space-y-4">
           <Field label="活動名稱" htmlFor="event-name" required>
             <Input
@@ -215,14 +224,9 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
               onChange={(event) => setValues((current) => ({ ...current, name: event.target.value }))}
             />
           </Field>
-          <Field label="活動說明" htmlFor="event-description">
-            <Textarea
-              id="event-description"
-              className="w-full"
-              value={values.description}
-              disabled={isSaving}
-              onChange={(event) => setValues((current) => ({ ...current, description: event.target.value }))}
-            />
+          <Field label="活動說明" htmlFor="event-description" action={<RichContentPreview value={values.description} title={values.name} label="活動說明預覽" />}>
+            {editingEvent ? <RichTextEditor key={editingEvent.id} id="event-description" label="活動說明" initialContent={editableRichContent(storedDescription(editingEvent ?? undefined))} onChange={(description) => setValues((current) => ({ ...current, description }))} disabled={isSaving || unsupportedDescription} /> : null}
+            <p className="text-xs text-(--text-muted)">{unsupportedDescription ? "此描述格式暫不支援編輯，原始資料不會被覆寫。" : "可留空；格式化內容最多 20,000 字元。"}</p>
           </Field>
           <Field label="開始時間" htmlFor="event-start-time" required>
             <Input

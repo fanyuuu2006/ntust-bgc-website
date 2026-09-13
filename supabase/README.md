@@ -9,7 +9,7 @@
 
 | 位置 | 用途 |
 | --- | --- |
-| `schema/canonical-public-schema.sql` | 歷史 remote schema 參考；公告區塊另明確標記 Phase 3E 目標欄位，尚未代表遠端已套用。 |
+| `schema/canonical-public-schema.sql` | 歷史 remote schema 參考；Phase 3E 公告／桌遊／活動欄位已於 2026-09-14 套用並唯讀驗證。 |
 | `migrations/` | 未來資料庫結構有變動時，放新 migration 檔案的地方。 |
 | `verification/` | 確認資料表結構有沒有建立正確的檢查 SQL。 |
 
@@ -40,10 +40,16 @@
 `service_role`，保留它不會重新開放網站上的刪除 API。若未來要移除遠端函式，應先確認
 外部維護腳本沒有使用，再以新的 forward migration 處理；不要修改已套用的歷史 SQL。
 
-## Phase 3E：公告 Rich Content（待套用）
+## Phase 3E：Rich Content（已套用）
 
-`202609130001_add_announcement_rich_content.sql` 只新增格式與 JSON 欄位；既有 `content` 不改寫。
-先在本機／測試資料庫套用並執行對應 verification SQL，確認既有公告為 `plain_text`、內容與筆數不變，再安排 migration 與應用程式上線。
-本輪未操作遠端。canonical snapshot 的公告區塊已標記新目標，不可當作遠端驗證證據。
-上線順序是 migration → 應用程式；回退應用程式時保留新欄位及資料，不執行 DROP。
-詳見 [Rich Content 說明](../docs/rich-content.md)。
+2026-09-14 經 USER 授權，dry-run 僅包含下列兩份後，以 Supabase CLI db push 依序套用：
+
+- `202609130001_add_announcement_rich_content.sql`
+- `202609130002_add_rich_descriptions.sql`
+
+目標為 localhost 同時使用的遠端 project `gcydchpuckbmctcjpokz`。
+套用後 migration history、欄位、defaults／constraints 與 PostgREST 新欄位查詢皆通過。
+公告／桌遊／活動原文字與筆數比對一致，未執行內容 QA mutation，沒有手動 schema-cache reload。
+已部署 migration 不再改寫；後續修正新增 migration。回退程式時保留新欄位與資料，不 DROP。
+
+詳見 [Rich Content 最新執行紀錄](../docs/rich-content.md)。canonical snapshot 仍不是可套用線上 DB 的 migration。

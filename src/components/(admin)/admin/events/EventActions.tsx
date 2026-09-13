@@ -5,14 +5,19 @@ import { useRouter } from "next/navigation";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Modal } from "@/components/Modal";
 import { Button } from "@/components/ui/Button";
+import { RichContentPreview } from "@/components/RichContentPreview";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
+import dynamic from "next/dynamic";
+import { editableRichContent } from "@/libs/rich-content/content";
 import { apiClient } from "@/libs/api/client";
+
+// Editor runtime 僅供管理端編輯，不帶入伺服器渲染的閱讀頁面。
+const RichTextEditor = dynamic(() => import("@/components/RichTextEditor").then((module) => module.RichTextEditor), { ssr: false });
 
 type EventFormValues = {
   name: string;
-  description: string;
+  description: unknown;
   start_time: string;
   end_time: string;
   selfCheckInEnabled: boolean;
@@ -22,7 +27,7 @@ type EventFormValues = {
 
 const emptyFormValues = (): EventFormValues => ({
   name: "",
-  description: "",
+  description: editableRichContent(),
   start_time: "",
   end_time: "",
   selfCheckInEnabled: false,
@@ -60,7 +65,8 @@ export function EventActions() {
         method: "POST",
         body: {
           name: values.name,
-          description: values.description || null,
+          description_format: "rich_text_v1",
+          rich_description: values.description,
           start_time: new Date(values.start_time).toISOString(),
           end_time: new Date(values.end_time).toISOString(),
           check_in_opens_at: values.selfCheckInEnabled
@@ -86,7 +92,7 @@ export function EventActions() {
         新增活動
       </Button>
 
-      <Modal open={open} onClose={closeCreateDialog} title="新增活動">
+      <Modal size="lg" open={open} onClose={closeCreateDialog} title="新增活動">
         <form onSubmit={createEvent} className="space-y-4">
           <Field label="活動名稱" htmlFor="event-name" required>
             <Input
@@ -98,14 +104,9 @@ export function EventActions() {
               onChange={(event) => setValues((current) => ({ ...current, name: event.target.value }))}
             />
           </Field>
-          <Field label="活動說明" htmlFor="event-description">
-            <Textarea
-              id="event-description"
-              className="w-full"
-              value={values.description}
-              disabled={busy}
-              onChange={(event) => setValues((current) => ({ ...current, description: event.target.value }))}
-            />
+          <Field label="活動說明" htmlFor="event-description" action={<RichContentPreview value={values.description} title={values.name} label="活動說明預覽" />}>
+            {open ? <RichTextEditor id="event-description" label="活動說明" initialContent={editableRichContent()} onChange={(description) => setValues((current) => ({ ...current, description }))} disabled={busy} /> : null}
+            <p className="text-xs text-(--text-muted)">可留空；格式化內容最多 20,000 字元。</p>
           </Field>
           <Field label="開始時間" htmlFor="event-start-time" required>
             <Input

@@ -53,7 +53,7 @@ test("announcement detail remains a compact readable server-rendered article", a
   assert.equal((detail.match(/<h1\b/g) ?? []).length, 1);
   assert.match(detail, /max-w-3xl/);
   assert.match(detail, /<RichTextRenderer/);
-  assert.match(await readSource("src/components/RichTextRenderer.tsx"), /overflow-wrap:anywhere/);
+  assert.match(await readSource("src/components/RichTextRenderer.tsx"), /wrap-anywhere|overflow-wrap:anywhere/);
   assert.doesNotMatch(
     detail,
     /dangerouslySetInnerHTML|import \{ Card \}|<Card\b|["']use client["']|fetch\(/,

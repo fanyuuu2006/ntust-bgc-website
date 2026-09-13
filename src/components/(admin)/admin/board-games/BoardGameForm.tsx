@@ -16,9 +16,13 @@ import type {
 import { BOARD_GAME_STATUS_LABEL } from "@/components/(admin)/admin/board-games/BoardGameStatusBadge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { RichContentPreview } from "@/components/RichContentPreview";
 import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
-import { Textarea } from "@/components/ui/Textarea";
+import dynamic from "next/dynamic";
+import { editableRichContent, readRichContent } from "@/libs/rich-content/content";
+import { storedDescription } from "@/libs/rich-content/description";
+const RichTextEditor = dynamic(() => import("@/components/RichTextEditor").then((module) => module.RichTextEditor), { ssr: false });
 
 type BoardGameFormMode = "create" | "edit";
 
@@ -26,6 +30,8 @@ type BoardGameFormValues = {
   name: string;
   inventory_number: string;
   description: string;
+  description_format?: string;
+  rich_description?: unknown;
   image: string;
   category_id: string;
   location_id: string;
@@ -87,7 +93,7 @@ function getFieldErrors(
   for (const issue of result.error.issues) {
     const [fieldName] = issue.path;
     if (typeof fieldName === "string") {
-      const key = fieldName as keyof BoardGameFormValues;
+      const key = (fieldName === "rich_description" || fieldName === "description_format" ? "description" : fieldName) as keyof BoardGameFormValues;
       if (!errors[key]) {
         errors[key] = issue.message;
       }
@@ -110,6 +116,9 @@ export function BoardGameForm({
   const [values, setValues] = useState<BoardGameFormValues>(() =>
     buildInitialValues(initialValues),
   );
+  const [initialDescription] = useState(() => editableRichContent(storedDescription(initialValues)));
+  const [richDescription, setRichDescription] = useState<unknown>(initialDescription);
+  const unsupportedDescription = !!initialValues?.description_format && initialValues.description_format !== "plain_text" && !readRichContent(storedDescription(initialValues));
   const [errors, setErrors] = useState<
     Partial<Record<keyof BoardGameFormValues, string>>
   >({});
@@ -146,7 +155,8 @@ export function BoardGameForm({
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const nextErrors = getFieldErrors(values, mode);
+    if (unsupportedDescription) { setFormError("此描述格式暫不支援編輯，原始資料不會被覆寫。"); return; }
+    const nextErrors = getFieldErrors({ ...values, description_format: "rich_text_v1", rich_description: richDescription }, mode);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
@@ -156,7 +166,8 @@ export function BoardGameForm({
     const payload = {
       name: values.name.trim(),
       inventory_number: Number(values.inventory_number),
-      description: values.description.trim() === "" ? null : values.description.trim(),
+      description_format: "rich_text_v1",
+      rich_description: richDescription,
       image: values.image.trim() === "" ? null : values.image.trim(),
       category_id: values.category_id,
       location_id: values.location_id,
@@ -226,8 +237,9 @@ export function BoardGameForm({
 
         <section className="space-y-4" aria-labelledby="board-game-content">
           <h2 id="board-game-content" className="border-b border-(--border-default) pb-2 text-base font-semibold text-(--text-primary)">介紹與圖片</h2>
-          <Field label="描述" htmlFor="description" error={errors.description}>
-            <Textarea id="description" name="description" value={values.description} onChange={handleChange} placeholder="請輸入桌遊簡介或說明" rows={6} invalid={!!errors.description} />
+          <Field label="描述" htmlFor="description" error={errors.description} action={<RichContentPreview value={richDescription} title={values.name} label="桌遊介紹預覽" />}>
+            <RichTextEditor id="description" label="桌遊描述" initialContent={initialDescription} onChange={setRichDescription} disabled={isSubmitting || unsupportedDescription} invalid={!!errors.description} />
+            <p className="text-xs text-(--text-muted)">{unsupportedDescription ? "此描述格式暫不支援編輯。" : "可留空；格式化內容最多 20,000 字元。"}</p>
           </Field>
           <FieldInput field={{ id: "image", label: "圖片連結", type: "url", placeholder: "https://example.com/board-game.jpg", error: errors.image }} value={values.image} onChange={handleChange} />
         </section>

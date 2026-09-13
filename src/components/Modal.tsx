@@ -117,8 +117,13 @@ export function Modal({
   return (
     <dialog
       ref={ref}
-      onClose={onClose}
+      onClose={(event) => {
+        // React propagates dialog events through nested editor dialogs.
+        event.stopPropagation();
+        onClose();
+      }}
       onCancel={(event) => {
+        event.stopPropagation();
         event.preventDefault();
         if (!closeDisabled) onClose();
       }}

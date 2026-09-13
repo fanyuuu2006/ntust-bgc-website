@@ -4,9 +4,8 @@ import { plainTextFromRichContent, richContentSchema, RICH_TEXT_MAX_LENGTH } fro
 const common = { title: z.string().trim().min(1).max(160), is_published: z.boolean() };
 
 /**
- * Validate mutation input and derive the plain-text companion on the server.
- * Never persist a client-supplied companion alongside an unrelated rich document.
- * The legacy branch keeps older plain-text API callers backward compatible.
+ * 驗證公告 mutation，並由 Server 從 rich 文件衍生純文字 companion。
+ * 不能同時儲存 Client 提供、彼此無關的兩份內容；legacy 分支保留舊純文字 API 相容性。
  */
 export const announcementInputSchema = z.union([
   z.object({

@@ -17,13 +17,13 @@ export type CreateBoardGameInput = Pick<
   BoardGame,
   "name" | "category_id" | "location_id" | "inventory_number"
 > &
-  Partial<Pick<BoardGame, "description" | "image" | "status">>;
+  Partial<Pick<BoardGame, "description" | "description_format" | "rich_description" | "image" | "status">>;
 
 export type UpdateBoardGameInput = Partial<
   Pick<
     BoardGame,
     | "name"
-    | "description"
+    | "description" | "description_format" | "rich_description"
     | "image"
     | "category_id"
     | "location_id"

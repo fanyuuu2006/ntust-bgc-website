@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import ts from "typescript";
+import { load } from "./helpers/load-app-module.mjs";
 
 const root = new URL("../", import.meta.url);
 const nodeRequire = createRequire(import.meta.url);
@@ -29,7 +30,7 @@ test("Admin Board Games keeps valid fields when optional UUID filters are empty"
   const queryParams = await loadCommonJsModule("src/libs/query-params.ts");
   const { listAdminBoardGamesQuerySchema } = await loadCommonJsModule(
     "src/services/board-games/board-games.schema.ts",
-    { "@/libs/query-params": queryParams },
+    { "@/libs/query-params": queryParams, "@/libs/rich-content/description": load("src/libs/rich-content/description.ts") },
   );
 
   assert.deepEqual(
@@ -58,7 +59,7 @@ test("invalid Admin Board Game fields fall back independently", async () => {
   const queryParams = await loadCommonJsModule("src/libs/query-params.ts");
   const { listAdminBoardGamesQuerySchema } = await loadCommonJsModule(
     "src/services/board-games/board-games.schema.ts",
-    { "@/libs/query-params": queryParams },
+    { "@/libs/query-params": queryParams, "@/libs/rich-content/description": load("src/libs/rich-content/description.ts") },
   );
 
   assert.deepEqual(
@@ -81,7 +82,7 @@ test("Admin Borrowings keeps search when blank scalar filters are ignored", asyn
   const queryParams = await loadCommonJsModule("src/libs/query-params.ts");
   const { listBorrowingsQuerySchema } = await loadCommonJsModule(
     "src/services/board-games/board-games.schema.ts",
-    { "@/libs/query-params": queryParams },
+    { "@/libs/query-params": queryParams, "@/libs/rich-content/description": load("src/libs/rich-content/description.ts") },
   );
 
   assert.deepEqual(
@@ -195,7 +196,7 @@ test("pagination rejects fractional, repeated-invalid, and excessive values safe
   const queryParams = await loadCommonJsModule("src/libs/query-params.ts");
   const { parsePage, parsePageSize } = await loadCommonJsModule(
     "src/utils/pagination.tsx",
-    { "@/libs/query-params": queryParams },
+    { "@/libs/query-params": queryParams, "@/libs/rich-content/description": load("src/libs/rich-content/description.ts") },
   );
 
   assert.equal(parsePage(["3", "9"]), 3);

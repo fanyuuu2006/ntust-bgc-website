@@ -4,6 +4,7 @@ type FieldProps = React.HTMLAttributes<HTMLDivElement> & {
   label: string;
   htmlFor: string;
   hint?: string;
+  action?: React.ReactNode;
   error?: string;
   required?: boolean;
 };
@@ -12,6 +13,7 @@ export function Field({
   label,
   htmlFor,
   hint,
+  action,
   error,
   required = false,
   className,
@@ -21,8 +23,7 @@ export function Field({
   const hintId = hint ? `${htmlFor}-hint` : undefined;
   const errorId = error ? `${htmlFor}-error` : undefined;
 
-  return (
-    <div className={cn("flex min-w-0 max-w-full flex-col gap-1.5 wrap-anywhere", className)} {...props}>
+  const labelElement = (
       <label
         htmlFor={htmlFor}
         className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 text-sm font-medium leading-snug text-(--text-primary)"
@@ -43,6 +44,11 @@ export function Field({
           </span>
         ) : null}
       </label>
+  );
+
+  return (
+    <div className={cn("flex min-w-0 max-w-full flex-col gap-1.5 wrap-anywhere", className)} {...props}>
+      {action ? <div className="flex min-w-0 items-center justify-between gap-2">{labelElement}{action}</div> : labelElement}
       {children}
       {error ? (
         <p id={errorId} role="alert" className="text-xs text-(--status-danger)">

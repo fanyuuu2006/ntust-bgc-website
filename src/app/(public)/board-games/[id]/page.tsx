@@ -1,3 +1,5 @@
+import { RichTextRenderer } from "@/components/RichTextRenderer";
+import { storedDescription } from "@/libs/rich-content/description";
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
@@ -64,7 +66,6 @@ async function BoardGameDetailPage({
         ),
       ])
     : [null, null];
-  const description = boardGame.description?.trim();
 
   return (
     <section className="py-8">
@@ -154,9 +155,7 @@ async function BoardGameDetailPage({
             >
               桌遊介紹
             </h2>
-            <p className="mt-3 wrap-anywhere whitespace-pre-wrap text-base leading-7 text-(--text-secondary) [overflow-wrap:anywhere]">
-              {description || "目前尚未補充這款桌遊的介紹。"}
-            </p>
+            <RichTextRenderer {...storedDescription(boardGame)} content={boardGame.description || "目前尚未補充這款桌遊的介紹。"} className="mt-3" />
           </section>
         </div>
       </div>

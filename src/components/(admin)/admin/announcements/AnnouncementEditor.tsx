@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Button } from "@/components/ui/Button";
+import { RichContentPreview } from "@/components/RichContentPreview";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import dynamic from "next/dynamic";
@@ -18,7 +19,7 @@ import {
   type AnnouncementSubmitIntent,
 } from "./announcementEditor.utils";
 
-// Editor code is loaded only for Admin authoring; the public renderer is separate.
+// 只在管理端編輯時載入 Editor；公開 renderer 不依賴這份 runtime。
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor").then((module) => module.RichTextEditor), {
   ssr: false,
   loading: () => <p role="status" className="min-h-64 p-4 text-sm text-(--text-muted)">正在載入編輯器…</p>,
@@ -38,8 +39,7 @@ export function AnnouncementEditor({ announcement, returnTo }: { announcement?: 
   const returnHref = getAdminReturnPath(returnTo, "/admin/announcements");
   const [title, setTitle] = useState(announcement?.title ?? "");
   const [initialContent] = useState(() => editableRichContent(announcement));
-  // Document updates stay local until submit. Do not reseed on failed mutations
-  // or toolbar selection changes, which would discard the author's unsaved work.
+  // 文件變動在 submit 前留於表單；儲存失敗或工具列 selection 變動不能重新初始化，以免丟失未儲存內容。
   const [content, setContent] = useState<unknown>(initialContent);
   const [contentError, setContentError] = useState<string | undefined>();
   const unsupportedContent = !!announcement?.content_format && announcement.content_format !== "plain_text" && !readRichContent(announcement);
@@ -110,7 +110,7 @@ export function AnnouncementEditor({ announcement, returnTo }: { announcement?: 
         <Field label="標題" htmlFor="announcement-title" required>
           <Input id="announcement-title" required value={title} onChange={(event) => setTitle(event.target.value)} />
         </Field>
-        <Field label="內容" htmlFor="announcement-content" required error={contentError}>
+        <Field label="內容" htmlFor="announcement-content" required error={contentError} action={<RichContentPreview value={content} title={title} label="公告預覽" />}>
           <RichTextEditor id="announcement-content" label="公告內容" required initialContent={initialContent} onChange={setContent} disabled={busy || deleting || unsupportedContent} invalid={!!contentError} />
           <p className="text-xs text-(--text-muted)">{unsupportedContent ? "此內容格式暫不支援編輯，原始資料不會被覆寫。" : "選取文字後套用粗體、斜體或連結；最多 20,000 字元。"}</p>
         </Field>

@@ -14,13 +14,13 @@ export type CreateEventInput = Pick<
   Event,
   "name" | "start_time" | "end_time" | "check_in_opens_at" | "check_in_closes_at"
 > &
-  Partial<Pick<Event, "description">>;
+  Partial<Pick<Event, "description" | "description_format" | "rich_description">>;
 
 export type UpdateEventInput = Partial<
   Pick<
     Event,
     | "name"
-    | "description"
+    | "description" | "description_format" | "rich_description"
     | "start_time"
     | "end_time"
     | "check_in_opens_at"

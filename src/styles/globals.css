@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Shared semantic typography for authored content and its Admin editor. */
+/* 作者內容與管理端 editor 共用語意排版；外層頁面仍負責內容寬度。 */
 .rich-content {
   color: var(--text-primary);
   font-size: 1rem;
@@ -13,6 +13,36 @@
 .rich-content > * + * { margin-top: 1em; }
 .rich-content h2 { margin-top: 1.4em; font-size: 1.4rem; font-weight: 700; line-height: 1.4; }
 .rich-content h3 { margin-top: 1.2em; font-size: 1.2rem; font-weight: 600; line-height: 1.5; }
+.rich-content h4 { margin-top: 1em; font-size: 1.05rem; font-weight: 600; line-height: 1.5; }
+.rich-content video, .rich-content audio { display: block; width: 100%; min-width: 0; max-width: 100%; }
+.rich-media-video { aspect-ratio: 16 / 9; width: 100%; min-width: 0; }
+.rich-media-video iframe { width: 100%; height: 100%; border: 0; border-radius: .5rem; }
+.rich-editor-media { padding: .5rem .75rem; border: 1px solid var(--border-default); border-radius: .5rem; background: var(--surface-subtle); overflow-wrap: anywhere; cursor: pointer; }
+.rich-editor-media > * { display: block; }
+.rich-editor-media strong { font-size: .875rem; }
+.rich-editor-media-source { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rich-editor-media-actions { display: flex; justify-content: flex-end; gap: .25rem; }
+.rich-editor-media-actions button { color: var(--interactive-primary); }
+.rich-editor-media-actions button:focus-visible { outline: 2px solid var(--interactive-primary); }
+/* 工具列位於內容捲動區之外，不需要相對於網站 header 的 sticky 層；整頁仍可正常捲動。 */
+.rich-editor-viewport { max-height: 50dvh; overflow-y: auto; overflow-x: hidden; scroll-padding-block: .75rem; }
+.rich-editor-content { min-height: min(13rem, 50dvh); padding: .75rem; font-size: .9375rem; line-height: 1.6; }
+.rich-editor-content > * + * { margin-top: .65em; }
+.rich-editor-content h2, .rich-editor-content h3, .rich-editor-content h4 { margin-top: .9em; }
+.rich-editor-content > :first-child { margin-top: 0; }
+.rich-editor-content p { min-height: 1.6em; }
+.rich-editor-toolbar { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .25rem .5rem; }
+.rich-editor-tools { grid-column: 1 / -1; display: flex; min-width: 0; gap: .25rem; overflow-x: auto; padding-block: 2px; }
+.rich-editor-tools > div { flex-shrink: 0; }
+.rich-editor-heading { max-width: 7rem; }
+@media (min-width: 768px) {
+  .rich-editor-viewport { max-height: 60dvh; }
+  .rich-editor-content { min-height: min(18rem, 60dvh); padding: 1rem; }
+  .rich-editor-toolbar { display: flex; }
+  .rich-editor-tools { flex: 1; }
+}
+.rich-editor-media span, .rich-editor-media small { font-size: .8rem; color: var(--text-muted); }
+.rich-editor-media.ProseMirror-selectednode { outline: 2px solid var(--interactive-primary); outline-offset: 2px; }
 .rich-content > :first-child { margin-top: 0; }
 .rich-content ul { list-style: disc; padding-left: 1.5em; }
 .rich-content ol { list-style: decimal; padding-left: 1.5em; }
@@ -34,7 +64,7 @@
 .rich-content blockquote > * + * { margin-top: .75em; }
 .rich-content hr { border: 0; border-top: 1px solid var(--border); margin-block: 1.5em; }
 
-/* Editor chrome is scoped separately; reading pages only use rich-content. */
+/* Editor 操作介面樣式另行限定範圍；閱讀頁面只使用 rich-content。 */
 .rich-editor { transition: border-color 150ms, box-shadow 150ms; }
 .rich-editor:focus-within {
   border-color: var(--interactive-primary);

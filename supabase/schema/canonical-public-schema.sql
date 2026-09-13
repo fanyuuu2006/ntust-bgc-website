@@ -5,7 +5,8 @@
 -- brand-new Supabase database. This is NOT a migration and must not be applied
 -- to an existing environment.
 -- Semantics: remote baseline through 202609010006, plus the explicitly marked
--- Phase 3E announcement target below (202609130001, NOT remotely applied/verified).
+-- Phase 3E 公告欄位（202609130001）已於 2026-09-14 遠端套用並唯讀驗證。
+-- Phase 3E-B 桌遊／活動欄位（202609130002）已於同日遠端套用並驗證。
 -- Other tables remain the historical reference, not a complete deployment inventory.
 --
 -- This snapshot intentionally contains no data, seed records, credentials,
@@ -110,6 +111,16 @@ create table public.events (
   end_time timestamptz not null,
   name text not null,
   description text,
+  -- Phase 3E-B：202609130002 已於 2026-09-14 遠端套用。
+  description_format text not null default 'plain_text',
+  rich_description jsonb,
+  constraint events_description_format_check check (description_format in ('plain_text', 'rich_text_v1')),
+  constraint events_rich_description_check check (
+    (description_format = 'plain_text' and rich_description is null)
+    or (description_format = 'rich_text_v1' and rich_description is not null
+      and jsonb_typeof(rich_description) = 'object'
+      and coalesce(rich_description ->> 'type', '') = 'doc')
+  ),
   check_in_opens_at timestamptz,
   check_in_closes_at timestamptz,
   constraint events_check_in_window_check check (
@@ -184,6 +195,16 @@ create table public.board_games (
   created_at timestamptz not null default now(),
   name text not null,
   description text,
+  -- Phase 3E-B：202609130002 已於 2026-09-14 遠端套用。
+  description_format text not null default 'plain_text',
+  rich_description jsonb,
+  constraint board_games_description_format_check check (description_format in ('plain_text', 'rich_text_v1')),
+  constraint board_games_rich_description_check check (
+    (description_format = 'plain_text' and rich_description is null)
+    or (description_format = 'rich_text_v1' and rich_description is not null
+      and jsonb_typeof(rich_description) = 'object'
+      and coalesce(rich_description ->> 'type', '') = 'doc')
+  ),
   image text,
   updated_at timestamptz not null default now(),
   category_id uuid not null default gen_random_uuid(),
@@ -312,7 +333,7 @@ create table public.announcements (
   updated_at timestamptz not null default now(),
   title text not null,
   content text not null,
-  -- Phase 3E target: apply 202609130001 before deploying the rich editor.
+  -- Phase 3E：202609130001 已於 2026-09-14 遠端套用，支援 rich editor。
   content_format text not null default 'plain_text',
   rich_content jsonb,
   constraint announcements_content_format_check check (content_format in ('plain_text', 'rich_text_v1')),
