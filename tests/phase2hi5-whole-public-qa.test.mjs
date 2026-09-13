@@ -12,8 +12,8 @@ test("legal routes share the accepted public page rhythm and readable measure", 
   ]);
 
   for (const source of [privacy, terms]) {
-    assert.match(source, /className="container py-8"/);
-    assert.match(source, /max-w-4xl/);
+    assert.match(source, /<article\b/);
+    assert.match(source, /max-w-3xl/);
     assert.doesNotMatch(source, /<Card\b|shadow-|rounded-2xl/);
   }
 });

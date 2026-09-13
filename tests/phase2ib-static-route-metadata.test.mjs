@@ -20,7 +20,7 @@ test("public static routes own concise titles, descriptions, and relative canoni
     [announcements, "社團公告", "查看臺科大桌遊社最新社團公告與活動消息。", "/announcements"],
     [boardGames, "桌遊", "探索臺科大桌遊社的桌遊，查看分類、位置與借用資訊。", "/board-games"],
     [privacy, "隱私權政策", undefined, "/privacy"],
-    [terms, "服務條款", undefined, "/terms"],
+    [terms, "使用條款", undefined, "/terms"],
   ];
 
   for (const [source, title, description, canonical] of expected) {
