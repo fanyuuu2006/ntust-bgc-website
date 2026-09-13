@@ -1,4 +1,5 @@
 import { CSS_VARIABLE_COLORS } from "@/libs/css";
+import { useId } from "react";
 import { User } from "@/types/database";
 
 type UserAvatarProps = React.ImgHTMLAttributes<HTMLImageElement> & {
@@ -16,6 +17,7 @@ function hashString(str: string) {
 }
 
 export function UserAvatar({ user, className, ...rest }: UserAvatarProps) {
+  const gradientId = `avatar-${useId()}`;
   if (!user.avatar) {
     const seed = hashString(user.id);
     const colorIndex1 = seed % CSS_VARIABLE_COLORS.length;
@@ -36,7 +38,7 @@ export function UserAvatar({ user, className, ...rest }: UserAvatarProps) {
       >
         <defs>
           <linearGradient
-            id={`avatar-gradient-${user.id}`}
+            id={gradientId}
             x1="0%"
             y1="0%"
             x2="100%"
@@ -49,7 +51,7 @@ export function UserAvatar({ user, className, ...rest }: UserAvatarProps) {
         <rect
           width="100"
           height="100"
-          fill={`url(#avatar-gradient-${user.id})`}
+          fill={`url(#${gradientId})`}
         />
         <text
           x="50"

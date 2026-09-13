@@ -7,7 +7,7 @@ import ts from "typescript";
 
 const require = createRequire(import.meta.url);
 const root = resolve(import.meta.dirname, "..");
-const read = (path) => readFileSync(resolve(root, path), "utf8");
+const read = (path) => readFileSync(resolve(root, path), "utf8").replace(/\r\n/g, "\n");
 function load(path, mocks = {}) {
   const filename = resolve(root, path);
   const loadedModule = { exports: {} };

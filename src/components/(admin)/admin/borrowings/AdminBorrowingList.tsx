@@ -8,7 +8,6 @@ import { UserRound } from "lucide-react";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
-import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -46,6 +45,7 @@ type Action = "approve" | "reject" | "checkout" | "return" | "edit";
 type BorrowingQuery = {
   search?: string;
   status?: BorrowingStatus;
+  overdue?: "true";
   board_game_id?: string;
   user_id?: string;
   orderBy?: "created_at" | "borrowed_at" | "due_at" | "returned_at";
@@ -87,7 +87,8 @@ export function AdminBorrowingList({
   });
   const currentSort = `${query.orderBy ?? "created_at"}:${query.orderDirection ?? "desc"}`;
   const hasQuery = Boolean(
-    query.search ||
+    query.overdue ||
+      query.search ||
       query.status ||
       query.board_game_id ||
       query.user_id ||
@@ -188,22 +189,32 @@ export function AdminBorrowingList({
               搜尋
             </Button>
           </form>
-          <ImmediateQuerySelect
-            appliedQuery={appliedQuery}
-            basePath={BASE_PATH}
-            queryKey="status"
-            value={query.status ?? ""}
+          <Select
+            value={query.overdue === "true" ? "overdue" : query.status ?? ""}
+            onChange={(event) => {
+              const selectedStatus = event.target.value;
+              router.push(buildOwnedQueryHref({
+                basePath: BASE_PATH,
+                appliedQuery,
+                ownedKeys: ["status", "overdue"],
+                changes: {
+                  status: selectedStatus === "overdue" ? "borrowed" : selectedStatus,
+                  overdue: selectedStatus === "overdue" ? "true" : undefined,
+                },
+              }));
+            }}
             aria-label="借用狀態"
             className="w-full"
           >
             <option value="">全部狀態</option>
-            <option value="pending">待確認</option>
-            <option value="approved">已核准</option>
-            <option value="borrowed">借出中</option>
+            <option value="pending">待審核</option>
+            <option value="approved">等待領取</option>
+            <option value="borrowed">借出中（含逾期）</option>
+            <option value="overdue">已逾期</option>
             <option value="returned">已歸還</option>
             <option value="rejected">已拒絕</option>
             <option value="cancelled">已取消</option>
-          </ImmediateQuerySelect>
+          </Select>
           <Select
             aria-label="排序"
             value={currentSort}

@@ -851,6 +851,10 @@ export const boardGamesService = {
   /**
    * 依狀態計算借用紀錄數量（供管理後台總覽統計使用）。
    */
+  countOverdueBorrowings: async (): Promise<number> => {
+    return boardGameBorrowingsRepository.countByStatus("borrowed", new Date().toISOString());
+  },
+
   countBorrowingsByStatus: async (status: BorrowingStatus): Promise<number> => {
     return boardGameBorrowingsRepository.countByStatus(status);
   },

@@ -28,6 +28,7 @@ import {
 } from "@/libs/query-params";
 import { formatDateTime } from "@/utils/date";
 import { parsePage } from "@/utils/pagination";
+import { UserAvatar } from "@/components/UserAvatar";
 import { EmailVerificationBadge } from "@/components/(admin)/admin/users/EmailVerificationBadge";
 import { normalizeAdminUserEmailVerification } from "./query";
 
@@ -150,21 +151,22 @@ async function AdminUsersPage({ searchParams }: Props) {
           <>
             <div className="grid gap-3 lg:hidden">
               {users.data.map((user) => (
-                <Card key={user.id} className="space-y-3 p-4">
-                  <div className="min-w-0">
-                    <p className="text-xs text-(--text-muted)">使用者名稱</p>
-                    <p className="mt-0.5 font-semibold">{user.name}</p>
-                    <p className="mt-2 text-xs text-(--text-muted)">真實姓名</p>
-                    <p className="mt-0.5">{user.profile?.real_name || MISSING_VALUE}</p>
-                    <p className="mt-2 break-all text-sm text-(--text-muted)">
-                      {user.email}
-                    </p>
-                    <div className="mt-2">
+                <Card key={user.id} className="min-w-0 space-y-3 p-4">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <UserAvatar user={user} className="size-10 shrink-0 rounded-full object-cover" />
+                    <div className="min-w-0 flex-1 wrap-anywhere">
+                      <p className="font-semibold">{user.name}</p>
+                      <p className="text-sm text-(--text-muted)">{user.profile?.real_name || MISSING_VALUE}</p>
+                    </div>
+                    <div className="shrink-0">
                       <EmailVerificationBadge
                         verifiedAt={user.email_verified_at}
                       />
                     </div>
                   </div>
+                  <p className="min-w-0 wrap-anywhere text-sm text-(--text-muted)">
+                    {user.email}
+                  </p>
                   <dl className="grid grid-cols-2 gap-3 text-sm">
                     <Info label="學號" value={user.profile?.student_id || MISSING_VALUE} />
                     <Info
@@ -174,15 +176,17 @@ async function AdminUsersPage({ searchParams }: Props) {
                         user.profile?.grade,
                       )}
                     />
-                    <Info label="建立時間" value={formatDateTime(user.created_at)} />
                   </dl>
-                  <ButtonLink
-                    href={buildAdminReturnHref(`/admin/users/${user.id}`, buildAdminListHref("/admin/users", { ...query, page, pageSize }), "/admin/users")}
-                    variant="outline"
-                    size="sm"
-                  >
-                    查看
-                  </ButtonLink>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="min-w-0 text-xs text-(--text-muted)">建立於 {formatDateTime(user.created_at)}</p>
+                    <ButtonLink
+                      href={buildAdminReturnHref(`/admin/users/${user.id}`, buildAdminListHref("/admin/users", { ...query, page, pageSize }), "/admin/users")}
+                      variant="outline"
+                      size="sm"
+                    >
+                      查看
+                    </ButtonLink>
+                  </div>
                 </Card>
               ))}
             </div>
@@ -197,7 +201,6 @@ async function AdminUsersPage({ searchParams }: Props) {
                       basePath={BASE_PATH}
                       query={query}
                     />
-                    <TableHead>真實姓名</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Email 驗證</TableHead>
                     <TableHead>學號</TableHead>
@@ -214,8 +217,15 @@ async function AdminUsersPage({ searchParams }: Props) {
                 <TableBody>
                   {users.data.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
-                      <TableCell>{user.profile?.real_name || MISSING_VALUE}</TableCell>
+                      <TableCell className="max-w-64">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <UserAvatar user={user} className="size-9 shrink-0 rounded-full object-cover" />
+                          <div className="min-w-0 wrap-anywhere">
+                            <p className="font-medium">{user.name}</p>
+                            <p className="text-xs text-(--text-muted)">{user.profile?.real_name || MISSING_VALUE}</p>
+                          </div>
+                        </div>
+                      </TableCell>
                       <TableCell className="max-w-56 break-all text-(--text-muted)">
                         {user.email}
                       </TableCell>
@@ -275,9 +285,9 @@ function formatDepartmentGrade(
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div className="min-w-0">
       <dt className="text-xs text-(--text-muted)">{label}</dt>
-      <dd className="mt-0.5 wrap-break-word">{value}</dd>
+      <dd className="mt-0.5 wrap-anywhere">{value}</dd>
     </div>
   );
 }

@@ -57,7 +57,7 @@ test("user management keeps account and profile identity separate from membershi
   ]);
 
   assert.match(list, /使用者名稱/);
-  assert.match(list, /真實姓名/);
+  assert.match(list, /user\.profile\?\.real_name/);
   assert.match(list, /尚未填寫/);
   assert.doesNotMatch(list, /社團關係/);
   assert.doesNotMatch(list, /real_name \|\| user\.name/);

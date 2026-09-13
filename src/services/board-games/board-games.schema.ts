@@ -83,6 +83,7 @@ export const listAdminBoardGamesQuerySchema = z.object({
 });
 
 export const listBorrowingsQuerySchema = z.object({
+  overdue: optionalQueryField(z.literal("true")),
   page: optionalQueryField(z.coerce.number().int().min(1)),
   pageSize: optionalQueryField(z.coerce.number().int().min(1).max(100)),
   status: optionalQueryField(borrowingStatusSchema),

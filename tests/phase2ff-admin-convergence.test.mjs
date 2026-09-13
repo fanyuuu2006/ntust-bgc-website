@@ -7,10 +7,10 @@ const readSource = (path) => readFile(new URL(`../${path}`, import.meta.url), "u
 test("admin dashboard prioritizes actionable borrowing work over decorative KPI cards", async () => {
   const dashboard = await readSource("src/app/(admin)/admin/page.tsx");
 
-  assert.match(dashboard, /待處理借用申請/);
-  assert.match(dashboard, /已核准待借出/);
-  assert.match(dashboard, /\/admin\/board-games\/borrowings\?status=pending/);
-  assert.match(dashboard, /\/admin\/board-games\/borrowings\?status=approved/);
+  assert.match(dashboard, /待審核/);
+  assert.match(dashboard, /等待領取/);
+  assert.match(dashboard, /\/admin\/board-games\/borrowings\?page=1&status=pending/);
+  assert.match(dashboard, /\/admin\/board-games\/borrowings\?page=1&status=approved/);
   assert.doesNotMatch(dashboard, /QuickStats/);
 });
 

@@ -295,7 +295,7 @@ test("Admin Borrowings Search, status, and compound sort mutate only their owned
 
   assert.match(source, /buildOwnedQueryHref/);
   assert.match(source, /ownedKeys:\s*\["search"\]/);
-  assert.match(source, /queryKey="status"/);
+  assert.match(source, /ownedKeys:\s*\["status", "overdue"\]/);
   assert.match(source, /ownedKeys:\s*\["orderBy", "orderDirection"\]/);
   assert.doesNotMatch(source, /formData\.get\("status"\)/);
   assert.doesNotMatch(source, /formData\.get\("sort"\)/);

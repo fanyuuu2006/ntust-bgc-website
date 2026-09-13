@@ -38,6 +38,7 @@ type UpdateBoardGameBorrowingInput = Partial<
 export type FindManyBoardGameBorrowingsOptions = PaginationQuery &
   OrderOptions<"created_at" | "borrowed_at" | "due_at" | "returned_at"> & {
     status?: BorrowingStatus | BorrowingStatus[];
+    overdue?: "true";
     board_game_id?: string;
     user_id?: string;
     board_game_ids?: string[];
@@ -79,6 +80,10 @@ export const boardGameBorrowingsRepository = {
       query = Array.isArray(options.status)
         ? query.in("status", options.status)
         : query.eq("status", options.status);
+    }
+
+    if (options.overdue === "true") {
+      query = query.eq("status", "borrowed").lt("due_at", new Date().toISOString());
     }
 
     if (options.board_game_id) {
@@ -218,11 +223,13 @@ export const boardGameBorrowingsRepository = {
   },
 
 
-  countByStatus: async (status: BorrowingStatus): Promise<number> => {
-    const { count, error } = await supabase
+  countByStatus: async (status: BorrowingStatus, dueBefore?: string): Promise<number> => {
+    let query = supabase
       .from("board_game_borrowings")
       .select("*", { count: "exact", head: true })
       .eq("status", status);
+    if (dueBefore) query = query.lt("due_at", dueBefore);
+    const { count, error } = await query;
 
     if (error) throwRepositoryError("依狀態計算借用紀錄數量失敗", error);
     return count ?? 0;

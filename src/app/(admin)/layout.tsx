@@ -27,4 +27,4 @@ async function AdminLayout({
   return <AdminShell user={user}>{children}</AdminShell>;
 }
 
-export default withServerErrorReference(AdminLayout, "/");
+export default withServerErrorReference(AdminLayout, "/admin");

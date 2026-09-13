@@ -135,7 +135,7 @@ test("disclosed Admin fields keep visible feature-owned labels", async () => {
 test("single high-frequency Admin filters intentionally remain directly available", async () => {
   const routes = [
     ["src/app/(admin)/admin/officers/page.tsx", 'queryKey="academicYearId"'],
-    ["src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx", 'queryKey="status"'],
+    ["src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx", 'aria-label="借用狀態"'],
     ["src/app/(admin)/admin/events/page.tsx", 'queryKey="status"'],
     ["src/app/(admin)/admin/announcements/page.tsx", 'queryKey="status"'],
   ];
