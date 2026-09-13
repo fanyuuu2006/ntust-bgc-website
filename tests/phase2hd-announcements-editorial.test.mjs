@@ -56,9 +56,9 @@ test("published announcement detail is a narrow server-rendered article without 
   assert.equal((detail.match(/<h1\b/g) ?? []).length, 1);
   assert.match(detail, /<time[^>]*dateTime=/);
   assert.match(detail, /announcement\.published_at\s*\?\?/);
-  assert.match(detail, /whitespace-pre-wrap/);
+  assert.match(detail, /<RichTextRenderer/);
   assert.match(detail, /wrap-anywhere/);
-  assert.match(detail, /overflow-wrap:anywhere/);
+  assert.match(await readSource("src/components/RichTextRenderer.tsx"), /overflow-wrap:anywhere/);
   assert.match(detail, /href="\/announcements"/);
   assert.match(detail, /max-w-3xl/);
   assert.doesNotMatch(detail, /import \{ Card \}|className="[^"]*\bcard\b/);

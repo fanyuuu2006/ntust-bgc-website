@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { plainTextFromStoredContent } from "@/libs/rich-content/content";
 
 import type { Announcement } from "@/types/database";
 import { cn } from "@/utils/className";
@@ -37,7 +38,7 @@ export function AnnouncementRow({
           </Heading>
           {announcement.content ? (
             <p className="mt-1 line-clamp-2 wrap-anywhere text-sm leading-6 text-(--text-secondary)">
-              {announcement.content}
+              {plainTextFromStoredContent(announcement)}
             </p>
           ) : null}
         </div>

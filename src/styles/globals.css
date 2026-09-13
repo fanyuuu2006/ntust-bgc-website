@@ -1,5 +1,91 @@
 @import "tailwindcss";
 
+/* Shared semantic typography for authored content and its Admin editor. */
+.rich-content {
+  color: var(--text-primary);
+  font-size: 1rem;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+.rich-content p { min-height: 1.75em; white-space: pre-wrap; }
+.rich-content strong { font-weight: 700; }
+.rich-content em { font-style: italic; }
+.rich-content > * + * { margin-top: 1em; }
+.rich-content h2 { margin-top: 1.4em; font-size: 1.4rem; font-weight: 700; line-height: 1.4; }
+.rich-content h3 { margin-top: 1.2em; font-size: 1.2rem; font-weight: 600; line-height: 1.5; }
+.rich-content > :first-child { margin-top: 0; }
+.rich-content ul { list-style: disc; padding-left: 1.5em; }
+.rich-content ol { list-style: decimal; padding-left: 1.5em; }
+.rich-content ul ul { list-style-type: circle; }
+.rich-content ul ul ul { list-style-type: square; }
+.rich-content li::marker { color: var(--text-secondary); }
+.rich-content li + li { margin-top: .25em; }
+.rich-content li > * + * { margin-top: .5em; }
+.rich-content a { color: var(--interactive-primary); text-decoration: underline; text-underline-offset: .2em; }
+.rich-content a:hover { color: var(--interactive-primary-hover); }
+.rich-content a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.rich-content blockquote {
+  border-left: 3px solid color-mix(in oklab, var(--primary) 40%, var(--border));
+  border-radius: 0 .5rem .5rem 0;
+  padding: .65em 1em;
+  background: color-mix(in oklab, var(--primary) 3%, var(--surface-default));
+  color: var(--text-secondary);
+}
+.rich-content blockquote > * + * { margin-top: .75em; }
+.rich-content hr { border: 0; border-top: 1px solid var(--border); margin-block: 1.5em; }
+
+/* Editor chrome is scoped separately; reading pages only use rich-content. */
+.rich-editor { transition: border-color 150ms, box-shadow 150ms; }
+.rich-editor:focus-within {
+  border-color: var(--interactive-primary);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+.rich-editor-toolbar {
+  background: color-mix(in oklab, var(--surface-subtle) 65%, var(--surface-default));
+}
+.rich-editor-heading {
+  background-color: transparent;
+  border-color: transparent;
+  font-weight: 600;
+}
+.rich-editor-heading:hover:not(:disabled) { background-color: var(--surface-default); }
+.rich-editor-action {
+  color: var(--text-secondary);
+  background: transparent;
+  border-color: transparent;
+}
+.rich-editor-action:hover:not(:disabled) {
+  background: var(--surface-default);
+  color: var(--interactive-primary);
+  border-color: var(--border-muted);
+}
+.rich-editor-action[aria-pressed="true"] {
+  background: color-mix(in oklab, var(--primary) 12%, var(--surface-default));
+  border-color: color-mix(in oklab, var(--primary) 30%, transparent);
+  color: var(--interactive-primary);
+}
+.rich-editor-action[aria-pressed="true"]:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--primary) 18%, var(--surface-default));
+}
+.rich-editor-action:disabled {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+  opacity: .4;
+}
+.rich-editor-action:focus-visible { outline: 2px solid var(--interactive-primary); outline-offset: 1px; }
+/* The placeholder belongs to the DOM, never to the saved JSON document. */
+.rich-editor[data-empty="true"] .rich-editor-content::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+@media (min-width: 640px) {
+  .rich-editor-action { width: 2.25rem; height: 2.25rem; }
+}
+
 /* =========================================================
    🎲 NTUST Board Game Club Design System
    ========================================================= */

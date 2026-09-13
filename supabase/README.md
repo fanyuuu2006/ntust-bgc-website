@@ -9,7 +9,7 @@
 
 | 位置 | 用途 |
 | --- | --- |
-| `schema/canonical-public-schema.sql` | 已驗證的目前 remote public schema 完整參考；未部署 migration 不會預先混入。 |
+| `schema/canonical-public-schema.sql` | 歷史 remote schema 參考；公告區塊另明確標記 Phase 3E 目標欄位，尚未代表遠端已套用。 |
 | `migrations/` | 未來資料庫結構有變動時，放新 migration 檔案的地方。 |
 | `verification/` | 確認資料表結構有沒有建立正確的檢查 SQL。 |
 
@@ -39,3 +39,11 @@
 本輪不新增反向或 DROP migration，也未變更遠端資料庫。原 RPC 的歷史授權限於
 `service_role`，保留它不會重新開放網站上的刪除 API。若未來要移除遠端函式，應先確認
 外部維護腳本沒有使用，再以新的 forward migration 處理；不要修改已套用的歷史 SQL。
+
+## Phase 3E：公告 Rich Content（待套用）
+
+`202609130001_add_announcement_rich_content.sql` 只新增格式與 JSON 欄位；既有 `content` 不改寫。
+先在本機／測試資料庫套用並執行對應 verification SQL，確認既有公告為 `plain_text`、內容與筆數不變，再安排 migration 與應用程式上線。
+本輪未操作遠端。canonical snapshot 的公告區塊已標記新目標，不可當作遠端驗證證據。
+上線順序是 migration → 應用程式；回退應用程式時保留新欄位及資料，不執行 DROP。
+詳見 [Rich Content 說明](../docs/rich-content.md)。

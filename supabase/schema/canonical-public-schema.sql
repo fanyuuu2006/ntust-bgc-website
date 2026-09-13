@@ -4,8 +4,9 @@
 -- Purpose: readable handover reference and a schema-only starting point for a
 -- brand-new Supabase database. This is NOT a migration and must not be applied
 -- to an existing environment.
--- Semantics: this is the current deployed remote baseline, including verified
--- migrations through 202609010006. It is not a repository target snapshot.
+-- Semantics: remote baseline through 202609010006, plus the explicitly marked
+-- Phase 3E announcement target below (202609130001, NOT remotely applied/verified).
+-- Other tables remain the historical reference, not a complete deployment inventory.
 --
 -- This snapshot intentionally contains no data, seed records, credentials,
 -- sessions, secrets, or application migration-history assumptions.
@@ -311,6 +312,15 @@ create table public.announcements (
   updated_at timestamptz not null default now(),
   title text not null,
   content text not null,
+  -- Phase 3E target: apply 202609130001 before deploying the rich editor.
+  content_format text not null default 'plain_text',
+  rich_content jsonb,
+  constraint announcements_content_format_check check (content_format in ('plain_text', 'rich_text_v1')),
+  constraint announcements_rich_content_check check (
+    (content_format = 'plain_text' and rich_content is null)
+    or (content_format = 'rich_text_v1' and rich_content is not null
+      and jsonb_typeof(rich_content) = 'object' and coalesce(rich_content ->> 'type', '') = 'doc')
+  ),
   is_published boolean not null,
   published_at timestamptz,
   author_id uuid not null,

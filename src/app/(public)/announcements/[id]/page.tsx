@@ -2,6 +2,8 @@ import { withServerErrorReference } from "@/libs/observability/server-render";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 
+import { RichTextRenderer } from "@/components/RichTextRenderer";
+import { plainTextFromStoredContent } from "@/libs/rich-content/content";
 import { ButtonLink } from "@/components/ui/Button";
 import {
   createMetadataDescription,
@@ -20,7 +22,7 @@ async function generateMetadataContent({
   const { id } = await params;
   const announcement = await getPublishedAnnouncement(id);
   const title = createMetadataTitle(announcement.title);
-  const description = createMetadataDescription(announcement.content);
+  const description = createMetadataDescription(plainTextFromStoredContent(announcement));
   const canonical = `/announcements/${announcement.id}`;
 
   return {
@@ -73,9 +75,7 @@ async function AnnouncementDetailPage({
               </h1>
             </header>
 
-            <div className="mt-5 whitespace-pre-wrap wrap-anywhere [overflow-wrap:anywhere] text-base leading-7 text-(--text-primary)">
-              {announcement.content}
-            </div>
+            <RichTextRenderer {...announcement} className="mt-5" />
           </article>
         </div>
       </div>

@@ -2,9 +2,8 @@ import "server-only";
 
 import { announcementsRepository, type FindPublishedAnnouncementsOptions } from "@/repositories/announcements.repository";
 import type { AnnouncementId } from "@/types/database";
-import { z } from "zod";
+import { announcementInputSchema as inputSchema } from "./announcements.schema";
 import { AnnouncementNotFoundError } from "./announcements.errors";
-const inputSchema = z.object({ title: z.string().trim().min(1).max(160), content: z.string().trim().min(1).max(20000), is_published: z.boolean() });
 const DASHBOARD_ANNOUNCEMENT_LIMIT = 3;
 
 export const announcementsService = {

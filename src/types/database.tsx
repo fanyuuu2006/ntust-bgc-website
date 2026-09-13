@@ -284,6 +284,8 @@ export type Announcement = {
   id: AnnouncementId;
   title: string;
   content: string;
+  content_format: "plain_text" | "rich_text_v1";
+  rich_content: unknown | null;
 
   created_at: Timestamp;
   updated_at: Timestamp;

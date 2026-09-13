@@ -38,7 +38,7 @@ test("public detail routes share page-top and back-navigation grammar", async ()
   }
 });
 
-test("announcement detail remains a compact readable plain-text article", async () => {
+test("announcement detail remains a compact readable server-rendered article", async () => {
   const [detail, resolver] = await Promise.all([
     readSource("src/app/(public)/announcements/[id]/page.tsx"),
     readSource("src/app/(public)/announcements/[id]/announcement-detail.ts"),
@@ -52,8 +52,8 @@ test("announcement detail remains a compact readable plain-text article", async 
   assert.match(detail, /<time[^>]*dateTime=/);
   assert.equal((detail.match(/<h1\b/g) ?? []).length, 1);
   assert.match(detail, /max-w-3xl/);
-  assert.match(detail, /whitespace-pre-wrap/);
-  assert.match(detail, /overflow-wrap:anywhere/);
+  assert.match(detail, /<RichTextRenderer/);
+  assert.match(await readSource("src/components/RichTextRenderer.tsx"), /overflow-wrap:anywhere/);
   assert.doesNotMatch(
     detail,
     /dangerouslySetInnerHTML|import \{ Card \}|<Card\b|["']use client["']|fetch\(/,

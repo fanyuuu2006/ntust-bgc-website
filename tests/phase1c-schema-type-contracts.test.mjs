@@ -43,10 +43,11 @@ test("identity route parameters are parsed once before numeric repository contra
   assert.match(attendanceRepository, /findById: async \(id: EventAttendanceId\)/);
 });
 
-test("canonical schema remains a current remote snapshot after Phase 1 deployment", async () => {
+test("canonical schema preserves historical baseline and explicitly identifies unapplied announcement target", async () => {
   const schema = await readProjectFile("supabase/schema/canonical-public-schema.sql");
 
-  assert.match(schema, /Semantics: this is the current deployed remote baseline/);
+  assert.match(schema, /remote baseline through 202609010006/);
+  assert.ok(schema.includes("202609130001, NOT remotely applied/verified"));
   assert.match(schema, /check_in_opens_at timestamptz/);
   assert.match(schema, /check_in_closes_at timestamptz/);
   assert.match(schema, /constraint events_check_in_window_check check/);

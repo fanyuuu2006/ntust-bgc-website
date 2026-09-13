@@ -23,8 +23,8 @@ export const announcementsRepository = {
     return buildPaginationResult<Announcement>(data ?? [], count, page, pageSize);
   },
   findById: async (id: AnnouncementId): Promise<Announcement | null> => { const { data, error } = await supabase.from("announcements").select("*").eq("id", id).maybeSingle(); if (error) throwRepositoryError("取得公告失敗", error); return data; },
-  create: async (payload: Pick<Announcement, "title" | "content" | "author_id" | "is_published" | "published_at">) => { const { data, error } = await supabase.from("announcements").insert(payload).select().single(); if (error) throwRepositoryError("建立公告失敗", error); return data; },
-  updateById: async (id: AnnouncementId, payload: Partial<Pick<Announcement, "title" | "content" | "is_published" | "published_at">>) => { const { data, error } = await supabase.from("announcements").update(payload).eq("id", id).select().maybeSingle(); if (error) throwRepositoryError("更新公告失敗", error); return data; },
+  create: async (payload: Pick<Announcement, "title" | "content" | "content_format" | "rich_content" | "author_id" | "is_published" | "published_at">) => { const { data, error } = await supabase.from("announcements").insert(payload).select().single(); if (error) throwRepositoryError("建立公告失敗", error); return data; },
+  updateById: async (id: AnnouncementId, payload: Partial<Pick<Announcement, "title" | "content" | "content_format" | "rich_content" | "is_published" | "published_at">>) => { const { data, error } = await supabase.from("announcements").update(payload).eq("id", id).select().maybeSingle(); if (error) throwRepositoryError("更新公告失敗", error); return data; },
   deleteById: async (id: AnnouncementId) => { const { error } = await supabase.from("announcements").delete().eq("id", id); if (error) throwRepositoryError("刪除公告失敗", error); },
   findPublished: async (options: FindPublishedAnnouncementsOptions = {}) => {
     const { page, pageSize, from, to } = normalizePaginationOptions(options);
