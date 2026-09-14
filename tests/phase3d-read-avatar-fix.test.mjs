@@ -19,7 +19,7 @@ for(const kind of ["session","count"]) test(kind+" read recovers through shared 
  const supabase=createClient("https://example.test","test-key",{global:{fetch:wrapped},auth:{persistSession:false,autoRefreshToken:false}});
  if(kind==="session") {
   const {sessionRepository:r}=load("src/repositories/sessions.repository.tsx",{"@/libs/supabase/server":{supabase}});
-  assert.equal((await r.findValidByToken("controlled-test-token")).id,"valid-session");
+  assert.equal((await r.findValidByTokenHash("controlled-test-token")).id,"valid-session");
  } else {
   const {boardGameBorrowingsRepository:r}=load("src/repositories/board-game-borrowings.repository.ts",{"@/libs/supabase/server":{supabase}});
   assert.equal(await r.countByStatus("borrowed"),7);
@@ -30,7 +30,7 @@ test("failed session retry propagates technical failure instead of null session"
  let calls=0;const {createSupabaseFetch}=load("src/libs/supabase/fetch.ts");
  const supabase=createClient("https://example.test","test-key",{global:{fetch:createSupabaseFetch(async()=>{calls++;return failure()},async()=>{})},auth:{persistSession:false,autoRefreshToken:false}});
  const {sessionRepository:r}=load("src/repositories/sessions.repository.tsx",{"@/libs/supabase/server":{supabase}});
- await assert.rejects(r.findValidByToken("controlled-test-token"),{name:"RepositoryError"});assert.equal(calls,2);
+ await assert.rejects(r.findValidByTokenHash("controlled-test-token"),{name:"RepositoryError"});assert.equal(calls,2);
 });
 test("fallback SVG ids stay distinct when mobile and desktop render the same user",()=>{
  const {UserAvatar}=load("src/components/UserAvatar.tsx");const user={id:"same-user",name:"Test",email:"test@example.test",avatar:null};

@@ -19,7 +19,7 @@ import {
   SessionNotFoundError,
 } from "./auth.errors";
 import { sessionRepository } from "@/repositories/sessions.repository";
-import { generateSessionToken } from "@/utils/auth/session";
+import { generateSessionToken, hashSessionToken } from "@/utils/auth/session";
 import { SessionSummary } from "./auth.types";
 
 /** Session 有效期：7 天 */
@@ -62,7 +62,7 @@ export const authService = {
       throw new InvalidCurrentPasswordError();
     }
     try {
-      await authRepository.closeAccount(sessionToken, credential.password_hash);
+      await authRepository.closeAccount(hashSessionToken(sessionToken), credential.password_hash);
     } catch (error) {
       const code = repositoryCode(error);
       if (code === "PCL02") throw new AccountClosureBlockedError();
@@ -106,7 +106,7 @@ export const authService = {
    * 使用 email/密碼登入並建立新的 Session。
    * @throws {InvalidCredentialsError} 當帳號或密碼錯誤時
    */
-  login: async (input: unknown): Promise<{ user: User; session: Session }> => {
+  login: async (input: unknown): Promise<{ user: User; session: Session; rawToken: string }> => {
     // 驗證輸入資料
     const data = loginSchema.parse(input);
 
@@ -134,7 +134,7 @@ export const authService = {
     try {
       session = await sessionRepository.create({
       user_id: user.id,
-      token,
+      token_hash: hashSessionToken(token),
       expires_at: calculateSessionExpiresAt(),
       });
     } catch (error) {
@@ -143,7 +143,7 @@ export const authService = {
       throw error;
     }
 
-    return { user, session };
+    return { user, session, rawToken: token };
   },
 
   /**
@@ -151,7 +151,7 @@ export const authService = {
    * @returns Session 有效時回傳 User，否則回傳 null
    */
   getUserBySessionToken: async (token: string): Promise<User | null> => {
-    const session = await sessionRepository.findValidByToken(token);
+    const session = await sessionRepository.findValidByTokenHash(hashSessionToken(token));
 
     if (!session) {
       return null;
@@ -180,7 +180,7 @@ export const authService = {
 
   /** 登出：刪除對應的 Session token */
   logout: async (token: string): Promise<void> => {
-    await sessionRepository.deleteByToken(token);
+    await sessionRepository.deleteByTokenHash(hashSessionToken(token));
   },
 
   changePassword: async (userId: string, input: unknown): Promise<void> => {
@@ -213,12 +213,13 @@ export const authService = {
     currentToken: string,
   ): Promise<SessionSummary[]> => {
     const sessions = await sessionRepository.findManyByUserId(userId);
+    const currentHash = hashSessionToken(currentToken);
     return sessions.map((session) => ({
       id: session.id,
       created_at: session.created_at,
       last_accessed_at: session.last_accessed_at,
       expires_at: session.expires_at,
-      is_current: session.token === currentToken,
+      is_current: session.token_hash === currentHash,
     }));
   },
 
@@ -234,7 +235,7 @@ export const authService = {
     if (session.user_id !== userId) {
       throw new SessionNotFoundError();
     }
-    if (session.token === currentSessionToken) {
+    if (session.token_hash === hashSessionToken(currentSessionToken)) {
       throw new CannotRevokeCurrentSessionError();
     }
     await sessionRepository.deleteById(sessionId);
@@ -244,9 +245,9 @@ export const authService = {
     userId: string,
     currentSessionToken: string,
   ): Promise<void> => {
-    await sessionRepository.deleteAllByUserIdExceptToken(
+    await sessionRepository.deleteAllByUserIdExceptTokenHash(
       userId,
-      currentSessionToken,
+      hashSessionToken(currentSessionToken),
     );
   },
 };

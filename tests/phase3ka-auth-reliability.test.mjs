@@ -56,11 +56,11 @@ test('timing infrastructure maps to sanitized 503 with Error ID rather than user
 });
 test('session lookup failure propagates without cookie mutation; missing/closed remains null',async()=>{
   const unavailable={code:'PGRST303',status:401,message:'JWT issued at future'};
-  const service=load('src/services/auth/auth.service.tsx',{'@/libs/supabase/server':{supabase:{}},'@/repositories/sessions.repository':{sessionRepository:{findValidByToken:async()=>{throw unavailable;}}}}).authService;
+  const service=load('src/services/auth/auth.service.tsx',{'@/libs/supabase/server':{supabase:{}},'@/repositories/sessions.repository':{sessionRepository:{findValidByTokenHash:async()=>{throw unavailable;}}}}).authService;
   await assert.rejects(()=>service.getUserBySessionToken('fixture'),e=>e===unavailable);
   for(const session of [null,{user_id:'fixture'}]){
     const auth=load('src/services/auth/auth.service.tsx',{'@/libs/supabase/server':{supabase:{}},
-      '@/repositories/sessions.repository':{sessionRepository:{findValidByToken:async()=>session}},
+      '@/repositories/sessions.repository':{sessionRepository:{findValidByTokenHash:async()=>session}},
       '@/repositories/users.repository':{usersRepository:{findById:async()=>({closed_at:'closed'})}},
     }).authService;
     assert.equal(await auth.getUserBySessionToken('fixture'),null);

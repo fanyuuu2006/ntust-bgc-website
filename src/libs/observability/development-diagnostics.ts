@@ -18,6 +18,7 @@ function clean(value: unknown): string | undefined {
     .replace(/(?:cookie|authorization|request[ -]?body)["']?\s*[:=][^\r\n]*/gi, "[REDACTED]")
     .replace(/(?:[\w-]*(?:password|passwd|secret|token|api[_-]?key|service[_-]?role[_-]?key)[\w-]*)["']?\s*[=:]\s*(?:"[^"\r\n]*"|'[^'\r\n]*'|[^\s,;]+)/gi, "[REDACTED]")
     .replace(/Bearer\s+[^\s]+/gi, "[REDACTED]")
+    .replace(/\b[a-f0-9]{32,}\b/gi, "[TOKEN REDACTED]")
     .replace(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, "[REDACTED]")
     .replace(/\b(?:sk-[A-Za-z0-9_-]+|xkeysib-[A-Za-z0-9_-]+)\b/g, "[REDACTED]")
     .replace(/https?:\/\/[^\s]+/gi, "[URL REDACTED]");

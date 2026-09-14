@@ -71,3 +71,8 @@ Migration SHA-256：`A5A6DBCC3B6F06B4A8CD8C41D3315F1277988A7959647B915FDB477DBE7
 遷移前後筆數一致：users/profile/credentials 各 19、sessions 33、verification tokens 21、memberships 13、officers 14、borrowings 6、attendance 0、announcements 1、register keys 153。Closed users 為 0。PostgREST 新欄位、active users、officer schema 與 Dashboard counts 皆 200。Schema cache reload not required.
 
 本機 rollback SQL 驗證及並行交易 3/3 通過。未在共享遠端建立假帳號／社員／借用歷史，亦未註銷任何帳號；實際 browser closure round-trip 留待可丟棄帳號人工驗證。USER 已接受 UI，不代表 production browser smoke test 已執行。歷史 incident root cause 仍為 inconclusive。後續順序：deploy application → smoke test login/settings/admin。
+# Phase 3K-S1 待部署事項
+
+Session hash 相容 migration `202609140002_add_session_token_hash.sql` 尚未套用遠端。
+部署順序、legacy Session 全體失效與回滾限制見 [Session 憑證硬化](../docs/session-credential-hardening.md)。
+`operations/invalidate-legacy-sessions.sql` 是需另行授權的 Stage C 作業，不屬於自動 migration。

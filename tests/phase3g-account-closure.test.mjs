@@ -17,7 +17,7 @@ function setup({ closed = false, passwordValid = true, rpcError } = {}) {
       closeAccount: async (...args) => { calls.push(args); if (rpcError) throw rpcError; },
     } },
     "@/repositories/sessions.repository": { sessionRepository: {
-      findValidByToken: async () => ({ user_id: "user-a", last_accessed_at: new Date().toISOString() }),
+      findValidByTokenHash: async () => ({ user_id: "user-a", last_accessed_at: new Date().toISOString() }),
       create: async () => { calls.push("session-created"); return {}; },
     } },
     "@/utils/auth/password": { hashPassword: async () => "dummy", verifyPassword: async () => passwordValid },
@@ -110,7 +110,7 @@ test("profile payload cannot persist email or verification fields", () => {
 test("closure reauthenticates and submits cookie token and compared hash, not a client user ID", async () => {
   const { service, calls } = setup();
   await service.closeAccount("user-a", "cookie-token", { currentPassword: "password", confirmation: "註銷帳號" });
-  assert.deepEqual(calls, [["cookie-token", "verified-hash"]]);
+  assert.deepEqual(calls, [[load("src/utils/auth/session.tsx").hashSessionToken("cookie-token"), "verified-hash"]]);
 });
 test("forged identity in closure payload is rejected", async () => {
   const { service, calls } = setup();

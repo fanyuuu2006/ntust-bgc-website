@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { user, session } = await authService.login(body);
+    const { user, session, rawToken } = await authService.login(body);
 
     const response = NextResponse.json(
       {
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 
     response.cookies.set({
       name: SESSION_COOKIE_NAME,
-      value: session.token,
+      value: rawToken,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
