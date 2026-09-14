@@ -121,7 +121,8 @@ export type AuthCredential = {
 export type Session = {
   id: UUID;
   user_id: UUID;
-  token: string;
+  /** 相容階段的舊 Session 可為 null；此應用投影不讀取舊 raw token 欄位。 */
+  token_hash: string | null;
   expires_at: Timestamp;
   created_at: Timestamp;
   last_accessed_at: Timestamp;

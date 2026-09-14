@@ -11,6 +11,11 @@ export type BoardGameBorrowingWithBoardGame = BoardGameBorrowing & {
   board_game: BoardGame;
 };
 
+/** 個人借用列表與 Dashboard 只需要狀態、時間與桌遊識別，不載入介紹 JSON。 */
+export type UserBorrowingListItem = Pick<BoardGameBorrowing, "id" | "status" | "created_at" | "due_at" | "returned_at"> & {
+  board_game: Pick<BoardGame, "id" | "name" | "inventory_number" | "image">;
+};
+
 export type BoardGameBorrowingForAdmin = BoardGameBorrowingWithBoardGame & {
   user: User;
   user_profile: UserProfile | null;
@@ -32,6 +37,11 @@ export type BoardGameWithStats = BoardGame & {
   stats: BoardGameStats;
 };
 
-export type BoardGameDiscoveryItem = BoardGameWithCategoryAndLocation & {
+export type HomeBoardGameItem = Pick<BoardGame, "id" | "name" | "image" | "status"> & {
+  category: Pick<BoardGameCategory, "name"> | null;
+  location: Pick<BoardGameLocation, "name"> | null;
+};
+
+export type BoardGameDiscoveryItem = HomeBoardGameItem & Pick<BoardGame, "inventory_number"> & {
   stats: BoardGameStats;
 };

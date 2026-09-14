@@ -55,7 +55,7 @@ test("accepted homepage image and bounded-query performance contracts remain int
 
   assert.match(hero, /<Image/);
   assert.match(hero, /priority/);
-  assert.match(announcements, /pageSize:\s*3/);
+  assert.match(announcements, /getHomepagePreview\(/);
   assert.match(popular, /listPopularBoardGames\(\{\s*limit:\s*6/);
   assert.match(boardGameCard, /loading="lazy"/);
 });

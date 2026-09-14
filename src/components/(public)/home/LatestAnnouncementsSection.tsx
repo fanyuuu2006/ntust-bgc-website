@@ -47,10 +47,7 @@ async function LatestAnnouncementsContent() {
   let announcements;
 
   try {
-    announcements = await announcementsService.listPublished({
-      page: 1,
-      pageSize: 3,
-    });
+    announcements = await announcementsService.getHomepagePreview();
   } catch (error) {
     reportUnexpectedError(error, { context: "home.announcements" });
   }
@@ -59,13 +56,13 @@ async function LatestAnnouncementsContent() {
     return <p className="py-8 text-sm text-(--text-muted)">最新公告暫時無法載入，請稍後再試。</p>;
   }
 
-  if (announcements.data.length === 0) {
+  if (announcements.length === 0) {
     return <p className="py-8 text-sm text-(--text-muted)">目前沒有最新公告</p>;
   }
 
   return (
     <ul>
-      {announcements.data.map((announcement) => (
+      {announcements.map((announcement) => (
         <li
           key={announcement.id}
           className="border-b border-(--border-muted)"

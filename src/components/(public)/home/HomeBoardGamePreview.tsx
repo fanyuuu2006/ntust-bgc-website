@@ -2,10 +2,10 @@ import Link from "next/link";
 
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGameStatusBadge";
-import type { BoardGameDiscoveryItem } from "@/services/board-games/board-games.types";
+import type { HomeBoardGameItem } from "@/services/board-games/board-games.types";
 
 type HomeBoardGamePreviewProps = {
-  boardGame: BoardGameDiscoveryItem;
+  boardGame: HomeBoardGameItem;
 };
 
 export function HomeBoardGamePreview({

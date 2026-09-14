@@ -6,14 +6,14 @@ type Delay = (milliseconds: number) => Promise<void>;
 const RETRY_DELAY_MS = 100;
 
 /** SDK 將 HTTP response 拆成 error 後，Repository 通常只收到 error；保留實際狀態，避免猜測 code 對應值。 */
-async function retainErrorStatus(response: Response, url: URL): Promise<Response> {
+async function retainErrorStatus(response: Response, url: URL, retryAttempted = false): Promise<Response> {
   if (response.ok || !url.pathname.startsWith("/rest/v1/")) return response;
   try {
     const body: unknown = await response.clone().json();
     if (!body || typeof body !== "object" || !("code" in body) || !("message" in body)) return response;
     const headers = new Headers(response.headers);
     headers.delete("content-length"); headers.delete("content-encoding");
-    return new Response(JSON.stringify({ ...body, status: response.status }), { status: response.status, statusText: response.statusText, headers });
+    return new Response(JSON.stringify({ ...body, status: response.status, retryAttempted, retrySucceeded: false }), { status: response.status, statusText: response.statusText, headers });
   } catch { return response; }
 }
 
@@ -47,9 +47,18 @@ export function createSupabaseFetch(
 ): FetchImplementation {
   return async (input, init) => {
     const method = requestMethod(input, init);
-    // PostgREST HEAD errors have no JSON body. Request zero rows via GET so
-    // the exact error can be classified while preserving count/filter semantics.
+    // HEAD 沒有錯誤 JSON；改查零列保留 count/filter，才能精確辨識 JWT timing 錯誤。
     const url = new URL(input instanceof Request ? input.url : input.toString());
+    // 此網站不用 Supabase Auth。SDK REST fallback 會把非 JWT key 放進 Bearer；
+    // 僅移除與 apikey 完全相同的新格式 key，不移除真正使用者 JWT 或 legacy JWT。
+    if (url.pathname.startsWith("/rest/v1/")) {
+      const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
+      const key = headers.get("apikey");
+      if (key && /^(sb_secret_|sb_publishable_)/.test(key) && headers.get("authorization") === `Bearer ${key}`) {
+        headers.delete("authorization");
+        init = { ...init, headers };
+      }
+    }
     if (method === "HEAD" && url.pathname.startsWith("/rest/v1/") && !url.pathname.startsWith("/rest/v1/rpc/")) {
       url.searchParams.set("limit", "0");
       if (input instanceof Request) {
@@ -72,14 +81,14 @@ export function createSupabaseFetch(
     if (!(await isFutureIssuedJwtFailure(response))) return retainErrorStatus(response, url);
 
     await delay(RETRY_DELAY_MS);
-    // Next render deduplication ignores cache mode; an explicit signal opts out.
-    // Preserve caller cancellation while forcing this retry to reach the network.
+    // Next 的 render dedupe 不以 cache mode 區分 request；明確傳 signal 才跳過。
+    // 保留呼叫者取消能力，且整條流程最多只新增一次網路請求。
     const signal = init?.signal ?? (input instanceof Request ? input.signal : undefined);
     const retried = await fetchImplementation(input, {
       ...init,
       signal: signal ?? new AbortController().signal,
       cache: "no-store",
     });
-    return retainErrorStatus(retried, url);
+    return retainErrorStatus(retried, url, true);
   };
 }

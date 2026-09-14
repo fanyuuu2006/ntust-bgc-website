@@ -1,4 +1,5 @@
 import "server-only";
+import type { UserBorrowingListItem } from "@/services/board-games/board-games.types";
 
 import { supabase } from "@/libs/supabase/server";
 import { throwRepositoryError } from "@/repositories/shared/errors";
@@ -47,24 +48,7 @@ export type FindManyBoardGameBorrowingsOptions = PaginationQuery &
     search_user_ids?: string[];
   };
 
-export const boardGameBorrowingsRepository = {
-  findById: async (id: BoardGameBorrowingId): Promise<BoardGameBorrowing | null> => {
-    const { data, error } = await supabase
-      .from("board_game_borrowings")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
-
-    if (error) {
-      throwRepositoryError("依 ID 尋找借用紀錄失敗", error);
-    }
-    return data;
-  },
-
-  /**
-   * 通用列表查詢，供管理後台（跨使用者、跨桌遊）使用。
-   */
-  findMany: async (options: FindManyBoardGameBorrowingsOptions = {}) => {
+async function findMany<T>(options: FindManyBoardGameBorrowingsOptions, projection: string, exactCount = true) {
     const { page, pageSize, from, to } = normalizePaginationOptions({
       page: options.page,
       pageSize: options.pageSize,
@@ -74,7 +58,7 @@ export const boardGameBorrowingsRepository = {
 
     let query = supabase
       .from("board_game_borrowings")
-      .select("*", { count: "exact" });
+      .select(projection, exactCount ? { count: "exact" } : {});
 
     if (options.status) {
       query = Array.isArray(options.status)
@@ -98,15 +82,15 @@ export const boardGameBorrowingsRepository = {
         options.search_board_game_ids?.length ? `board_game_id.in.(${options.search_board_game_ids.join(",")})` : "",
         options.search_user_ids?.length ? `user_id.in.(${options.search_user_ids.join(",")})` : "",
       ].filter(Boolean);
-      if (!predicates.length) return buildPaginationResult<BoardGameBorrowing>([], 0, page, pageSize);
+      if (!predicates.length) return buildPaginationResult<T>([], 0, page, pageSize);
       query = query.or(predicates.join(","));
     }
     if (options.board_game_ids) {
-      if (options.board_game_ids.length === 0) return buildPaginationResult<BoardGameBorrowing>([], 0, page, pageSize);
+      if (options.board_game_ids.length === 0) return buildPaginationResult<T>([], 0, page, pageSize);
       query = query.in("board_game_id", options.board_game_ids);
     }
     if (options.user_ids) {
-      if (options.user_ids.length === 0) return buildPaginationResult<BoardGameBorrowing>([], 0, page, pageSize);
+      if (options.user_ids.length === 0) return buildPaginationResult<T>([], 0, page, pageSize);
       query = query.in("user_id", options.user_ids);
     }
 
@@ -117,13 +101,42 @@ export const boardGameBorrowingsRepository = {
     const { data, error, count } = await query;
     if (error) throwRepositoryError("取得借用紀錄列表失敗", error);
 
-    return buildPaginationResult<BoardGameBorrowing>(
-      data ?? [],
+    return buildPaginationResult<T>(
+      (data ?? []) as unknown as T[],
       count,
       page,
       pageSize,
     );
+}
+
+export const boardGameBorrowingsRepository = {
+  /** 關聯投影只取卡片需要的桌遊欄位；保留原有篩選、排序與分頁。 */
+  findManyByUserIdWithGame: (
+    userId: string,
+    options: Omit<FindManyBoardGameBorrowingsOptions, "user_id"> = {},
+    exactCount = true,
+  ) => findMany<UserBorrowingListItem>(
+    { ...options, user_id: userId },
+    "id,status,created_at,due_at,returned_at,board_game:board_games(id,name,inventory_number,image)",
+    exactCount,
+  ),
+  findById: async (id: BoardGameBorrowingId): Promise<BoardGameBorrowing | null> => {
+    const { data, error } = await supabase
+      .from("board_game_borrowings")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) {
+      throwRepositoryError("依 ID 尋找借用紀錄失敗", error);
+    }
+    return data;
   },
+
+  /**
+   * 通用列表查詢，供管理後台（跨使用者、跨桌遊）使用。
+   */
+  findMany: (options: FindManyBoardGameBorrowingsOptions = {}) => findMany<BoardGameBorrowing>(options, "*"),
 
   /**
    * 查詢某位使用者的借用紀錄（分頁）。

@@ -4,13 +4,13 @@ import { CancelBorrowingAction } from "@/components/(authenticated)/borrowings/C
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
 import { Card } from "@/components/ui/Card";
-import type { BoardGameBorrowingWithBoardGame } from "@/services/board-games/board-games.types";
+import type { UserBorrowingListItem } from "@/services/board-games/board-games.types";
 import { formatDateTime, getDueTimePresentation } from "@/utils/date";
 
 export function BorrowingRecord({
   borrowing,
 }: {
-  borrowing: BoardGameBorrowingWithBoardGame;
+  borrowing: UserBorrowingListItem;
 }) {
   const due = borrowing.status === "borrowed"
     ? getDueTimePresentation(borrowing.due_at)
@@ -68,7 +68,7 @@ function BorrowingLifecycle({
   borrowing,
   due,
 }: {
-  borrowing: BoardGameBorrowingWithBoardGame;
+  borrowing: UserBorrowingListItem;
   due: ReturnType<typeof getDueTimePresentation> | null;
 }) {
   if (borrowing.status === "borrowed" && due) {

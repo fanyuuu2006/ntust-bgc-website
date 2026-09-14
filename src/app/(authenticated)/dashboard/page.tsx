@@ -14,21 +14,21 @@ import { boardGamesService } from "@/services/board-games/board-games.service";
 import { eventsService } from "@/services/events/events.service";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { formatDate } from "@/utils/date";
+import { getCurrentAcademicYear } from "@/services/academic-years/current-academic-year";
 
 async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const [academicYears, openBorrowings, announcements] = await Promise.all([
-    membershipService.listAcademicYears(),
+  const [currentAcademicYear, openBorrowings, announcements] = await Promise.all([
+    getCurrentAcademicYear(),
     boardGamesService.getDashboardOpenBorrowingsByUserId(user.id),
     announcementsService.getDashboardLatestPublished(),
   ]);
-  const currentAcademicYear = academicYears.find((year) => year.is_current);
   const currentYearMembership = currentAcademicYear
-    ? await membershipService.getMembershipByUserIdAndAcademicYearId(
+    ? await membershipService.getMembershipByUserIdAndAcademicYear(
         user.id,
-        currentAcademicYear.id,
+        currentAcademicYear,
       )
     : null;
   const selfCheckInEvents =

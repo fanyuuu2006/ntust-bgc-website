@@ -20,6 +20,7 @@ function diagnosticText(value: unknown): string | undefined {
     .replace(/(?:https?|postgres(?:ql)?):\/\/\S+/gi, "[URL REDACTED]")
     .replace(/Bearer\s+\S+|eyJ[\w-]+\.[\w-]+\.[\w-]+|(?:sb_secret_|xkeysib-|sk-)[\w-]+/g, "[REDACTED]")
     .replace(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi, "[EMAIL REDACTED]")
+    .replace(/\b[a-f0-9]{32,}\b/gi, "[TOKEN REDACTED]")
     .replace(/\([^)]*\)/g, "[VALUES REDACTED]")
     .replace(/\b\d{5,}\b/g, "[NUMBER REDACTED]")
     .replace(/(['"])(.*?)\1/g, (_match, _quote, text: string) => /^[a-z_][a-z0-9_.]*$/.test(text) ? `"${text}"` : "[VALUE REDACTED]");
@@ -51,6 +52,7 @@ export function serverDiagnostic(error: unknown, depth = 0): object {
     ...(type === "RepositoryError" && typeof operation === "string" && /^[\p{Script=Han}A-Za-z ._-]{1,120}$/u.test(operation) ? { operation } : {}),
     ...(type === "RepositoryError" && isOperationContext(operationContext) ? { operationContext } : {}),
     ...textFields,
+    ...(postgrest && typeof field(error, "retryAttempted") === "boolean" ? { retryAttempted: field(error, "retryAttempted"), retrySucceeded: false } : {}),
     ...(fetchFailure ? { message: "fetch failed" } : {}),
     ...(cause && cause !== error ? { cause: serverDiagnostic(cause, depth + 1) } : {}),
   };

@@ -12,8 +12,8 @@ import {
   buildNumericSearch,
 } from "@/repositories/shared/search";
 import type { OrderOptions, PaginationQuery } from "@/repositories/shared/types";
-import type { BoardGameWithStats } from "@/services/board-games/board-games.types";
-import type { BoardGame, BoardGameStatus } from "@/types/database";
+import type { BoardGameDiscoveryItem, HomeBoardGameItem } from "@/services/board-games/board-games.types";
+import type { BoardGameStatus } from "@/types/database";
 
 export type BoardGameDiscoveryOrderBy =
   | "popular"
@@ -30,11 +30,11 @@ export type FindManyBoardGamesWithStatsOptions = PaginationQuery &
     location_ids?: string[];
   };
 
-type BoardGameStatisticsRow = BoardGame & {
+type BoardGameStatisticsRow = Omit<BoardGameDiscoveryItem, "stats"> & {
   completed_borrow_count: number | string;
 };
 
-function toBoardGameWithStats(row: BoardGameStatisticsRow): BoardGameWithStats {
+function toBoardGameWithStats(row: BoardGameStatisticsRow): BoardGameDiscoveryItem {
   const { completed_borrow_count, ...boardGame } = row;
 
   return {
@@ -57,7 +57,7 @@ async function findManyWithStats(
 
   let query = supabase
     .from("board_games_with_statistics")
-    .select("*", { count: "exact" });
+    .select("id,name,image,status,inventory_number,completed_borrow_count,category:board_game_categories(name),location:board_game_locations(name)", { count: "exact" });
 
   const keyword = options.search?.trim();
   if (keyword) {
@@ -124,7 +124,7 @@ async function findManyWithStats(
       throwRepositoryError("計算桌遊統計總筆數失敗", countError);
     }
 
-    return buildPaginationResult<BoardGameWithStats>(
+    return buildPaginationResult<BoardGameDiscoveryItem>(
       [],
       totalCount,
       page,
@@ -132,8 +132,8 @@ async function findManyWithStats(
     );
   }
 
-  return buildPaginationResult<BoardGameWithStats>(
-    ((data ?? []) as BoardGameStatisticsRow[]).map(toBoardGameWithStats),
+  return buildPaginationResult<BoardGameDiscoveryItem>(
+    ((data ?? []) as unknown as BoardGameStatisticsRow[]).map(toBoardGameWithStats),
     count,
     page,
     pageSize,
@@ -143,14 +143,15 @@ async function findManyWithStats(
 export const boardGameStatisticsRepository = {
   findMany: findManyWithStats,
 
-  findPopular: async ({ limit = 6 }: { limit?: number } = {}) => {
-    const result = await findManyWithStats({
-      page: 1,
-      pageSize: Math.min(100, Math.max(1, limit)),
-      orderBy: "popular",
-      orderDirection: "desc",
-    });
-
-    return result.data;
+  /** 熱門排序由 view 決定；關聯名稱在同一請求取得，首頁不計 pagination total。 */
+  findPopular: async ({ limit = 6 }: { limit?: number } = {}): Promise<HomeBoardGameItem[]> => {
+    const { data, error } = await supabase
+      .from("board_games_with_statistics")
+      .select("id,name,image,status,category:board_game_categories(name),location:board_game_locations(name)")
+      .order("completed_borrow_count", { ascending: false })
+      .order("inventory_number", { ascending: true })
+      .limit(Math.min(100, Math.max(1, limit)));
+    if (error) throwRepositoryError("讀取首頁熱門桌遊失敗", error);
+    return (data ?? []) as unknown as HomeBoardGameItem[];
   },
 };

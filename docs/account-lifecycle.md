@@ -66,7 +66,7 @@ Admin profile schema 只產出明確欄位，傳入 Email／verification／close
 
 ## 未來公開作者契約
 
-未實作 Public Profile／Reviews／Comments。未來公開作者投影必須只輸出必要公開欄位；closed user 固定顯示「已註銷使用者」、avatar=null，不輸出 email、Profile 或內部 tombstone email。文章／評論可保留作者 UUID 維持脈絡，不能用 User ID 查出先前個資。既有內容本身是否含個資須另行審查，不由作者名稱替換保證。
+Phase 3I 已建立最小 Public Profile 投影，詳見 [公開身份邊界](public-identity.md)；Reviews／Comments 尚未實作。未來公開作者投影必須只輸出必要公開欄位；closed user 固定顯示「已註銷使用者」、avatar=null，不輸出 email、Profile 或內部 tombstone email。文章／評論可保留作者 UUID 維持脈絡，不能用 User ID 查出先前個資。既有內容本身是否含個資須另行審查，不由作者名稱替換保證。
 
 ## Migration 與回退
 
@@ -114,3 +114,8 @@ Migration SHA-256：`A5A6DBCC3B6F06B4A8CD8C41D3315F1277988A7959647B915FDB477DBE7
 本機 rollback SQL 驗證及並行交易 3/3 通過。未在共享遠端建立假帳號／社員／借用歷史，亦未註銷任何帳號；實際 browser closure round-trip 留待可丟棄帳號人工驗證。USER 已接受 UI，不代表 production browser smoke test 已執行。歷史 incident root cause 仍為 inconclusive。後續順序：deploy application → smoke test login/settings/admin。
 
 最終回歸：556/556 tests PASS；lint、TypeScript、diff check PASS；production audit 0 vulnerabilities。Localhost 未登入 HTTP smoke：/login 200，/settings、/admin、/admin/users 與 synthetic user detail 307 至 /login；不代表登入後頁面已完成 browser QA。
+# Phase 3K-S1 相容性補充
+
+新應用將 Cookie 先做 SHA-256，再呼叫 `close_account_by_session_hash`，避免原始 Session 憑證進入 RPC。
+新 RPC 保留原子交易、密碼版本確認、借用 blockers、鎖定與歷史保留；Stage A 暫時保留舊 RPC 供舊應用使用。
+此相容 migration 尚未套用遠端；部署與舊 Session 失效順序見 [Session 憑證硬化](session-credential-hardening.md)。

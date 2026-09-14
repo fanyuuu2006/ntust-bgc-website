@@ -36,7 +36,7 @@ test("latest announcements preview is a published-only top-three semantic list",
 
   assert.match(
     section,
-    /announcementsService\.listPublished\(\{[\s\S]*?page:\s*1,[\s\S]*?pageSize:\s*3,[\s\S]*?\}\)/,
+    /announcementsService\.getHomepagePreview\(\)/,
   );
   assert.match(section, /<ul/);
   assert.match(section, /<AnnouncementRow/);

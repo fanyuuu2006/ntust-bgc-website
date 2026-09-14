@@ -120,7 +120,7 @@ test("dashboard summaries keep operational records bounded while check-in remain
   assert.doesNotMatch(page, /Pagination|listPublished\(\{ page: 1, pageSize: 3 \}\)/);
   assert.match(borrowingService, /DASHBOARD_BORROWING_LIMIT = 3/);
   assert.match(borrowingService, /takeDashboardBorrowings/);
-  assert.match(announcementsService, /DASHBOARD_ANNOUNCEMENT_LIMIT = 3/);
+  assert.match(announcementsService, /getDashboardLatestPublished:.*homepagePreview\(\)/);
   assert.match(announcementsService, /getDashboardLatestPublished/);
   assert.doesNotMatch(eventsRepository, /findOpenForSelfCheckIn[\s\S]*?\.limit\(/);
 });

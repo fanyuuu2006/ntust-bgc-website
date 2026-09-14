@@ -11,7 +11,17 @@ export const ANNOUNCEMENT_SORT_FIELDS = ["title", "created_at", "updated_at", "p
 export type AnnouncementSortField = (typeof ANNOUNCEMENT_SORT_FIELDS)[number];
 export type FindPublishedAnnouncementsOptions = PaginationQuery & { search?: string; orderBy?: AnnouncementSortField; orderDirection?: "asc" | "desc" };
 
+export type HomepageAnnouncement = Pick<Announcement, "id" | "title" | "content" | "published_at" | "created_at">;
+
 export const announcementsRepository = {
+  /** 首頁使用 Server 衍生的純文字摘要，不載入 Rich Content 文件與作者資料。 */
+  findHomepagePreview: async (): Promise<HomepageAnnouncement[]> => {
+    const { data, error } = await supabase.from("announcements")
+      .select("id,title,content,published_at,created_at")
+      .eq("is_published", true).order("published_at", { ascending: false }).limit(3);
+    if (error) throwRepositoryError("讀取首頁公告預覽失敗", error);
+    return data ?? [];
+  },
   findManyForAdmin: async (options: FindPublishedAnnouncementsOptions & { published?: boolean } = {}) => {
     const { page, pageSize, from, to } = normalizePaginationOptions(options);
     let query = supabase.from("announcements").select("*", { count: "exact" });

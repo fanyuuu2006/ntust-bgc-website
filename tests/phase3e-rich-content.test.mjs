@@ -1,3 +1,4 @@
+import { createPublicCacheRuntime } from "./helpers/next-public-cache.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createElement } from "react";
@@ -57,6 +58,7 @@ test("server derives searchable companion text and preserves publication semanti
   let stored;
   const published = "2026-01-01T00:00:00Z";
   const service = load("src/services/announcements/announcements.service.ts", {
+    "next/cache": createPublicCacheRuntime().module,
     "@/repositories/announcements.repository": { announcementsRepository: {
       create: async (data) => (stored = data), findById: async () => ({ is_published: true, published_at: published }), updateById: async (_, data) => (stored = data),
     } },
@@ -221,6 +223,7 @@ test("real announcement API maps unsafe rich mutation to expected 400 without re
   const { POST } = load("src/app/api/admin/announcements/route.ts", {
     "@/libs/api/admin-authorization": { authorizeAdminRequest: async () => ({ user: { id: "author" } }) },
     "@/libs/api/server-response": { unexpectedErrorResponse: () => { incidents++; return new Response(null, { status: 500 }); } },
+    "next/cache": createPublicCacheRuntime().module,
     "@/repositories/announcements.repository": { announcementsRepository: { create: async () => { writes++; } } },
   });
   const response = await POST(new Request("http://localhost/api/admin/announcements", { method: "POST", body: JSON.stringify({ title: "bad", content_format: "rich_text_v1", rich_content: doc(paragraph(text("link", [{ type: "link", attrs: { href: "javascript:alert(1)" } }]))), is_published: false }) }));
@@ -237,6 +240,7 @@ test("real announcement API preserves authorization and returns canonical rich c
   const { POST } = load("src/app/api/admin/announcements/route.ts", {
     "@/libs/api/admin-authorization": { authorizeAdminRequest: async () => authorized ? { user: { id: "server-author" } } : { response: new Response(null, { status: 403 }) } },
     "@/libs/api/server-response": { unexpectedErrorResponse: () => new Response(null, { status: 500 }) },
+    "next/cache": createPublicCacheRuntime().module,
     "@/repositories/announcements.repository": { announcementsRepository: { create: async (payload) => (stored = payload) } },
   });
   const request = () => new Request("http://localhost/api/admin/announcements", { method: "POST", body: JSON.stringify({ title: "safe", content: "forged companion", author_id: "forged-author", content_format: "rich_text_v1", rich_content: doc(paragraph(text("公告"))), is_published: false }) });

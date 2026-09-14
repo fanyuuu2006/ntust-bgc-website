@@ -9,13 +9,13 @@ import { DashboardSectionHeader } from "@/components/(authenticated)/dashboard/D
 import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import type { BoardGameBorrowingWithBoardGame } from "@/services/board-games/board-games.types";
+import type { UserBorrowingListItem } from "@/services/board-games/board-games.types";
 import { getDueTimePresentation } from "@/utils/date";
 
 export function DashboardBorrowingSummary({
   borrowings,
 }: {
-  borrowings: BoardGameBorrowingWithBoardGame[];
+  borrowings: UserBorrowingListItem[];
 }) {
   return (
     <Card className="p-4">
@@ -56,7 +56,7 @@ export function DashboardBorrowingSummary({
 function BorrowingRow({
   borrowing,
 }: {
-  borrowing: BoardGameBorrowingWithBoardGame;
+  borrowing: UserBorrowingListItem;
 }) {
   const dueTime =
     borrowing.status === "borrowed"

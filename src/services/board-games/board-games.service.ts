@@ -1,4 +1,6 @@
 import "server-only";
+import type { UserBorrowingListItem } from "./board-games.types";
+import { cachePublicData, invalidatePublicData } from "@/libs/cache/public-data";
 
 import {
   boardGameBorrowingsRepository,
@@ -37,7 +39,7 @@ import {
 import {
   BoardGameBorrowingWithBoardGame,
   BoardGameDiscoveryItem,
-  BoardGameWithStats,
+  HomeBoardGameItem,
   BoardGameWithCategoryAndLocation,
 } from "./board-games.types";
 import {
@@ -152,6 +154,10 @@ function rethrowBorrowingTransactionError(error: unknown): never {
   throw error;
 }
 
+const cachedCategories = cachePublicData("categories", () => boardGameCategoriesRepository.findAll());
+const cachedLocations = cachePublicData("locations", () => boardGameLocationsRepository.findAll());
+const cachedPopularGames = cachePublicData("popularGames", () => boardGameStatisticsRepository.findPopular({ limit: 6 }));
+
 export const boardGamesService = {
   getNextInventoryNumber: async (): Promise<number | null> => {
     const highest = await boardGamesRepository.findHighestInventoryNumber();
@@ -166,7 +172,7 @@ export const boardGamesService = {
    * ============================================================ */
 
   listCategories: async (): Promise<BoardGameCategory[]> => {
-    return boardGameCategoriesRepository.findAll();
+    return cachedCategories();
   },
   listCategoriesForAdmin: (options: FindManyBoardGameCategoriesOptions = {}) => boardGameCategoriesRepository.findMany(options),
 
@@ -184,7 +190,9 @@ export const boardGamesService = {
     );
     if (isDuplicate) throw new DuplicateBoardGameCategoryNameError();
 
-    return boardGameCategoriesRepository.create(input);
+    const created = await boardGameCategoriesRepository.create(input);
+    invalidatePublicData("categories", "popularGames");
+    return created;
   },
 
   updateCategory: async (
@@ -203,6 +211,7 @@ export const boardGamesService = {
 
     const updated = await boardGameCategoriesRepository.updateById(id, input);
     if (!updated) throw new BoardGameCategoryNotFoundError();
+    invalidatePublicData("categories", "popularGames");
     return updated;
   },
 
@@ -213,6 +222,7 @@ export const boardGamesService = {
     if (inUse) throw new BoardGameCategoryInUseError();
 
     await boardGameCategoriesRepository.deleteById(id);
+    invalidatePublicData("categories", "popularGames");
   },
 
   /* ============================================================ *
@@ -220,7 +230,7 @@ export const boardGamesService = {
    * ============================================================ */
 
   listLocations: async (): Promise<BoardGameLocation[]> => {
-    return boardGameLocationsRepository.findAll();
+    return cachedLocations();
   },
   listLocationsForAdmin: (options: FindManyBoardGameLocationsOptions = {}) => boardGameLocationsRepository.findMany(options),
 
@@ -238,7 +248,9 @@ export const boardGamesService = {
     );
     if (isDuplicate) throw new DuplicateBoardGameLocationNameError();
 
-    return boardGameLocationsRepository.create(input);
+    const created = await boardGameLocationsRepository.create(input);
+    invalidatePublicData("locations", "popularGames");
+    return created;
   },
 
   updateLocation: async (
@@ -257,6 +269,7 @@ export const boardGamesService = {
 
     const updated = await boardGameLocationsRepository.updateById(id, input);
     if (!updated) throw new BoardGameLocationNotFoundError();
+    invalidatePublicData("locations", "popularGames");
     return updated;
   },
 
@@ -267,6 +280,7 @@ export const boardGamesService = {
     if (inUse) throw new BoardGameLocationInUseError();
 
     await boardGameLocationsRepository.deleteById(id);
+    invalidatePublicData("locations", "popularGames");
   },
 
   /* ============================================================ *
@@ -290,24 +304,7 @@ export const boardGamesService = {
   > => {
     const result = await boardGamesRepository.findManyForAdmin(options);
 
-    const categoryIds = [...new Set(result.data.map((game) => game.category_id))];
-    const locationIds = [...new Set(result.data.map((game) => game.location_id))];
-    const [categories, locations] = await Promise.all([
-      boardGameCategoriesRepository.findManyByIds(categoryIds),
-      boardGameLocationsRepository.findManyByIds(locationIds),
-    ]);
-
-    const categoriesById = new Map(categories.map((category) => [category.id, category]));
-    const locationsById = new Map(locations.map((location) => [location.id, location]));
-    const data = result.data.map((boardGame) => {
-      const category = categoriesById.get(boardGame.category_id);
-      const location = locationsById.get(boardGame.location_id);
-      if (!category) throw new BoardGameCategoryNotFoundError();
-      if (!location) throw new BoardGameLocationNotFoundError();
-      return { ...boardGame, category, location };
-    });
-
-    return { ...result, data };
+    return result;
   },
 
   /**
@@ -381,7 +378,9 @@ export const boardGamesService = {
     if (isDuplicate) throw new DuplicateInventoryNumberError();
 
     try {
-      return await boardGamesRepository.create(data);
+      const created = await boardGamesRepository.create(data);
+      invalidatePublicData("popularGames");
+      return created;
     } catch (error) {
       return rethrowInventoryNumberConflict(error);
     }
@@ -425,6 +424,7 @@ export const boardGamesService = {
 
     const updated = await boardGamesRepository.updateById(id, data).catch(rethrowInventoryNumberConflict);
     if (!updated) throw new BoardNotFoundError();
+    invalidatePublicData("popularGames");
     return updated;
   },
 
@@ -442,6 +442,7 @@ export const boardGamesService = {
     }
 
     await boardGamesRepository.deleteById(id);
+    invalidatePublicData("popularGames");
   },
 
   /* ============================================================ *
@@ -475,14 +476,14 @@ export const boardGamesService = {
       search?: string;
     } = {},
   ): Promise<
-    ReturnType<typeof buildPaginationResult<BoardGameBorrowingWithBoardGame>>
+    ReturnType<typeof buildPaginationResult<UserBorrowingListItem>>
   > => {
     const { search, ...repositoryOptions } = options;
     const matchingBoardGameIds = search?.trim()
       ? await boardGamesRepository.findIdsBySearch(search)
       : undefined;
 
-    const result = await boardGameBorrowingsRepository.findManyByUserId(
+    const result = await boardGameBorrowingsRepository.findManyByUserIdWithGame(
       userId,
       {
         orderBy: "created_at",
@@ -492,34 +493,21 @@ export const boardGamesService = {
       },
     );
 
-    const boardGameIds = [...new Set(result.data.map((b) => b.board_game_id))];
-    const boardGames = await boardGamesRepository.findManyByIds(boardGameIds);
-
-    const data = result.data.map((borrowing) => {
-      const boardGame = boardGames.find(
-        (game) => game.id === borrowing.board_game_id,
-      );
-      if (!boardGame) throw new BoardNotFoundError();
-      return { ...borrowing, board_game: boardGame };
-    });
-
-    return { ...result, data };
+    if (result.data.some((item) => !item.board_game)) throw new BoardNotFoundError();
+    return result;
   },
 
   listBoardGameDiscovery: async (
     options: FindManyBoardGamesWithStatsOptions = {},
   ): Promise<ReturnType<typeof buildPaginationResult<BoardGameDiscoveryItem>>> => {
     const result = await boardGameStatisticsRepository.findMany(options);
-    const data = await attachCategoryAndLocation(result.data);
-
-    return { ...result, data };
+    return result;
   },
 
   listPopularBoardGames: async (
     options: { limit?: number } = {},
-  ): Promise<BoardGameDiscoveryItem[]> => {
-    const boardGames = await boardGameStatisticsRepository.findPopular(options);
-    return attachCategoryAndLocation(boardGames);
+  ): Promise<HomeBoardGameItem[]> => {
+    return (options.limit ?? 6) === 6 ? cachedPopularGames() : boardGameStatisticsRepository.findPopular(options);
   },
 
   getOpenBorrowingForUserAndBoardGame: async (
@@ -534,46 +522,37 @@ export const boardGamesService = {
 
   getDashboardOpenBorrowingsByUserId: async (
     userId: string,
-  ): Promise<BoardGameBorrowingWithBoardGame[]> => {
-    // Dashboard attention order: overdue/due-soon borrowed records first,
-    // then other borrowed records, approved records, and pending requests.
+  ): Promise<UserBorrowingListItem[]> => {
+    // 各組的排序不同：借用中按期限，其餘按申請時間，最後依狀態優先順序取三筆。
+    // 任意 IN + LIMIT 無法保證相同結果；保留三個有上限的查詢，關聯載入桌遊。
     const [borrowed, approved, pending] = await Promise.all([
-      boardGameBorrowingsRepository.findManyByUserId(userId, {
+      boardGameBorrowingsRepository.findManyByUserIdWithGame(userId, {
         status: "borrowed",
         orderBy: "due_at",
         orderDirection: "asc",
         page: 1,
         pageSize: DASHBOARD_BORROWING_LIMIT,
-      }),
-      boardGameBorrowingsRepository.findManyByUserId(userId, {
+      }, false),
+      boardGameBorrowingsRepository.findManyByUserIdWithGame(userId, {
         status: "approved",
         orderBy: "created_at",
         orderDirection: "asc",
         page: 1,
         pageSize: DASHBOARD_BORROWING_LIMIT,
-      }),
-      boardGameBorrowingsRepository.findManyByUserId(userId, {
+      }, false),
+      boardGameBorrowingsRepository.findManyByUserIdWithGame(userId, {
         status: "pending",
         orderBy: "created_at",
         orderDirection: "asc",
         page: 1,
         pageSize: DASHBOARD_BORROWING_LIMIT,
-      }),
+      }, false),
     ]);
     const borrowings = takeDashboardBorrowings(
       [borrowed.data, approved.data, pending.data],
       DASHBOARD_BORROWING_LIMIT,
     );
-    const boardGameIds = [...new Set(borrowings.map((borrowing) => borrowing.board_game_id))];
-    const boardGames = boardGameIds.length
-      ? await boardGamesRepository.findManyByIds(boardGameIds)
-      : [];
-    const boardGamesById = new Map(boardGames.map((boardGame) => [boardGame.id, boardGame]));
-    return borrowings
-      .flatMap((borrowing) => {
-        const boardGame = boardGamesById.get(borrowing.board_game_id);
-        return boardGame ? [{ ...borrowing, board_game: boardGame }] : [];
-      });
+    return borrowings.filter((item) => item.board_game);
   },
 
   getBorrowingById: async (
@@ -860,31 +839,6 @@ export const boardGamesService = {
   },
 };
 
-async function attachCategoryAndLocation(
-  boardGames: BoardGameWithStats[],
-): Promise<BoardGameDiscoveryItem[]> {
-  const categoryIds = [...new Set(boardGames.map((game) => game.category_id))];
-  const locationIds = [...new Set(boardGames.map((game) => game.location_id))];
-  const [categories, locations] = await Promise.all([
-    boardGameCategoriesRepository.findManyByIds(categoryIds),
-    boardGameLocationsRepository.findManyByIds(locationIds),
-  ]);
-  const categoriesById = new Map(
-    categories.map((category) => [category.id, category]),
-  );
-  const locationsById = new Map(
-    locations.map((location) => [location.id, location]),
-  );
-
-  return boardGames.map((boardGame) => {
-    const category = categoriesById.get(boardGame.category_id);
-    const location = locationsById.get(boardGame.location_id);
-    if (!category) throw new BoardGameCategoryNotFoundError();
-    if (!location) throw new BoardGameLocationNotFoundError();
-
-    return { ...boardGame, category, location };
-  });
-}
 
 function takeDashboardBorrowings<T>(groups: T[][], limit: number) {
   const selected: T[] = [];

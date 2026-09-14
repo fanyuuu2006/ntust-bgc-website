@@ -30,7 +30,7 @@ test("profile club footprint counts actual borrowing and attendance participatio
 
 test("profile identity badges derive established membership and officer facts with an accessible bounded disclosure", async () => {
   const [service, badges, hero] = await Promise.all([
-    readSource("src/services/profile/profile.service.ts"),
+    readSource("src/libs/profile-presentation.ts"),
     readSource("src/components/(authenticated)/profile/ProfileIdentityBadges.tsx"),
     readSource("src/components/(authenticated)/profile/ProfileHeroSection.tsx"),
   ]);
@@ -46,7 +46,7 @@ test("profile identity badges derive established membership and officer facts wi
   assert.match(badges, /hiddenBadges\.length/);
   assert.match(hero, /ProfileIdentityBadges/);
   assert.match(hero, /user\.name/);
-  assert.match(hero, /profile\.real_name/);
+  assert.match(await readSource("src/app/(authenticated)/profile/page.tsx"), /profile\.real_name/);
   assert.doesNotMatch(hero, />\s*真實姓名\s*</);
   assert.doesNotMatch(hero, /currentMembership|currentOfficerPositions/);
 });
@@ -68,7 +68,7 @@ test("profile club context distinguishes current, historical, and never-member u
   assert.match(profileDetails, /profile\.school/);
   assert.match(profileDetails, /profile\.department/);
   assert.match(profileDetails, /profile\.grade/);
-  assert.match(service, /hasMembershipHistory/);
+  assert.match(await readSource("src/services/profile/profile.service.ts"), /hasMembershipHistory/);
   assert.doesNotMatch(service, /hasEverBeenOfficer|isAdminByUserId/);
 });
 

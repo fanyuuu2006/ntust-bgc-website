@@ -1,4 +1,5 @@
 import "server-only";
+import type { BoardGameWithCategoryAndLocation } from "@/services/board-games/board-games.types";
 
 import { supabase } from "@/libs/supabase/server";
 import { throwRepositoryError } from "@/repositories/shared/errors";
@@ -48,6 +49,52 @@ export type FindManyAdminBoardGamesOptions = PaginationQuery &
     locationId?: string;
   };
 
+async function findMany<T extends BoardGame>(options: FindManyBoardGamesOptions, projection: string) {
+  const { page, pageSize, from, to } = normalizePaginationOptions({
+    page: options.page,
+    pageSize: options.pageSize,
+  });
+  const orderBy = options.orderBy ?? "inventory_number";
+  const orderDirection = options.orderDirection ?? "desc";
+
+  let query = supabase.from("board_games").select(projection, { count: "exact" });
+
+  const keyword = options.search?.trim();
+
+  if (keyword) {
+    const textSearch = buildIlikeSearch(["name", "description"], keyword);
+
+    const numericSearch = buildNumericSearch(["inventory_number"], keyword);
+
+    const searchConditions = [textSearch, numericSearch].filter(Boolean);
+
+    query = query.or(searchConditions.join(","));
+  }
+
+  if (options.status) {
+    query = Array.isArray(options.status)
+      ? query.in("status", options.status)
+      : query.eq("status", options.status);
+  }
+
+  if (options.category_ids?.length) {
+    query = query.in("category_id", options.category_ids);
+  }
+
+  if (options.location_ids?.length) {
+    query = query.in("location_id", options.location_ids);
+  }
+
+  query = query
+    .order(orderBy, { ascending: orderDirection === "asc" })
+    .range(from, to);
+
+  const { data, error, count } = await query;
+  if (error) throwRepositoryError("取得桌遊列表失敗", error);
+
+  return buildPaginationResult<T>((data ?? []) as unknown as T[], count, page, pageSize);
+}
+
 export const boardGamesRepository = {
   findIdsBySearch: async (search: string): Promise<string[]> => {
     const keyword = search.trim();
@@ -60,56 +107,12 @@ export const boardGamesRepository = {
     if (error) throwRepositoryError("搜尋桌遊 ID 失敗", error);
     return (data ?? []).map((item) => item.id);
   },
-  findMany: async (options: FindManyBoardGamesOptions = {}) => {
-    const { page, pageSize, from, to } = normalizePaginationOptions({
-      page: options.page,
-      pageSize: options.pageSize,
-    });
-    const orderBy = options.orderBy ?? "inventory_number";
-    const orderDirection = options.orderDirection ?? "desc";
-
-    let query = supabase.from("board_games").select("*", { count: "exact" });
-
-    const keyword = options.search?.trim();
-
-    if (keyword) {
-      const textSearch = buildIlikeSearch(["name", "description"], keyword);
-
-      const numericSearch = buildNumericSearch(["inventory_number"], keyword);
-
-      const searchConditions = [textSearch, numericSearch].filter(Boolean);
-
-      query = query.or(searchConditions.join(","));
-    }
-
-    if (options.status) {
-      query = Array.isArray(options.status)
-        ? query.in("status", options.status)
-        : query.eq("status", options.status);
-    }
-
-    if (options.category_ids?.length) {
-      query = query.in("category_id", options.category_ids);
-    }
-
-    if (options.location_ids?.length) {
-      query = query.in("location_id", options.location_ids);
-    }
-
-    query = query
-      .order(orderBy, { ascending: orderDirection === "asc" })
-      .range(from, to);
-
-    const { data, error, count } = await query;
-    if (error) throwRepositoryError("取得桌遊列表失敗", error);
-
-    return buildPaginationResult<BoardGame>(data ?? [], count, page, pageSize);
-  },
+  findMany: (options: FindManyBoardGamesOptions = {}) => findMany<BoardGame>(options, "*"),
 
   findManyForAdmin: async (
     options: FindManyAdminBoardGamesOptions = {},
   ) => {
-    return boardGamesRepository.findMany({
+    return findMany<BoardGameWithCategoryAndLocation>({
       page: options.page,
       pageSize: options.pageSize,
       search: options.search,
@@ -118,7 +121,7 @@ export const boardGamesRepository = {
       location_ids: options.locationId ? [options.locationId] : undefined,
       orderBy: options.orderBy,
       orderDirection: options.orderDirection,
-    });
+    }, "*,category:board_game_categories(id,name,description),location:board_game_locations(id,name,description)");
   },
 
   findById: async (id: string): Promise<BoardGame | null> => {
