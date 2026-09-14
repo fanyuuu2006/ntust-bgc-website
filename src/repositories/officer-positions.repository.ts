@@ -203,7 +203,7 @@ export const officerPositionsRepository = {
       .eq("user_id", userId);
 
     if (error) {
-      throwRepositoryError("檢查使用者是否曾任幹部失敗", error);
+      throwRepositoryError("檢查使用者是否曾任幹部失敗", error, "officer-history-check");
     }
 
     return (count ?? 0) > 0;

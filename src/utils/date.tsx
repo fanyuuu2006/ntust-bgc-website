@@ -108,6 +108,17 @@ export function formatTime(value: string | null | undefined): string {
   }).format(date);
 }
 
+/** 共用既有臺北時間格式；同年度的區間省略年份，跨年度保留兩端年份避免歧義。 */
+export function formatCompactDateTimeRange(start: string | null | undefined, end: string | null | undefined): { start: string; end: string } {
+  const startText = formatDateTime(start);
+  const endText = formatDateTime(end);
+  const sameYear = startText !== "—" && endText !== "—" && startText.split("/")[0] === endText.split("/")[0];
+  return {
+    start: sameYear ? startText.slice(startText.indexOf("/") + 1) : startText,
+    end: sameYear ? endText.slice(endText.indexOf("/") + 1) : endText,
+  };
+}
+
 /** @deprecated Use formatDateTime for member-facing date and time display. */
 export const formatAdminDateTime = formatDateTime;
 

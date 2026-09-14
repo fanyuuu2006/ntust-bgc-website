@@ -231,7 +231,8 @@ export const boardGameBorrowingsRepository = {
     if (dueBefore) query = query.lt("due_at", dueBefore);
     const { count, error } = await query;
 
-    if (error) throwRepositoryError("依狀態計算借用紀錄數量失敗", error);
+    if (error) throwRepositoryError("依狀態計算借用紀錄數量失敗", error,
+      dueBefore ? (status === "borrowed" ? "borrowings-overdue" : "borrowings-filtered") : `borrowings-${status}`);
     return count ?? 0;
   },
 

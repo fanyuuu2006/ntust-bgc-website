@@ -6,6 +6,7 @@ import { PasswordSettingsForm } from "@/components/(authenticated)/settings/Pass
 import { ProfileSettingsForm } from "@/components/(authenticated)/settings/ProfileSettingsForm";
 import { SessionSettingsSection } from "@/components/(authenticated)/settings/SessionSettingsSection";
 import { SettingsCard } from "@/components/(authenticated)/settings/SettingsCard";
+import { AccountClosureSection } from "@/components/(authenticated)/settings/AccountClosureSection";
 import { PageHeader } from "@/components/PageHeader";
 import { getCurrentUser } from "@/libs/auth";
 import { usersService } from "@/services/users/users.service";
@@ -68,6 +69,7 @@ async function SettingsPage() {
         <div className="mt-5 border-t border-(--border-default) pt-5 sm:mt-6 sm:pt-6">
           <SessionSettingsSection userId={user.id} />
         </div>
+        <div className="mt-5"><AccountClosureSection /></div>
       </SettingsCard>
     </section>
   );

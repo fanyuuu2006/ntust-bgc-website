@@ -12,6 +12,14 @@ type RegisterUserRepositoryInput = {
 };
 
 export const authRepository = {
+  /** 由交易重新核對 Session 與已驗證的憑證版本，不將 hash 或 token 寫入日誌。 */
+  closeAccount: async (sessionToken: string, expectedPasswordHash: string): Promise<void> => {
+    const { error } = await supabase.rpc("close_account", {
+      p_session_token: sessionToken,
+      p_expected_password_hash: expectedPasswordHash,
+    });
+    if (error) throwRepositoryError("註銷帳號失敗", error);
+  },
   registerUser: async ({
     email,
     name,

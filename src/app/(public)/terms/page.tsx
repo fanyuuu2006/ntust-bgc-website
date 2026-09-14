@@ -29,6 +29,7 @@ export default function TermsPage() {
           <h2 id="account-title">2. 帳號與 Email 驗證</h2>
           <p>註冊時請提供合理、正確的顯示名稱、Email 與所需個人資料，不得冒用他人身分。請妥善保管密碼與登入狀態，避免共用帳號；發現未經授權使用或安全疑慮時，請聯絡社團。</p>
           <p>請使用可接收信件的 Email 並完成驗證。未驗證帳號會受到系統功能限制；需要登入、社員資格或幹部授權的功能，仍須符合各自條件。驗證信不會要求您回傳密碼。</p>
+          <p>您可在設定或等待驗證頁註銷帳號。此操作不可復原，須重新驗證密碼且沒有未完成借用；必要歷史會保留，註銷不免除既有借用約定或法定責任。</p>
         </section>
 
         <section id="membership" aria-labelledby="membership-title" className="scroll-mt-24 space-y-3">

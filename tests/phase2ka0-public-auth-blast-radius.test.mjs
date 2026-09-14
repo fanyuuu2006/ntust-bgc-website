@@ -305,6 +305,7 @@ test("strict layouts keep getCurrentUser while protected APIs use the verified s
 test("strict getCurrentUser still propagates repository failures", async () => {
   const failure = new TestRepositoryError("session lookup", null);
   const { getCurrentUser } = await loadCommonJsModule("src/libs/auth.tsx", {
+    "@/repositories/users.repository": { usersRepository: {} },
     react: { cache: (fn) => fn },
     "next/headers": {
       cookies: async () => ({ get: () => ({ value: "session-token" }) }),

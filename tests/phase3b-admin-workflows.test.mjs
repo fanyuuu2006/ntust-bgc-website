@@ -262,7 +262,7 @@ test("server CRUD pages pass validated return context to forms and back links", 
   const mocks = {
     "@/services/board-games/board-games.service": { boardGamesService: { getBoardGameById: async () => boardGame, listCategories: async () => [], listLocations: async () => [], getNextInventoryNumber: async () => 608 } },
     "@/services/announcements/announcements.service": { announcementsService: { getForAdmin: async () => ({ id: 1, title: "標題", content: "內容", is_published: false }) } },
-    "@/services/users/users.service": { usersService: { getUserForAdmin: async () => ({ id: "user", name: "名字", email: "test@example.invalid", created_at: "2026-01-01", updated_at: "2026-01-01", memberships: [], officer_positions: [] }) } },
+    "@/services/users/users.service": { usersService: { getActivityCountsForAdmin: async () => ({ borrowings: 0, openBorrowings: 0, attendances: 0 }), getUserForAdmin: async () => ({ id: "user", name: "名字", email: "test@example.invalid", created_at: "2026-01-01", updated_at: "2026-01-01", memberships: [], officer_positions: [] }) } },
     "@/services/email-verification/email-verification-operations.service": { getLatestVerificationForAdmin: async () => null },
   };
   for (const [family, workflow] of [["board-games", "new"], ["board-games", "[id]/edit"], ["announcements", "new"], ["announcements", "[id]/edit"], ["users", "[id]"]]) {

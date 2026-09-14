@@ -160,12 +160,12 @@ async function AdminUsersPage({ searchParams }: Props) {
                     </div>
                     <div className="shrink-0">
                       <EmailVerificationBadge
-                        verifiedAt={user.email_verified_at}
+                        verifiedAt={user.email_verified_at} closedAt={user.closed_at}
                       />
                     </div>
                   </div>
                   <p className="min-w-0 wrap-anywhere text-sm text-(--text-muted)">
-                    {user.email}
+                    {user.closed_at ? "已註銷" : user.email}
                   </p>
                   <dl className="grid grid-cols-2 gap-3 text-sm">
                     <Info label="學號" value={user.profile?.student_id || MISSING_VALUE} />
@@ -227,11 +227,11 @@ async function AdminUsersPage({ searchParams }: Props) {
                         </div>
                       </TableCell>
                       <TableCell className="max-w-56 break-all text-(--text-muted)">
-                        {user.email}
+                        {user.closed_at ? "已註銷" : user.email}
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
                         <EmailVerificationBadge
-                          verifiedAt={user.email_verified_at}
+                          verifiedAt={user.email_verified_at} closedAt={user.closed_at}
                         />
                       </TableCell>
                       <TableCell>{user.profile?.student_id || MISSING_VALUE}</TableCell>

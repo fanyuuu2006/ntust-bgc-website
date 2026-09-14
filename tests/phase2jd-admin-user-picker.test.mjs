@@ -81,6 +81,8 @@ test("admin picker search discovers users beyond a preloaded first page by every
     {
       "server-only": {},
       "@/repositories/user-profiles.repository": { userProfilesRepository },
+      "@/repositories/board-game-borrowings.repository": { boardGameBorrowingsRepository: {} },
+      "@/repositories/event-attendances.repository": { eventAttendancesRepository: {} },
       "@/repositories/users.repository": { usersRepository },
       "./users.schema": schemas,
       "./users.errors": {

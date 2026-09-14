@@ -183,7 +183,7 @@ export const boardGamesRepository = {
     const { count, error } = await supabase
       .from("board_games")
       .select("*", { count: "exact", head: true });
-    if (error) throwRepositoryError("計算桌遊總數失敗", error);
+    if (error) throwRepositoryError("計算桌遊總數失敗", error, "board-games-total");
     return count ?? 0;
   },
 

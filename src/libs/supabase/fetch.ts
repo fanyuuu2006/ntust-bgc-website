@@ -5,6 +5,18 @@ type Delay = (milliseconds: number) => Promise<void>;
 
 const RETRY_DELAY_MS = 100;
 
+/** SDK 將 HTTP response 拆成 error 後，Repository 通常只收到 error；保留實際狀態，避免猜測 code 對應值。 */
+async function retainErrorStatus(response: Response, url: URL): Promise<Response> {
+  if (response.ok || !url.pathname.startsWith("/rest/v1/")) return response;
+  try {
+    const body: unknown = await response.clone().json();
+    if (!body || typeof body !== "object" || !("code" in body) || !("message" in body)) return response;
+    const headers = new Headers(response.headers);
+    headers.delete("content-length"); headers.delete("content-encoding");
+    return new Response(JSON.stringify({ ...body, status: response.status }), { status: response.status, statusText: response.statusText, headers });
+  } catch { return response; }
+}
+
 function requestMethod(input: RequestInfo | URL, init?: RequestInit): string {
   if (init?.method) return init.method.toUpperCase();
   return input instanceof Request ? input.method.toUpperCase() : "GET";
@@ -54,19 +66,20 @@ export function createSupabaseFetch(
       method !== "GET" &&
       method !== "HEAD"
     ) {
-      return response;
+      return retainErrorStatus(response, url);
     }
 
-    if (!(await isFutureIssuedJwtFailure(response))) return response;
+    if (!(await isFutureIssuedJwtFailure(response))) return retainErrorStatus(response, url);
 
     await delay(RETRY_DELAY_MS);
     // Next render deduplication ignores cache mode; an explicit signal opts out.
     // Preserve caller cancellation while forcing this retry to reach the network.
     const signal = init?.signal ?? (input instanceof Request ? input.signal : undefined);
-    return fetchImplementation(input, {
+    const retried = await fetchImplementation(input, {
       ...init,
       signal: signal ?? new AbortController().signal,
       cache: "no-store",
     });
+    return retainErrorStatus(retried, url);
   };
 }

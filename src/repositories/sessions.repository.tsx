@@ -69,7 +69,7 @@ export const sessionRepository = {
       .maybeSingle();
 
     if (error) {
-      throwRepositoryError("尋找有效 Session 失敗", error);
+      throwRepositoryError("尋找有效 Session 失敗", error, "session-validity");
     }
 
     return data;

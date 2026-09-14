@@ -74,13 +74,13 @@ export const usersRepository = {
     return buildPaginationResult<User>(data ?? [], count, page, pageSize);
   },
 
-  findById: async (id: string): Promise<User | null> => {
+  findById: async (id: string, purpose: "user-lookup" | "user-session" | "admin-guard" = "user-lookup"): Promise<User | null> => {
     const { data, error } = await supabase
       .from("users")
       .select("*")
       .eq("id", id)
       .maybeSingle();
-    if (error) throwRepositoryError("依 ID 尋找用戶失敗", error);
+    if (error) throwRepositoryError("依 ID 尋找用戶失敗", error, purpose);
     return data;
   },
 

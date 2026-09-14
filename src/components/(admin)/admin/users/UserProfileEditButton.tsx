@@ -66,8 +66,8 @@ export function UserProfileEditButton({
   }
 
   return <>
-    <Button type="button" onClick={() => { setValues(valuesFromProfile(profile)); setError(null); setOpen(true); }} className="rounded-lg">編輯基本資料</Button>
-    <Modal open={open} onClose={() => { if (!busy) setOpen(false); }} title="編輯使用者基本資料">
+    <Button type="button" onClick={() => { setValues(valuesFromProfile(profile)); setError(null); setOpen(true); }} className="rounded-lg">編輯個人資料</Button>
+    <Modal open={open} onClose={() => { if (!busy) setOpen(false); }} title="編輯個人資料">
       <form onSubmit={submit} className="space-y-4">
         <FormFeedback error={error} />
         <div className="grid gap-4 sm:grid-cols-2">
