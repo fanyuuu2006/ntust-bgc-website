@@ -44,11 +44,12 @@ test("create and edit share one canonical form hierarchy", async () => {
   assert.match(form, /import \{ Card \}/);
   assert.match(form, /基本資料/);
   assert.match(form, /種類與位置/);
-  assert.match(form, /介紹與圖片/);
+  assert.match(form, /id="board-game-content"/);
+  assert.match(form, /id="board-game-image"/);
   assert.match(form, /儲存變更/);
   assert.doesNotMatch(form, /className="card/);
-  assert.match(createPage, /max-w-3xl/);
-  assert.match(editPage, /max-w-3xl/);
+  assert.match(createPage, /<BoardGameForm/);
+  assert.match(editPage, /<BoardGameForm/);
 });
 
 test("categories and locations expose usage counts before destructive deletion without per-row requests", async () => {

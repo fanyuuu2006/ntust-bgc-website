@@ -1,4 +1,5 @@
 import { isErrorId } from "./reference";
+import { serverDiagnostic } from "./server-diagnostic";
 
 type ErrorContext = {
   context: string;
@@ -143,7 +144,7 @@ export function reportUnexpectedError(
       ...(options.nextDigest && /^\d{1,20}$/.test(options.nextDigest)
         ? { nextDigest: options.nextDigest }
         : {}),
-      cause: technicalCause(error),
+      cause: typeof window === "undefined" ? serverDiagnostic(error) : technicalCause(error),
     }),
   );
   return errorId;

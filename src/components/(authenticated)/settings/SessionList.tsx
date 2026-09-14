@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import type { SessionSummary } from "@/services/auth/auth.types";
-import { formatDateTime, formatRelativeTime } from "@/utils/date";
+import { formatCompactDateTimeRange, formatDateTime, formatRelativeTime } from "@/utils/date";
 
 type SessionListProps = {
   sessions: SessionSummary[];
@@ -86,49 +86,40 @@ export function SessionList({ sessions }: SessionListProps) {
         className="divide-y divide-(--border-muted) overflow-hidden rounded-xl border border-(--border-default) bg-(--surface-default)"
         aria-label="登入工作階段清單"
       >
-        {sessions.map((session) => (
+        {sessions.map((session) => {
+          const compactDates = formatCompactDateTimeRange(session.created_at, session.expires_at);
+          return (
           <li
             key={session.id}
-            className={`flex min-w-0 flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 ${
+            className={`min-w-0 px-3 py-2 sm:px-4 sm:py-3 ${
               session.is_current ? "bg-(--surface-subtle)" : ""
             }`}
           >
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 sm:gap-x-3">
                 <p className="text-sm font-semibold text-(--text-primary)">
                   {session.is_current ? "目前使用中" : "其他登入工作階段"}
                 </p>
-                <Badge tone={session.is_current ? "success" : "neutral"}>
-                  {session.is_current ? "目前工作階段" : "其他工作階段"}
-                </Badge>
+                {session.is_current ? <Badge tone="success" className="shrink-0">目前工作階段</Badge> : (
+                  <Button type="button" variant="danger" size="sm"
+                    onClick={() => requestSessionRevoke(session)} disabled={isRevoking}
+                    className="min-h-10 shrink-0 px-2 sm:px-3">
+                    撤銷
+                  </Button>
+                )}
               </div>
-              <p className="mt-1 text-sm text-(--text-secondary)">
-                最後活動：{formatRelativeTime(session.last_accessed_at)}
-              </p>
-              <div className="mt-1 flex min-w-0 flex-wrap gap-x-3 gap-y-1 text-xs text-(--text-muted)">
-                <time dateTime={session.created_at}>
-                  建立於 {formatDateTime(session.created_at)}
+              <div aria-label="工作階段時間" className="mt-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0 text-sm text-(--text-muted) wrap-anywhere sm:gap-y-1">
+                <span className="basis-full sm:basis-auto">最後活動：{formatRelativeTime(session.last_accessed_at)}</span>
+                <span aria-hidden="true" className="hidden sm:inline">·</span>
+                <time dateTime={session.created_at} className="whitespace-nowrap sm:whitespace-normal">
+                  <span className="sm:hidden">建立 {compactDates.start}</span><span className="hidden sm:inline">建立於 {formatDateTime(session.created_at)}</span>
                 </time>
-                <time dateTime={session.expires_at}>
-                  到期於 {formatDateTime(session.expires_at)}
+                <span aria-hidden="true" className="hidden sm:inline">·</span>
+                <time dateTime={session.expires_at} className="whitespace-nowrap sm:whitespace-normal">
+                  <span className="sm:hidden">到期 {compactDates.end}</span><span className="hidden sm:inline">到期 {formatDateTime(session.expires_at)}</span>
                 </time>
               </div>
-            </div>
-
-            {!session.is_current ? (
-              <Button
-                type="button"
-                variant="danger"
-                size="sm"
-                onClick={() => requestSessionRevoke(session)}
-                disabled={isRevoking}
-                className="min-h-10 w-full shrink-0 sm:w-auto"
-              >
-                撤銷
-              </Button>
-            ) : null}
           </li>
-        ))}
+        );})}
       </ul>
 
       <FormFeedback error={error} success={success} className="mt-3" />
@@ -138,9 +129,10 @@ export function SessionList({ sessions }: SessionListProps) {
           <Button
             type="button"
             variant="danger"
+            size="sm"
             onClick={requestOtherSessionsRevoke}
             disabled={isRevoking}
-            className="w-full sm:w-auto"
+            className="min-h-10 max-w-full whitespace-normal"
           >
             撤銷其他登入工作階段
           </Button>

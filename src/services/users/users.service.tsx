@@ -19,6 +19,8 @@ import {
 } from "@/repositories/users.repository";
 import { officerPositionsService } from "@/services/officer-positions/officer-positions.service";
 import { membershipService } from "@/services/memberships/memberships.service";
+import { boardGameBorrowingsRepository } from "@/repositories/board-game-borrowings.repository";
+import { eventAttendancesRepository } from "@/repositories/event-attendances.repository";
 
 const ADMIN_USER_PICKER_LIMIT = 20;
 
@@ -35,7 +37,7 @@ export const usersService = {
       orderDirection: "asc",
     });
 
-    return result.data.map((user) => ({
+    return result.data.filter((user) => !user.closed_at).map((user) => ({
       id: user.id,
       username: user.name,
       email: user.email,
@@ -89,6 +91,16 @@ export const usersService = {
 
   getProfile: async (userId: string): Promise<UserProfile | null> => {
     return userProfilesRepository.findByUserId(userId);
+  },
+
+  /** 歷史計數不因註銷消失；此處不把資格紀錄當成仍可登入的證明。 */
+  getActivityCountsForAdmin: async (userId: string) => {
+    const [borrowings, openBorrowings, attendances] = await Promise.all([
+      boardGameBorrowingsRepository.countByUserId(userId),
+      boardGameBorrowingsRepository.countByUserId(userId, ["pending", "approved", "borrowed"]),
+      eventAttendancesRepository.countByUserId(userId),
+    ]);
+    return { borrowings, openBorrowings, attendances };
   },
 
   /**
@@ -154,7 +166,7 @@ export const usersService = {
     const data = updateUserProfileSchema.parse(payload);
     const user = await usersRepository.findById(userId);
 
-    if (!user) {
+    if (!user || user.closed_at) {
       throw new UserProfileNotFoundError();
     }
 
@@ -176,6 +188,9 @@ export const usersService = {
    */
   updateAccount: async (userId: string, payload: unknown): Promise<User> => {
     const data = updateUserAccountSchema.parse(payload);
+    // 本人與幹部共用驗證；已註銷帳號不可重新寫入名稱或頭像。
+    const user = await usersRepository.findById(userId);
+    if (!user || user.closed_at) throw new UserProfileNotFoundError();
 
     const updated = await usersRepository.updateById(userId, data);
 

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { AuthCard } from "@/components/(auth)/AuthCard";
 import { ResendEmailVerificationButton } from "@/components/(auth)/email-verification/ResendEmailVerificationButton";
 import { LogoutButton } from "@/components/LogoutButton";
+import { AccountClosureSection } from "@/components/(authenticated)/settings/AccountClosureSection";
 import { getCurrentUser } from "@/libs/auth";
 
 export const metadata: Metadata = {
@@ -53,6 +54,7 @@ async function EmailVerificationPendingPage() {
                 登出
               </LogoutButton>
             </div>
+            <AccountClosureSection />
           </div>
         </AuthCard>
       </div>

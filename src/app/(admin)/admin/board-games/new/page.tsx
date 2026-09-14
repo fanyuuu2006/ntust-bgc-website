@@ -16,6 +16,7 @@ async function NewBoardGamePage({ searchParams }: { searchParams: Promise<{ retu
   return (
     <>
       <HeadingSection
+        className="mx-auto w-full max-w-6xl"
         title="新增桌遊"
         description="填寫桌遊、社產編號與存放資訊。"
         actions={
@@ -25,7 +26,7 @@ async function NewBoardGamePage({ searchParams }: { searchParams: Promise<{ retu
         }
       />
 
-      <section className="mx-auto w-full max-w-3xl px-4 pb-8 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-6xl px-4 pb-8 sm:px-6 lg:px-8">
         <BoardGameForm returnTo={returnTo} initialValues={nextInventoryNumber === null ? undefined : { inventory_number: String(nextInventoryNumber) }} mode="create" categories={categories} locations={locations} />
       </section>
     </>

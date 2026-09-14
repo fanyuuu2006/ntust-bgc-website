@@ -45,7 +45,7 @@ test("overdue service delegates a server timestamp and borrowed status",async()=
  assert.equal(args[0],"borrowed");assert.ok(Date.parse(args[1])>=before && Date.parse(args[1])<=Date.now());
 });
 for(const status of ["active","expired",null]) test(`unverified latest-mail state: ${status}`,async()=>{
- const {default:Page}=load("src/app/(admin)/admin/users/[id]/page.tsx",{...base,"@/services/users/users.service":{usersService:{getUserForAdmin:async()=>({...user,email_verified_at:null})}},"@/services/email-verification/email-verification-operations.service":{getLatestVerificationForAdmin:async()=>status?{status,created_at:user.created_at,expires_at:user.created_at,consumed_at:null}:null}});
+ const {default:Page}=load("src/app/(admin)/admin/users/[id]/page.tsx",{...base,"@/services/users/users.service":{usersService:{getActivityCountsForAdmin:async()=>({borrowings:0,openBorrowings:0,attendances:0}),getUserForAdmin:async()=>({...user,email_verified_at:null})}},"@/services/email-verification/email-verification-operations.service":{getLatestVerificationForAdmin:async()=>status?{status,created_at:user.created_at,expires_at:user.created_at,consumed_at:null}:null}});
  const tree=await Page({params:Promise.resolve({id:user.id}),searchParams:Promise.resolve({returnTo:"/admin/users?emailVerification=unverified&page=3"})});
  assert.ok(nodes(tree).some(n=>n.props?.href==="/admin/users?emailVerification=unverified&page=3"));
  if(status) assert.ok(nodes(tree).some(n=>n.props?.value===(status==="active"?"有效":"已過期")));
@@ -83,7 +83,7 @@ test("canonical avatar supports stored image and fallback",()=>{
 });
 for(const verified of [true,false]) test(`latest mail visibility: verified=${verified}`,async()=>{
  let calls=0;
- const {default:Page}=load("src/app/(admin)/admin/users/[id]/page.tsx",{...base,"@/services/users/users.service":{usersService:{getUserForAdmin:async()=>({...user,email_verified_at:verified?user.created_at:null})}},"@/services/email-verification/email-verification-operations.service":{getLatestVerificationForAdmin:async()=>{calls++;return {status:"consumed",created_at:user.created_at,expires_at:user.created_at,consumed_at:user.created_at}}}});
+ const {default:Page}=load("src/app/(admin)/admin/users/[id]/page.tsx",{...base,"@/services/users/users.service":{usersService:{getActivityCountsForAdmin:async()=>({borrowings:0,openBorrowings:0,attendances:0}),getUserForAdmin:async()=>({...user,email_verified_at:verified?user.created_at:null})}},"@/services/email-verification/email-verification-operations.service":{getLatestVerificationForAdmin:async()=>{calls++;return {status:"consumed",created_at:user.created_at,expires_at:user.created_at,consumed_at:user.created_at}}}});
  const tree=await Page({params:Promise.resolve({id:user.id}),searchParams:Promise.resolve({})});
  assert.equal(calls,verified?0:1);
  assert.equal(nodes(tree).some(n=>n.props?.title==="最近驗證信"),!verified);

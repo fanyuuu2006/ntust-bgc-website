@@ -1,4 +1,6 @@
 import { reportUnexpectedError } from "@/libs/observability/report";
+import { z } from "zod";
+import { AccountClosureBlockedError } from "./account-closure.errors";
 import { Session, User } from "@/types/database";
 import {
   changePasswordSchema,
@@ -48,6 +50,27 @@ function calculateSessionExpiresAt(): string {
 }
 
 export const authService = {
+  /** 重驗成功後才進入交易；嚴格輸入避免接受 client 指定另一個帳號。 */
+  closeAccount: async (userId: string, sessionToken: string, input: unknown): Promise<void> => {
+    const data = z.object({
+      currentPassword: z.string().min(1, "請輸入目前密碼").max(128),
+      confirmation: z.literal("註銷帳號", { error: "請完整輸入「註銷帳號」" }),
+    }).strict().parse(input);
+    const credential = await authRepository.findCredentialByUserId(userId);
+    if (!credential) throw new InvalidCredentialsError();
+    if (!(await verifyPassword(data.currentPassword, credential.password_hash))) {
+      throw new InvalidCurrentPasswordError();
+    }
+    try {
+      await authRepository.closeAccount(sessionToken, credential.password_hash);
+    } catch (error) {
+      const code = repositoryCode(error);
+      if (code === "PCL02") throw new AccountClosureBlockedError();
+      if (code === "PCL01") throw new InvalidCredentialsError();
+      if (code === "PCL03") throw new InvalidCurrentPasswordError();
+      throw error;
+    }
+  },
   /**
    * 註冊新使用者。
    * @throws {EmailAlreadyExistsError} 當 email 已被註冊時
@@ -101,17 +124,24 @@ export const authService = {
       passwordHashToCompare,
     );
 
-    if (!user || !credential || !isPasswordValid) {
+    if (!user || user.closed_at || !credential || !isPasswordValid) {
       throw new InvalidCredentialsError();
     }
 
     // 建立 Session
     const token = generateSessionToken();
-    const session = await sessionRepository.create({
+    let session: Session;
+    try {
+      session = await sessionRepository.create({
       user_id: user.id,
       token,
       expires_at: calculateSessionExpiresAt(),
-    });
+      });
+    } catch (error) {
+      // 註銷可能在密碼核對後完成；DB 的 Session guard 是最後一道防線。
+      if (repositoryCode(error) === "PCL01") throw new InvalidCredentialsError();
+      throw error;
+    }
 
     return { user, session };
   },
@@ -126,6 +156,9 @@ export const authService = {
     if (!session) {
       return null;
     }
+
+    const user = await usersRepository.findById(session.user_id, "user-session");
+    if (!user || user.closed_at) return null;
 
     const now = Date.now();
     const lastAccessedAt = new Date(session.last_accessed_at).getTime();
@@ -142,7 +175,7 @@ export const authService = {
         });
     }
 
-    return usersRepository.findById(session.user_id);
+    return user;
   },
 
   /** 登出：刪除對應的 Session token */
@@ -221,4 +254,9 @@ export const authService = {
 function isUniqueViolation(error: unknown): boolean {
   if (!(error instanceof RepositoryError) || typeof error.cause !== "object" || error.cause === null) return false;
   return (error.cause as { code?: unknown }).code === "23505";
+}
+
+function repositoryCode(error: unknown): unknown {
+  if (!(error instanceof RepositoryError) || typeof error.cause !== "object" || error.cause === null) return undefined;
+  return (error.cause as { code?: unknown }).code;
 }

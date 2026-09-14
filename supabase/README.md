@@ -53,3 +53,21 @@
 已部署 migration 不再改寫；後續修正新增 migration。回退程式時保留新欄位與資料，不 DROP。
 
 詳見 [Rich Content 最新執行紀錄](../docs/rich-content.md)。canonical snapshot 仍不是可套用線上 DB 的 migration。
+
+## Phase 3G：帳號註銷（套用前紀錄）
+
+新增 `202609140001_add_account_closure.sql`，不修改已部署 migration。遠端 history 已核對到 `202609130002`；本輪 `db push --dry-run` 僅列出此新增檔案，尚未執行遠端 push。
+
+此 migration 新增 `users.closed_at`、原子註銷 RPC 與並行寫入 guard。既有帳號預設維持開啟，不改寫既有個資或歷史。部署應先套用 migration，再上線依賴新欄位與 RPC 的程式。
+
+隔離 PostgreSQL 驗證涵蓋借用 blocker、個資清除、歷史保留、交易 rollback 與三組並行交易。操作與回退限制見 [帳號生命週期](../docs/account-lifecycle.md)。不可用真實帳號代替測試資料；註銷資料無法靠 schema rollback 復原。
+
+## 2026-09-14 Final closure：遠端已套用
+
+USER 授權後，dry-run 僅列 `202609140001_add_account_closure.sql`，無 seeds／roles。已使用 Supabase CLI db push 套用至 `gcydchpuckbmctcjpokz`；remote history 已包含 `202609140001`。上文尚未套用／待授權描述為開發當時紀錄，已由本節更新。Application 尚未部署。
+
+Migration SHA-256：`A5A6DBCC3B6F06B4A8CD8C41D3315F1277988A7959647B915FDB477DBE71E994`，本次隔離驗證及 push 前後一致。`closed_at` 為 nullable timestamptz、無 default；RPC signature、SECURITY DEFINER、空 search_path 及 service-role-only execute boundary 通過，anon/authenticated 不可執行。遠端三個函式 body hash 與全新本機 canonical schema 相同。
+
+遷移前後筆數一致：users/profile/credentials 各 19、sessions 33、verification tokens 21、memberships 13、officers 14、borrowings 6、attendance 0、announcements 1、register keys 153。Closed users 為 0。PostgREST 新欄位、active users、officer schema 與 Dashboard counts 皆 200。Schema cache reload not required.
+
+本機 rollback SQL 驗證及並行交易 3/3 通過。未在共享遠端建立假帳號／社員／借用歷史，亦未註銷任何帳號；實際 browser closure round-trip 留待可丟棄帳號人工驗證。USER 已接受 UI，不代表 production browser smoke test 已執行。歷史 incident root cause 仍為 inconclusive。後續順序：deploy application → smoke test login/settings/admin。

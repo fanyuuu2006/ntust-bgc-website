@@ -76,6 +76,8 @@ export type AttendanceStatus = "present" | "absent" | "late";
 
 export type User = {
   id: UUID;
+  /** 非空表示已完成註銷與去識別；歷史關聯保留，但不得再授權登入。 */
+  closed_at: Timestamp | null;
   name: string;
   email: string;
   email_verified_at: Timestamp | null;

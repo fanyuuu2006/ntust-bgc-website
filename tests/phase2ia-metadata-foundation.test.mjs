@@ -83,7 +83,7 @@ test("metadata foundations preserve layout guards, shells, language, and child t
     [profile, "個人檔案"],
     [settings, "設定"],
     [privacy, "隱私權政策"],
-    [terms, "服務條款"],
+    [terms, "使用條款"],
   ]) {
     assert.match(source, new RegExp(`title:\\s*"${title}"`));
   }

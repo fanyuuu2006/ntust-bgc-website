@@ -101,9 +101,10 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
   const searchParams = useSearchParams();
   const rawReturnTo = searchParams.get("returnTo");
   const returnTo = getSafeReturnPath(rawReturnTo);
-  const loginHref = rawReturnTo === returnTo
-    ? `/login?returnTo=${encodeURIComponent(returnTo)}`
-    : "/login";
+  const loginHref =
+    rawReturnTo === returnTo
+      ? `/login?returnTo=${encodeURIComponent(returnTo)}`
+      : "/login";
   const acceptTermsId = useId();
 
   const [values, setValues] = useState<RegisterFormValues>(INITIAL_VALUES);
@@ -111,8 +112,9 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
-  const [registrationResult, setRegistrationResult] =
-    useState<RegistrationResult["data"] | null>(null);
+  const [registrationResult, setRegistrationResult] = useState<
+    RegistrationResult["data"] | null
+  >(null);
 
   const turnstileRef = useRef<TurnstileInstance>(null);
 
@@ -140,7 +142,7 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
     }
 
     if (!values.acceptTerms) {
-      errors.acceptTerms = "請先閱讀並同意服務條款與隱私權政策";
+      errors.acceptTerms = "請先同意使用條款並確認已閱讀隱私權政策";
     }
 
     return errors;
@@ -262,11 +264,17 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
 
           <span className="flex flex-wrap items-center gap-1">
             我已閱讀並同意
-            <Link href="/terms" className="text-(--interactive-primary) hover:underline">
-              服務條款
+            <Link
+              href="/terms"
+              className="text-(--interactive-primary) hover:underline"
+            >
+              使用條款
             </Link>
             與
-            <Link href="/privacy" className="text-(--interactive-primary) hover:underline">
+            <Link
+              href="/privacy"
+              className="text-(--interactive-primary) hover:underline"
+            >
               隱私權政策
             </Link>
           </span>
@@ -315,7 +323,10 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
 
         <p className="text-center text-sm text-(--text-muted)">
           已經有帳號？
-          <Link href={loginHref} className="ml-1 text-(--interactive-primary) hover:underline">
+          <Link
+            href={loginHref}
+            className="ml-1 text-(--interactive-primary) hover:underline"
+          >
             前往登入
           </Link>
         </p>

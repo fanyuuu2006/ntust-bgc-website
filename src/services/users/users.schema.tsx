@@ -58,8 +58,14 @@ export const updateUserAccountSchema = z
       .max(REAL_NAME_MAX_LENGTH)
       .optional(),
 
-    avatar: z.union([z.url("請輸入有效的圖片網址"), z.null()]).optional(),
+    avatar: z.union([z.url("請輸入有效的圖片網址").refine((value) => {
+      try {
+        const url = new URL(value);
+        return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password;
+      } catch { return false; }
+    }, "圖片網址須使用 HTTP 或 HTTPS，且不可包含帳號密碼"), z.null()]).optional(),
   })
+  .strict()
   .refine((data) => data.name !== undefined || data.avatar !== undefined, {
     message: "沒有可更新的欄位",
   });
