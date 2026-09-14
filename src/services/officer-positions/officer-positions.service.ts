@@ -1,4 +1,5 @@
 import "server-only";
+import { getCurrentAcademicYear } from "@/services/academic-years/current-academic-year";
 
 import { academicYearsRepository } from "@/repositories/academic-years.repository";
 import {
@@ -80,7 +81,7 @@ export const officerPositionsService = {
   getCurrentPositionsByUserId: async (
     userId: UUID,
   ): Promise<OfficerPositionWithAcademicYear[]> => {
-    const currentYear = await academicYearsRepository.findCurrent();
+    const currentYear = await getCurrentAcademicYear();
 
     if (!currentYear) {
       return [];

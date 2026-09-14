@@ -1,3 +1,4 @@
+import { createPublicCacheRuntime } from "./helpers/next-public-cache.mjs";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readFileSync } from "node:fs";
@@ -173,6 +174,7 @@ test("real services persist canonical rich descriptions and reject invalid conte
   const writes = [];
   const mocks = {
     "@/libs/supabase/server": { supabase: {} },
+    "next/cache": createPublicCacheRuntime().module,
     "@/repositories/board-games.repository": { boardGamesRepository: { existsByInventoryNumber: async () => false, findById: async () => ({ ...game, status: "available" }), create: async (data) => { writes.push(data); return data; }, updateById: async (_id, data) => { writes.push(data); return data; } } },
     "@/repositories/board-game-categories.repository": { boardGameCategoriesRepository: { findById: async () => ({}) } },
     "@/repositories/board-game-locations.repository": { boardGameLocationsRepository: { findById: async () => ({}) } },

@@ -79,11 +79,7 @@ export const authService = {
     // 驗證輸入資料
     const data = registerSchema.parse(input);
 
-    // 檢查 email 是否已存在
-    const isEmailExist = await usersRepository.existsByEmail(data.email);
-    if (isEmailExist) {
-      throw new EmailAlreadyExistsError();
-    }
+    // Email 唯一性由交易內的 DB constraint 決定；預查無法避免同時註冊的競爭。
 
     // hash 密碼
     const passwordHash = await hashPassword(data.password);

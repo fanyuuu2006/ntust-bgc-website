@@ -1,4 +1,5 @@
 import "server-only";
+import { getCurrentAcademicYear } from "@/services/academic-years/current-academic-year";
 
 import { REGISTER_KEY_SECRET } from "@/libs/env";
 import { academicYearsRepository } from "@/repositories/academic-years.repository";
@@ -206,7 +207,7 @@ export const membershipService = {
     userId: string,
   ): Promise<MembershipWithAcademicYear | null> => {
     const [currentYear, activeMemberships] = await Promise.all([
-      academicYearsRepository.findCurrent(),
+      getCurrentAcademicYear(),
       membershipsRepository.findManyActiveByUserIds([userId]),
     ]);
     const membership = activeMemberships.find((item) =>
@@ -252,6 +253,15 @@ export const membershipService = {
 
     const academicYear = await academicYearsRepository.findById(academicYearId);
     return { ...membership, academic_year: academicYear };
+  },
+
+  /** 使用 Server 已取得的年度，不為摘要卡片重新依 ID 查詢相同資料。 */
+  getMembershipByUserIdAndAcademicYear: async (
+    userId: string,
+    academicYear: NonNullable<Awaited<ReturnType<typeof getCurrentAcademicYear>>>,
+  ): Promise<MembershipWithAcademicYear | null> => {
+    const membership = await membershipsRepository.findByUserIdAndAcademicYearId(userId, academicYear.id);
+    return membership ? { ...membership, academic_year: academicYear } : null;
   },
 
   listMembershipRecordsByUserId: async (userId: string, input: unknown) => {
@@ -301,7 +311,7 @@ export const membershipService = {
     userIds: string[],
   ): Promise<Record<string, UserMembershipEligibility>> => {
     const [currentYear, activeMemberships] = await Promise.all([
-      academicYearsRepository.findCurrent(),
+      getCurrentAcademicYear(),
       membershipsRepository.findManyActiveByUserIds(userIds),
     ]);
     const eligibilityByUserId: Record<string, UserMembershipEligibility> = {};

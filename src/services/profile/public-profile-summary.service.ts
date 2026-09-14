@@ -1,6 +1,6 @@
 import "server-only";
+import { getCurrentAcademicYear } from "@/services/academic-years/current-academic-year";
 import { publicFootprintsRepository } from "@/repositories/public-footprints.repository";
-import { academicYearsRepository } from "@/repositories/academic-years.repository";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { eventsService } from "@/services/events/events.service";
 import { buildIdentityBadges, joinedAcademicYear } from "@/libs/profile-presentation";
@@ -11,7 +11,7 @@ export const publicProfileSummaryService = {
   getSummary: async (id: string): Promise<Pick<PublicProfile, "identityBadges" | "clubFootprint">> => {
     const [memberships, officers, year, totalBorrowedCount, attendedCount] = await Promise.all([
       publicFootprintsRepository.findMemberships(id), publicFootprintsRepository.findOfficers(id),
-      academicYearsRepository.findCurrent(), boardGamesService.getTotalBorrowedCount(id),
+      getCurrentAcademicYear(), boardGamesService.getTotalBorrowedCount(id),
       eventsService.getAttendedCountByCurrentAcademicYear(id),
     ]);
     const identityBadges: PublicIdentityBadge[] = buildIdentityBadges(memberships, officers, year?.id)

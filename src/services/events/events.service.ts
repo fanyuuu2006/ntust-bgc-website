@@ -1,4 +1,5 @@
 import "server-only";
+import { getCurrentAcademicYear } from "@/services/academic-years/current-academic-year";
 
 import {
   eventsRepository,
@@ -18,7 +19,6 @@ import {
   SelfCheckInClosedError,
   SelfCheckInMembershipRequiredError,
 } from "./events.errors";
-import { academicYearsRepository } from "@/repositories/academic-years.repository";
 import {
   FindManyEventAttendancesOptions,
   eventAttendancesRepository,
@@ -147,15 +147,15 @@ export const eventsService = {
   getAttendedCountByCurrentAcademicYear: async (
     userId: string,
   ): Promise<number> => {
-    const currentAcademicYear = await academicYearsRepository.findCurrent();
+    const currentAcademicYear = await getCurrentAcademicYear();
 
     if (!currentAcademicYear) {
       return 0;
     }
 
-    return eventAttendancesRepository.countByUserIdAndAcademicYear(
+    return eventAttendancesRepository.countByUserIdAndDateRange(
       userId,
-      currentAcademicYear.id,
+      currentAcademicYear,
       COUNTED_STATUSES,
     );
   },
@@ -181,15 +181,13 @@ export const eventsService = {
   },
 
   selfCheckIn: async (userId: string, eventId: string) => {
-    const [event, isCurrentMember, existing] = await Promise.all([
+    const [event, isCurrentMember] = await Promise.all([
       eventsRepository.findById(eventId),
       membershipService.isCurrentActiveMember(userId),
-      eventAttendancesRepository.findByUserIdAndEventId(userId, eventId),
     ]);
 
     if (!event) throw new EventNotFoundError();
     if (!isCurrentMember) throw new SelfCheckInMembershipRequiredError();
-    if (existing) throw new SelfCheckInAlreadyCompletedError();
 
     const now = new Date();
     const opensAt = event.check_in_opens_at
@@ -204,6 +202,8 @@ export const eventsService = {
     }
 
     try {
+      // 由 UNIQUE(event_id, user_id) 裁決重送與同時簽到；先查再寫無法避免競爭，
+      // 且每次成功簽到會多一次讀取。23505 仍映射成安全的「已簽到」409。
       return await eventAttendancesRepository.create({
         user_id: userId,
         event_id: eventId,

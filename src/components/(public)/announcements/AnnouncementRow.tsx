@@ -6,7 +6,7 @@ import { cn } from "@/utils/className";
 import { formatDate } from "@/utils/date";
 
 type AnnouncementRowProps = {
-  announcement: Announcement;
+  announcement: Pick<Announcement, "id" | "title" | "content" | "published_at" | "created_at"> & Partial<Pick<Announcement, "content_format" | "rich_content">>;
   density?: "compact" | "default";
   headingLevel: 2 | 3;
 };

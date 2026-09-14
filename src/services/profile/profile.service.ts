@@ -1,3 +1,4 @@
+import { getCurrentAcademicYear } from "@/services/academic-years/current-academic-year";
 import { buildIdentityBadges, joinedAcademicYear, ESTABLISHED_MEMBERSHIP_STATUSES } from "@/libs/profile-presentation";
 import type { ProfileIdentityBadge } from "@/libs/profile-presentation";
 export type { ProfileIdentityBadge, ProfileIdentityBadgeCategory } from "@/libs/profile-presentation";
@@ -73,7 +74,7 @@ export const profileService = {
   getClubContext: async (userId: UUID): Promise<ProfileClubContext> => {
     const [currentAcademicYear, memberships, officerPositions] =
       await Promise.all([
-        academicYearsRepository.findCurrent(),
+        getCurrentAcademicYear(),
         findAllMembershipsByUserId(userId),
         findAllOfficerPositionsByUserId(userId),
       ]);

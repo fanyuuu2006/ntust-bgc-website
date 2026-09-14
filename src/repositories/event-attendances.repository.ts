@@ -129,12 +129,12 @@ export const eventAttendancesRepository = {
   findManyByUserIdAndEventIds: async (
     userId: string,
     eventIds: string[],
-  ): Promise<EventAttendance[]> => {
+  ): Promise<Pick<EventAttendance, "event_id">[]> => {
     if (eventIds.length === 0) return [];
 
     const { data, error } = await supabase
       .from("event_attendances")
-      .select("*")
+      .select("event_id")
       .eq("user_id", userId)
       .in("event_id", eventIds);
 
@@ -187,9 +187,18 @@ export const eventAttendancesRepository = {
       throwRepositoryError("查無此學年度資料", yearError ?? undefined);
     }
 
+    return eventAttendancesRepository.countByUserIdAndDateRange(userId, academicYear, statuses);
+  },
+
+  /** 已取得學年度界線時直接重用，不再為相同統計查一次 academic_years。 */
+  countByUserIdAndDateRange: async (
+    userId: string,
+    academicYear: { start_date: string; end_date: string },
+    statuses?: AttendanceStatus[],
+  ): Promise<number> => {
     let query = supabase
       .from("event_attendances")
-      .select("*, events!inner(start_time)", { count: "exact", head: true })
+      .select("id, events!inner(start_time)", { count: "exact", head: true })
       .eq("user_id", userId)
       .gte("events.start_time", academicYear.start_date)
       .lte("events.start_time", academicYear.end_date);

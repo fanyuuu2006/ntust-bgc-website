@@ -89,7 +89,7 @@ test("board-game discovery converts only PGRST103 into an empty page with a filt
 
   assert.match(repository, /isPostgrestRangeNotSatisfiable\(error\)/);
   assert.match(repository, /select\("id", \{ count: "exact", head: true \}\)/);
-  assert.match(repository, /buildPaginationResult<BoardGameWithStats>\(\s*\[\]/);
+  assert.match(repository, /buildPaginationResult<BoardGameDiscoveryItem>\(\s*\[\]/);
   assert.match(repository, /if \(countError\)[\s\S]*throwRepositoryError/);
   assert.doesNotMatch(repository, /if \(error\) return buildPaginationResult/);
 });
