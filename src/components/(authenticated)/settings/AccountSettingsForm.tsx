@@ -133,7 +133,7 @@ export function AccountSettingsForm({
           帳號資料
         </h3>
         <p className="mt-1 text-sm text-(--text-muted)">
-          管理網站上的使用者名稱與頭像。這兩項會顯示在公開個人頁面，請勿填入不希望公開的個資。
+          管理網站上的使用者名稱與頭像。這兩項會顯示在公開個人頁面，請勿填入不希望公開的個資。公開頁也會顯示社員／幹部身份標籤與部分社團足跡摘要。
         </p>
       </div>
 

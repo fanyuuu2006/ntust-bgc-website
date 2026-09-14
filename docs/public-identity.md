@@ -1,16 +1,8 @@
-﻿# Phase 3I：公開身份邊界
+# 公開身份與 Profile 摘要邊界
 
-## 稽核與決策（2026-09-14）
+## Phase 3I-2 公開契約
 
-來源：database types/canonical schema、users/profile/auth/session services、Profile/Settings/Admin detail、公開路由及元件全文搜尋、privacy/terms、privacy-terms-audit 與 account-lifecycle。
-
-目前公開公告／桌遊沒有動態作者個人資料或幹部名冊。Header 帳號選單是目前登入者自身身份；verify-email/pending 的遮罩 Email 受登入檢查保護，不是公開使用者資料。本人 Profile 顯示私人聯絡資料、社員／幹部 badges 及統計；Admin users、officers、memberships、borrowings、attendance 顯示作業所需身份。這些 authenticated/admin contract 不可推論為公開許可。
-
-Privacy 原本概括「帳號不作為公開名冊」，本階段只將 UUID 路由、名稱、頭像的公開用途寫清楚，其他資料保持私有。Terms 提醒顯示名稱不是身分或社員資格認證。既有姓名可能包含本人自填個資；projection 不會辨識／改寫名稱內容，上線前應由維護者審閱政策與既有使用者告知安排。noindex 不是存取控制，也不能保證搜尋引擎遵守或阻止他人分享。
-
-## 欄位可見矩陣
-
-「本人」指既有自助頁／功能必要範圍，不表示回傳整張資料表；「幹部」亦限獲授權的既有作業。敏感秘密即使 Admin 也沒有檢視 UI。
+USER 明確授權未註銷帳號公開名稱、頭像、社員／幹部身份 badges、累積借用次數、本學年簽到次數與加入社團學年度。這取代 Phase 3I-1 僅職稱／學年度的契約；不代表公開原始社員、借用或簽到紀錄。Privacy／Terms／Settings 同步告知，未新增同意 checkbox 或 visibility settings。
 
 | 欄位 | Public | Authenticated | Admin | 理由 |
 | --- | --- | --- | --- | --- |
@@ -25,9 +17,11 @@ Privacy 原本概括「帳號不作為公開名冊」，本階段只將 UUID 路
 | user_profiles.real_name / phone | 否 | 本人 | 是 | 註冊必填個資，不因必填而公開 |
 | user_profiles.student_id / school / department / grade | 否 | 本人 | 是 | 選填學籍，沒有公開同意契約 |
 | user_profiles.created_at / updated_at | 否 | 本人必要範圍 | 作業必要範圍 | 內部維護時間 |
-| memberships.id / user_id / academic_year_id / type / status / joined_at / created_at / updated_at / membership_register_key_id | 否 | 本人資格／歷史必要範圍 | 是 | 非公開社員歷史 |
-| academic_years.id / year / start_date / end_date / is_current（與個人關聯） | 否 | 本人社團脈絡 | 是 | 個人參與學年度不隨全域設定公開 |
-| officer_positions.id / user_id / title / academic_year_id / created_at | 否 | 本人 | 是 | 目前無公開幹部歷史契約 |
+| memberships 原始欄位：id / user_id / academic_year_id / type / status / joined_at / created_at / updated_at / membership_register_key_id | 否 | 本人資格／歷史必要範圍 | 是 | 只衍生公開社員 badge／加入學年度 |
+| academic_years.id / start_date / end_date / is_current | 否 | 本人社團脈絡 | 是 | 內部計算與排序 |
+| 社員／幹部 badge 的學年度 label、加入學年度 | 是（未註銷） | 本人 | 是 | 公開摘要 |
+| officer_positions.title / academic_years.year | 是（未註銷帳號） | 本人 | 是 | Phase 3I-1 明確公開契約 |
+| officer_positions.id / user_id / academic_year_id / created_at | 否 | 本人 | 是 | 僅內部關聯／管理欄位 |
 | board_game_borrowings.id / board_game_id / user_id / status / approved_by_user_id / created_at / borrowed_at / due_at / returned_at | 否 | 本人紀錄 | 是 | 私人借用細節，公開桌遊狀態不等於借用者名單 |
 | event_attendances.id / user_id / event_id / attended_at / status | 否 | 本人 | 是 | 私人參與紀錄 |
 | auth_credentials.id / user_id / password_hash / created_at / updated_at | 否 | 僅 Server 認證 | 不展示 | 密碼雜湊亦非公開資料 |
@@ -36,23 +30,31 @@ Privacy 原本概括「帳號不作為公開名冊」，本階段只將 UUID 路
 | email_verification_tokens.id / user_id / token_hash / created_at / expires_at / consumed_at | 否 | 驗證流程必要狀態 | 僅必要時間／衍生狀態，不展示 hash | 驗證秘密與內部操作資訊 |
 | membership_register_keys 所有欄位 | 否 | 認領必要範圍 | 管理作業 | 啟用碼不是公開身份 |
 | announcements.author_id | 不新增展示 | 非公開身份來源 | 管理／歷史關聯 | 本輪不變更公告作者展示 |
+| 累積借用次數、本學年簽到次數 | 是（未註銷） | 本人 | 是 | 僅 aggregate，不公開桌遊／活動／日期明細 |
 
-## 資料與顯示契約
+## Server 邊界
 
-`publicIdentitiesRepository.findById` 僅 select `id,name,avatar,closed_at`，無 join、無 select(*)。`publicIdentityService.findById(unknown)` 先驗證 UUID，invalid/missing 回 null；以明列物件輸出 `PublicUserIdentity { id, name, avatar }`。即使來源有多餘欄位亦不展開。Closed 一律覆蓋 name/ avatar，不輸出時間或舊身份。未知 DB 錯誤保留既有 Error ID boundary，不當作 404。
+PublicUserIdentity 固定 id/name/avatar。PublicProfile 另有 identityBadges（label/category）與 clubFootprint（totalBorrowedCount/attendedCount/joinedAcademicYear）。closed_at 只在 Repository／Service 判斷；註銷者回傳固定名稱、avatar=null、空 badges、clubFootprint=null，直接停止摘要查詢。invalid UUID／不存在為 404，其他資料庫錯誤仍走 Error ID。
 
-`/profile/[id]` 放在 public route group，沒有 getCurrentUser/owner branch；自己與訪客看到同一 projection。既有 shell 仍可顯示登入者自身選單，那不是目標 Profile 資料。`/profile` 的登入／Email gate 與完整私人頁不變；加上前往本人公開頁的文字連結。
+公開專用 Repository 分頁 narrow select：社員僅 id/status/academic_year_id 與學年度 year/start_date；幹部僅 id/title 與學年度 year/start_date。內部 IDs 只用於 canonical badge 計算，時間只用於排序，都不輸出 DTO；不讀取 Profile、聯絡／學籍、Session 或驗證秘密。公開 badge 不輸出 row id，UI 使用本次展示的序號作 React key。
 
-頁面只放小型身份 Card，沒有假 Reviews 區塊。`UserAvatar` 移除本來未使用的 email 型別需求，視覺／fallback 算法不變。`PublicUserLink` 是小型作者連結 primitive，只吃 public identity；供後續真實作者消費者使用，不為此新增評論功能。
+## 與私人頁相同的定義
 
-metadata 採 noindex, follow、一般標題，不使用姓名或 avatar 作 OG 推廣。相對 canonical 由 Root metadataBase / siteConfigs.url / SITE_URL 解決，不硬編 domain；不新增 sitemap。React cache 僅同次 render 合併 metadata/page 查詢，不增加跨請求身份快取。
+- 借用：直接重用 boardGamesService.getTotalBorrowedCount；count borrowed/returned 紀錄，非 distinct 桌遊，不計 pending/approved。底層 HEAD count 不回傳明細。
+- 簽到：直接重用 eventsService.getAttendedCountByCurrentAcademicYear；目前學年度起訖內的活動，present/late 紀錄，沒有目前學年度為 0。底層 HEAD count 不回傳明細。
+- 社員 badge：active/expired 資格；目前學年度 active 優先，其餘依學年度 start_date 由新到舊，同年度幹部先於社員，維持 canonical stable ordering。非社員 badge 是排除性標籤，本輪不公開。
+- 加入：active/expired 資格中學年度 start_date 最早者的 year，非帳號註冊日或 joined_at。
 
-## 未來 Reviews 契約與限制
+共用 libs/profile-presentation 純函式；私人服務仍讀原有資料，公開服務只使用窄查詢，不把私人 loader 結果轉交頁面。
 
-Review.user_id → publicIdentityService → PublicUserIdentity → PublicUserLink。禁止完整 User/Profile 傳進 React 再刪私人欄位。列表若需批次查詢，屆時新增同白名單批次 query，不能借用完整 users.findManyByIds。沒有 migration、visibility flags、Review/Rating/Comment table 或 API。
+## Canonical UI
 
-外部 avatar 仍會連線第三方，公開用法加 no-referrer；使用者自行放在名稱／頭像的個資不可能由欄位白名單完全消除。已經傳送給瀏覽器的舊身份無法在註銷後追溯收回；新請求使用 tombstone，無歷史頭像保留。
+兩頁直接使用 ProfileHeroSection／ProfileIdentityBadges／ProfileClubFootprint。Hero 只要求 id/name/avatar 與 badges，details/actions slots 由私人頁自行提供真實姓名、Email、操作按鈕；公開頁不傳私人資料。Footprint title 預設「我的社團足跡」，公開傳「社團足跡」。+N、折疊與顏色沿用 canonical badge。移除 PublicProfileContent／年度職務卡，不保留平行 UI。
 
-## QA
+私人 Hero 與足跡已以 fixture 比對抽取前後 HTML 相同。兩頁同一 container 與響應式 grammar；全域 container 的 important max-width 規則未變。公開空統計使用同款 0 次與「尚無社員紀錄」；註銷者完全不呈現足跡。未來真實 Reviews 可自然接在足跡後，目前無假評論區塊。
 
-以 mocked fixtures 測 active/closed/invalid/missing、上游夾帶私人欄位、實際 repository select 白名單、metadata、renderer 與 avatar fallback。不修改遠端帳號或資料。人工檢查 320/375/desktop：長名稱換行、avatar、登入與未登入同一公開頁、本人公開連結、404、tombstone 與政策文案。Noindex 不等於私密頁。
+## SEO 與限制
+
+noindex/follow、相對 canonical 由 metadataBase/SITE_URL 解決；不把統計或私人資料放入 metadata。React cache 僅同次 render。網站 shell 的目前登入者選單不是被查詢者的公開資料。noindex 不是存取控制，外部頭像會連線第三方；名稱／職稱中自行填入的個資無法靠欄位白名單自動辨識。
+
+沒有 migration、公開明細 API、Reviews／Comments 或額外依賴；未操作真實使用者資料。

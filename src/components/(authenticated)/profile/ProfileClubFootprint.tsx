@@ -3,6 +3,7 @@ import { CalendarCheck2, Dice5, Footprints, UsersRound } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 
 type ProfileClubFootprintProps = {
+  title?: string;
   totalBorrowedCount: number;
   attendedCount: number;
   joinedAcademicYear: string | null;
@@ -52,6 +53,7 @@ function FootprintItem({
 }
 
 export function ProfileClubFootprint({
+  title = "我的社團足跡",
   totalBorrowedCount,
   attendedCount,
   joinedAcademicYear,
@@ -68,7 +70,7 @@ export function ProfileClubFootprint({
             id="club-footprint-title"
             className="text-lg font-bold text-(--text-primary)"
           >
-            我的社團足跡
+            {title}
           </h2>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">

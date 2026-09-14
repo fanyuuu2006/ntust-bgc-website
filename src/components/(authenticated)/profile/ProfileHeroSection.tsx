@@ -1,39 +1,34 @@
+import { ProfileHeroSurface } from "@/components/profile/ProfileHeroSurface";
 import { UserAvatar } from "@/components/UserAvatar";
-import { ButtonLink } from "@/components/ui/Button";
+import type { ReactNode } from "react";
 import { ProfileIdentityBadges } from "./ProfileIdentityBadges";
 import type { ProfileIdentityBadge } from "@/services/profile/profile.service";
-import type { User, UserProfile } from "@/types/database";
+import type { PublicUserIdentity } from "@/types/public-user";
 
 type ProfileHeroSectionProps = React.HTMLAttributes<HTMLElement> & {
-  user: User;
-  profile: UserProfile;
+  user: PublicUserIdentity;
+  details?: ReactNode;
+  actions?: ReactNode;
+  avatarReferrerPolicy?: React.ImgHTMLAttributes<HTMLImageElement>["referrerPolicy"];
   identityBadges: ProfileIdentityBadge[];
 };
 
 export function ProfileHeroSection({
   user,
-  profile,
+  details,
+  actions,
+  avatarReferrerPolicy,
   identityBadges,
   className,
   ...rest
 }: ProfileHeroSectionProps) {
   return (
     <section className={className} {...rest} aria-labelledby="profile-title">
-      <div
-        className="card relative overflow-hidden rounded-2xl p-5 sm:p-7 lg:p-8"
-        style={{
-          backgroundImage:
-            "linear-gradient(135deg, color-mix(in oklab, var(--primary) 5%, transparent), transparent 45%), linear-gradient(315deg, color-mix(in oklab, var(--status-success) 4%, transparent), transparent 38%)",
-        }}
-      >
-        <div
-          aria-hidden
-          className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-(--primary) via-(--game-blue) to-(--game-green)"
-        />
+      <ProfileHeroSurface>
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <div className="flex min-w-0 flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
             <div className="size-24 shrink-0 overflow-hidden rounded-2xl border-2 border-(--border) sm:size-28">
-              <UserAvatar user={user} className="h-full w-full object-cover" />
+              <UserAvatar user={user} referrerPolicy={avatarReferrerPolicy} className="h-full w-full object-cover" />
             </div>
             <div className="min-w-0">
               <h1
@@ -42,31 +37,14 @@ export function ProfileHeroSection({
               >
                 {user.name}
               </h1>
-              <p className="mt-1 wrap-break-word text-base font-medium text-(--text-secondary)">
-                {profile.real_name || "尚未填寫"}
-              </p>
-              <p
-                className="mt-2 break-all text-sm text-(--muted)"
-                title={user.email}
-              >
-                {user.email}
-              </p>
+              {details}
               <ProfileIdentityBadges badges={identityBadges} />
             </div>
           </div>
-          <div className="flex flex-col gap-2 sm:items-end">
-          <ButtonLink href={`/profile/${user.id}`} variant="text" size="sm">查看公開個人頁面</ButtonLink>
-          <ButtonLink
-            href="/settings"
-            variant="outline"
-            size="sm"
-            className="w-full sm:w-auto"
-          >
-            編輯資料
-          </ButtonLink>
-          </div>
+          {actions}
+
         </div>
-      </div>
+      </ProfileHeroSurface>
     </section>
   );
 }

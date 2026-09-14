@@ -61,7 +61,14 @@ async function ProfilePage() {
     <section className="container max-w-5xl space-y-6 py-6 sm:space-y-8 sm:py-8">
       <ProfileHeroSection
         user={user}
-        profile={profile}
+        details={<>
+          <p className="mt-1 wrap-break-word text-base font-medium text-(--text-secondary)">{profile.real_name || "尚未填寫"}</p>
+          <p className="mt-2 break-all text-sm text-(--muted)" title={user.email}>{user.email}</p>
+        </>}
+        actions={<div className="flex flex-col gap-2 sm:items-end">
+          <ButtonLink href={`/profile/${user.id}`} variant="text" size="sm">查看公開個人頁面</ButtonLink>
+          <ButtonLink href="/settings" variant="outline" size="sm" className="w-full sm:w-auto">編輯資料</ButtonLink>
+        </div>}
         identityBadges={clubContext.identityBadges}
       />
       <ProfileClubFootprint
