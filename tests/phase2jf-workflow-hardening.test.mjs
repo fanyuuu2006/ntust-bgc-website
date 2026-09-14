@@ -18,7 +18,7 @@ async function loadCommonJsModule(path, overrides = {}) {
     },
   }).outputText;
   const runtimeModule = { exports: {} };
-  const localRequire = (specifier) => overrides[specifier] ?? (specifier === "@/libs/observability/report" ? load("src/libs/observability/report.ts") : nodeRequire(specifier));
+  const localRequire = (specifier) => overrides[specifier] ?? (specifier === "@/libs/observability/report" ? load("src/libs/observability/report.ts") : specifier === "@/libs/supabase/auth-unavailable" ? load("src/libs/supabase/auth-unavailable.ts") : nodeRequire(specifier));
   new Function("exports", "module", "require", javascript)(
     runtimeModule.exports,
     runtimeModule,
