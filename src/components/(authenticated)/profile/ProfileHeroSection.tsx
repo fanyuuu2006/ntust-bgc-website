@@ -54,6 +54,8 @@ export function ProfileHeroSection({
               <ProfileIdentityBadges badges={identityBadges} />
             </div>
           </div>
+          <div className="flex flex-col gap-2 sm:items-end">
+          <ButtonLink href={`/profile/${user.id}`} variant="text" size="sm">查看公開個人頁面</ButtonLink>
           <ButtonLink
             href="/settings"
             variant="outline"
@@ -62,6 +64,7 @@ export function ProfileHeroSection({
           >
             編輯資料
           </ButtonLink>
+          </div>
         </div>
       </div>
     </section>

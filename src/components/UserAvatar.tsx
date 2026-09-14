@@ -3,7 +3,7 @@ import { useId } from "react";
 import { User } from "@/types/database";
 
 type UserAvatarProps = React.ImgHTMLAttributes<HTMLImageElement> & {
-  user: Pick<User, "id" | "name" | "avatar" | "email">;
+  user: Pick<User, "id" | "name" | "avatar">;
 };
 
 // 依 user.id 產生穩定 hash，確保同一個使用者每次 render 顏色都一致

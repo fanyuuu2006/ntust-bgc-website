@@ -66,7 +66,7 @@ Admin profile schema 只產出明確欄位，傳入 Email／verification／close
 
 ## 未來公開作者契約
 
-未實作 Public Profile／Reviews／Comments。未來公開作者投影必須只輸出必要公開欄位；closed user 固定顯示「已註銷使用者」、avatar=null，不輸出 email、Profile 或內部 tombstone email。文章／評論可保留作者 UUID 維持脈絡，不能用 User ID 查出先前個資。既有內容本身是否含個資須另行審查，不由作者名稱替換保證。
+Phase 3I 已建立最小 Public Profile 投影，詳見 [公開身份邊界](public-identity.md)；Reviews／Comments 尚未實作。未來公開作者投影必須只輸出必要公開欄位；closed user 固定顯示「已註銷使用者」、avatar=null，不輸出 email、Profile 或內部 tombstone email。文章／評論可保留作者 UUID 維持脈絡，不能用 User ID 查出先前個資。既有內容本身是否含個資須另行審查，不由作者名稱替換保證。
 
 ## Migration 與回退
 
