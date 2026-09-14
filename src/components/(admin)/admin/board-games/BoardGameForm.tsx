@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormFeedback } from "@/components/FormFeedback";
 import { FieldInput } from "@/components/FieldInput";
+import { BoardGameImage } from "@/components/BoardGameImage";
 import { ApiError } from "@/libs/api/errors";
 import { apiClient } from "@/libs/api/client";
 import { createBoardGameSchema, updateBoardGameSchema } from "@/services/board-games/board-games.schema";
@@ -124,6 +125,14 @@ export function BoardGameForm({
   >({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [failedImage, setFailedImage] = useState<string | null>(null);
+  const imageUrl = values.image.trim();
+  // 預覽只讓瀏覽器載入 HTTP(S) 圖片，不使用 Server fetch，也不改變既有儲存 schema。
+  let previewUrl: string | null = null;
+  try {
+    const url = new URL(imageUrl);
+    if (["http:", "https:"].includes(url.protocol) && !url.username && !url.password) previewUrl = imageUrl;
+  } catch { /* 尚未輸入完整網址時不發出圖片請求。 */ }
 
   const statusOptions = useMemo<BoardGameStatus[]>(
     () => [
@@ -142,6 +151,7 @@ export function BoardGameForm({
   ) {
     const { name, value } = event.target;
     const fieldName = name as keyof BoardGameFormValues;
+    if (fieldName === "image") setFailedImage(null);
 
     setValues((prev) => ({
       ...prev,
@@ -206,28 +216,28 @@ export function BoardGameForm({
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
         <section className="space-y-4" aria-labelledby="board-game-basics">
           <h2 id="board-game-basics" className="border-b border-(--border-default) pb-2 text-base font-semibold text-(--text-primary)">基本資料</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
             <FieldInput field={{ id: "name", label: "桌遊名稱", type: "text", required: true, placeholder: "請輸入桌遊名稱", error: errors.name }} value={values.name} onChange={handleChange} />
             <FieldInput field={{ id: "inventory_number", label: "社產編號", type: "number", required: true, placeholder: "例如：101", error: errors.inventory_number }} value={values.inventory_number} onChange={handleChange} />
-          </div>
           <Field label="狀態" htmlFor="status" error={errors.status} required>
-            <Select id="status" name="status" value={values.status} onChange={handleChange} required invalid={!!errors.status}>
+            <Select id="status" name="status" value={values.status} onChange={handleChange} required invalid={!!errors.status} aria-describedby={errors.status ? "status-error" : undefined}>
               {statusOptions.map((status) => <option key={status} value={status}>{BOARD_GAME_STATUS_LABEL[status]}</option>)}
             </Select>
           </Field>
+          </div>
         </section>
 
         <section className="space-y-4" aria-labelledby="board-game-classification">
           <h2 id="board-game-classification" className="border-b border-(--border-default) pb-2 text-base font-semibold text-(--text-primary)">種類與位置</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             <Field label="種類" htmlFor="category_id" error={errors.category_id} required>
-              <Select id="category_id" name="category_id" value={values.category_id} onChange={handleChange} required invalid={!!errors.category_id}>
+              <Select id="category_id" name="category_id" value={values.category_id} onChange={handleChange} required invalid={!!errors.category_id} aria-describedby={errors.category_id ? "category_id-error" : undefined}>
                 <option value="">請選擇種類</option>
                 {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
               </Select>
             </Field>
             <Field label="位置" htmlFor="location_id" error={errors.location_id} required>
-              <Select id="location_id" name="location_id" value={values.location_id} onChange={handleChange} required invalid={!!errors.location_id}>
+              <Select id="location_id" name="location_id" value={values.location_id} onChange={handleChange} required invalid={!!errors.location_id} aria-describedby={errors.location_id ? "location_id-error" : undefined}>
                 <option value="">請選擇位置</option>
                 {locations.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}
               </Select>
@@ -236,12 +246,27 @@ export function BoardGameForm({
         </section>
 
         <section className="space-y-4" aria-labelledby="board-game-content">
-          <h2 id="board-game-content" className="border-b border-(--border-default) pb-2 text-base font-semibold text-(--text-primary)">介紹與圖片</h2>
+          <h2 id="board-game-content" className="border-b border-(--border-default) pb-2 text-base font-semibold text-(--text-primary)">介紹</h2>
           <Field label="描述" htmlFor="description" error={errors.description} action={<RichContentPreview value={richDescription} title={values.name} label="桌遊介紹預覽" />}>
             <RichTextEditor id="description" label="桌遊描述" initialContent={initialDescription} onChange={setRichDescription} disabled={isSubmitting || unsupportedDescription} invalid={!!errors.description} />
             <p className="text-xs text-(--text-muted)">{unsupportedDescription ? "此描述格式暫不支援編輯。" : "可留空；格式化內容最多 20,000 字元。"}</p>
           </Field>
-          <FieldInput field={{ id: "image", label: "圖片連結", type: "url", placeholder: "https://example.com/board-game.jpg", error: errors.image }} value={values.image} onChange={handleChange} />
+        </section>
+
+        <section className="space-y-4" aria-labelledby="board-game-image">
+          <h2 id="board-game-image" className="border-b border-(--border-default) pb-2 text-base font-semibold text-(--text-primary)">圖片</h2>
+          <div className="grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_12rem]">
+            <FieldInput field={{ id: "image", label: "圖片網址", type: "url", placeholder: "https://example.com/board-game.jpg", hint: "可留空；預覽由瀏覽器載入外部圖片。", error: errors.image }} value={values.image} onChange={handleChange} onBlur={() => {
+              const result = updateBoardGameSchema.safeParse({ image: values.image });
+              setErrors((previous) => ({ ...previous, image: result.success ? undefined : result.error.issues[0]?.message }));
+            }} />
+            <figure className="min-w-0 space-y-2">
+              <figcaption className="text-sm font-medium text-(--text-primary)">圖片預覽</figcaption>
+              <div className="flex h-32 items-center justify-center overflow-hidden rounded-lg border border-(--border-muted) bg-(--surface-subtle) md:h-36">
+                {previewUrl && failedImage !== previewUrl ? <BoardGameImage key={previewUrl} boardGame={{ name: values.name || "桌遊圖片預覽", image: previewUrl }} className="h-full w-full object-contain" referrerPolicy="no-referrer" onError={() => setFailedImage(previewUrl)} /> : <p className="px-3 text-center text-sm text-(--text-muted)">{!imageUrl ? "尚未設定圖片" : previewUrl && failedImage === previewUrl ? "無法載入圖片，請確認網址。" : "輸入 HTTP 或 HTTPS 圖片網址以預覽。"}</p>}
+              </div>
+            </figure>
+          </div>
         </section>
 
         <FormFeedback error={formError} />
