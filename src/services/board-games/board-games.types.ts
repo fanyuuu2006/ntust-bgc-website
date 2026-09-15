@@ -31,9 +31,9 @@ export type BoardGameWithCategoryAndLocation = BoardGame & {
 
 export type BoardGameStats = {
   completedBorrowCount: number;
-  averageRating?: number | null;
-  ratingCount?: number;
-  reviewCount?: number;
+  averageRating: number | null;
+  ratingCount: number;
+  reviewCount: number;
 };
 
 export type BoardGameWithStats = BoardGame & {
@@ -43,6 +43,7 @@ export type BoardGameWithStats = BoardGame & {
 export type HomeBoardGameItem = Pick<BoardGame, "id" | "name" | "image" | "status"> & {
   category: Pick<BoardGameCategory, "name"> | null;
   location: Pick<BoardGameLocation, "name"> | null;
+  stats: BoardGameStats;
 };
 
 export type BoardGameDiscoveryItem = HomeBoardGameItem & Pick<BoardGame, "inventory_number"> & {

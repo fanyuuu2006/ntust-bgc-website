@@ -41,4 +41,5 @@ test("homepage preview remains a single-link discovery summary without ranking s
   assert.equal((preview.match(/<Link\b/g) ?? []).length, 1);
   assert.doesNotMatch(preview, /<button\b|inventory_number|description|查看詳情/);
   assert.doesNotMatch(preview, /BoardGamePopularity|completedBorrowCount/);
+  assert.match(preview, /BoardGameRatingMetadata/);
 });

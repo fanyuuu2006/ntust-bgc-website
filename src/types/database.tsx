@@ -247,6 +247,7 @@ export type BoardGamePopularityStatistics = {
   rating_count: number;
   review_count: number;
   popularity_score: number;
+  bayesian_rating: number | null;
 };
 
 /* =========================================================

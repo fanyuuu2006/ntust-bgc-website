@@ -98,7 +98,7 @@ test("homepage and discovery share database ordering and filters cannot recalcul
   assert.match(repository, /\.in\("category_id", options\.category_ids\)/);
   assert.match(repository, /\.in\("location_id", options\.location_ids\)/);
   assert.match(repository, /\.range\(from, to\)/);
-  assert.doesNotMatch(repository, /Math\.log|bayesian|BORROWING_SATURATION|RATING_SATURATION|\.sort\(/);
+  assert.doesNotMatch(repository, /Math\.log|BORROWING_SATURATION|RATING_SATURATION|\.sort\(/);
 });
 
 test("rating and borrowing mutations invalidate only the popular-games cache", async () => {

@@ -16,7 +16,7 @@ PublicBoardGameReview 只有 id、rating、content、createdAt、updatedAt 與 P
 
 ## Aggregate
 
-board_game_review_statistics 依 board_game_id 回傳 average_rating、rating_count 及 review_count。rating-only row 會進平均及 rating_count；只有 content 非 null 才進 review_count。既有 board_games_with_statistics 與借用熱門排序不變。
+board_game_review_statistics 依 board_game_id 回傳 average_rating、rating_count 及 review_count。rating-only row 會進平均及 rating_count；只有 content 非 null 才進 review_count。公開桌遊清單的兩個 read model 都帶入 average_rating 與 rating_count，讓卡片在任何排序下顯示相同的評分摘要；人氣分數與借用次數只用於資料庫排序，不作為卡片指標。
 
 ## Launch requirements deferred to 3J-B/3J-C
 
@@ -42,4 +42,4 @@ Moderation資格與稽核、分散式 anti-spam、額外排序索引、Replies�
 
 Production 量測時共有 607 款桌遊：完成借用 p50/p75/p90/p95 均為 0、最大 1、603 款為 0；評分數 p50/p75/p90/p95 均為 0、最大 1、606 款為 0。現況不足以校準成熟飽和值，因此 V1 採保守且易懂的小型社群預設，待累積足夠歷史後再以產品決策調整。文字評論數不參與熱門分數；rating-only 與註銷帳號保留的評分仍正常計入。
 
-排序固定為 popularity score、評分數、完成借用數、平均評分（NULL 最後）、桌遊 UUID。首頁只取相同排序的前 6 筆；公開目錄的搜尋、分類與位置只縮小候選集合，不重新計算個別桌遊分數。Review 建立、修改、刪除及借出／歸還成功後，只失效熱門桌遊 cache。V1 不包含近期衰減、趨勢、推薦、materialized view 或 moderation。
+熱門排序固定為 popularity score、評分數、完成借用數、平均評分（NULL 最後）、桌遊 UUID。`rating:desc` 的「評分最高」排序沿用同一 read model 的 Bayesian rating，依 Bayesian rating、評分數、原始平均、完成借用數、桌遊 UUID 排序；未評分桌遊因 Bayesian rating 為 NULL 而排在已評分桌遊之後。卡片仍只顯示原始平均與評分人數，不顯示 Bayesian 值。首頁只取熱門排序的前 6 筆；公開目錄的搜尋、分類與位置只縮小候選集合，不重新計算個別桌遊分數。Review 建立、修改、刪除及借出／歸還成功後，只失效熱門桌遊 cache。V1 不包含近期衰減、趨勢、推薦、materialized view 或 moderation。

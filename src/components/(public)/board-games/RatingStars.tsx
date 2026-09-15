@@ -16,15 +16,16 @@ export function RatingStars({
 }: {
   rating: number;
   label: string;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   className?: string;
 }) {
   const normalizedRating = Math.min(MAX_RATING, Math.max(0, rating));
-  const starSize = size === "lg" ? "size-6" : size === "sm" ? "size-4" : "size-5";
+  const starSize = size === "lg" ? "size-6" : size === "sm" ? "size-4" : size === "xs" ? "size-3" : "size-5";
+  const starGap = size === "xs" ? "gap-0" : "gap-0.5";
 
   return (
     <span role="img" aria-label={label} className={cn("inline-flex shrink-0", className)}>
-      <span aria-hidden="true" className="inline-flex gap-0.5 text-(--game-yellow)">
+      <span aria-hidden="true" className={cn("inline-flex text-(--game-yellow)", starGap)}>
         {Array.from({ length: MAX_RATING }, (_, index) => {
           const fillPercentage = Math.round(Math.min(1, Math.max(0, normalizedRating - index)) * 1_000) / 10;
 

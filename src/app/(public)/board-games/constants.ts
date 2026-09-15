@@ -67,6 +67,12 @@ export const SORT_OPTIONS: {
     label: "熱門程度",
   },
   {
+    key: "rating:desc",
+    orderBy: "rating",
+    orderDirection: "desc",
+    label: "評分最高",
+  },
+  {
     key: "created_at:desc",
     orderBy: "created_at",
     orderDirection: "desc",

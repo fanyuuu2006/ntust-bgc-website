@@ -69,7 +69,7 @@ test("catalog data scope and responsive grid remain unchanged", async () => {
   assert.match(grid, /xl:grid-cols-6/);
   assert.match(card, /BoardGameImage/);
   assert.match(card, /BoardGameStatusBadge/);
-  assert.match(card, /BoardGamePopularity/);
+  assert.match(card, /BoardGameRatingMetadata/);
   assert.match(card, /inventory_number/);
-  assert.doesNotMatch(card, /rating|ranking|viewCount/);
+  assert.doesNotMatch(card, /ranking|viewCount|熱門度|completedBorrowCount/);
 });

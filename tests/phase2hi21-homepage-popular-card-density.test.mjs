@@ -35,4 +35,5 @@ test("homepage popular card keeps one title anchor and compact metadata", async 
     preview,
     /BoardGamePopularity|completedBorrowCount|inventory_number|description|查看詳情/,
   );
+  assert.match(preview, /BoardGameRatingMetadata/);
 });

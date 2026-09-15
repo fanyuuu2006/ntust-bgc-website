@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGameStatusBadge";
+import { BoardGameRatingMetadata } from "@/components/(public)/board-games/BoardGameRatingMetadata";
 import type { HomeBoardGameItem } from "@/services/board-games/board-games.types";
 
 type HomeBoardGamePreviewProps = {
@@ -46,6 +47,7 @@ export function HomeBoardGamePreview({
             {metadata.join(" · ")}
           </p>
         ) : null}
+        <BoardGameRatingMetadata stats={boardGame.stats} className="mt-2" />
       </div>
     </Link>
   );

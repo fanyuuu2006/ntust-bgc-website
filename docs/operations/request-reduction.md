@@ -26,8 +26,8 @@ Register 的 2 次都是 POST RPC。暖快取不代表沒有成本：登入者�
 | 讀取 | Before | After |
 | --- | --- | --- |
 | 首頁公告 | `*`、exact count | `id,title,content,published_at,created_at`、limit 3、無 count |
-| 首頁熱門桌遊 | statistics `*`、exact count，再補 categories／locations | `id,name,image,status,category(name),location(name)`、limit 6、無 count |
-| 公開桌遊清單 | statistics `*` 再補 categories／locations | `id,name,image,status,inventory_number,completed_borrow_count,category(name),location(name)`，保留 count/filter/order/range |
+| 首頁熱門桌遊 | statistics `*`、exact count，再補 categories／locations | `id,name,image,status,average_rating,rating_count,review_count,completed_borrow_count,category(name),location(name)`、limit 6、無 count；後四項由同一 popularity query 提供，借用與人氣只供排序 |
+| 公開桌遊清單 | statistics `*` 再補 categories／locations | `id,name,image,status,inventory_number,completed_borrow_count,average_rating,rating_count,review_count,category(name),location(name)`，保留 count/filter/order/range；沒有逐卡查詢 |
 | Admin 桌遊清單 | game `*` 再補 categories／locations | game `*` 與 category/location 的 `id,name,description` 同次取得；保留管理欄位 |
 
 首頁公告使用寫入時由 Server 衍生的 `content`，不下載／解析 `rich_content`。公開桌遊預覽不下載 description／rich_description。Detail renderer 與搜尋條件未改。

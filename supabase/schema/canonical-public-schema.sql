@@ -318,24 +318,6 @@ create table public.board_game_reviews (
 create index board_game_reviews_board_created_idx
   on public.board_game_reviews (board_game_id, created_at desc, id desc);
 
-create view public.board_games_with_statistics
-with (security_invoker = true)
-as
-select
-  board_game.*,
-  coalesce(statistics.completed_borrow_count, 0)::bigint
-    as completed_borrow_count
-from public.board_games as board_game
-left join (
-  select
-    borrowing.board_game_id,
-    count(*)::bigint as completed_borrow_count
-  from public.board_game_borrowings as borrowing
-  where borrowing.status in ('borrowed', 'returned')
-  group by borrowing.board_game_id
-) as statistics
-  on statistics.board_game_id = board_game.id;
-
 create view public.board_game_review_statistics
 with (security_invoker = true)
 as
@@ -346,6 +328,38 @@ select
   count(*) filter (where review.content is not null)::bigint as review_count
 from public.board_game_reviews as review
 group by review.board_game_id;
+
+create view public.board_games_with_statistics
+with (security_invoker = true)
+as
+select
+  board_game.id,
+  board_game.created_at,
+  board_game.name,
+  board_game.description,
+  board_game.image,
+  board_game.updated_at,
+  board_game.category_id,
+  board_game.location_id,
+  board_game.status,
+  board_game.inventory_number,
+  coalesce(borrowing.completed_borrow_count, 0)::bigint
+    as completed_borrow_count,
+  review.average_rating,
+  coalesce(review.rating_count, 0)::bigint as rating_count,
+  coalesce(review.review_count, 0)::bigint as review_count
+from public.board_games as board_game
+left join (
+  select
+    borrowing.board_game_id,
+    count(*)::bigint as completed_borrow_count
+  from public.board_game_borrowings as borrowing
+  where borrowing.status in ('borrowed', 'returned')
+  group by borrowing.board_game_id
+) as borrowing
+  on borrowing.board_game_id = board_game.id
+left join public.board_game_review_statistics as review
+  on review.board_game_id = board_game.id;
 
 -- Phase 3J-D：固定飽和參數讓分數不受目前目錄最大值或篩選結果影響。
 create view public.board_game_popularity_statistics
@@ -399,7 +413,8 @@ select board_game_id, name, description, image, status, inventory_number,
   review_count,
   0.50::double precision * borrowing_heat
     + 0.35::double precision * rating_quality
-    + 0.15::double precision * rating_participation as popularity_score
+    + 0.15::double precision * rating_participation as popularity_score,
+  bayesian_rating
 from scored;
 
 create table public.event_attendances (
