@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import { BoardGameBorrowingPanel } from "@/components/(public)/board-games/BoardGameBorrowingPanel";
 import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGameStatusBadge";
 import { BoardGameImage } from "@/components/BoardGameImage";
+import { BoardGameReviews } from "@/components/(public)/board-games/BoardGameReviews";
 import { ButtonLink } from "@/components/ui/Button";
 import {
   createMetadataDescription,
@@ -16,15 +17,24 @@ import {
 import { resolvePublicViewer } from "@/libs/public-viewer";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { membershipService } from "@/services/memberships/memberships.service";
+import { reviewsService } from "@/services/reviews/reviews.service";
 import { cn } from "@/utils/className";
+import { buildQueryString } from "@/utils/url";
+import { redirect } from "next/navigation";
 import { getBoardGameDetail } from "./board-game-detail";
+import { normalizeBoardGameReviewQuery, type BoardGameReviewSearchParams } from "./review-query";
 
-type BoardGameDetailPageProps = { params: Promise<{ id: string }> };
+type BoardGameDetailPageProps = {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<BoardGameReviewSearchParams>;
+};
 
 async function generateMetadataContent({
   params,
+  searchParams,
 }: BoardGameDetailPageProps): Promise<Metadata> {
   const { id } = await params;
+  const reviewQuery = normalizeBoardGameReviewQuery((await searchParams) ?? {});
   const boardGame = await getBoardGameDetail(id);
   const normalizedName = createMetadataDescription(boardGame.name);
   const title = createMetadataTitle(normalizedName);
@@ -39,6 +49,9 @@ async function generateMetadataContent({
     title,
     description,
     alternates: { canonical },
+    ...(reviewQuery.page > 1 || reviewQuery.sort !== "newest"
+      ? { robots: { index: false, follow: true } }
+      : {}),
     openGraph: {
       type: "website",
       title,
@@ -51,11 +64,25 @@ async function generateMetadataContent({
 
 async function BoardGameDetailPage({
   params,
+  searchParams,
 }: BoardGameDetailPageProps) {
   const { id } = await params;
   const boardGame = await getBoardGameDetail(id);
+  const reviewQuery = normalizeBoardGameReviewQuery((await searchParams) ?? {});
 
-  const viewer = await resolvePublicViewer();
+  const [viewer, reviewAggregate, reviews] = await Promise.all([
+    resolvePublicViewer(),
+    reviewsService.getAggregate(boardGame.id),
+    reviewsService.listPublic(boardGame.id, reviewQuery),
+  ]);
+
+  if (reviews.totalPages > 0 && reviewQuery.page > reviews.totalPages) {
+    redirect(`/board-games/${boardGame.id}?${buildQueryString({
+      reviewPage: reviews.totalPages,
+      reviewSort: reviewQuery.sort === "newest" ? undefined : reviewQuery.sort,
+    })}`);
+  }
+
   const user = viewer.status === "resolved" ? viewer.user : null;
   const [currentMembership, existingBorrowing] = user
     ? await Promise.all([
@@ -157,6 +184,13 @@ async function BoardGameDetailPage({
             </h2>
             <RichTextRenderer {...storedDescription(boardGame)} content={boardGame.description || "目前尚未補充這款桌遊的介紹。"} className="mt-3" />
           </section>
+
+          <BoardGameReviews
+            boardGameId={boardGame.id}
+            aggregate={reviewAggregate}
+            reviews={reviews}
+            sort={reviewQuery.sort}
+          />
         </div>
       </div>
     </section>

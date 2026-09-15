@@ -1,6 +1,6 @@
 # Reviews & Ratings domain contract
 
-Phase 3J-A 只建立資料與 Server domain foundation，尚未公開 Review UI 或 API route，也未套用遠端 migration。
+Phase 3J-A 建立資料與 Server domain foundation；Phase 3J-B 在桌遊詳細頁加入公開評分摘要與文字評論 SSR 讀取。尚未提供 Review mutation API 或投稿 UI，也未套用遠端 migration。
 
 ## Product contract
 

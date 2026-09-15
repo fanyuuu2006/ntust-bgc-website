@@ -47,7 +47,8 @@ export const boardGameReviewsRepository = {
     let query = supabase
       .from("board_game_reviews")
       .select(PUBLIC_REVIEW_FIELDS, { count: "exact" })
-      .eq("board_game_id", boardGameId);
+      .eq("board_game_id", boardGameId)
+      .not("content", "is", null);
 
     if (options.sort === "highest" || options.sort === "lowest") {
       query = query.order("rating", { ascending: options.sort === "lowest" });

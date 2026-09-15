@@ -40,7 +40,8 @@ select pg_temp.assert_true(
 
 do $$
 declare
-  uid1 uuid; uid2 uuid; game uuid; category uuid; location uuid; review1 uuid; review2 uuid;
+  uid1 uuid; uid2 uuid; game uuid; pagination_game uuid; pagination_user uuid;
+  category uuid; location uuid; review1 uuid; review2 uuid; i integer;
   before_update timestamptz;
 begin
   insert into public.users(name,email,email_verified_at) values
@@ -51,6 +52,32 @@ begin
   insert into public.board_game_locations(name) values ('review-location') returning id into location;
   insert into public.board_games(name,category_id,location_id,status,inventory_number)
     values ('review-game',category,location,'available',-315001) returning id into game;
+  insert into public.board_games(name,category_id,location_id,status,inventory_number)
+    values ('review-pagination-game',category,location,'available',-315003) returning id into pagination_game;
+
+  for i in 1..12 loop
+    insert into public.users(name,email,email_verified_at)
+      values ('pagination-author-' || i, 'pagination-author-' || i || '@example.invalid', now())
+      returning id into pagination_user;
+    insert into public.board_game_reviews(board_game_id,user_id,rating,content)
+      values (pagination_game, pagination_user, 1 + (i % 5), case when i <= 8 then 'written-' || i else null end);
+  end loop;
+  perform pg_temp.assert_true(
+    (select rating_count=12 and review_count=8 from public.board_game_review_statistics where board_game_id=pagination_game),
+    'twelve ratings and eight written reviews'
+  );
+  perform pg_temp.assert_true(
+    (select count(*)=5 from (select id from public.board_game_reviews where board_game_id=pagination_game and content is not null order by created_at desc,id desc limit 5 offset 0) page_one),
+    'written page one has five rows'
+  );
+  perform pg_temp.assert_true(
+    (select count(*)=3 from (select id from public.board_game_reviews where board_game_id=pagination_game and content is not null order by created_at desc,id desc limit 5 offset 5) page_two),
+    'written page two has three rows'
+  );
+  perform pg_temp.assert_true(
+    (select count(*)=0 from (select id from public.board_game_reviews where board_game_id=pagination_game and content is not null order by created_at desc,id desc limit 5 offset 10) page_three),
+    'rating-only rows do not create a third written page'
+  );
 
   perform pg_temp.assert_true(not exists(select 1 from public.board_game_review_statistics where board_game_id=game), 'empty aggregate');
   insert into public.board_game_reviews(board_game_id,user_id,rating,content)

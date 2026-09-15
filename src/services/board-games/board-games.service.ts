@@ -53,6 +53,7 @@ import {
   DuplicateBoardGameLocationNameError,
   BoardGameLocationInUseError,
   BoardGameHasOpenBorrowingError,
+  BoardGameHasReviewsError,
   BoardGameNotAvailableForBorrowingError,
   BoardGameBorrowingConflictError,
   BorrowingStatusTransitionError,
@@ -118,6 +119,18 @@ function rethrowBorrowingApprovalConflict(error: unknown): never {
     throw new BoardGameHasOpenBorrowingError();
   }
 
+  throw error;
+}
+
+function rethrowBoardGameDeleteConflict(error: unknown): never {
+  const databaseError = getRepositoryDatabaseError(error);
+  if (
+    databaseError?.code === "23503" &&
+    (databaseError.constraint === "board_game_reviews_board_game_id_fkey" ||
+      databaseError.message?.includes('"board_game_reviews_board_game_id_fkey"'))
+  ) {
+    throw new BoardGameHasReviewsError();
+  }
   throw error;
 }
 
@@ -441,7 +454,7 @@ export const boardGamesService = {
       throw new BoardGameHasOpenBorrowingError();
     }
 
-    await boardGamesRepository.deleteById(id);
+    await boardGamesRepository.deleteById(id).catch(rethrowBoardGameDeleteConflict);
     invalidatePublicData("popularGames");
   },
 

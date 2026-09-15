@@ -236,6 +236,9 @@ test("board-game detail keeps core content but skips personalization when viewer
       "@/components/(public)/board-games/BoardGameStatusBadge": {
         BoardGameStatusBadge: "BoardGameStatusBadge",
       },
+      "@/components/(public)/board-games/BoardGameReviews": {
+        BoardGameReviews: "BoardGameReviews",
+      },
       "@/components/BoardGameImage": { BoardGameImage: "BoardGameImage" },
       "@/components/RichTextRenderer": { RichTextRenderer: "RichTextRenderer" },
       "@/libs/rich-content/description": { storedDescription: (value) => ({ content: value.description }) },
@@ -262,8 +265,17 @@ test("board-game detail keeps core content but skips personalization when viewer
           },
         },
       },
+      "@/services/reviews/reviews.service": {
+        reviewsService: {
+          getAggregate: async () => ({ averageRating: null, ratingCount: 0, reviewCount: 0 }),
+          listPublic: async () => ({ data: [], page: 1, pageSize: 10, total: 0, totalPages: 0 }),
+        },
+      },
       "@/utils/className": { cn: (...values) => values.filter(Boolean).join(" ") },
+      "@/utils/url": { buildQueryString: () => "" },
+      "next/navigation": { redirect: () => { throw new Error("unexpected redirect"); } },
       "./board-game-detail": { getBoardGameDetail: async () => boardGame },
+      "./review-query": { normalizeBoardGameReviewQuery: () => ({ page: 1, pageSize: 10, sort: "newest" }) },
     },
   );
 

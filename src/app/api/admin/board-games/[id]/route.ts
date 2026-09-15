@@ -7,6 +7,7 @@ import { boardGamesService } from "@/services/board-games/board-games.service";
 import {
   BoardGameCategoryNotFoundError,
   BoardGameHasOpenBorrowingError,
+  BoardGameHasReviewsError,
   BoardGameLocationNotFoundError,
   BoardNotFoundError,
   DuplicateInventoryNumberError,
@@ -119,7 +120,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
     if (error instanceof BoardNotFoundError) {
       return NextResponse.json({ message: error.message }, { status: 404 });
     }
-    if (error instanceof BoardGameHasOpenBorrowingError) {
+    if (error instanceof BoardGameHasOpenBorrowingError || error instanceof BoardGameHasReviewsError) {
       return NextResponse.json({ message: error.message }, { status: 409 });
     }
 

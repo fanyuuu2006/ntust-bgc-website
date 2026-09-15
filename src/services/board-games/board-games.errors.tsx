@@ -14,3 +14,4 @@ export class BorrowingDueDateError extends Error { constructor() { super("應還
 export class BorrowingCancellationConflictError extends Error { constructor() { super("這筆借用申請目前已無法取消，請重新整理後確認最新狀態。"); this.name = "BorrowingCancellationConflictError"; } }
 export class BorrowingStatusTransitionError extends Error { constructor(expectedStatus: string, actualStatus: string) { super(`此操作需要「${expectedStatus}」狀態，目前為「${actualStatus}」。`); this.name = "BorrowingStatusTransitionError"; } }
 export class BorrowingWorkflowConflictError extends Error { constructor(message: string) { super(message); this.name = "BorrowingWorkflowConflictError"; } }
+export class BoardGameHasReviewsError extends Error { constructor() { super("此桌遊已有評分或評論紀錄，無法直接刪除。"); this.name = "BoardGameHasReviewsError"; } }
