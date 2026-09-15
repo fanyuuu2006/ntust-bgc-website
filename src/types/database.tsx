@@ -229,6 +229,16 @@ export type BoardGame = {
   inventory_number: number;
 };
 
+export type BoardGameReview = {
+  id: UUID;
+  board_game_id: UUID;
+  user_id: UUID;
+  rating: number;
+  content: string | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
 /* =========================================================
  * Board Game Borrowings
  * ========================================================= */

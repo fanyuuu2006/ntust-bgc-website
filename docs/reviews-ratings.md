@@ -1,0 +1,27 @@
+# Reviews & Ratings domain contract
+
+Phase 3J-A 只建立資料與 Server domain foundation，尚未公開 Review UI 或 API route，也未套用遠端 migration。
+
+## Product contract
+
+- 完成 Email 驗證的網站使用者可以評分；不要求社員、借用或幹部資格。
+- 每位使用者對每款桌遊最多一筆 Review。Rating 必填且為 1–5 整數；content 是最多 2,000 字的 optional plain text。
+- content 統一換行、去除外圍空白，空白內容保存為 null。HTML-looking text 仍是純文字資料。
+- 註銷帳號不刪除 Review；rating 繼續計入 aggregate，作者只經 canonical public identity 映射為「已註銷使用者」。
+- 作者 mutation 以 board_game_id 與 Server Session 的 user_id 為共同 predicate，不接受 client 指定 author。
+
+## Public boundary
+
+PublicBoardGameReview 只有 id、rating、content、createdAt、updatedAt 與 PublicUserIdentity。Repository 在同一次 relational query 只讀作者 id/name/avatar/closed_at；closed_at 僅供 Service 墓碑映射，不輸出。不得 join 或輸出 Email、驗證狀態、Profile、Membership、Officer、Session 或 Credential。
+
+## Aggregate
+
+board_game_review_statistics 依 board_game_id 回傳 average_rating、rating_count 及 review_count。rating-only row 會進平均及 rating_count；只有 content 非 null 才進 review_count。既有 board_games_with_statistics 與借用熱門排序不變。
+
+## Launch requirements deferred to 3J-B/3J-C
+
+在公開開放評論建立前，桌遊刪除流程必須將既有評論造成的外鍵衝突安全映射為使用者可理解的 `409`；不得回傳 `500`、原始資料庫錯誤或 constraint 名稱。
+
+公開上線前應窄幅更新 Privacy／Terms，說明評分與評論是公開內容、使用既有公開身份、註銷後可能為維持內容與 aggregate 完整性而保留，以及帳號使用中可自行編輯／刪除、其他移除請求可循正式聯絡方式提出。不得把私人 Profile、社員原始紀錄、借用或簽到明細描述為公開。
+
+Moderation資格與稽核、分散式 anti-spam、額外排序索引、Replies／Reactions 均延後；Production Session release closure 仍是獨立工作。
