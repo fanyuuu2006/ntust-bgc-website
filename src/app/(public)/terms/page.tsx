@@ -80,6 +80,15 @@ export default function TermsPage() {
           <p>我們會依實際狀況處理問題；本條款不排除或限制依法不得免除的責任，也不要求您放棄法定權利。</p>
         </section>
 
+        <section id="reviews" aria-labelledby="reviews-title" className="scroll-mt-24 space-y-3">
+          <h2 id="reviews-title">評分、評論與使用者內容</h2>
+          <ul>
+            <li>使用者應以自己的網站帳號提交內容，不得冒用他人身份。</li>
+            <li>不得發布違法、侵權、惡意攻擊、騷擾或其他不當內容；使用者應對自己提交的評分與評論負責。</li>
+            <li>社團得依法令要求或站務維護需要處理不當內容；此條款不代表本站已提供自動審查、檢舉、申訴或 moderation queue。</li>
+          </ul>
+        </section>
+
         <section id="updates" aria-labelledby="updates-title" className="scroll-mt-24 space-y-3">
           <h2 id="updates-title">9. 條款更新</h2>
           <p>我們可能隨功能或社團作業調整使用條款，更新內容與日期會刊登於本頁。使用相關服務前，請留意當時的功能說明及規範。</p>

@@ -48,6 +48,7 @@ test("homepage popular cards remain compact visual teasers without ranking stati
     preview,
     /BoardGamePopularity|completedBorrowCount|inventory_number|description/,
   );
+  assert.match(preview, /BoardGameRatingMetadata/);
 });
 
 test("popular section and footer use distinct responsibility-owned surfaces", async () => {
@@ -72,7 +73,6 @@ test("canonical board-game discovery keeps its richer card and catalog grid", as
     /grid-cols-2[^"\n]*sm:grid-cols-3[^"\n]*md:grid-cols-4[^"\n]*xl:grid-cols-6/,
   );
   assert.match(card, /inventory_number/);
-  assert.match(card, /BoardGamePopularity/);
+  assert.match(card, /BoardGameRatingMetadata/);
   assert.match(card, /aspect-square/);
 });
-

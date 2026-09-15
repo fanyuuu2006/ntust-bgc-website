@@ -18,7 +18,7 @@ test("derived board-game statistics count only completed borrowing states", asyn
       source,
       /where borrowing\.status\s+in\s*\(\s*'borrowed'\s*,\s*'returned'\s*\)/i,
     );
-    assert.match(source, /coalesce\(statistics\.completed_borrow_count, 0\)/i);
+    assert.match(source, /coalesce\((?:statistics|borrowing)\.completed_borrow_count, 0\)/i);
     assert.doesNotMatch(
       source.match(/count\(\*\)[^;]+statistics\.board_game_id/is)?.[0] ?? "",
       /'pending'|'approved'|'rejected'|'cancelled'/,
@@ -38,8 +38,8 @@ test("popular ordering is database-owned, deterministic, and precedes pagination
     "src/repositories/board-game-statistics.repository.ts",
   );
 
-  const popularityOrder = repository.indexOf('.order("completed_borrow_count"');
-  const tieOrder = repository.indexOf('.order("inventory_number"');
+  const popularityOrder = repository.indexOf('.order("popularity_score"');
+  const tieOrder = repository.indexOf('.order("board_game_id"');
   const pagination = repository.indexOf(".range(from, to)");
 
   assert.ok(popularityOrder >= 0);
@@ -47,6 +47,7 @@ test("popular ordering is database-owned, deterministic, and precedes pagination
   assert.ok(pagination > tieOrder);
   assert.match(repository, /ascending: false/);
   assert.match(repository, /findPopular/);
+  assert.match(repository, /board_game_popularity_statistics/);
   assert.doesNotMatch(repository, /\.sort\(/);
 });
 
@@ -58,6 +59,7 @@ test("public discovery defaults to popular while retaining every established sor
   ]);
 
   assert.match(constants, /key: "popular"[\s\S]*label: "熱門程度"/);
+  assert.match(constants, /key: "rating:desc"[\s\S]*label: "評分最高"/);
   assert.ok(constants.indexOf('key: "popular"') < constants.indexOf('key: "created_at:desc"'));
   for (const key of [
     "created_at:desc",
@@ -67,6 +69,7 @@ test("public discovery defaults to popular while retaining every established sor
     "inventory_number:asc",
     "inventory_number:desc",
     "updated_at:desc",
+    "rating:desc",
   ]) {
     assert.match(constants, new RegExp(`key: "${key}"`));
   }
@@ -77,24 +80,23 @@ test("public discovery defaults to popular while retaining every established sor
   assert.match(types, /stats: BoardGameStats/);
 });
 
-test("cards consume the statistics read model without querying borrowings", async () => {
-  const [card, grid, popularity] = await Promise.all([
+test("cards consume rating statistics without querying reviews or borrowings", async () => {
+  const [card, grid, rating] = await Promise.all([
     readSource("src/components/(public)/board-games/BoardGameCard.tsx"),
     readSource("src/components/(public)/board-games/BoardGameGrid.tsx"),
     readSource(
-      "src/components/(public)/board-games/BoardGamePopularity.tsx",
+      "src/components/(public)/board-games/BoardGameRatingMetadata.tsx",
     ),
   ]);
 
-  assert.match(card, /<BoardGamePopularity stats=\{boardGame\.stats\}/);
-  assert.match(popularity, /stats\.completedBorrowCount/);
-  assert.match(popularity, /熱門度/);
-  assert.match(popularity, /\{completedBorrowCount\} 次借用/);
+  assert.match(card, /<BoardGameRatingMetadata stats=\{boardGame\.stats\}/);
+  assert.match(rating, /stats\.averageRating/);
+  assert.match(rating, /stats\.ratingCount/);
   assert.doesNotMatch(
-    card + grid + popularity,
+    card + grid + rating,
     /apiClient|fetch\(|from "@\/repositories\/|Repository\.|Service\./,
   );
-  assert.doesNotMatch(card + popularity, /Flame|progress|rating|stars/i);
+  assert.doesNotMatch(card + rating, /熱門度|completedBorrowCount|popularityScore/);
 });
 
 test("homepage has a clean reusable top-N popularity contract without duplicated SQL", async () => {

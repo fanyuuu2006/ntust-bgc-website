@@ -70,6 +70,7 @@ test("popular games preview consumes the reusable top-six service contract", asy
     preview,
     /BoardGamePopularity|completedBorrowCount|inventory_number|description|fetch\(/,
   );
+  assert.match(preview, /BoardGameRatingMetadata/);
 });
 
 test("homepage keeps hero immediate and streams isolated server sections", async () => {

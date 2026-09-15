@@ -1,6 +1,6 @@
 import "server-only";
 import type { UserBorrowingListItem } from "./board-games.types";
-import { cachePublicData, invalidatePublicData } from "@/libs/cache/public-data";
+import { cachePublicData, invalidatePublicData, invalidatePublicDataSafely } from "@/libs/cache/public-data";
 
 import {
   boardGameBorrowingsRepository,
@@ -53,6 +53,7 @@ import {
   DuplicateBoardGameLocationNameError,
   BoardGameLocationInUseError,
   BoardGameHasOpenBorrowingError,
+  BoardGameHasReviewsError,
   BoardGameNotAvailableForBorrowingError,
   BoardGameBorrowingConflictError,
   BorrowingStatusTransitionError,
@@ -118,6 +119,18 @@ function rethrowBorrowingApprovalConflict(error: unknown): never {
     throw new BoardGameHasOpenBorrowingError();
   }
 
+  throw error;
+}
+
+function rethrowBoardGameDeleteConflict(error: unknown): never {
+  const databaseError = getRepositoryDatabaseError(error);
+  if (
+    databaseError?.code === "23503" &&
+    (databaseError.constraint === "board_game_reviews_board_game_id_fkey" ||
+      databaseError.message?.includes('"board_game_reviews_board_game_id_fkey"'))
+  ) {
+    throw new BoardGameHasReviewsError();
+  }
   throw error;
 }
 
@@ -441,7 +454,7 @@ export const boardGamesService = {
       throw new BoardGameHasOpenBorrowingError();
     }
 
-    await boardGamesRepository.deleteById(id);
+    await boardGamesRepository.deleteById(id).catch(rethrowBoardGameDeleteConflict);
     invalidatePublicData("popularGames");
   },
 
@@ -757,7 +770,9 @@ export const boardGamesService = {
     }
 
     try {
-      return await boardGameBorrowingsRepository.checkout(borrowingId, dueAt);
+      const checkedOut = await boardGameBorrowingsRepository.checkout(borrowingId, dueAt);
+      invalidatePublicDataSafely("popularGames");
+      return checkedOut;
     } catch (error) {
       return rethrowBorrowingTransactionError(error);
     }
@@ -774,7 +789,10 @@ export const boardGamesService = {
     }
 
     try {
-      return await boardGameBorrowingsRepository.returnBorrowing(borrowingId);
+      const returned = await boardGameBorrowingsRepository.returnBorrowing(borrowingId);
+      // completed count 不變，但首頁卡片的桌遊可借狀態會由 borrowed 變回 available。
+      invalidatePublicDataSafely("popularGames");
+      return returned;
     } catch (error) {
       return rethrowBorrowingTransactionError(error);
     }

@@ -109,6 +109,13 @@ export default function PrivacyPage() {
           <p>遇到問題時，可提供錯誤追蹤碼協助查詢，不需提供密碼或驗證連結。如發生依法應通知的個資事故，將依適用法令處理。</p>
         </section>
 
+        <section id="reviews" aria-labelledby="reviews-title" className="scroll-mt-24 space-y-3">
+          <h2 id="reviews-title">桌遊評分與評論</h2>
+          <p>使用者主動提交的桌遊評分與文字評論會公開顯示，並連同公開個人頁面所使用的顯示名稱、頭像與公開身份呈現。評分統計只公開平均分數及評分、文字評論數量。</p>
+          <p>帳號註銷後，為維持公開討論與評分統計的完整性，既有評分與評論可能繼續保留；作者會改以「已註銷使用者」呈現，不再顯示原名稱或頭像。借用明細、簽到明細、聯絡資料與學籍資料不會因評論而公開。</p>
+          <p>評論編輯與刪除功能將隨評論投稿功能提供；在投稿功能上線前本站只提供既有公開內容的讀取。如需處理公開內容或個人資料，可依本政策的聯絡方式提出。</p>
+        </section>
+
         <section id="updates" aria-labelledby="updates-title" className="scroll-mt-24 space-y-3">
           <h2 id="updates-title">12. 政策更新</h2>
           <p>我們會隨實際功能、資料處理方式或法規調整本政策，並於此頁標示最後更新日期。服務的使用規範另見使用條款。</p>

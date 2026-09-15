@@ -3,14 +3,7 @@ import { z } from "zod";
 import { publicIdentitiesRepository } from "@/repositories/public-identities.repository";
 import type { PublicUserIdentity, PublicProfile } from "@/types/public-user";
 import { publicProfileSummaryService } from "@/services/profile/public-profile-summary.service";
-
-function publicAvatar(value: string | null): string | null {
-  if (!value) return null;
-  try {
-    const url = new URL(value);
-    return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password ? value : null;
-  } catch { return null; }
-}
+import { toPublicUserIdentity } from "@/services/users/public-identity";
 
 export const publicIdentityService = {
   /**
@@ -22,7 +15,7 @@ export const publicIdentityService = {
     if (!parsed.success) return null;
     const source = await publicIdentitiesRepository.findById(parsed.data);
     if (!source) return null;
-    const identity = toIdentity(source);
+    const identity = toPublicUserIdentity(source);
     if (source.closed_at) return { identity, identityBadges: [], clubFootprint: null };
     const summary = await publicProfileSummaryService.getSummary(source.id);
     return { identity, ...summary };
@@ -37,10 +30,6 @@ export const publicIdentityService = {
     if (!parsed.success) return null;
     const source = await publicIdentitiesRepository.findById(parsed.data);
     if (!source) return null;
-    return toIdentity(source);
+    return toPublicUserIdentity(source);
   },
 };
-
-function toIdentity(source: PublicUserIdentity & { closed_at: string | null }): PublicUserIdentity {
-  return { id: source.id, name: source.closed_at ? "已註銷使用者" : source.name, avatar: source.closed_at ? null : publicAvatar(source.avatar) };
-}

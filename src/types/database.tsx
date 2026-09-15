@@ -229,6 +229,27 @@ export type BoardGame = {
   inventory_number: number;
 };
 
+export type BoardGameReview = {
+  id: UUID;
+  board_game_id: UUID;
+  user_id: UUID;
+  rating: number;
+  content: string | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
+/** 熱門桌遊 read model；分數只供伺服器排序，不直接顯示給使用者。 */
+export type BoardGamePopularityStatistics = {
+  board_game_id: UUID;
+  completed_borrow_count: number;
+  average_rating: number | null;
+  rating_count: number;
+  review_count: number;
+  popularity_score: number;
+  bayesian_rating: number | null;
+};
+
 /* =========================================================
  * Board Game Borrowings
  * ========================================================= */

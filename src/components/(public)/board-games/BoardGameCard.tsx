@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { BoardGameImage } from "@/components/BoardGameImage";
-import { BoardGamePopularity } from "@/components/(public)/board-games/BoardGamePopularity";
+import { BoardGameRatingMetadata } from "@/components/(public)/board-games/BoardGameRatingMetadata";
 import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGameStatusBadge";
 import type { BoardGameDiscoveryItem } from "@/services/board-games/board-games.types";
 
@@ -54,7 +54,7 @@ export function BoardGameCard({ boardGame }: BoardGameCardProps) {
           </span>
         </div>
 
-        <BoardGamePopularity stats={boardGame.stats} className="mt-2" />
+        <BoardGameRatingMetadata stats={boardGame.stats} className="mt-2" />
 
         <span className="mt-auto inline-flex items-center gap-1 pt-3 text-sm font-semibold text-(--interactive-primary)">
           查看詳情

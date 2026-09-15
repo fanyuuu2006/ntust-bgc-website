@@ -35,22 +35,21 @@ async function loadCommonJsModule(path) {
   return runtimeModule.exports;
 }
 
-test("board-game cards present positive borrowing history as a semantic popularity signal", async () => {
-  const [card, popularity] = await Promise.all([
+test("board-game cards present rating metadata instead of borrowing as popularity", async () => {
+  const [card, rating] = await Promise.all([
     readSource("src/components/(public)/board-games/BoardGameCard.tsx"),
     readSource(
-      "src/components/(public)/board-games/BoardGamePopularity.tsx",
+      "src/components/(public)/board-games/BoardGameRatingMetadata.tsx",
     ),
   ]);
 
-  assert.match(card, /BoardGamePopularity/);
-  assert.match(popularity, /completedBorrowCount <= 0/);
-  assert.match(popularity, /熱門度/);
-  assert.match(popularity, /\{completedBorrowCount\} 次借用/);
-  assert.doesNotMatch(popularity, /借用 \{completedBorrowCount\} 次/);
+  assert.match(card, /BoardGameRatingMetadata/);
+  assert.match(rating, /averageRating === null|ratingCount <= 0/);
+  assert.match(rating, /RatingStars/);
+  assert.match(rating, /人評分/);
   assert.doesNotMatch(
-    card + popularity,
-    /\b(?:Star|Flame|TrendingUp)\b|%|冷門|超熱門|rating/i,
+    card + rating,
+    /熱門度|completedBorrowCount|popularityScore|次借用/,
   );
 });
 
@@ -88,7 +87,7 @@ test("board-game discovery converts only PGRST103 into an empty page with a filt
   );
 
   assert.match(repository, /isPostgrestRangeNotSatisfiable\(error\)/);
-  assert.match(repository, /select\("id", \{ count: "exact", head: true \}\)/);
+  assert.match(repository, /select\(usesRankingView \? "board_game_id" : "id", \{ count: "exact", head: true \}\)/);
   assert.match(repository, /buildPaginationResult<BoardGameDiscoveryItem>\(\s*\[\]/);
   assert.match(repository, /if \(countError\)[\s\S]*throwRepositoryError/);
   assert.doesNotMatch(repository, /if \(error\) return buildPaginationResult/);

@@ -294,13 +294,60 @@ create table public.board_game_borrowings (
     on delete no action on update no action
 );
 
+create table public.board_game_reviews (
+  id uuid constraint board_game_reviews_pkey primary key default gen_random_uuid(),
+  board_game_id uuid not null,
+  user_id uuid not null,
+  rating smallint not null,
+  content text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint board_game_reviews_board_game_id_fkey
+    foreign key (board_game_id) references public.board_games(id)
+    on delete no action on update no action,
+  constraint board_game_reviews_user_id_fkey
+    foreign key (user_id) references public.users(id)
+    on delete no action on update no action,
+  constraint board_game_reviews_user_game_key unique (board_game_id, user_id),
+  constraint board_game_reviews_rating_check check (rating between 1 and 5),
+  constraint board_game_reviews_content_check check (
+    content is null or (btrim(content) <> '' and char_length(content) <= 2000)
+  )
+);
+
+create index board_game_reviews_board_created_idx
+  on public.board_game_reviews (board_game_id, created_at desc, id desc);
+
+create view public.board_game_review_statistics
+with (security_invoker = true)
+as
+select
+  review.board_game_id,
+  avg(review.rating)::numeric as average_rating,
+  count(*)::bigint as rating_count,
+  count(*) filter (where review.content is not null)::bigint as review_count
+from public.board_game_reviews as review
+group by review.board_game_id;
+
 create view public.board_games_with_statistics
 with (security_invoker = true)
 as
 select
-  board_game.*,
-  coalesce(statistics.completed_borrow_count, 0)::bigint
-    as completed_borrow_count
+  board_game.id,
+  board_game.created_at,
+  board_game.name,
+  board_game.description,
+  board_game.image,
+  board_game.updated_at,
+  board_game.category_id,
+  board_game.location_id,
+  board_game.status,
+  board_game.inventory_number,
+  coalesce(borrowing.completed_borrow_count, 0)::bigint
+    as completed_borrow_count,
+  review.average_rating,
+  coalesce(review.rating_count, 0)::bigint as rating_count,
+  coalesce(review.review_count, 0)::bigint as review_count
 from public.board_games as board_game
 left join (
   select
@@ -309,8 +356,66 @@ left join (
   from public.board_game_borrowings as borrowing
   where borrowing.status in ('borrowed', 'returned')
   group by borrowing.board_game_id
-) as statistics
-  on statistics.board_game_id = board_game.id;
+) as borrowing
+  on borrowing.board_game_id = board_game.id
+left join public.board_game_review_statistics as review
+  on review.board_game_id = board_game.id;
+
+-- Phase 3J-D：固定飽和參數讓分數不受目前目錄最大值或篩選結果影響。
+create view public.board_game_popularity_statistics
+with (security_invoker = true)
+as
+with
+borrowing_statistics as (
+  select borrowing.board_game_id, count(*)::bigint as completed_borrow_count
+  from public.board_game_borrowings as borrowing
+  where borrowing.status in ('borrowed', 'returned')
+  group by borrowing.board_game_id
+),
+rating_totals as (
+  select (coalesce(sum(review.rating), 0)::numeric + 20::numeric * 3.5::numeric)
+    / (count(*)::numeric + 20::numeric) as community_mean
+  from public.board_game_reviews as review
+),
+signals as (
+  select board_game.id as board_game_id, board_game.name, board_game.description,
+    board_game.image, board_game.status, board_game.inventory_number,
+    board_game.category_id, board_game.location_id,
+    coalesce(borrowing.completed_borrow_count, 0)::bigint as completed_borrow_count,
+    review.average_rating, coalesce(review.rating_count, 0)::bigint as rating_count,
+    coalesce(review.review_count, 0)::bigint as review_count, totals.community_mean
+  from public.board_games as board_game
+  left join borrowing_statistics as borrowing on borrowing.board_game_id = board_game.id
+  left join public.board_game_review_statistics as review on review.board_game_id = board_game.id
+  cross join rating_totals as totals
+),
+components as (
+  select signals.*,
+    least(1::double precision, greatest(0::double precision,
+      ln(1::double precision + completed_borrow_count::double precision) / ln(21::double precision))) as borrowing_heat,
+    least(1::double precision, greatest(0::double precision,
+      ln(1::double precision + rating_count::double precision) / ln(11::double precision))) as rating_participation,
+    case when rating_count = 0 then null::numeric else
+      (rating_count::numeric * average_rating + 5::numeric * community_mean) / (rating_count::numeric + 5::numeric)
+    end as bayesian_rating
+  from signals
+),
+scored as (
+  select components.*,
+    case when rating_count = 0 then 0::double precision else
+      least(1::double precision, greatest(0::double precision,
+        ((bayesian_rating - 1::numeric) / 4::numeric)::double precision))
+    end as rating_quality
+  from components
+)
+select board_game_id, name, description, image, status, inventory_number,
+  category_id, location_id, completed_borrow_count, average_rating, rating_count,
+  review_count,
+  0.50::double precision * borrowing_heat
+    + 0.35::double precision * rating_quality
+    + 0.15::double precision * rating_participation as popularity_score,
+  bayesian_rating
+from scored;
 
 create table public.event_attendances (
   id bigint generated by default as identity constraint event_attendances_pkey primary key,
@@ -986,6 +1091,10 @@ create trigger update_board_games_updated_at
 before update on public.board_games
 for each row execute function public.update_updated_at_column();
 
+create trigger update_board_game_reviews_updated_at
+before update on public.board_game_reviews
+for each row execute function public.update_updated_at_column();
+
 create trigger update_announcements_updated_at
 before update on public.announcements
 for each row execute function public.update_updated_at_column();
@@ -1051,6 +1160,17 @@ revoke all privileges on table public.board_games_with_statistics
   from public, anon, authenticated;
 grant select on table public.board_games_with_statistics to service_role;
 
+revoke all privileges on table public.board_game_reviews
+  from public, anon, authenticated;
+grant select, insert, update, delete on table public.board_game_reviews
+  to service_role;
+revoke all privileges on table public.board_game_review_statistics
+  from public, anon, authenticated;
+grant select on table public.board_game_review_statistics to service_role;
+revoke all privileges on table public.board_game_popularity_statistics
+  from public, anon, authenticated;
+grant select on table public.board_game_popularity_statistics to service_role;
+
 grant execute on function public.update_updated_at_column()
   to public, anon, authenticated, service_role;
 grant execute on function public.set_updated_at()
@@ -1063,6 +1183,7 @@ alter table public.board_game_borrowings enable row level security;
 alter table public.board_game_categories enable row level security;
 alter table public.board_game_locations enable row level security;
 alter table public.board_games enable row level security;
+alter table public.board_game_reviews enable row level security;
 alter table public.event_attendances enable row level security;
 alter table public.events enable row level security;
 alter table public.email_verification_tokens enable row level security;
