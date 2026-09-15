@@ -1,6 +1,6 @@
 # Reviews & Ratings domain contract
 
-Phase 3J-A 建立資料與 Server domain foundation；Phase 3J-B 在桌遊詳細頁加入公開評分摘要與文字評論 SSR 讀取。尚未提供 Review mutation API 或投稿 UI，也未套用遠端 migration。
+Phase 3J-A 建立資料與 Server domain foundation；Phase 3J-B 在桌遊詳細頁加入公開評分摘要與文字評論 SSR 讀取；Phase 3J-C 提供已驗證使用者的作者評分操作。`202609150001_add_board_game_reviews.sql` 已套用遠端並驗證。
 
 ## Product contract
 
@@ -25,3 +25,13 @@ board_game_review_statistics 依 board_game_id 回傳 average_rating、rating_co
 公開上線前應窄幅更新 Privacy／Terms，說明評分與評論是公開內容、使用既有公開身份、註銷後可能為維持內容與 aggregate 完整性而保留，以及帳號使用中可自行編輯／刪除、其他移除請求可循正式聯絡方式提出。不得把私人 Profile、社員原始紀錄、借用或簽到明細描述為公開。
 
 Moderation資格與稽核、分散式 anti-spam、額外排序索引、Replies／Reactions 均延後；Production Session release closure 仍是獨立工作。
+
+## Author CRUD (3J-C)
+
+已登入且完成 Email 驗證的網站使用者可對每款桌遊建立一筆評分，文字評論選填；不需要 Membership、Borrowing 或 Officer 資格。建立使用資料庫 `UNIQUE(board_game_id,user_id)` 處理並發，重複送出安全回 409。作者可一次替換自己的 rating/content，或確認後刪除整筆評分；更新與刪除由 Repository 在寫入 predicate 同時限定桌遊 ID 和 server session user ID，不接受 body 傳入作者 ID。Rating-only 仍是已評分狀態，計入平均值和評分人數，不出現在文字評論列表。
+
+- `POST /api/board-games/[id]/reviews`：建立；成功 201。
+- `PATCH /api/board-games/[id]/reviews/me`：完整替換自己的 rating/content；成功 200，不會 upsert。
+- `DELETE /api/board-games/[id]/reviews/me`：刪除自己的評分及文字；成功 200。
+
+以上 route 都使用 `authorizeVerifiedRequest()`；匿名 401、未驗證 403、輸入錯誤 400、缺少桌遊或作者評分 404、重複建立 409。意外 Repository／transport 失敗沿用 Error ID；不重試寫入。Mutation 回應只包含 UI 需要的 rating/content 或刪除狀態。成功後以 `router.refresh()` 重新取 SSR 的 aggregate、文字列表和作者狀態；註銷作者的公開 Review 仍保留並使用墓碑身份。尚未提供 Admin moderation。

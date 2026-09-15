@@ -17,6 +17,8 @@ export const createReviewSchema = z.object({
   rating,
   content: contentValue.optional().transform(normalizeContent),
 }).strict();
+/** 作者編輯會一次取代評分與文字，避免 PATCH 遺漏評分時沿用舊值。 */
+export const replaceReviewSchema = createReviewSchema;
 export const updateReviewSchema = z.object({
   rating: rating.optional(),
   content: contentValue.optional(),

@@ -6,7 +6,7 @@ import { boardGameReviewsRepository } from "@/repositories/board-game-reviews.re
 import { boardGamesRepository } from "@/repositories/board-games.repository";
 import { BoardNotFoundError } from "@/services/board-games/board-games.errors";
 import { toPublicUserIdentity } from "@/services/users/public-identity";
-import { createReviewSchema, listReviewsSchema, updateReviewSchema } from "./reviews.schema";
+import { createReviewSchema, listReviewsSchema, replaceReviewSchema } from "./reviews.schema";
 import { DuplicateReviewError, ReviewNotFoundError } from "./reviews.errors";
 import type { BoardGameReviewAggregate, PublicBoardGameReview, PublicBoardGameReviewsPage, ReviewRating } from "./reviews.types";
 
@@ -50,12 +50,14 @@ export const reviewsService = {
   create: async (userId: string, boardGameId: unknown, input: unknown) => {
     const id = await requireBoardGame(boardGameId);
     const payload = createReviewSchema.parse(input);
-    return boardGameReviewsRepository.create(id, userId, payload).catch(rethrowCreateError);
+    const created = await boardGameReviewsRepository.create(id, userId, payload).catch(rethrowCreateError);
+    return { rating: created.rating as ReviewRating, content: created.content };
   },
 
   findOwn: async (userId: string, boardGameId: unknown) => {
     const id = z.uuid().parse(boardGameId);
-    return boardGameReviewsRepository.findByBoardGameAndUser(id, userId);
+    const review = await boardGameReviewsRepository.findByBoardGameAndUser(id, userId);
+    return review ? { rating: review.rating as ReviewRating, content: review.content } : null;
   },
 
   listPublic: async (boardGameId: unknown, input: unknown = {}): Promise<PublicBoardGameReviewsPage> => {
@@ -77,9 +79,9 @@ export const reviewsService = {
 
   updateOwn: async (userId: string, boardGameId: unknown, input: unknown) => {
     const id = z.uuid().parse(boardGameId);
-    const updated = await boardGameReviewsRepository.updateOwn(id, userId, updateReviewSchema.parse(input));
+    const updated = await boardGameReviewsRepository.updateOwn(id, userId, replaceReviewSchema.parse(input));
     if (!updated) throw new ReviewNotFoundError();
-    return updated;
+    return { rating: updated.rating as ReviewRating, content: updated.content };
   },
 
   deleteOwn: async (userId: string, boardGameId: unknown): Promise<void> => {

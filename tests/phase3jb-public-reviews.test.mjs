@@ -88,7 +88,10 @@ test("review presentation distinguishes no ratings from rating-only activity", (
   assert.match(empty, /目前還沒有文字評論/);
   assert.doesNotMatch(empty, /0\.0 \/ 5/);
   const ratingOnly = renderToStaticMarkup(createElement(BoardGameReviews, { ...base, aggregate: { averageRating: 4.5, ratingCount: 6, reviewCount: 0 } }));
-  assert.match(ratingOnly, /4\.5 \/ 5/);
+  assert.match(ratingOnly, />4\.5</);
+  assert.match(ratingOnly, /aria-label="平均評分 4\.5，滿分 5 分"/);
+  assert.match(ratingOnly, /style="width:50%"/);
+  assert.doesNotMatch(ratingOnly, /4\.5 \/ 5/);
   assert.match(ratingOnly, /6 人評分/);
   assert.match(ratingOnly, /目前還沒有文字評論/);
 });
@@ -102,7 +105,7 @@ test("public detail keeps canonical metadata and noindexes review variants", asy
   assert.match(page, /reviewQuery\.page > 1 \|\| reviewQuery\.sort !== "newest"/);
   assert.doesNotMatch(page, /hasReviewQueryVariant/);
   assert.match(page, /robots: \{ index: false, follow: true \}/);
-  assert.doesNotMatch(page, /findOwn/);
+  assert.match(page, /user\.email_verified_at \? reviewsService\.findOwn\(user\.id, boardGame\.id\)/);
 });
 
 test("review metadata follows normalized query semantics", async () => {

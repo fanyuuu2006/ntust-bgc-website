@@ -8,6 +8,7 @@ import { BoardGameBorrowingPanel } from "@/components/(public)/board-games/Board
 import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGameStatusBadge";
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { BoardGameReviews } from "@/components/(public)/board-games/BoardGameReviews";
+import { ReviewAuthorAction } from "@/components/(public)/board-games/ReviewAuthorAction";
 import { ButtonLink } from "@/components/ui/Button";
 import {
   createMetadataDescription,
@@ -84,15 +85,16 @@ async function BoardGameDetailPage({
   }
 
   const user = viewer.status === "resolved" ? viewer.user : null;
-  const [currentMembership, existingBorrowing] = user
+  const [currentMembership, existingBorrowing, ownReview] = user
     ? await Promise.all([
         membershipService.getCurrentMembershipByUserId(user.id),
         boardGamesService.getOpenBorrowingForUserAndBoardGame(
           user.id,
           boardGame.id,
         ),
+        user.email_verified_at ? reviewsService.findOwn(user.id, boardGame.id) : Promise.resolve(null),
       ])
-    : [null, null];
+    : [null, null, null];
 
   return (
     <section className="py-8">
@@ -190,6 +192,7 @@ async function BoardGameDetailPage({
             aggregate={reviewAggregate}
             reviews={reviews}
             sort={reviewQuery.sort}
+            authorAction={<ReviewAuthorAction boardGameId={boardGame.id} ownReview={ownReview} eligibility={viewer.status === "unavailable" ? "unavailable" : !user ? "anonymous" : !user.email_verified_at ? "unverified" : "verified"} />}
           />
         </div>
       </div>
