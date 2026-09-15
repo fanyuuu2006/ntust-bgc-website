@@ -1,6 +1,6 @@
 # Reviews & Ratings domain contract
 
-Phase 3J-A 建立資料與 Server domain foundation；Phase 3J-B 在桌遊詳細頁加入公開評分摘要與文字評論 SSR 讀取；Phase 3J-C 提供已驗證使用者的作者評分操作。`202609150001_add_board_game_reviews.sql` 已套用遠端並驗證。
+Phase 3J-A 建立資料與 Server domain foundation；Phase 3J-B 在桌遊詳細頁加入公開評分摘要與 Review SSR 讀取；Phase 3J-C 提供已驗證使用者的作者評分操作。`202609150001_add_board_game_reviews.sql` 已套用遠端並驗證。
 
 ## Product contract
 
@@ -16,7 +16,7 @@ PublicBoardGameReview 只有 id、rating、content、createdAt、updatedAt 與 P
 
 ## Aggregate
 
-board_game_review_statistics 依 board_game_id 回傳 average_rating、rating_count 及 review_count。rating-only row 會進平均及 rating_count；只有 content 非 null 才進 review_count。公開桌遊清單的兩個 read model 都帶入 average_rating 與 rating_count，讓卡片在任何排序下顯示相同的評分摘要；人氣分數與借用次數只用於資料庫排序，不作為卡片指標。
+board_game_review_statistics 依 board_game_id 回傳 average_rating、rating_count 及 review_count。rating-only row 會進平均及 rating_count；只有 content 非 null 才進 review_count。公開 Review list 會列出所有評分，rating-only 項目保留作者、星等與日期，只省略文字段落；列表 total 與 DB 分頁因此使用所有 Review rows，不以 review_count 代表列表數量。公開桌遊清單的兩個 read model 都帶入 average_rating 與 rating_count，讓卡片在任何排序下顯示相同的評分摘要；人氣分數與借用次數只用於資料庫排序，不作為卡片指標。
 
 ## Launch requirements deferred to 3J-B/3J-C
 
@@ -28,7 +28,7 @@ Moderation資格與稽核、分散式 anti-spam、額外排序索引、Replies�
 
 ## Author CRUD (3J-C)
 
-已登入且完成 Email 驗證的網站使用者可對每款桌遊建立一筆評分，文字評論選填；不需要 Membership、Borrowing 或 Officer 資格。建立使用資料庫 `UNIQUE(board_game_id,user_id)` 處理並發，重複送出安全回 409。作者可一次替換自己的 rating/content，或確認後刪除整筆評分；更新與刪除由 Repository 在寫入 predicate 同時限定桌遊 ID 和 server session user ID，不接受 body 傳入作者 ID。Rating-only 仍是已評分狀態，計入平均值和評分人數，不出現在文字評論列表。
+已登入且完成 Email 驗證的網站使用者可對每款桌遊建立一筆評分，文字評論選填；不需要 Membership、Borrowing 或 Officer 資格。建立使用資料庫 `UNIQUE(board_game_id,user_id)` 處理並發，重複送出安全回 409。作者可一次替換自己的 rating/content，或確認後刪除整筆評分；更新與刪除由 Repository 在寫入 predicate 同時限定桌遊 ID 和 server session user ID，不接受 body 傳入作者 ID。Rating-only 仍是完整的公開 Review：計入平均值與評分人數，也會出現在公開列表，只省略文字段落。
 
 - `POST /api/board-games/[id]/reviews`：建立；成功 201。
 - `PATCH /api/board-games/[id]/reviews/me`：完整替換自己的 rating/content；成功 200，不會 upsert。

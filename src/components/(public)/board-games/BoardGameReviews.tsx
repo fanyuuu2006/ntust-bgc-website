@@ -46,7 +46,7 @@ export function BoardGameReviews({ boardGameId, aggregate, reviews, sort, author
             </div>
           )}
         </div>
-        {aggregate.reviewCount > 1 ? (
+        {reviews.total > 1 ? (
           <form action={basePath} method="get" className="flex min-h-11 min-w-0 flex-wrap items-center gap-2">
             <label htmlFor="review-sort" className="shrink-0 text-sm text-(--text-muted)">排序</label>
             <select id="review-sort" name="reviewSort" defaultValue={sort} className="min-h-10 min-w-0 rounded-md border border-(--border-default) bg-(--surface-default) px-3 text-sm">
@@ -59,7 +59,7 @@ export function BoardGameReviews({ boardGameId, aggregate, reviews, sort, author
 
       {authorAction}
 
-      {reviews.total === 0 ? <p className="mt-6 border-y border-(--border-muted) py-5 text-sm text-(--text-muted)">目前還沒有文字評論</p> : (
+      {reviews.total === 0 ? <p className="mt-6 border-y border-(--border-muted) py-5 text-sm text-(--text-muted)">目前還沒有評分</p> : (
         <div className="mt-6 divide-y divide-(--border-muted) border-y border-(--border-muted)">
           {reviews.data.map((review) => (
             <article key={review.id} className="min-w-0 py-5 first:pt-4 last:pb-4">
@@ -72,7 +72,9 @@ export function BoardGameReviews({ boardGameId, aggregate, reviews, sort, author
                   {wasMeaningfullyEdited(review.createdAt, review.updatedAt) ? <span>已編輯</span> : null}
                 </div>
               </header>
-              <p className="mt-3 max-w-3xl whitespace-pre-wrap wrap-anywhere text-sm leading-6 text-(--text-secondary)">{review.content}</p>
+              {review.content === null ? null : (
+                <p className="mt-3 max-w-3xl whitespace-pre-wrap wrap-anywhere text-sm leading-6 text-(--text-secondary)">{review.content}</p>
+              )}
             </article>
           ))}
         </div>

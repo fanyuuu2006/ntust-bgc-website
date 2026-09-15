@@ -8,27 +8,30 @@ import { load } from "./helpers/load-app-module.mjs";
 const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 
-test("public repository paginates written reviews before sorting and counting", async () => {
+test("public repository paginates every review before sorting and counting", async () => {
   const calls = [];
-  const rows = Array.from({ length: 8 }, (_, index) => ({ id: `r${index}`, content: `review ${index}` }));
+  const rows = Array.from({ length: 15 }, (_, index) => ({
+    id: `r${index}`,
+    content: index < 10 ? `review ${index}` : null,
+  }));
   const builder = {
     select(projection, options) { calls.push(["select", projection, options]); return this; },
     eq(column, value) { calls.push(["eq", column, value]); return this; },
     not(column, operator, value) { calls.push(["not", column, operator, value]); return this; },
     order(column, options) { calls.push(["order", column, options]); return this; },
-    range(from, to) { calls.push(["range", from, to]); return Promise.resolve({ data: rows.slice(from, to + 1), count: 8, error: null }); },
+    range(from, to) { calls.push(["range", from, to]); return Promise.resolve({ data: rows.slice(from, to + 1), count: 15, error: null }); },
   };
   const { boardGameReviewsRepository } = load("src/repositories/board-game-reviews.repository.ts", {
     "@/libs/supabase/server": { supabase: { from: (table) => { assert.equal(table, "board_game_reviews"); return builder; } } },
   });
   const result = await boardGameReviewsRepository.findPublicPage("game", { page: 2, pageSize: 5, sort: "highest" });
-  assert.deepEqual(calls.find((call) => call[0] === "not"), ["not", "content", "is", null]);
+  assert.equal(calls.some((call) => call[0] === "not"), false);
   assert.deepEqual(calls.filter((call) => call[0] === "order").map((call) => call.slice(1)), [
     ["rating", { ascending: false }], ["created_at", { ascending: false }], ["id", { ascending: false }],
   ]);
   assert.deepEqual(calls.find((call) => call[0] === "range"), ["range", 5, 9]);
-  assert.equal(result.total, 8);
-  assert.equal(result.totalPages, 2);
+  assert.equal(result.total, 15);
+  assert.equal(result.totalPages, 3);
 
   for (const [sort, expected] of [
     ["newest", [["created_at", { ascending: false }], ["id", { ascending: false }]]],
@@ -38,14 +41,14 @@ test("public repository paginates written reviews before sorting and counting", 
     calls.length = 0;
     await boardGameReviewsRepository.findPublicPage("game", { page: 1, pageSize: 5, sort });
     assert.deepEqual(calls.filter((call) => call[0] === "order").map((call) => call.slice(1)), expected);
-    assert.deepEqual(calls.find((call) => call[0] === "not"), ["not", "content", "is", null]);
+    assert.equal(calls.some((call) => call[0] === "not"), false);
   }
 });
 
 test("rating count and written review count remain separate", async () => {
   const source = await read("src/repositories/board-game-reviews.repository.ts");
   const migration = await read("supabase/migrations/202609150001_add_board_game_reviews.sql");
-  assert.match(source, /\.not\("content", "is", null\)/);
+  assert.doesNotMatch(source, /\.not\("content", "is", null\)/);
   assert.match(migration, /count\(\*\)::bigint as rating_count/);
   assert.match(migration, /count\(\*\) filter \(where review\.content is not null\)::bigint as review_count/);
 });
@@ -80,20 +83,50 @@ test("review presentation renders canonical author, safe plain text, edited stat
   assert.doesNotMatch(newlyCreatedHtml, /已編輯/);
 });
 
+test("mixed public list renders rating-only entries without an empty content block", () => {
+  const { BoardGameReviews } = load("src/components/(public)/board-games/BoardGameReviews.tsx");
+  const html = renderToStaticMarkup(createElement(BoardGameReviews, {
+    boardGameId: "game-id",
+    aggregate: { averageRating: 4.5, ratingCount: 2, reviewCount: 1 },
+    sort: "newest",
+    reviews: {
+      data: [
+        { id: "rating-only", rating: 5, content: null, createdAt: "2026-09-15T00:00:00Z", updatedAt: "2026-09-15T00:00:00Z", author: { id: "closed-author", name: "已註銷使用者", avatar: null } },
+        { id: "written", rating: 4, content: "值得再玩一次", createdAt: "2026-09-14T00:00:00Z", updatedAt: "2026-09-14T00:00:00Z", author: { id: "author", name: "作者", avatar: null } },
+      ],
+      page: 1, pageSize: 10, total: 2, totalPages: 1,
+    },
+  }));
+  assert.match(html, /已註銷使用者/);
+  assert.match(html, /aria-label="評分 5 分"/);
+  assert.match(html, /值得再玩一次/);
+  assert.equal((html.match(/<article/g) ?? []).length, 2);
+  assert.equal((html.match(/<p class="mt-3/g) ?? []).length, 1);
+  assert.doesNotMatch(html, /沒有留下評論|此使用者只有評分|尚無文字內容/);
+});
+
 test("review presentation distinguishes no ratings from rating-only activity", () => {
   const { BoardGameReviews } = load("src/components/(public)/board-games/BoardGameReviews.tsx");
   const base = { boardGameId: "game", sort: "newest", reviews: { data: [], page: 1, pageSize: 10, total: 0, totalPages: 0 } };
   const empty = renderToStaticMarkup(createElement(BoardGameReviews, { ...base, aggregate: { averageRating: null, ratingCount: 0, reviewCount: 0 } }));
   assert.match(empty, /尚無評分/);
-  assert.match(empty, /目前還沒有文字評論/);
+  assert.match(empty, /目前還沒有評分/);
   assert.doesNotMatch(empty, /0\.0 \/ 5/);
-  const ratingOnly = renderToStaticMarkup(createElement(BoardGameReviews, { ...base, aggregate: { averageRating: 4.5, ratingCount: 6, reviewCount: 0 } }));
+  const ratingOnly = renderToStaticMarkup(createElement(BoardGameReviews, {
+    ...base,
+    aggregate: { averageRating: 4.5, ratingCount: 1, reviewCount: 0 },
+    reviews: {
+      data: [{ id: "rating-only", rating: 5, content: null, createdAt: "2026-09-14T00:00:00Z", updatedAt: "2026-09-14T00:00:00Z", author: { id: "author", name: "作者", avatar: null } }],
+      page: 1, pageSize: 10, total: 1, totalPages: 1,
+    },
+  }));
   assert.match(ratingOnly, />4\.5</);
   assert.match(ratingOnly, /aria-label="平均評分 4\.5，滿分 5 分"/);
   assert.match(ratingOnly, /style="width:50%"/);
   assert.doesNotMatch(ratingOnly, /4\.5 \/ 5/);
-  assert.match(ratingOnly, /6 人評分/);
-  assert.match(ratingOnly, /目前還沒有文字評論/);
+  assert.match(ratingOnly, /1 人評分/);
+  assert.match(ratingOnly, /aria-label="評分 5 分"/);
+  assert.doesNotMatch(ratingOnly, /目前還沒有評分/);
 });
 
 test("public detail keeps canonical metadata and noindexes review variants", async () => {

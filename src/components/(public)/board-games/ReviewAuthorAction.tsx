@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { EllipsisVertical } from "lucide-react";
 
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
@@ -10,6 +11,7 @@ import { Button, ButtonLink } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
+import { useOutsideDismiss } from "@/hooks/useOutsideDismiss";
 import type { ReviewRating } from "@/services/reviews/reviews.types";
 import { RatingInput } from "./RatingInput";
 import { RatingStars } from "./RatingStars";
@@ -24,12 +26,14 @@ export function ReviewAuthorAction({ boardGameId, eligibility, ownReview }: {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
   const [rating, setRating] = useState<ReviewRating | null>(ownReview?.rating ?? null);
   const [content, setContent] = useState(ownReview?.content ?? "");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const actionMenuRef = useOutsideDismiss<HTMLDivElement>(menuOpen, () => setMenuOpen(false));
 
   if (eligibility === "anonymous") {
     return <ButtonLink variant="outline" size="sm" href={`/login?returnTo=${encodeURIComponent(`/board-games/${boardGameId}#board-game-reviews`)}`} className="mt-5 min-h-11">登入後評分</ButtonLink>;
@@ -82,7 +86,7 @@ export function ReviewAuthorAction({ boardGameId, eligibility, ownReview }: {
   };
 
   return <div className="mt-5 min-w-0 space-y-3">
-    {ownReview ? <div className="flex min-w-0 flex-col gap-3 border-t border-(--border-muted) pt-4 sm:flex-row sm:items-center sm:justify-between">
+    {ownReview ? <div className="relative min-w-0 border-t border-(--border-muted) pt-4 pr-12">
       <div className="min-w-0">
         <p className="text-xs font-medium text-(--text-muted)">你的評分</p>
         <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
@@ -90,10 +94,23 @@ export function ReviewAuthorAction({ boardGameId, eligibility, ownReview }: {
           <span className="text-xs text-(--text-muted)">{ownReview.content ? "已留下文字評論" : "只有評分"}</span>
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-1 sm:shrink-0">
-        <Button variant="text" size="sm" className="min-h-11" onClick={openEditor}>編輯評分</Button>
-        <span aria-hidden="true" className="text-(--border-strong)">·</span>
-        <Button variant="text" size="sm" className="min-h-11" onClick={() => { setError(null); setConfirmingDelete(true); }}>刪除</Button>
+      <div ref={actionMenuRef} className="absolute right-0 top-3">
+        <button
+          type="button"
+          aria-label="評論操作"
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
+          className="inline-flex size-11 items-center justify-center rounded-full text-(--text-muted) transition-colors hover:bg-(--surface-muted) hover:text-(--text-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+        >
+          <EllipsisVertical aria-hidden="true" size={19} />
+        </button>
+        {menuOpen ? (
+          <div role="menu" aria-label="評論操作" className="absolute right-0 z-20 mt-1 w-32 overflow-hidden rounded-lg border border-(--border-default) bg-(--surface-default) py-1 shadow-lg">
+            <button type="button" role="menuitem" className="flex min-h-11 w-full items-center px-3 text-left text-sm hover:bg-(--surface-muted) focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-(--primary)" onClick={() => { setMenuOpen(false); openEditor(); }}>編輯評論</button>
+            <button type="button" role="menuitem" className="flex min-h-11 w-full items-center px-3 text-left text-sm text-(--status-danger) hover:bg-(--surface-muted) focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-(--primary)" onClick={() => { setMenuOpen(false); setError(null); setConfirmingDelete(true); }}>刪除評論</button>
+          </div>
+        ) : null}
       </div>
     </div> : <Button variant="outline" size="sm" className="min-h-11" onClick={openEditor}>評分這款桌遊</Button>}
     <FormFeedback error={editing ? null : error} success={success} />
