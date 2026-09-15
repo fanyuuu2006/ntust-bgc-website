@@ -6,6 +6,7 @@ import type { BoardGameReviewAggregate, PublicBoardGameReviewsPage, ReviewSort }
 import { formatDateTime } from "@/utils/date";
 import { buildQueryString } from "@/utils/url";
 import { formatAverageRating, RatingStars } from "./RatingStars";
+import { wasReviewMeaningfullyEdited } from "@/utils/review-presentation";
 
 const SORT_OPTIONS: ReadonlyArray<{ value: ReviewSort; label: string }> = [
   { value: "newest", label: "最新評論" },
@@ -14,20 +15,16 @@ const SORT_OPTIONS: ReadonlyArray<{ value: ReviewSort; label: string }> = [
   { value: "lowest", label: "評分最低" },
 ];
 
-function wasMeaningfullyEdited(createdAt: string, updatedAt: string) {
-  const difference = new Date(updatedAt).getTime() - new Date(createdAt).getTime();
-  return Number.isFinite(difference) && difference >= 1_000;
-}
-
-export function BoardGameReviews({ boardGameId, aggregate, reviews, sort, authorAction }: {
+export function BoardGameReviews({ boardGameId, aggregate, reviews, sort, authorAction, returnTo }: {
   boardGameId: string;
   aggregate: BoardGameReviewAggregate;
   reviews: PublicBoardGameReviewsPage;
   sort: ReviewSort;
   authorAction?: React.ReactNode;
+  returnTo?: string;
 }) {
   const basePath = `/board-games/${boardGameId}`;
-  const pageHref = (page: number) => `${basePath}?${buildQueryString({ reviewPage: page, reviewSort: sort === "newest" ? undefined : sort })}#board-game-reviews`;
+  const pageHref = (page: number) => `${basePath}?${buildQueryString({ reviewPage: page, reviewSort: sort === "newest" ? undefined : sort, returnTo })}#board-game-reviews`;
 
   return (
     <section className="mt-8 max-w-4xl border-t border-(--border-muted) pt-6" aria-labelledby="board-game-reviews">
@@ -48,6 +45,7 @@ export function BoardGameReviews({ boardGameId, aggregate, reviews, sort, author
         </div>
         {reviews.total > 1 ? (
           <form action={basePath} method="get" className="flex min-h-11 min-w-0 flex-wrap items-center gap-2">
+            {returnTo ? <input type="hidden" name="returnTo" value={returnTo} /> : null}
             <label htmlFor="review-sort" className="shrink-0 text-sm text-(--text-muted)">排序</label>
             <select id="review-sort" name="reviewSort" defaultValue={sort} className="min-h-10 min-w-0 rounded-md border border-(--border-default) bg-(--surface-default) px-3 text-sm">
               {SORT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
@@ -69,7 +67,7 @@ export function BoardGameReviews({ boardGameId, aggregate, reviews, sort, author
                   <RatingStars rating={review.rating} size="sm" label={`評分 ${review.rating} 分`} />
                   <span aria-hidden="true">·</span>
                   <time dateTime={review.createdAt}>{formatDateTime(review.createdAt)}</time>
-                  {wasMeaningfullyEdited(review.createdAt, review.updatedAt) ? <span>已編輯</span> : null}
+                  {wasReviewMeaningfullyEdited(review.createdAt, review.updatedAt) ? <span>已編輯</span> : null}
                 </div>
               </header>
               {review.content === null ? null : (

@@ -164,7 +164,7 @@ test('B1 reduced cold request budgets', async () => {
         publicGames: await measure(async () => { await g.listCategories(); await g.listLocations(); await g.listBoardGameDiscovery(); }),
         adminGames: await measure(async () => { await guard(); await g.listAdminBoardGamesWithCategoryAndLocation(); await g.listCategories(); await g.listLocations(); }),
         profile: await measure(async () => { await guard(); await u.getProfile(id); await g.getTotalBorrowedCount(id); await e.getAttendedCountByCurrentAcademicYear(id); await p.getClubContext(id); }),
-        register: await measure(async () => { const user = await a.register({ email: 'fixture@example.invalid', password: 'Password123!', name: 'fixture', real_name: 'fixture', phone: '0912345678' }); await v.request(user); }, 'register')
+        register: await measure(async () => { const user = await a.register({ email: 'fixture@example.invalid', password: 'Password123!', confirmPassword: 'Password123!', acceptTerms: true, name: 'fixture', real_name: 'fixture', phone: '0912345678' }); await v.request(user); }, 'register')
     };
     assert.deepEqual(measured, { home: 2, authHome: 5, publicGames: 3, adminGames: 6, profile: 10, register: 2 });
 });

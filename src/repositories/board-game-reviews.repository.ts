@@ -17,6 +17,9 @@ export type ReviewAggregateSource = {
   rating_count: number | string;
   review_count: number | string;
 };
+export type PublicProfileReviewSource = BoardGameReview & {
+  board_game: { id: string; name: string };
+};
 function ownedReviewQuery(boardGameId: string, userId: string) {
   return supabase
     .from("board_game_reviews")
@@ -58,6 +61,19 @@ export const boardGameReviewsRepository = {
     const { data, error, count } = await query;
     if (error) throwRepositoryError("取得公開桌遊評論失敗", error);
     return buildPaginationResult((data ?? []) as unknown as PublicReviewSource[], count, page, pageSize);
+  },
+
+  findPublicPageByUser: async (userId: string, options: { page: number; pageSize: number }) => {
+    const { page, pageSize, from, to } = normalizePaginationOptions({ ...options, maxPageSize: 12 });
+    const { data, error, count } = await supabase
+      .from("board_game_reviews")
+      .select(`${REVIEW_FIELDS},board_game:board_games!board_game_reviews_board_game_id_fkey(id,name)`, { count: "exact" })
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range(from, to);
+    if (error) throwRepositoryError("查詢公開個人頁評論失敗", error);
+    return buildPaginationResult((data ?? []) as unknown as PublicProfileReviewSource[], count, page, pageSize);
   },
 
   findAggregate: async (boardGameId: string): Promise<ReviewAggregateSource | null> => {

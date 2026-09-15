@@ -112,7 +112,7 @@ test("rating sort normalizes from the public URL and stays database-paginated", 
       key: "rating:desc",
       orderBy: "rating",
       orderDirection: "desc",
-      label: "評分最高",
+      label: "評價推薦",
     },
   );
 

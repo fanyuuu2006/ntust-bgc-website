@@ -84,15 +84,18 @@ export async function POST(request: Request) {
     if (error instanceof ZodError) {
       return NextResponse.json(
         {
-          message: "輸入資料格式不正確",
-          errors: z.treeifyError(error),
+          message: "請檢查輸入內容",
+          errors: z.flattenError(error).fieldErrors,
         },
         { status: 400 },
       );
     }
 
     if (error instanceof EmailAlreadyExistsError) {
-      return NextResponse.json({ message: error.message }, { status: 409 });
+      return NextResponse.json(
+        { message: error.message, errors: { email: [error.message] } },
+        { status: 409 },
+      );
     }
 
     return unexpectedErrorResponse("[POST /api/auth/register]", error, "註冊失敗，請稍後再試");

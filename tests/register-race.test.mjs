@@ -30,7 +30,7 @@ test("concurrent registration relies on atomic unique failure and emits one safe
     "@/libs/security/rate-limit": { checkRateLimit: () => ({ allowed: true }), getRequestIp: () => "fixture" },
     "@/services/email-verification/email-verification.service": { emailVerificationService: { request: async () => { deliveries++; } } },
   });
-  const request = () => new Request("https://fixture.invalid/api/auth/register", { method: "POST", body: JSON.stringify({ name: "fixture", email: "fixture@example.invalid", password: "Password123!", real_name: "fixture", phone: "0912345678", turnstileToken: "fixture" }) });
+  const request = () => new Request("https://fixture.invalid/api/auth/register", { method: "POST", body: JSON.stringify({ name: "fixture", email: "fixture@example.invalid", password: "Password123!", confirmPassword: "Password123!", acceptTerms: true, real_name: "fixture", phone: "0912345678", turnstileToken: "fixture" }) });
   const responses = await Promise.all([POST(request()), POST(request())]);
   assert.deepEqual(responses.map((r) => r.status).sort(), [201, 409]);
   const body = await responses.find((r) => r.status === 409).json();

@@ -279,6 +279,7 @@ test("board-game detail keeps core content but skips personalization when viewer
       "next/navigation": { redirect: () => { throw new Error("unexpected redirect"); } },
       "./board-game-detail": { getBoardGameDetail: async () => boardGame },
       "./review-query": { normalizeBoardGameReviewQuery: () => ({ page: 1, pageSize: 10, sort: "newest" }) },
+      "../discovery-return": { normalizeBoardGameDiscoveryReturnTo: () => "/board-games" },
     },
   );
 

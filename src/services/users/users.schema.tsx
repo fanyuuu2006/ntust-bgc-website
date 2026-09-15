@@ -20,7 +20,7 @@ export const realNameSchema = z
   .string()
   .trim()
   .min(1, { error: "請填寫真實姓名" })
-  .max(REAL_NAME_MAX_LENGTH);
+  .max(REAL_NAME_MAX_LENGTH, { error: `真實姓名不可超過 ${REAL_NAME_MAX_LENGTH} 個字` });
 
 const phoneSchema = z.string().trim().min(1, { error: "電話不可為空" });
 

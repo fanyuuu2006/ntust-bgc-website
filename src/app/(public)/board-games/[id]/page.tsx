@@ -24,6 +24,7 @@ import { buildQueryString } from "@/utils/url";
 import { redirect } from "next/navigation";
 import { getBoardGameDetail } from "./board-game-detail";
 import { normalizeBoardGameReviewQuery, type BoardGameReviewSearchParams } from "./review-query";
+import { normalizeBoardGameDiscoveryReturnTo } from "../discovery-return";
 
 type BoardGameDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -69,7 +70,13 @@ async function BoardGameDetailPage({
 }: BoardGameDetailPageProps) {
   const { id } = await params;
   const boardGame = await getBoardGameDetail(id);
-  const reviewQuery = normalizeBoardGameReviewQuery((await searchParams) ?? {});
+  const rawSearchParams = (await searchParams) ?? {};
+  const reviewQuery = normalizeBoardGameReviewQuery(rawSearchParams);
+  const returnTo = normalizeBoardGameDiscoveryReturnTo(
+    Array.isArray(rawSearchParams.returnTo)
+      ? rawSearchParams.returnTo[0]
+      : rawSearchParams.returnTo,
+  );
 
   const [viewer, reviewAggregate, reviews] = await Promise.all([
     resolvePublicViewer(),
@@ -81,6 +88,7 @@ async function BoardGameDetailPage({
     redirect(`/board-games/${boardGame.id}?${buildQueryString({
       reviewPage: reviews.totalPages,
       reviewSort: reviewQuery.sort === "newest" ? undefined : reviewQuery.sort,
+      returnTo: returnTo === "/board-games" ? undefined : returnTo,
     })}`);
   }
 
@@ -101,7 +109,7 @@ async function BoardGameDetailPage({
       <div className="container">
         <div className="mx-auto max-w-6xl">
           <ButtonLink
-            href="/board-games"
+            href={returnTo}
             variant="text"
             size="sm"
             className="px-0"
@@ -192,6 +200,7 @@ async function BoardGameDetailPage({
             aggregate={reviewAggregate}
             reviews={reviews}
             sort={reviewQuery.sort}
+            returnTo={returnTo === "/board-games" ? undefined : returnTo}
             authorAction={<ReviewAuthorAction boardGameId={boardGame.id} ownReview={ownReview} eligibility={viewer.status === "unavailable" ? "unavailable" : !user ? "anonymous" : !user.email_verified_at ? "unverified" : "verified"} />}
           />
         </div>

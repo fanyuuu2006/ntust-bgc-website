@@ -24,3 +24,20 @@ export type PublicBoardGameReviewsPage = Readonly<{
   total: number;
   totalPages: number;
 }>;
+
+export type PublicProfileReview = Readonly<{
+  id: string;
+  rating: ReviewRating;
+  content: string | null;
+  createdAt: string;
+  updatedAt: string;
+  boardGame: Readonly<{ id: string; name: string }>;
+}>;
+
+export type PublicProfileReviewsPage = Readonly<{
+  data: PublicProfileReview[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}>;

@@ -59,7 +59,7 @@ test("public discovery defaults to popular while retaining every established sor
   ]);
 
   assert.match(constants, /key: "popular"[\s\S]*label: "熱門程度"/);
-  assert.match(constants, /key: "rating:desc"[\s\S]*label: "評分最高"/);
+  assert.match(constants, /key: "rating:desc"[\s\S]*label: "評價推薦"/);
   assert.ok(constants.indexOf('key: "popular"') < constants.indexOf('key: "created_at:desc"'));
   for (const key of [
     "created_at:desc",

@@ -16,6 +16,7 @@ import {
   normalizePublicBoardGamesQuery,
   type PublicBoardGamesSearchParams,
 } from "./query";
+import { buildBoardGameDiscoveryPath } from "./discovery-return";
 
 const BOARD_GAMES_METADATA = {
   title: "桌遊",
@@ -51,6 +52,7 @@ async function BoardGamesPage({
   searchParams,
 }: BoardGamesPageProps) {
   const params = await searchParams;
+  const normalizedQuery = normalizePublicBoardGamesQuery(params);
   const {
     page,
     pageSize,
@@ -59,7 +61,7 @@ async function BoardGamesPage({
     categoryIds,
     locationIds,
     sortOption,
-  } = normalizePublicBoardGamesQuery(params);
+  } = normalizedQuery;
 
   const query: BoardGamesQuery = {
     search,
@@ -115,6 +117,7 @@ async function BoardGamesPage({
           <BoardGameGrid
             boardGames={boardGames.data}
             hasActiveQuery={hasActiveQuery}
+            returnTo={buildBoardGameDiscoveryPath(normalizedQuery)}
           />
         </div>
 

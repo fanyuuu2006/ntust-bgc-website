@@ -41,6 +41,9 @@ async function AdminUserDetailPage({
         description={`${user.name} 的帳號、個人資料與社團紀錄。`}
         actions={
           <div className="flex flex-wrap gap-2">
+            <ButtonLink href={`/profile/${user.id}`} variant="text">
+              {user.closed_at ? "查看匿名化公開頁" : "查看公開個人頁"}
+            </ButtonLink>
             <ButtonLink href={returnTo} variant="outline">
               返回使用者管理
             </ButtonLink>

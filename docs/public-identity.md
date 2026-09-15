@@ -51,7 +51,7 @@ PublicUserIdentity 固定 id/name/avatar。PublicProfile 另有 identityBadges�
 
 兩頁直接使用 ProfileHeroSection／ProfileIdentityBadges／ProfileClubFootprint。Hero 只要求 id/name/avatar 與 badges，details/actions slots 由私人頁自行提供真實姓名、Email、操作按鈕；公開頁不傳私人資料。Footprint title 預設「我的社團足跡」，公開傳「社團足跡」。+N、折疊與顏色沿用 canonical badge。移除 PublicProfileContent／年度職務卡，不保留平行 UI。
 
-私人 Hero 與足跡已以 fixture 比對抽取前後 HTML 相同。兩頁同一 container 與響應式 grammar；全域 container 的 important max-width 規則未變。公開空統計使用同款 0 次與「尚無社員紀錄」；註銷者完全不呈現足跡。未來真實 Reviews 可自然接在足跡後，目前無假評論區塊。
+私人 Hero 與足跡已以 fixture 比對抽取前後 HTML 相同。兩頁同一 container 與響應式 grammar；全域 container 的 important max-width 規則未變。公開空統計使用同款 0 次與「尚無社員紀錄」；註銷者完全不呈現足跡。使用中帳號的公開頁會分頁顯示其公開桌遊評分與評論；註銷者不呈現集中式評論歷史。
 
 ## SEO 與限制
 
