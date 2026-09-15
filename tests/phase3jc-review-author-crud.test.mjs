@@ -146,12 +146,14 @@ test("compact own state does not duplicate written review content", () => {
 
 test("service returns minimal own and mutation projection while ownership remains in repository", async () => {
   const calls = [];
+  const invalidations = [];
   const row = { id: "private-id", board_game_id: gameId, user_id: "author", rating: 4, content: null, created_at: "date", updated_at: "date", email: "private@example.invalid" };
   class RepositoryError extends Error {}
   class BoardNotFoundError extends Error {}
   class DuplicateReviewError extends Error {}
   class ReviewNotFoundError extends Error {}
   const { reviewsService } = load("src/services/reviews/reviews.service.ts", {
+    "@/libs/cache/public-data": { invalidatePublicDataSafely: (...keys) => invalidations.push(keys) },
     "@/repositories/shared/errors": { RepositoryError },
     "@/services/board-games/board-games.errors": { BoardNotFoundError },
     "@/services/reviews/reviews.errors": { DuplicateReviewError, ReviewNotFoundError },
@@ -173,6 +175,7 @@ test("service returns minimal own and mutation projection while ownership remain
   ]);
   assert.equal(calls[1][3].content, null);
   assert.equal(calls[2][3].rating, 5);
+  assert.deepEqual(invalidations, [["popularGames"], ["popularGames"], ["popularGames"]]);
 });
 
 test("rapid double submit starts exactly one author mutation", async () => {

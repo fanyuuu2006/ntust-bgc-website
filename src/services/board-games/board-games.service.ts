@@ -1,6 +1,6 @@
 import "server-only";
 import type { UserBorrowingListItem } from "./board-games.types";
-import { cachePublicData, invalidatePublicData } from "@/libs/cache/public-data";
+import { cachePublicData, invalidatePublicData, invalidatePublicDataSafely } from "@/libs/cache/public-data";
 
 import {
   boardGameBorrowingsRepository,
@@ -770,7 +770,9 @@ export const boardGamesService = {
     }
 
     try {
-      return await boardGameBorrowingsRepository.checkout(borrowingId, dueAt);
+      const checkedOut = await boardGameBorrowingsRepository.checkout(borrowingId, dueAt);
+      invalidatePublicDataSafely("popularGames");
+      return checkedOut;
     } catch (error) {
       return rethrowBorrowingTransactionError(error);
     }
@@ -787,7 +789,10 @@ export const boardGamesService = {
     }
 
     try {
-      return await boardGameBorrowingsRepository.returnBorrowing(borrowingId);
+      const returned = await boardGameBorrowingsRepository.returnBorrowing(borrowingId);
+      // completed count 不變，但首頁卡片的桌遊可借狀態會由 borrowed 變回 available。
+      invalidatePublicDataSafely("popularGames");
+      return returned;
     } catch (error) {
       return rethrowBorrowingTransactionError(error);
     }

@@ -32,15 +32,21 @@ export type FindManyBoardGamesWithStatsOptions = PaginationQuery &
 
 type BoardGameStatisticsRow = Omit<BoardGameDiscoveryItem, "stats"> & {
   completed_borrow_count: number | string;
+  average_rating?: number | string | null;
+  rating_count?: number | string;
+  review_count?: number | string;
 };
 
 function toBoardGameWithStats(row: BoardGameStatisticsRow): BoardGameDiscoveryItem {
-  const { completed_borrow_count, ...boardGame } = row;
+  const { completed_borrow_count, average_rating, rating_count, review_count, ...boardGame } = row;
 
   return {
     ...boardGame,
     stats: {
       completedBorrowCount: Number(completed_borrow_count),
+      averageRating: average_rating == null ? null : Number(average_rating),
+      ratingCount: rating_count == null ? 0 : Number(rating_count),
+      reviewCount: review_count == null ? 0 : Number(review_count),
     },
   };
 }
@@ -55,9 +61,12 @@ async function findManyWithStats(
   const orderBy = options.orderBy ?? "popular";
   const orderDirection = options.orderDirection ?? "desc";
 
+  const isPopularityOrder = orderBy === "popular";
   let query = supabase
-    .from("board_games_with_statistics")
-    .select("id,name,image,status,inventory_number,completed_borrow_count,category:board_game_categories(name),location:board_game_locations(name)", { count: "exact" });
+    .from(isPopularityOrder ? "board_game_popularity_statistics" : "board_games_with_statistics")
+    .select(isPopularityOrder
+      ? "id:board_game_id,name,image,status,inventory_number,completed_borrow_count,average_rating,rating_count,review_count,category:board_game_categories(name),location:board_game_locations(name)"
+      : "id,name,image,status,inventory_number,completed_borrow_count,category:board_game_categories(name),location:board_game_locations(name)", { count: "exact" });
 
   const keyword = options.search?.trim();
   if (keyword) {
@@ -82,8 +91,11 @@ async function findManyWithStats(
 
   if (orderBy === "popular") {
     query = query
+      .order("popularity_score", { ascending: false })
+      .order("rating_count", { ascending: false })
       .order("completed_borrow_count", { ascending: false })
-      .order("inventory_number", { ascending: true });
+      .order("average_rating", { ascending: false, nullsFirst: false })
+      .order("board_game_id", { ascending: true });
   } else {
     query = query
       .order(orderBy, { ascending: orderDirection === "asc" })
@@ -97,8 +109,8 @@ async function findManyWithStats(
     }
 
     let countQuery = supabase
-      .from("board_games_with_statistics")
-      .select("id", { count: "exact", head: true });
+      .from(isPopularityOrder ? "board_game_popularity_statistics" : "board_games_with_statistics")
+      .select(isPopularityOrder ? "board_game_id" : "id", { count: "exact", head: true });
 
     if (keyword) {
       const conditions = [
@@ -146,10 +158,13 @@ export const boardGameStatisticsRepository = {
   /** 熱門排序由 view 決定；關聯名稱在同一請求取得，首頁不計 pagination total。 */
   findPopular: async ({ limit = 6 }: { limit?: number } = {}): Promise<HomeBoardGameItem[]> => {
     const { data, error } = await supabase
-      .from("board_games_with_statistics")
-      .select("id,name,image,status,category:board_game_categories(name),location:board_game_locations(name)")
+      .from("board_game_popularity_statistics")
+      .select("id:board_game_id,name,image,status,category:board_game_categories(name),location:board_game_locations(name)")
+      .order("popularity_score", { ascending: false })
+      .order("rating_count", { ascending: false })
       .order("completed_borrow_count", { ascending: false })
-      .order("inventory_number", { ascending: true })
+      .order("average_rating", { ascending: false, nullsFirst: false })
+      .order("board_game_id", { ascending: true })
       .limit(Math.min(100, Math.max(1, limit)));
     if (error) throwRepositoryError("讀取首頁熱門桌遊失敗", error);
     return (data ?? []) as unknown as HomeBoardGameItem[];

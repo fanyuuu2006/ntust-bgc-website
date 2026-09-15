@@ -38,8 +38,8 @@ test("popular ordering is database-owned, deterministic, and precedes pagination
     "src/repositories/board-game-statistics.repository.ts",
   );
 
-  const popularityOrder = repository.indexOf('.order("completed_borrow_count"');
-  const tieOrder = repository.indexOf('.order("inventory_number"');
+  const popularityOrder = repository.indexOf('.order("popularity_score"');
+  const tieOrder = repository.indexOf('.order("board_game_id"');
   const pagination = repository.indexOf(".range(from, to)");
 
   assert.ok(popularityOrder >= 0);
@@ -47,6 +47,7 @@ test("popular ordering is database-owned, deterministic, and precedes pagination
   assert.ok(pagination > tieOrder);
   assert.match(repository, /ascending: false/);
   assert.match(repository, /findPopular/);
+  assert.match(repository, /board_game_popularity_statistics/);
   assert.doesNotMatch(repository, /\.sort\(/);
 });
 

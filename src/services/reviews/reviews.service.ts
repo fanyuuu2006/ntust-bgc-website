@@ -1,6 +1,7 @@
 import "server-only";
 
 import { z } from "zod";
+import { invalidatePublicDataSafely } from "@/libs/cache/public-data";
 import { RepositoryError } from "@/repositories/shared/errors";
 import { boardGameReviewsRepository } from "@/repositories/board-game-reviews.repository";
 import { boardGamesRepository } from "@/repositories/board-games.repository";
@@ -51,6 +52,7 @@ export const reviewsService = {
     const id = await requireBoardGame(boardGameId);
     const payload = createReviewSchema.parse(input);
     const created = await boardGameReviewsRepository.create(id, userId, payload).catch(rethrowCreateError);
+    invalidatePublicDataSafely("popularGames");
     return { rating: created.rating as ReviewRating, content: created.content };
   },
 
@@ -81,11 +83,13 @@ export const reviewsService = {
     const id = z.uuid().parse(boardGameId);
     const updated = await boardGameReviewsRepository.updateOwn(id, userId, replaceReviewSchema.parse(input));
     if (!updated) throw new ReviewNotFoundError();
+    invalidatePublicDataSafely("popularGames");
     return { rating: updated.rating as ReviewRating, content: updated.content };
   },
 
   deleteOwn: async (userId: string, boardGameId: unknown): Promise<void> => {
     const id = z.uuid().parse(boardGameId);
     if (!await boardGameReviewsRepository.deleteOwn(id, userId)) throw new ReviewNotFoundError();
+    invalidatePublicDataSafely("popularGames");
   },
 };

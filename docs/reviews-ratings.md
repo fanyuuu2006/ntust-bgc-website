@@ -35,3 +35,11 @@ Moderation資格與稽核、分散式 anti-spam、額外排序索引、Replies�
 - `DELETE /api/board-games/[id]/reviews/me`：刪除自己的評分及文字；成功 200。
 
 以上 route 都使用 `authorizeVerifiedRequest()`；匿名 401、未驗證 403、輸入錯誤 400、缺少桌遊或作者評分 404、重複建立 409。意外 Repository／transport 失敗沿用 Error ID；不重試寫入。Mutation 回應只包含 UI 需要的 rating/content 或刪除狀態。成功後以 `router.refresh()` 重新取 SSR 的 aggregate、文字列表和作者狀態；註銷作者的公開 Review 仍保留並使用墓碑身份。尚未提供 Admin moderation。
+
+## 熱門桌遊 V1
+
+熱門排序是獨立的 all-time read model `board_game_popularity_statistics`。完成借用只計入 `borrowed`、`returned`；評分品質採 3.5 分、20 筆的 community prior 與 5 筆信心門檻。借用熱度在 20 次完成借用時達到上限，因此 20、50、100 次的 borrowing heat 都是 1；評分參與則在 10 人評分時達到上限。權重依序為借用 50%、評分品質 35%、評分參與 15%。這些固定產品參數不會隨目錄、搜尋或篩選結果改變。
+
+Production 量測時共有 607 款桌遊：完成借用 p50/p75/p90/p95 均為 0、最大 1、603 款為 0；評分數 p50/p75/p90/p95 均為 0、最大 1、606 款為 0。現況不足以校準成熟飽和值，因此 V1 採保守且易懂的小型社群預設，待累積足夠歷史後再以產品決策調整。文字評論數不參與熱門分數；rating-only 與註銷帳號保留的評分仍正常計入。
+
+排序固定為 popularity score、評分數、完成借用數、平均評分（NULL 最後）、桌遊 UUID。首頁只取相同排序的前 6 筆；公開目錄的搜尋、分類與位置只縮小候選集合，不重新計算個別桌遊分數。Review 建立、修改、刪除及借出／歸還成功後，只失效熱門桌遊 cache。V1 不包含近期衰減、趨勢、推薦、materialized view 或 moderation。

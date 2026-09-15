@@ -31,6 +31,9 @@ export type BoardGameWithCategoryAndLocation = BoardGame & {
 
 export type BoardGameStats = {
   completedBorrowCount: number;
+  averageRating?: number | null;
+  ratingCount?: number;
+  reviewCount?: number;
 };
 
 export type BoardGameWithStats = BoardGame & {

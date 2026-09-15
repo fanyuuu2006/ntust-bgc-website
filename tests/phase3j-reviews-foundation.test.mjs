@@ -107,6 +107,7 @@ test("concurrent create delegates correctness to UNIQUE and maps only the loser 
   };
   const { reviewsService } = await loadCommonJs("src/services/reviews/reviews.service.ts", {
     "server-only": {}, zod: await import("zod"),
+    "@/libs/cache/public-data": { invalidatePublicDataSafely: () => {} },
     "@/repositories/shared/errors": { RepositoryError },
     "@/repositories/board-game-reviews.repository": { boardGameReviewsRepository: repository },
     "@/repositories/board-games.repository": { boardGamesRepository: { findById: async () => ({ id: "g" }) } },
@@ -143,6 +144,7 @@ test("service maps aggregate defaults, public tombstones and ownership-safe miss
   };
   const { reviewsService } = await loadCommonJs("src/services/reviews/reviews.service.ts", {
     "server-only": {}, zod: await import("zod"),
+    "@/libs/cache/public-data": { invalidatePublicDataSafely: () => {} },
     "@/repositories/shared/errors": { RepositoryError },
     "@/repositories/board-game-reviews.repository": { boardGameReviewsRepository: repository },
     "@/repositories/board-games.repository": { boardGamesRepository: {} },

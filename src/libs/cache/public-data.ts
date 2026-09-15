@@ -35,3 +35,12 @@ export function cachePublicData<T>(key: PublicCacheKey, loader: () => Promise<T>
 export function invalidatePublicData(...keys: PublicCacheKey[]) {
   for (const key of keys) revalidateTag(PUBLIC_CACHE[key].tag, { expire: 0 });
 }
+
+/** 衍生資料已成功寫入時，cache 失效失敗不能把成功 mutation 回報成失敗。 */
+export function invalidatePublicDataSafely(...keys: PublicCacheKey[]) {
+  try {
+    invalidatePublicData(...keys);
+  } catch (error) {
+    console.error("[Cache] 公開資料 cache 失效失敗：", error);
+  }
+}
