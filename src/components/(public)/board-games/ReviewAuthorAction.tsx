@@ -87,9 +87,9 @@ export function ReviewAuthorAction({ boardGameId, eligibility, ownReview, action
   };
 
   return <div className={actionsOnly ? "contents" : "mt-5 min-w-0 space-y-3"}>
-    {ownReview ? <div className={actionsOnly ? "contents" : "relative min-w-0 border-t border-(--border-muted) pt-4 pr-12"}>
+    {ownReview ? <div className={actionsOnly ? "contents" : "relative min-w-0 pr-12"}>
       {!actionsOnly ? <div className="min-w-0">
-        <p className="text-xs font-medium text-(--text-muted)">你的評分</p>
+        <h3 className="text-sm font-semibold text-(--text-primary)">你的評分</h3>
         <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
           <RatingStars rating={ownReview.rating} label={`你的評分 ${ownReview.rating} 分`} />
           <span className="text-xs text-(--text-muted)">{ownReview.content ? "已留下文字評論" : "只有評分"}</span>

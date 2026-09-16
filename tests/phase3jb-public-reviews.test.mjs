@@ -102,6 +102,9 @@ test("mixed public list renders rating-only entries without an empty content blo
   assert.match(html, /值得再玩一次/);
   assert.equal((html.match(/<article/g) ?? []).length, 2);
   assert.equal((html.match(/<p class="mt-3/g) ?? []).length, 1);
+  assert.match(html, /<h3 id="public-reviews-title"[^>]*>公開評價<\/h3>/);
+  assert.match(html, /class="mt-5 divide-y divide-\(--border-muted\)"/);
+  assert.doesNotMatch(html, /divide-y[^\"]*border-y/);
   assert.doesNotMatch(html, /沒有留下評論|此使用者只有評分|尚無文字內容/);
 });
 

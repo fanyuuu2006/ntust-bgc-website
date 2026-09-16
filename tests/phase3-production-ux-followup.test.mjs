@@ -51,6 +51,52 @@ test("scoped Review filter navigation resets only reviewPage and preserves other
   assert.equal(url.searchParams.has("page"), false);
 });
 
+test("Review applied-condition state ignores sort and page while clear preserves sort and returnTo", () => {
+  const {
+    hasReviewCriteria,
+    hasReviewAppliedConditions,
+    ReviewQueryControls,
+  } = load("src/components/(public)/reviews/ReviewQueryControls.tsx", {
+    "next/navigation": { useRouter: () => ({ push: () => {} }) },
+  });
+
+  const defaultQuery = { page: 1, pageSize: 10, search: undefined, rating: undefined, sort: "newest" };
+  assert.equal(hasReviewCriteria(defaultQuery), false);
+  assert.equal(hasReviewAppliedConditions(defaultQuery), false);
+  assert.equal(hasReviewAppliedConditions({ ...defaultQuery, page: 3 }), false);
+  assert.equal(hasReviewAppliedConditions({ ...defaultQuery, sort: "oldest" }), false);
+  assert.equal(hasReviewAppliedConditions({ ...defaultQuery, search: "策略" }), true);
+  assert.equal(hasReviewAppliedConditions({ ...defaultQuery, rating: 5 }), true);
+  assert.equal(hasReviewAppliedConditions({ ...defaultQuery, search: "策略", rating: 5 }), true);
+
+  const sortOnly = renderToStaticMarkup(createElement(ReviewQueryControls, {
+    basePath: "/profile",
+    query: { ...defaultQuery, sort: "oldest" },
+    searchPlaceholder: "搜尋",
+    searchLabel: "搜尋評價",
+  }));
+  assert.doesNotMatch(sortOnly, /已套用查詢條件|清除條件/);
+
+  const filtered = renderToStaticMarkup(createElement(ReviewQueryControls, {
+    basePath: `/board-games/${gameId}`,
+    query: { ...defaultQuery, page: 2, search: "策略", rating: 5, sort: "oldest" },
+    searchPlaceholder: "搜尋",
+    searchLabel: "搜尋評價",
+    preservedQuery: { returnTo: "/board-games?page=4&sort=rating:desc" },
+    anchor: "board-game-reviews",
+  }));
+  const document = new JSDOM(filtered).window.document;
+  const clear = [...document.querySelectorAll("a")].find((link) => link.textContent === "清除條件");
+  assert.ok(clear);
+  const clearUrl = new URL(clear.getAttribute("href"), "https://example.test");
+  assert.equal(clearUrl.searchParams.get("reviewSort"), "oldest");
+  assert.equal(clearUrl.searchParams.get("returnTo"), "/board-games?page=4&sort=rating:desc");
+  assert.equal(clearUrl.searchParams.has("reviewSearch"), false);
+  assert.equal(clearUrl.searchParams.has("reviewRating"), false);
+  assert.equal(clearUrl.searchParams.has("reviewPage"), false);
+  assert.equal(clearUrl.hash, "#board-game-reviews");
+});
+
 test("My Reviews repository searches Board Game names and content set-wise, then filters and sorts in DB", async () => {
   const calls = [];
   const boardGameQuery = {

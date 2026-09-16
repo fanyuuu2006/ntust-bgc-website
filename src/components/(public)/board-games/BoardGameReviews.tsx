@@ -41,19 +41,19 @@ export function BoardGameReviews({ boardGameId, aggregate, reviews, query: suppl
 
       {authorAction}
 
-      <div className="mt-6 border-t border-(--border-muted) pt-5">
+      <section className="mt-9" aria-labelledby="public-reviews-title">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h3 className="font-semibold text-(--text-primary)">公開評價</h3>
+          <h3 id="public-reviews-title" className="font-semibold text-(--text-primary)">公開評價</h3>
           <ReviewResultSummary total={reviews.total} filtered={filtered} />
         </div>
         <ReviewQueryControls basePath={basePath} query={query} searchPlaceholder="搜尋評論內容" searchLabel="搜尋這款桌遊的評論" preservedQuery={preservedQuery} anchor="board-game-reviews" />
-      </div>
+      </section>
 
       {reviews.total === 0 ? (
         filtered ? <QueryEmptyState className="mt-5" title="找不到符合條件的評價" description="試著調整搜尋或評分條件。" clearHref={resetHref} />
-          : <p className="mt-5 border-y border-(--border-muted) py-5 text-sm text-(--text-muted)">目前還沒有評分</p>
+          : <p className="mt-5 py-2 text-sm text-(--text-muted)">目前還沒有評分</p>
       ) : (
-        <div className="mt-5 divide-y divide-(--border-muted) border-y border-(--border-muted)">
+        <div className="mt-5 divide-y divide-(--border-muted)">
           {reviews.data.map((review) => (
             <article key={review.id} className="min-w-0 py-5 first:pt-4 last:pb-4">
               <header className="min-w-0">

@@ -31,7 +31,7 @@ export function ReviewQueryControls({ basePath, query, searchPlaceholder, search
     ...preservedQuery,
     reviewSort: query.sort === "newest" ? undefined : query.sort,
   }, anchor);
-  const hasQuery = hasReviewQuery(query);
+  const hasConditions = hasReviewAppliedConditions(query);
 
   return (
     <div className="mt-4">
@@ -59,7 +59,7 @@ export function ReviewQueryControls({ basePath, query, searchPlaceholder, search
         </label>
       </div>
 
-      {hasQuery ? (
+      {hasConditions ? (
         <div className="mt-2 flex items-center gap-3 text-sm text-(--text-muted)">
           <p>已套用查詢條件</p>
           <ButtonLink href={resetHref} variant="text" size="sm" className="min-h-0 px-0">清除條件</ButtonLink>
@@ -77,8 +77,8 @@ export function hasReviewCriteria(query: ReviewListQuery) {
   return Boolean(query.search || query.rating);
 }
 
-export function hasReviewQuery(query: ReviewListQuery) {
-  return Boolean(hasReviewCriteria(query) || query.sort !== "newest");
+export function hasReviewAppliedConditions(query: ReviewListQuery) {
+  return hasReviewCriteria(query);
 }
 
 export function reviewAppliedQuery(query: ReviewListQuery, preservedQuery: Record<string, QueryValue> = {}) {
