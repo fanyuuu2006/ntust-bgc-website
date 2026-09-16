@@ -153,7 +153,7 @@ async function AdminUsersPage({ searchParams }: Props) {
               {users.data.map((user) => (
                 <Card key={user.id} className="min-w-0 space-y-3 p-4">
                   <div className="flex min-w-0 items-start gap-3">
-                    <UserAvatar user={user} className="size-10 shrink-0 rounded-full object-cover" />
+                    <UserAvatar user={user} className="size-10 shrink-0 rounded-full" />
                     <div className="min-w-0 flex-1 wrap-anywhere">
                       <p className="font-semibold">{user.name}</p>
                       <p className="text-sm text-(--text-muted)">{user.profile?.real_name || MISSING_VALUE}</p>
@@ -219,7 +219,7 @@ async function AdminUsersPage({ searchParams }: Props) {
                     <TableRow key={user.id}>
                       <TableCell className="max-w-64">
                         <div className="flex min-w-0 items-center gap-3">
-                          <UserAvatar user={user} className="size-9 shrink-0 rounded-full object-cover" />
+                          <UserAvatar user={user} className="size-9 shrink-0 rounded-full" />
                           <div className="min-w-0 wrap-anywhere">
                             <p className="font-medium">{user.name}</p>
                             <p className="text-xs text-(--text-muted)">{user.profile?.real_name || MISSING_VALUE}</p>

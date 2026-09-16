@@ -43,14 +43,14 @@ test("authenticated profile update uses an explicit strict five-field self-servi
   assert.doesNotMatch(route, /updateAcademicProfile/);
 });
 
-test("account settings separates editable username and avatar from read-only email", async () => {
+test("account settings separates username, avatar management, and read-only email", async () => {
   const account = await readSource(
     "src/components/(authenticated)/settings/AccountSettingsForm.tsx",
   );
 
   assert.match(account, /使用者名稱/);
-  assert.match(account, /UserAvatar/);
-  assert.match(account, /avatar/);
+  assert.match(account, /AvatarSettingsSection/);
+  assert.doesNotMatch(account, /avatarField|values\.avatar/);
   assert.match(account, /aria-readonly="true"/);
   assert.match(account, /Email 為登入帳號，目前無法修改/);
   assert.doesNotMatch(account, /emailField|disabled:\s*true/);

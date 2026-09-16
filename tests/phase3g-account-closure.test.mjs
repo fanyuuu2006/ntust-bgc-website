@@ -8,7 +8,7 @@ const closureErrors = load("src/services/auth/account-closure.errors.ts");
 
 function setup({ closed = false, passwordValid = true, rpcError } = {}) {
   const calls = [];
-  const user = { id: "user-a", email: "member@example.com", closed_at: closed ? "2026-09-14" : null };
+  const user = { id: "user-a", email: "member@example.com", avatar: "https://project-ref.supabase.co/storage/v1/object/public/avatars/user-a/fixture.webp", closed_at: closed ? "2026-09-14" : null };
   const mocks = {
     "@/repositories/shared/errors": repositoryErrors,
     "@/repositories/users.repository": { usersRepository: { findByEmail: async () => user, findById: async () => user } },
@@ -41,24 +41,26 @@ test("unknown closure failure is not swallowed", async () => {
   await assert.rejects(() => setup({ rpcError: error }).service.closeAccount("user-a", "cookie-token", { currentPassword: "password", confirmation: "註銷帳號" }), value => value === error);
 });
 
-function route({ user = { id: "session-owner" }, token = "cookie-token", failure, limited = false } = {}) {
-  const calls = [], reports = [];
+function route({ user = { id: "session-owner", avatar: "https://example.com/avatar.jpg" }, token = "cookie-token", failure, limited = false } = {}) {
+  const calls = [], reports = [], avatarCleanupCalls = [];
   const POST = load("src/app/api/users/me/closure/route.ts", {
     "@/libs/auth": { getCurrentUser: async () => user, getSessionTokenFromCookie: async () => token, SESSION_COOKIE_NAME: "bgc_st" },
     "@/services/auth/auth.service": { authService: { closeAccount: async (...args) => { calls.push(args); if (failure) throw failure; } } },
     "@/services/auth/auth.errors": authErrors,
     "@/services/auth/account-closure.errors": closureErrors,
     "@/libs/security/rate-limit": { checkRateLimit: () => ({ allowed: !limited, retryAfter: 60 }) },
+    "@/services/avatars/avatars.service": { removeOwnedAvatarObject: async (...args) => avatarCleanupCalls.push(args) },
     "@/libs/api/server-response": { unexpectedErrorResponse: (...args) => { reports.push(args); return Response.json({ message: "safe", errorId: "reference" }, { status: 500 }); } },
   }).POST;
-  return { POST, calls, reports };
+  return { POST, calls, reports, avatarCleanupCalls };
 }
 const request = (body = { currentPassword: "password", confirmation: "註銷帳號" }) => new Request("http://localhost/api/users/me/closure", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-test("closure endpoint uses session identity, clears cookie only after successful transaction", async () => {
-  const { POST, calls } = route();
+test("closure endpoint uses session identity, cleans its old avatar, and clears cookie only after successful transaction", async () => {
+  const { POST, calls, avatarCleanupCalls } = route();
   const response = await POST(request());
   assert.equal(response.status, 200);
   assert.deepEqual(calls[0].slice(0, 2), ["session-owner", "cookie-token"]);
+  assert.deepEqual(avatarCleanupCalls, [["session-owner", "https://example.com/avatar.jpg"]]);
   assert.match(response.headers.get("set-cookie"), /bgc_st=;/);
   assert.deepEqual(await response.json(), { data: { success: true } });
 });
@@ -86,10 +88,11 @@ test("wrong password is expected 401 without incident", async () => {
   assert.deepEqual(reports, []);
 });
 test("unexpected closure error still reaches the safe boundary exactly once", async () => {
-  const { POST, reports } = route({ failure: new Error("private database error") });
+  const { POST, reports, avatarCleanupCalls } = route({ failure: new Error("private database error") });
   const response = await POST(request());
   assert.equal(response.status, 500);
   assert.equal(reports.length, 1);
+  assert.deepEqual(avatarCleanupCalls, []);
   assert.doesNotMatch(await response.text(), /private database/);
 });
 test("closed account cannot obtain admin rights from officer history", async () => {

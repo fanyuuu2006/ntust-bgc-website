@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { FieldInput, type FieldInputField } from "@/components/FieldInput";
 import { FormFeedback } from "@/components/FormFeedback";
-import { UserAvatar } from "@/components/UserAvatar";
+import { AvatarSettingsSection } from "@/components/(authenticated)/settings/AvatarSettingsSection";
 import { Button } from "@/components/ui/Button";
 import { ResendEmailVerificationButton } from "@/components/(auth)/email-verification/ResendEmailVerificationButton";
 import { apiClient } from "@/libs/api/client";
@@ -14,12 +14,10 @@ import type { User } from "@/types/database";
 
 type AccountFormValues = {
   name: string;
-  avatar: string;
 };
 
 type UpdateAccountPayload = {
   name?: string;
-  avatar?: string | null;
 };
 
 type AccountSettingsFormProps = React.HTMLAttributes<HTMLElement> & {
@@ -35,18 +33,9 @@ const nameField: FieldInputField = {
   placeholder: "請輸入使用者名稱",
 };
 
-const avatarField: FieldInputField = {
-  id: "avatar",
-  label: "頭像圖片網址",
-  type: "url",
-  placeholder: "https://example.com/avatar.png",
-  hint: "目前支援圖片網址，建議使用正方形圖片",
-};
-
 function toFormValues(user: User): AccountFormValues {
   return {
     name: user.name,
-    avatar: user.avatar ?? "",
   };
 }
 
@@ -63,19 +52,7 @@ export function AccountSettingsForm({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const isDirty =
-    values.name.trim() !== user.name ||
-    values.avatar.trim() !== (user.avatar ?? "");
-
-  const previewUser = useMemo(
-    () => ({
-      id: user.id,
-      email: user.email,
-      name: values.name.trim() || user.name,
-      avatar: values.avatar.trim() || null,
-    }),
-    [user.id, user.email, user.name, values.name, values.avatar],
-  );
+  const isDirty = values.name.trim() !== user.name;
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
@@ -99,7 +76,6 @@ export function AccountSettingsForm({
     try {
       const payload: UpdateAccountPayload = {
         name: values.name.trim(),
-        avatar: values.avatar.trim() || null,
       };
 
       await apiClient("/api/users/me/account", {
@@ -137,36 +113,20 @@ export function AccountSettingsForm({
         </p>
       </div>
 
+      <div className="mt-4">
+        <AvatarSettingsSection user={user} />
+      </div>
+
       <form
         onSubmit={handleSubmit}
         noValidate
         aria-busy={isLoading || undefined}
-        className="mt-4 flex flex-col gap-4"
+        className="mt-5 flex flex-col gap-4 border-t border-(--border-default) pt-5"
       >
-        <div className="flex min-w-0 items-center gap-3 rounded-xl bg-(--surface-subtle) p-3 sm:p-4">
-          <UserAvatar
-            user={previewUser}
-            className="size-14 shrink-0 rounded-xl border border-(--border-default) sm:size-16"
-          />
-          <div className="min-w-0">
-            <p className="wrap-break-word text-sm font-semibold text-(--text-primary)">
-              {values.name.trim() || user.name}
-            </p>
-            <p className="mt-0.5 text-xs text-(--text-muted)">
-              頭像與使用者名稱預覽
-            </p>
-          </div>
-        </div>
-
         <div className="grid gap-4 sm:grid-cols-2">
           <FieldInput
             field={{ ...nameField, disabled: isLoading }}
             value={values.name}
-            onChange={handleChange}
-          />
-          <FieldInput
-            field={{ ...avatarField, disabled: isLoading }}
-            value={values.avatar}
             onChange={handleChange}
           />
         </div>

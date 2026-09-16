@@ -9,7 +9,6 @@ type ProfileHeroSectionProps = React.HTMLAttributes<HTMLElement> & {
   user: PublicUserIdentity;
   details?: ReactNode;
   actions?: ReactNode;
-  avatarReferrerPolicy?: React.ImgHTMLAttributes<HTMLImageElement>["referrerPolicy"];
   identityBadges: ProfileIdentityBadge[];
 };
 
@@ -17,7 +16,6 @@ export function ProfileHeroSection({
   user,
   details,
   actions,
-  avatarReferrerPolicy,
   identityBadges,
   className,
   ...rest
@@ -28,7 +26,7 @@ export function ProfileHeroSection({
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <div className="flex min-w-0 flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
             <div className="size-24 shrink-0 overflow-hidden rounded-2xl border-2 border-(--border) sm:size-28">
-              <UserAvatar user={user} referrerPolicy={avatarReferrerPolicy} className="h-full w-full object-cover" />
+              <UserAvatar user={user} className="h-full w-full" />
             </div>
             <div className="min-w-0">
               <h1

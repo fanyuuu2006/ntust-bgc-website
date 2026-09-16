@@ -157,6 +157,26 @@ export const usersRepository = {
     return data;
   },
 
+  compareAndSwapAvatar: async (
+    id: string,
+    expectedAvatar: string | null,
+    avatar: string | null,
+  ): Promise<Pick<User, "id" | "avatar" | "closed_at"> | null> => {
+    let query = supabase
+      .from("users")
+      .update({ avatar })
+      .eq("id", id)
+      .is("closed_at", null);
+    query = expectedAvatar === null
+      ? query.is("avatar", null)
+      : query.eq("avatar", expectedAvatar);
+    const { data, error } = await query
+      .select("id,avatar,closed_at")
+      .maybeSingle();
+    if (error) throwRepositoryError("條件式更新使用者頭像失敗", error);
+    return data;
+  },
+
   deleteById: async (id: string): Promise<void> => {
     const { error } = await supabase.from("users").delete().eq("id", id);
     if (error) throwRepositoryError("刪除用戶失敗", error);

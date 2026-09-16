@@ -38,7 +38,7 @@ async function PublicProfilePage({ params, searchParams }: Props) {
   }
   return (
     <section className="container max-w-5xl space-y-6 py-6 sm:space-y-8 sm:py-8">
-      <ProfileHeroSection user={identity} avatarReferrerPolicy="no-referrer" identityBadges={identityBadges.map((badge, index) => ({ ...badge, id: `public-badge-${index}` }))} details={clubFootprint === null ? <p className="mt-2 text-sm text-(--muted)">此帳號已註銷。</p> : undefined} />
+      <ProfileHeroSection user={identity} identityBadges={identityBadges.map((badge, index) => ({ ...badge, id: `public-badge-${index}` }))} details={clubFootprint === null ? <p className="mt-2 text-sm text-(--muted)">此帳號已註銷。</p> : undefined} />
       {clubFootprint !== null && <ProfileClubFootprint title="社團足跡" {...clubFootprint} />}
       {reviews ? <ProfileReviewCollection basePath={`/profile/${identity.id}`} reviews={reviews} query={reviewQuery} own={false} /> : null}
     </section>

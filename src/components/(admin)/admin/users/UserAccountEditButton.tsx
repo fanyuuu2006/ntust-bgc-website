@@ -16,16 +16,15 @@ export function UserAccountEditButton({ user }: { user: Pick<User, "id" | "name"
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(user.name);
-  const [avatar, setAvatar] = useState(user.avatar ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [fields, setFields] = useState<{ name?: string; avatar?: string }>({});
+  const [fields, setFields] = useState<{ name?: string }>({});
   if (user.closed_at) return null;
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
-    const parsed = updateUserAccountSchema.safeParse({ name, avatar: avatar.trim() || null });
+    const parsed = updateUserAccountSchema.safeParse({ name });
     if (!parsed.success) {
       setFields(Object.fromEntries(parsed.error.issues.map((issue) => [issue.path[0], issue.message])));
       return;
@@ -40,14 +39,11 @@ export function UserAccountEditButton({ user }: { user: Pick<User, "id" | "name"
   }
 
   return <>
-    <Button type="button" variant="outline" onClick={() => { setName(user.name); setAvatar(user.avatar ?? ""); setFields({}); setError(null); setOpen(true); }}>編輯帳號資料</Button>
+    <Button type="button" variant="outline" onClick={() => { setName(user.name); setFields({}); setError(null); setOpen(true); }}>編輯帳號資料</Button>
     <Modal open={open} closeDisabled={busy} onClose={() => { if (!busy) setOpen(false); }} title="編輯帳號資料">
       <form onSubmit={submit} className="space-y-4" aria-busy={busy}>
         <Field label="顯示名稱" htmlFor="admin-account-name" required error={fields.name}>
           <Input id="admin-account-name" autoFocus value={name} onChange={(event) => setName(event.target.value)} required maxLength={50} disabled={busy} aria-invalid={!!fields.name} />
-        </Field>
-        <Field label="頭像網址" htmlFor="admin-account-avatar" hint="留空即可清除頭像" error={fields.avatar}>
-          <Input id="admin-account-avatar" value={avatar} onChange={(event) => setAvatar(event.target.value)} disabled={busy} aria-invalid={!!fields.avatar} placeholder="https://example.com/avatar.png" />
         </Field>
         <FormFeedback error={error} />
         <div className="flex flex-wrap justify-end gap-2">
