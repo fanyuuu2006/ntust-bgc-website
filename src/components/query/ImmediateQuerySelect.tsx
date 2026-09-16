@@ -16,6 +16,7 @@ type ImmediateQuerySelectProps = Omit<
   basePath: string;
   queryKey: string;
   value: string;
+  pageKey?: string;
 };
 
 export function ImmediateQuerySelect({
@@ -23,6 +24,7 @@ export function ImmediateQuerySelect({
   basePath,
   queryKey,
   value,
+  pageKey,
   ...props
 }: ImmediateQuerySelectProps) {
   const router = useRouter();
@@ -38,6 +40,7 @@ export function ImmediateQuerySelect({
             appliedQuery,
             ownedKeys: [queryKey],
             changes: { [queryKey]: event.target.value },
+            pageKey,
           }),
         );
       }}

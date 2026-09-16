@@ -27,8 +27,8 @@ export const registerSchema = z
     name: z
       .string()
       .trim()
-      .min(1, { error: "姓名不可為空" })
-      .max(NAME_MAX_LENGTH, { error: `姓名不可超過 ${NAME_MAX_LENGTH} 個字` }),
+      .min(1, { error: "帳號名稱不可為空" })
+      .max(NAME_MAX_LENGTH, { error: `帳號名稱不可超過 ${NAME_MAX_LENGTH} 個字` }),
 
     password: z
       .string()
@@ -39,14 +39,23 @@ export const registerSchema = z
         error: `密碼不可超過 ${PASSWORD_MAX_LENGTH} 個字元`,
       })
       .superRefine(applyPasswordRules),
+    confirmPassword: z.string().min(1, { error: "請再次輸入密碼" }),
+    acceptTerms: z.literal(true, {
+      error: "請先同意使用條款並確認已閱讀隱私權政策",
+    }),
     ...registrationProfileFields,
   })
   .refine((data) => data.password !== data.name, {
     message: "密碼不可與帳號名稱相同",
+    path: ["password"],
   })
   .refine((data) => data.password !== data.email, {
     message: "密碼不可與 Email 相同",
     path: ["password"],
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "密碼與確認密碼不一致",
+    path: ["confirmPassword"],
   });
 
 export const loginSchema = z.object({

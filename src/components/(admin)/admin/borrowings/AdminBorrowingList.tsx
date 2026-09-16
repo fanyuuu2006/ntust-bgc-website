@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { UserRound } from "lucide-react";
 
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
@@ -473,9 +474,12 @@ function BoardGameSummary({
 }) {
   return (
     <div className="min-w-0">
-      <p className={`${titleClassName} font-medium text-(--text-primary)`}>
+      <Link
+        href={`/board-games/${borrowing.board_game.id}`}
+        className={`${titleClassName} font-medium text-(--interactive-primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)`}
+      >
         {borrowing.board_game.name}
-      </p>
+      </Link>
       <p className="mt-1 text-xs text-(--text-muted)">
         社產編號 #
         {borrowing.board_game.inventory_number}
@@ -532,6 +536,9 @@ function BorrowingTimeline({
         label="預計歸還"
         value={formatOptionalDate(borrowing.due_at)}
         details={[
+          borrowing.approved_at
+            ? `核准：${formatAdminDateTime(borrowing.approved_at)}`
+            : undefined,
           borrowing.borrowed_at
             ? `借出：${formatAdminDateTime(borrowing.borrowed_at)}`
             : undefined,
@@ -546,6 +553,9 @@ function BorrowingTimeline({
         label="已歸還"
         value={formatOptionalDate(borrowing.returned_at)}
         details={[
+          borrowing.approved_at
+            ? `核准：${formatAdminDateTime(borrowing.approved_at)}`
+            : undefined,
           borrowing.borrowed_at
             ? `借出：${formatAdminDateTime(borrowing.borrowed_at)}`
             : undefined,
@@ -557,18 +567,27 @@ function BorrowingTimeline({
   if (borrowing.status === "approved") {
     return (
       <Timeline
-        label="申請時間"
-        value={formatAdminDateTime(borrowing.created_at)}
-        details={[actorLine, "等待確認借出"]}
+        label="核准時間"
+        value={borrowing.approved_at ? formatAdminDateTime(borrowing.approved_at) : formatAdminDateTime(borrowing.created_at)}
+        details={[borrowing.approved_at ? `申請：${formatAdminDateTime(borrowing.created_at)}` : undefined, actorLine, "等待確認借出"]}
       />
     );
   }
   if (borrowing.status === "rejected") {
     return (
       <Timeline
-        label="申請時間"
-        value={formatAdminDateTime(borrowing.created_at)}
-        details={[actorLine]}
+        label={borrowing.rejected_at ? "拒絕時間" : "申請時間"}
+        value={formatAdminDateTime(borrowing.rejected_at ?? borrowing.created_at)}
+        details={[borrowing.rejected_at ? `申請：${formatAdminDateTime(borrowing.created_at)}` : undefined, actorLine]}
+      />
+    );
+  }
+  if (borrowing.status === "cancelled") {
+    return (
+      <Timeline
+        label={borrowing.cancelled_at ? "取消時間" : "申請時間"}
+        value={formatAdminDateTime(borrowing.cancelled_at ?? borrowing.created_at)}
+        details={[borrowing.cancelled_at ? `申請：${formatAdminDateTime(borrowing.created_at)}` : undefined]}
       />
     );
   }
@@ -659,13 +678,14 @@ function MobileBorrowingMetadata({
   }
 
   if (borrowing.status === "cancelled") {
-    return <MobileMetadataGrid>{applicationTime}</MobileMetadataGrid>;
+    return <MobileMetadataGrid>{applicationTime}{borrowing.cancelled_at ? <Detail label="取消時間" value={formatAdminDateTime(borrowing.cancelled_at)} /> : null}</MobileMetadataGrid>;
   }
 
   if (borrowing.status === "rejected") {
     return (
       <MobileMetadataGrid>
         {applicationTime}
+        {borrowing.rejected_at ? <Detail label="拒絕時間" value={formatAdminDateTime(borrowing.rejected_at)} /> : null}
         <Detail
           label="拒絕人"
           value={getApprovalActor(borrowing)?.name ?? "尚未記錄拒絕人"}
@@ -678,6 +698,7 @@ function MobileBorrowingMetadata({
     return (
       <MobileMetadataGrid>
         {applicationTime}
+        {borrowing.approved_at ? <Detail label="核准時間" value={formatAdminDateTime(borrowing.approved_at)} /> : null}
         {approver}
       </MobileMetadataGrid>
     );
@@ -687,6 +708,7 @@ function MobileBorrowingMetadata({
     return (
       <MobileMetadataGrid>
         {applicationTime}
+        {borrowing.approved_at ? <Detail label="核准時間" value={formatAdminDateTime(borrowing.approved_at)} /> : null}
         <Detail
           label="借出時間"
           value={formatOptionalDate(borrowing.borrowed_at)}
@@ -699,6 +721,8 @@ function MobileBorrowingMetadata({
 
   return (
     <MobileMetadataGrid>
+      {applicationTime}
+      {borrowing.approved_at ? <Detail label="核准時間" value={formatAdminDateTime(borrowing.approved_at)} /> : null}
       <Detail
         label="借出時間"
         value={formatOptionalDate(borrowing.borrowed_at)}

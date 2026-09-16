@@ -108,6 +108,20 @@ export function formatTime(value: string | null | undefined): string {
   }).format(date);
 }
 
+export function formatCompactLifecycleDate(
+  value: string | null | undefined,
+  reference: string | null | undefined,
+): string | null {
+  const valueDate = toValidDate(value);
+  const referenceDate = toValidDate(reference);
+  if (!valueDate) return null;
+  const valueParts = getDateTimeParts(valueDate);
+  const referenceParts = referenceDate ? getDateTimeParts(referenceDate) : null;
+  return referenceParts?.year === valueParts.year
+    ? `${valueParts.month}/${valueParts.day}`
+    : `${valueParts.year}/${valueParts.month}/${valueParts.day}`;
+}
+
 /** 共用既有臺北時間格式；同年度的區間省略年份，跨年度保留兩端年份避免歧義。 */
 export function formatCompactDateTimeRange(start: string | null | undefined, end: string | null | undefined): { start: string; end: string } {
   const startText = formatDateTime(start);

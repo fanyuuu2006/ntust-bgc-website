@@ -15,6 +15,7 @@ type BuildOwnedQueryHrefOptions = {
   appliedQuery: AppliedQuery;
   ownedKeys: readonly string[];
   changes: Record<string, AppliedQueryValue>;
+  pageKey?: string;
 };
 
 function serializeValue(value: QueryPrimitive): string | undefined {
@@ -80,11 +81,12 @@ export function buildOwnedQueryHref({
   appliedQuery,
   ownedKeys,
   changes,
+  pageKey = "page",
 }: BuildOwnedQueryHrefOptions): string {
   const params = toSearchParams(appliedQuery);
 
   for (const key of ownedKeys) params.delete(key);
-  params.set("page", "1");
+  params.set(pageKey, "1");
 
   for (const [key, value] of Object.entries(changes)) {
     params.delete(key);

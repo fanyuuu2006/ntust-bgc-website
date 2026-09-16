@@ -70,7 +70,7 @@ export const SORT_OPTIONS: {
     key: "rating:desc",
     orderBy: "rating",
     orderDirection: "desc",
-    label: "評分最高",
+    label: "評價推薦",
   },
   {
     key: "created_at:desc",

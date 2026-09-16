@@ -19,7 +19,7 @@ test("public board-game detail is an image-led page flow rather than a giant car
   );
 
   assert.equal((page.match(/<h1\b/g) ?? []).length, 1);
-  assert.match(page, /href="\/board-games"/);
+  assert.match(page, /href=\{returnTo\}/);
   assert.match(page, /返回桌遊列表/);
   assert.match(page, /mx-auto max-w-6xl/);
   assert.match(page, /lg:grid-cols-2/);

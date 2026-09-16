@@ -4,6 +4,7 @@ import { CircleAlert } from "lucide-react";
 import { ProfileClubFootprint } from "@/components/(authenticated)/profile/ProfileClubFootprint";
 import { ProfileDetailsSection } from "@/components/(authenticated)/profile/ProfileDetailsSection";
 import { ProfileHeroSection } from "@/components/(authenticated)/profile/ProfileHeroSection";
+import { MyProfileReviews } from "@/components/(authenticated)/profile/MyProfileReviews";
 import { PageHeader } from "@/components/PageHeader";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -11,19 +12,35 @@ import { getCurrentUser } from "@/libs/auth";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { eventsService } from "@/services/events/events.service";
 import { profileService } from "@/services/profile/profile.service";
+import { reviewsService } from "@/services/reviews/reviews.service";
 import { usersService } from "@/services/users/users.service";
+import { redirect } from "next/navigation";
+import { buildQueryString } from "@/utils/url";
+import { normalizeProfileReviewsQuery, type ReviewSearchParams } from "@/services/reviews/review-query";
 
-async function ProfilePage() {
+async function ProfilePage({ searchParams }: { searchParams?: Promise<ReviewSearchParams> }) {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const [profile, totalBorrowings, attendanceCount, clubContext] =
+  const reviewQuery = normalizeProfileReviewsQuery((await searchParams) ?? {});
+
+  const [profile, totalBorrowings, attendanceCount, clubContext, reviews] =
     await Promise.all([
       usersService.getProfile(user.id),
       boardGamesService.getTotalBorrowedCount(user.id),
       eventsService.getAttendedCountByCurrentAcademicYear(user.id),
       profileService.getClubContext(user.id),
+      reviewsService.listPublicByUser(user.id, reviewQuery),
     ]);
+
+  if (reviews.totalPages > 0 && reviewQuery.page > reviews.totalPages) {
+    redirect(`/profile?${buildQueryString({
+      reviewSearch: reviewQuery.search,
+      reviewRating: reviewQuery.rating,
+      reviewSort: reviewQuery.sort === "newest" ? undefined : reviewQuery.sort,
+      reviewPage: reviews.totalPages,
+    })}#profile-reviews`);
+  }
 
   if (!profile) {
     return (
@@ -81,6 +98,7 @@ async function ProfilePage() {
         currentMembership={clubContext.currentMembership}
         hasMembershipHistory={clubContext.hasMembershipHistory}
       />
+      <MyProfileReviews reviews={reviews} query={reviewQuery} canManage={Boolean(user.email_verified_at)} />
     </section>
   );
 }

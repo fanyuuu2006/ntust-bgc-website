@@ -2,6 +2,13 @@ import type { PublicUserIdentity } from "@/types/public-user";
 
 export type ReviewRating = 1 | 2 | 3 | 4 | 5;
 export type ReviewSort = "newest" | "oldest" | "highest" | "lowest";
+export type ReviewListQuery = Readonly<{
+  page: number;
+  pageSize: number;
+  search?: string;
+  rating?: ReviewRating;
+  sort: ReviewSort;
+}>;
 
 export type PublicBoardGameReview = Readonly<{
   id: string;
@@ -19,6 +26,23 @@ export type BoardGameReviewAggregate = Readonly<{
 
 export type PublicBoardGameReviewsPage = Readonly<{
   data: PublicBoardGameReview[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}>;
+
+export type PublicProfileReview = Readonly<{
+  id: string;
+  rating: ReviewRating;
+  content: string | null;
+  createdAt: string;
+  updatedAt: string;
+  boardGame: Readonly<{ id: string; name: string }>;
+}>;
+
+export type PublicProfileReviewsPage = Readonly<{
+  data: PublicProfileReview[];
   page: number;
   pageSize: number;
   total: number;

@@ -7,9 +7,9 @@ import { boardGameReviewsRepository } from "@/repositories/board-game-reviews.re
 import { boardGamesRepository } from "@/repositories/board-games.repository";
 import { BoardNotFoundError } from "@/services/board-games/board-games.errors";
 import { toPublicUserIdentity } from "@/services/users/public-identity";
-import { createReviewSchema, listReviewsSchema, replaceReviewSchema } from "./reviews.schema";
+import { createReviewSchema, listReviewsSchema, profileReviewsQuerySchema, replaceReviewSchema } from "./reviews.schema";
 import { DuplicateReviewError, ReviewNotFoundError } from "./reviews.errors";
-import type { BoardGameReviewAggregate, PublicBoardGameReview, PublicBoardGameReviewsPage, ReviewRating } from "./reviews.types";
+import type { BoardGameReviewAggregate, PublicBoardGameReview, PublicBoardGameReviewsPage, PublicProfileReviewsPage, ReviewRating } from "./reviews.types";
 
 type DatabaseError = { code?: string; constraint?: string; message?: string };
 
@@ -47,6 +47,17 @@ function toPublicReview(source: Awaited<ReturnType<typeof boardGameReviewsReposi
   };
 }
 
+function toProfileReview(review: Awaited<ReturnType<typeof boardGameReviewsRepository.findPublicPageByUser>>["data"][number]) {
+  return {
+    id: review.id,
+    rating: review.rating as ReviewRating,
+    content: review.content,
+    createdAt: review.created_at,
+    updatedAt: review.updated_at,
+    boardGame: { id: review.board_game.id, name: review.board_game.name },
+  };
+}
+
 export const reviewsService = {
   create: async (userId: string, boardGameId: unknown, input: unknown) => {
     const id = await requireBoardGame(boardGameId);
@@ -67,6 +78,16 @@ export const reviewsService = {
     const options = listReviewsSchema.parse(input);
     const result = await boardGameReviewsRepository.findPublicPage(id, options);
     return { ...result, data: result.data.map(toPublicReview) };
+  },
+
+  listPublicByUser: async (userId: unknown, input: unknown = {}): Promise<PublicProfileReviewsPage> => {
+    const id = z.uuid().parse(userId);
+    const options = profileReviewsQuerySchema.parse(input);
+    const result = await boardGameReviewsRepository.findPublicPageByUser(id, options);
+    return {
+      ...result,
+      data: result.data.map(toProfileReview),
+    };
   },
 
   getAggregate: async (boardGameId: unknown): Promise<BoardGameReviewAggregate> => {

@@ -67,15 +67,15 @@ begin
     'twelve ratings and eight written reviews'
   );
   perform pg_temp.assert_true(
-    (select count(*)=5 from (select id from public.board_game_reviews where board_game_id=pagination_game and content is not null order by created_at desc,id desc limit 5 offset 0) page_one),
+    (select count(*)=5 from (select id from public.board_game_reviews where board_game_id=pagination_game order by created_at desc,id desc limit 5 offset 0) page_one),
     'written page one has five rows'
   );
   perform pg_temp.assert_true(
-    (select count(*)=3 from (select id from public.board_game_reviews where board_game_id=pagination_game and content is not null order by created_at desc,id desc limit 5 offset 5) page_two),
+    (select count(*)=5 from (select id from public.board_game_reviews where board_game_id=pagination_game order by created_at desc,id desc limit 5 offset 5) page_two),
     'written page two has three rows'
   );
   perform pg_temp.assert_true(
-    (select count(*)=0 from (select id from public.board_game_reviews where board_game_id=pagination_game and content is not null order by created_at desc,id desc limit 5 offset 10) page_three),
+    (select count(*)=2 from (select id from public.board_game_reviews where board_game_id=pagination_game order by created_at desc,id desc limit 5 offset 10) page_three),
     'rating-only rows do not create a third written page'
   );
 

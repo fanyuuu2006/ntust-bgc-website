@@ -1,6 +1,6 @@
 # Reviews & Ratings domain contract
 
-Phase 3J-A 建立資料與 Server domain foundation；Phase 3J-B 在桌遊詳細頁加入公開評分摘要與文字評論 SSR 讀取；Phase 3J-C 提供已驗證使用者的作者評分操作。`202609150001_add_board_game_reviews.sql` 已套用遠端並驗證。
+Phase 3J-A 建立資料與 Server domain foundation；Phase 3J-B 在桌遊詳細頁加入公開評分摘要與 Review SSR 讀取；Phase 3J-C 提供已驗證使用者的作者評分操作。`202609150001_add_board_game_reviews.sql` 已套用遠端並驗證。
 
 ## Product contract
 
@@ -16,7 +16,7 @@ PublicBoardGameReview 只有 id、rating、content、createdAt、updatedAt 與 P
 
 ## Aggregate
 
-board_game_review_statistics 依 board_game_id 回傳 average_rating、rating_count 及 review_count。rating-only row 會進平均及 rating_count；只有 content 非 null 才進 review_count。公開桌遊清單的兩個 read model 都帶入 average_rating 與 rating_count，讓卡片在任何排序下顯示相同的評分摘要；人氣分數與借用次數只用於資料庫排序，不作為卡片指標。
+board_game_review_statistics 依 board_game_id 回傳 average_rating、rating_count 及 review_count。rating-only row 會進平均及 rating_count；只有 content 非 null 才進 review_count。公開 Review list 會列出所有評分，rating-only 項目保留作者、星等與日期，只省略文字段落；列表 total 與 DB 分頁因此使用所有 Review rows，不以 review_count 代表列表數量。公開桌遊清單的兩個 read model 都帶入 average_rating 與 rating_count，讓卡片在任何排序下顯示相同的評分摘要；人氣分數與借用次數只用於資料庫排序，不作為卡片指標。
 
 ## Launch requirements deferred to 3J-B/3J-C
 
@@ -28,7 +28,7 @@ Moderation資格與稽核、分散式 anti-spam、額外排序索引、Replies�
 
 ## Author CRUD (3J-C)
 
-已登入且完成 Email 驗證的網站使用者可對每款桌遊建立一筆評分，文字評論選填；不需要 Membership、Borrowing 或 Officer 資格。建立使用資料庫 `UNIQUE(board_game_id,user_id)` 處理並發，重複送出安全回 409。作者可一次替換自己的 rating/content，或確認後刪除整筆評分；更新與刪除由 Repository 在寫入 predicate 同時限定桌遊 ID 和 server session user ID，不接受 body 傳入作者 ID。Rating-only 仍是已評分狀態，計入平均值和評分人數，不出現在文字評論列表。
+已登入且完成 Email 驗證的網站使用者可對每款桌遊建立一筆評分，文字評論選填；不需要 Membership、Borrowing 或 Officer 資格。建立使用資料庫 `UNIQUE(board_game_id,user_id)` 處理並發，重複送出安全回 409。作者可一次替換自己的 rating/content，或確認後刪除整筆評分；更新與刪除由 Repository 在寫入 predicate 同時限定桌遊 ID 和 server session user ID，不接受 body 傳入作者 ID。Rating-only 仍是完整的公開 Review：計入平均值與評分人數，也會出現在公開列表，只省略文字段落。
 
 - `POST /api/board-games/[id]/reviews`：建立；成功 201。
 - `PATCH /api/board-games/[id]/reviews/me`：完整替換自己的 rating/content；成功 200，不會 upsert。
@@ -42,4 +42,6 @@ Moderation資格與稽核、分散式 anti-spam、額外排序索引、Replies�
 
 Production 量測時共有 607 款桌遊：完成借用 p50/p75/p90/p95 均為 0、最大 1、603 款為 0；評分數 p50/p75/p90/p95 均為 0、最大 1、606 款為 0。現況不足以校準成熟飽和值，因此 V1 採保守且易懂的小型社群預設，待累積足夠歷史後再以產品決策調整。文字評論數不參與熱門分數；rating-only 與註銷帳號保留的評分仍正常計入。
 
-熱門排序固定為 popularity score、評分數、完成借用數、平均評分（NULL 最後）、桌遊 UUID。`rating:desc` 的「評分最高」排序沿用同一 read model 的 Bayesian rating，依 Bayesian rating、評分數、原始平均、完成借用數、桌遊 UUID 排序；未評分桌遊因 Bayesian rating 為 NULL 而排在已評分桌遊之後。卡片仍只顯示原始平均與評分人數，不顯示 Bayesian 值。首頁只取熱門排序的前 6 筆；公開目錄的搜尋、分類與位置只縮小候選集合，不重新計算個別桌遊分數。Review 建立、修改、刪除及借出／歸還成功後，只失效熱門桌遊 cache。V1 不包含近期衰減、趨勢、推薦、materialized view 或 moderation。
+熱門排序固定為 popularity score、評分數、完成借用數、平均評分（NULL 最後）、桌遊 UUID。`rating:desc` 對使用者顯示為「評價推薦」，沿用同一 read model 的 Bayesian rating，依 Bayesian rating、評分數、原始平均、完成借用數、桌遊 UUID 排序；未評分桌遊因 Bayesian rating 為 NULL 而排在已評分桌遊之後。卡片仍只顯示原始平均與評分人數，不顯示 Bayesian 值。首頁只取熱門排序的前 6 筆；公開目錄的搜尋、分類與位置只縮小候選集合，不重新計算個別桌遊分數。Review 建立、修改、刪除及借出／歸還成功後，只失效熱門桌遊 cache。V1 不包含近期衰減、趨勢、推薦、materialized view 或 moderation。
+
+使用中的公開個人頁會以 `reviewPage` 分頁顯示該使用者的所有桌遊評分，包含 rating-only Review；每頁 10 筆，依建立時間與 Review UUID 倒序排列。查詢一次投影 Review 與必要的桌遊 ID／名稱，不讀取私人 Profile。註銷帳號的集中式評論歷史不在匿名化個人頁顯示，個別桌遊頁上的既有 Review 則仍以「已註銷使用者」呈現。

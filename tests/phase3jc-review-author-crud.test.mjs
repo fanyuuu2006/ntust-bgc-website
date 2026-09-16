@@ -85,7 +85,7 @@ test("own PATCH/DELETE route uses session author, never body author, and handles
   assert.equal((await DELETE(new Request("https://example.test", { method: "DELETE" }), context)).status, 404);
 });
 
-test("author UI treats rating-only as existing review and uses modal plus confirmation", async () => {
+test("author UI treats rating-only as existing review and exposes an accessible action menu", async () => {
   const source = await read("src/components/(public)/board-games/ReviewAuthorAction.tsx");
   const ratingInputSource = await read("src/components/(public)/board-games/RatingInput.tsx");
   assert.match(source, /<ConfirmDialog/);
@@ -98,7 +98,9 @@ test("author UI treats rating-only as existing review and uses modal plus confir
   const html = renderToStaticMarkup(createElement(ReviewAuthorAction, { boardGameId: gameId, eligibility: "verified", ownReview: { rating: 4, content: null } }));
   assert.match(html, /你的評分/);
   assert.match(html, /只有評分/);
-  assert.match(html, /編輯評分/);
+  assert.match(html, /aria-label="評論操作"/);
+  assert.match(html, /aria-haspopup="menu"/);
+  assert.doesNotMatch(html, />編輯評論<|>刪除評論</);
   assert.doesNotMatch(html, /登入後評分/);
   const anonymous = renderToStaticMarkup(createElement(ReviewAuthorAction, { boardGameId: gameId, eligibility: "anonymous", ownReview: null }));
   assert.match(anonymous, /登入後評分/);
@@ -107,7 +109,48 @@ test("author UI treats rating-only as existing review and uses modal plus confir
   assert.match(unverified, /完成 Email 驗證後再評分/);
   const noReview = renderToStaticMarkup(createElement(ReviewAuthorAction, { boardGameId: gameId, eligibility: "verified", ownReview: null }));
   assert.match(noReview, /評分這款桌遊/);
-  assert.doesNotMatch(noReview, /編輯評分/);
+  assert.doesNotMatch(noReview, /評論操作/);
+});
+
+test("own review ellipsis opens edit and delete actions while retaining confirmation", async () => {
+  const dom = new JSDOM("<!doctype html><html><body><div id='app'></div></body></html>", { url: "https://example.test" });
+  const previous = { window: globalThis.window, document: globalThis.document, IS_REACT_ACT_ENVIRONMENT: globalThis.IS_REACT_ACT_ENVIRONMENT };
+  globalThis.window = dom.window;
+  globalThis.document = dom.window.document;
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  let confirmOpen = false;
+  const { ReviewAuthorAction } = load("src/components/(public)/board-games/ReviewAuthorAction.tsx", {
+    "next/navigation": { useRouter: () => ({ refresh: () => {} }) },
+    "@/components/ConfirmDialog": { ConfirmDialog: ({ open }) => { confirmOpen = open; return open ? createElement("div", { "data-confirm": "delete" }) : null; } },
+    "@/components/Modal": { Modal: ({ open, title, children }) => open ? createElement("div", { "data-modal": title }, children) : null },
+  });
+  const root = createRoot(dom.window.document.getElementById("app"));
+  try {
+    await act(async () => root.render(createElement(ReviewAuthorAction, { boardGameId: gameId, eligibility: "verified", ownReview: { rating: 4, content: null } })));
+    const menuButton = dom.window.document.querySelector('button[aria-label="評論操作"]');
+    assert.equal(menuButton.getAttribute("aria-expanded"), "false");
+    await act(async () => menuButton.click());
+    assert.equal(menuButton.getAttribute("aria-expanded"), "true");
+    assert.equal(dom.window.document.querySelectorAll('[role="menuitem"]').length, 2);
+    const [editButton] = dom.window.document.querySelectorAll('[role="menuitem"]');
+    await act(async () => editButton.click());
+    assert.equal(dom.window.document.querySelector('[role="menu"]'), null);
+    assert.ok(dom.window.document.querySelector('[data-modal="編輯我的評分"]'));
+    const cancelButton = [...dom.window.document.querySelectorAll("button")].find((button) => button.textContent === "取消");
+    await act(async () => cancelButton.click());
+    await act(async () => menuButton.click());
+    const deleteButton = [...dom.window.document.querySelectorAll('[role="menuitem"]')].find((button) => button.textContent === "刪除評論");
+    await act(async () => deleteButton.click());
+    assert.equal(dom.window.document.querySelector('[role="menu"]'), null);
+    assert.equal(confirmOpen, true);
+    assert.ok(dom.window.document.querySelector('[data-confirm="delete"]'));
+  } finally {
+    await act(async () => root.unmount());
+    globalThis.window = previous.window;
+    globalThis.document = previous.document;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = previous.IS_REACT_ACT_ENVIRONMENT;
+    dom.window.close();
+  }
 });
 
 test("rating presentation formats averages, clips fractional stars, and omits slash-five copy", () => {

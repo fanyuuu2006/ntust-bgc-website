@@ -30,6 +30,8 @@ const validRegistration = {
   email: "member@example.com",
   name: "website-name",
   password: "Password1!",
+  confirmPassword: "Password1!",
+  acceptTerms: true,
   phone: "0912345678",
 };
 

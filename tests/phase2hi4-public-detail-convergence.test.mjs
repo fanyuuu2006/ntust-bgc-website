@@ -28,7 +28,8 @@ test("public detail routes share page-top and back-navigation grammar", async ()
   }
 
   const announcementBack = backLink(announcement, "/announcements");
-  const boardGameBack = backLink(boardGame, "/board-games");
+  const boardGameBack =
+    boardGame.match(/<ButtonLink[\s\S]*?href=\{returnTo\}[\s\S]*?<\/ButtonLink>/)?.[0] ?? "";
 
   for (const link of [announcementBack, boardGameBack]) {
     assert.match(link, /variant="text"/);

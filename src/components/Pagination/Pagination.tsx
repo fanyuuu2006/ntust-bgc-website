@@ -14,6 +14,7 @@ type PaginationProps = React.HTMLAttributes<HTMLElement> & {
   query: Record<string, QueryValue>;
   pageSizeOptions?: readonly number[];
   showPageSize?: boolean;
+  pageKey?: string;
 };
 
 export function Pagination({
@@ -25,6 +26,7 @@ export function Pagination({
   query,
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
   showPageSize = true,
+  pageKey = "page",
   className,
   ...rest
 }: PaginationProps) {
@@ -68,6 +70,7 @@ export function Pagination({
               basePath={basePath}
               query={query}
               direction="previous"
+              pageKey={pageKey}
             />
             <PaginationPageSelect
               page={page}
@@ -75,6 +78,7 @@ export function Pagination({
               totalPages={totalPages}
               basePath={basePath}
               query={query}
+              pageKey={pageKey}
             />
             <PaginationNavLinks
               page={page}
@@ -83,6 +87,7 @@ export function Pagination({
               basePath={basePath}
               query={query}
               direction="next"
+              pageKey={pageKey}
             />
           </div>
         )}

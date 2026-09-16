@@ -8,11 +8,13 @@ const BASE_PATH = "/board-games";
 type BoardGameGridProps = {
   boardGames: BoardGameDiscoveryItem[];
   hasActiveQuery: boolean;
+  returnTo: string;
 };
 
 export function BoardGameGrid({
   boardGames,
   hasActiveQuery,
+  returnTo,
 }: BoardGameGridProps) {
   if (boardGames.length === 0) {
     if (hasActiveQuery) {
@@ -36,7 +38,7 @@ export function BoardGameGrid({
   return (
     <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 xl:grid-cols-6">
       {boardGames.map((boardGame) => (
-        <BoardGameCard key={boardGame.id} boardGame={boardGame} />
+        <BoardGameCard key={boardGame.id} boardGame={boardGame} returnTo={returnTo} />
       ))}
     </div>
   );

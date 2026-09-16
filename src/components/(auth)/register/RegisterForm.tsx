@@ -11,6 +11,7 @@ import { FormFeedback } from "@/components/FormFeedback";
 import { Button } from "@/components/ui/Button";
 import { getSafeReturnPath } from "@/utils/redirect";
 import { NEXT_PUBLIC_TURNSTILE_SITE_KEY } from "@/libs/env";
+import { registerSchema } from "@/services/auth/auth.schema";
 
 const fields = [
   {
@@ -134,18 +135,25 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
     setFieldErrors((prev) => ({ ...prev, acceptTerms: undefined }));
   }
 
+  function focusFirstInvalidField(errors: FieldErrors) {
+    const firstField = [...fields.map(({ id }) => id), "acceptTerms"].find(
+      (field) => errors[field as keyof FieldErrors],
+    );
+    if (firstField) {
+      const fieldId = firstField === "acceptTerms" ? acceptTermsId : firstField;
+      requestAnimationFrame(() => document.getElementById(fieldId)?.focus());
+    }
+  }
+
   function validate(): FieldErrors {
-    const errors: FieldErrors = {};
-
-    if (values.password !== values.confirmPassword) {
-      errors.confirmPassword = "密碼與確認密碼不一致";
-    }
-
-    if (!values.acceptTerms) {
-      errors.acceptTerms = "請先同意使用條款並確認已閱讀隱私權政策";
-    }
-
-    return errors;
+    const result = registerSchema.safeParse(values);
+    if (result.success) return {};
+    const flattened = result.error.flatten().fieldErrors;
+    return Object.fromEntries(
+      Object.entries(flattened)
+        .filter((entry): entry is [string, string[]] => Boolean(entry[1]?.length))
+        .map(([field, messages]) => [field, messages[0]]),
+    ) as FieldErrors;
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -156,6 +164,7 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
     setFieldErrors(errors);
 
     if (Object.keys(errors).length > 0) {
+      focusFirstInvalidField(errors);
       return;
     }
 
@@ -174,6 +183,8 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
           name: values.name,
           email: values.email,
           password: values.password,
+          confirmPassword: values.confirmPassword,
+          acceptTerms: values.acceptTerms,
           turnstileToken,
           real_name: values.real_name,
           phone: values.phone,
@@ -183,9 +194,22 @@ export const RegisterForm = ({ className, ...rest }: RegisterFormProps) => {
     } catch (err) {
       turnstileRef.current?.reset();
       setTurnstileToken("");
-      setFormError(
-        err instanceof ApiError ? err.message : "註冊失敗，請稍後再試",
-      );
+      if (err instanceof ApiError && err.errors) {
+        const apiFieldErrors = Object.fromEntries(
+          Object.entries(err.errors)
+            .filter((entry): entry is [string, string[]] => Boolean(entry[1]?.length))
+            .map(([field, messages]) => [field, messages[0]]),
+        ) as FieldErrors;
+        setFieldErrors(apiFieldErrors);
+        focusFirstInvalidField(apiFieldErrors);
+        setFormError(
+          Object.keys(apiFieldErrors).length > 0 ? null : err.message,
+        );
+      } else {
+        setFormError(
+          err instanceof ApiError ? err.message : "註冊失敗，請稍後再試",
+        );
+      }
     } finally {
       setIsLoading(false);
     }
