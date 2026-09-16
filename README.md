@@ -3,25 +3,71 @@
 國立臺灣科技大學桌上遊戲研究社的官方網站、社員服務平台與幹部管理後台。
 使用 Next.js App Router、TypeScript、Tailwind CSS 與 Supabase PostgreSQL。
 
-## 開發
+## 本機開發環境設定
 
-    npm install
-    npm run dev
+Windows PowerShell 初次設定：
+
+```powershell
+git clone https://github.com/fanyuuu2006/ntust-bgc-website.git
+cd ntust-bgc-website
+
+npm ci
+Copy-Item .env.example .env.local
+npm run dev
+```
+
+接著開啟 <http://localhost:3000>。若資料庫設定完整，也可以用
+<http://localhost:3000/api/health> 檢查 application 與 database 狀態。
+
+如果 `.env.local` 已經存在，不要用 `Copy-Item` 覆寫。請分別開啟 `.env.example` 與
+`.env.local`，只補上缺少的「變數名稱」，並向維護者索取目前工作真正需要的值。
+
+### 環境變數
+
+`.env.example` 是可以提交到 Git 的安全範本；`.env.local` 則保存每位開發者自己的真實設定，
+不可提交。表格中的「依工作需要」代表一般公開頁面不一定需要該憑證，但相關功能會需要。
+
+| 變數 | 本機需求 | Secret | 用途 |
+| --- | --- | --- | --- |
+| `SITE_URL` | 建議保留範本值 | 否 | 網站 canonical origin；本機使用 `http://localhost:3000` |
+| `SUPABASE_URL` | 使用資料庫時需要 | 否 | Server 使用的 Supabase project origin |
+| `NEXT_PUBLIC_SUPABASE_URL` | 使用 RichEditor 圖片時需要 | 否（公開） | Browser 驗證 Rich Content 圖片來源；須與 `SUPABASE_URL` 同 origin |
+| `SUPABASE_SECRET_KEY` | 使用資料庫時需要 | 是 | Server repositories 存取 Supabase；不可放入 client |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | 測試註冊時需要 | 否（公開） | Browser 顯示 Cloudflare Turnstile |
+| `TURNSTILE_SECRET_KEY` | 測試註冊時需要 | 是 | Server 驗證 Turnstile token |
+| `BREVO_API_KEY` | 測試寄信時需要 | 是 | Brevo transactional email API |
+| `EMAIL_FROM` | 測試寄信時需要 | 否 | Brevo 已驗證的寄件地址 |
+| `EMAIL_FROM_NAME` | 測試寄信時需要 | 否 | 寄件者顯示名稱 |
+| `REGISTER_KEY_SECRET` | 測試產生社員註冊碼時需要 | 是 | Server 產生註冊碼；至少 16 字元 |
+| `DATABASE_URL` | 一般開發不需要 | 是 | 維護／資料庫驗證工具的直接連線字串 |
+| `SUPABASE_SERVICE_ROLE_KEY` | 一般開發不需要 | 是 | 舊有維護設定；目前 application client 不使用 |
+
+`SUPABASE_URL` 與 `NEXT_PUBLIC_SUPABASE_URL` 在一般開發環境應指向同一個 Supabase
+project origin。`NEXT_PUBLIC_*` 會被打包到瀏覽器，因此只能放公開設定；
+`SUPABASE_SECRET_KEY` 絕對不可改名成 `NEXT_PUBLIC_SUPABASE_SECRET_KEY` 或以其他方式傳到 client。
+
+Brevo 設定採延遲讀取：瀏覽首頁或進行不寄信的開發工作不需要 Production Brevo API key；
+只有實際寄送／重寄驗證信的流程才需要三項 email 設定。請向維護者索取開發用途設定，
+不要要求或共用 Production key。
+
+`SITE_URL` 是 canonical production origin 的唯一 deployment 設定來源。Production 必須設定
+完整 HTTP/HTTPS origin，且不可包含 path、query 或 hash；development 與 test 未設定時使用
+`http://localhost:3000`。Vercel Preview 不會自動使用 `VERCEL_URL` 作為 canonical origin。
+
+### 協作者安全提醒
+
+- GitHub 帳號、密碼、Personal Access Token 與 SSH private key 都屬於個人，不要互相分享。
+- Server secrets 只在負責的功能確實需要時向維護者索取。
+- 不要把 `.env.local`、secret、token 或 private key 貼到 Issue、PR、commit、截圖或公開聊天。
+- Agent 若回報缺少設定，只傳「環境變數名稱」給維護者，不要傳既有值或整份 `.env.local`。
 
 常用檢查：
 
-    npm run lint
-    npx tsc --noEmit
-    git diff --check
-
-### 環境設定
-
-`SITE_URL` 是網站 canonical production origin 的唯一 deployment 設定來源，例如
-`https://ntust-bgc.vercel.app`。Production 必須明確設定完整的 HTTP/HTTPS origin，且不可包含
-path、query 或 hash；development 與 test 未設定時使用 `http://localhost:3000`。
-
-Vercel Preview 不會自動使用 `VERCEL_URL` 作為 canonical origin，因此 Production 與需要驗證
-正式 canonical 的 Preview 環境都應明確提供 `SITE_URL`。
+```powershell
+npm run lint
+npx tsc --noEmit
+git diff --check
+```
 
 ## Admin 架構
 
