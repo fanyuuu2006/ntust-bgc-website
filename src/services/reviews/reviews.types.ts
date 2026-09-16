@@ -2,6 +2,13 @@ import type { PublicUserIdentity } from "@/types/public-user";
 
 export type ReviewRating = 1 | 2 | 3 | 4 | 5;
 export type ReviewSort = "newest" | "oldest" | "highest" | "lowest";
+export type ReviewListQuery = Readonly<{
+  page: number;
+  pageSize: number;
+  search?: string;
+  rating?: ReviewRating;
+  sort: ReviewSort;
+}>;
 
 export type PublicBoardGameReview = Readonly<{
   id: string;

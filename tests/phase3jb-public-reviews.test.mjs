@@ -54,7 +54,7 @@ test("rating count and written review count remain separate", async () => {
 });
 
 test("review presentation renders canonical author, safe plain text, edited state and pagination", () => {
-  const { BoardGameReviews } = load("src/components/(public)/board-games/BoardGameReviews.tsx");
+  const { BoardGameReviews } = load("src/components/(public)/board-games/BoardGameReviews.tsx", { "next/navigation": { useRouter: () => ({ push: () => {}, replace: () => {} }) } });
   const html = renderToStaticMarkup(createElement(BoardGameReviews, {
     boardGameId: "game-id",
     aggregate: { averageRating: 4, ratingCount: 3, reviewCount: 2 },
@@ -84,7 +84,7 @@ test("review presentation renders canonical author, safe plain text, edited stat
 });
 
 test("mixed public list renders rating-only entries without an empty content block", () => {
-  const { BoardGameReviews } = load("src/components/(public)/board-games/BoardGameReviews.tsx");
+  const { BoardGameReviews } = load("src/components/(public)/board-games/BoardGameReviews.tsx", { "next/navigation": { useRouter: () => ({ push: () => {}, replace: () => {} }) } });
   const html = renderToStaticMarkup(createElement(BoardGameReviews, {
     boardGameId: "game-id",
     aggregate: { averageRating: 4.5, ratingCount: 2, reviewCount: 1 },
@@ -106,7 +106,7 @@ test("mixed public list renders rating-only entries without an empty content blo
 });
 
 test("review presentation distinguishes no ratings from rating-only activity", () => {
-  const { BoardGameReviews } = load("src/components/(public)/board-games/BoardGameReviews.tsx");
+  const { BoardGameReviews } = load("src/components/(public)/board-games/BoardGameReviews.tsx", { "next/navigation": { useRouter: () => ({ push: () => {}, replace: () => {} }) } });
   const base = { boardGameId: "game", sort: "newest", reviews: { data: [], page: 1, pageSize: 10, total: 0, totalPages: 0 } };
   const empty = renderToStaticMarkup(createElement(BoardGameReviews, { ...base, aggregate: { averageRating: null, ratingCount: 0, reviewCount: 0 } }));
   assert.match(empty, /尚無評分/);

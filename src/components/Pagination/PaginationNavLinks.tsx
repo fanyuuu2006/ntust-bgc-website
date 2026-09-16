@@ -10,6 +10,7 @@ type PaginationNavLinksProps = React.HTMLAttributes<HTMLDivElement> & {
   basePath: string;
   query: Record<string, QueryValue>;
   direction?: "previous" | "next" | "both";
+  pageKey?: string;
 };
 
 export function PaginationNavLinks({
@@ -19,11 +20,14 @@ export function PaginationNavLinks({
   basePath,
   query,
   direction = "both",
+  pageKey = "page",
   className,
   ...rest
 }: PaginationNavLinksProps) {
   const hrefForPage = (targetPage: number) =>
-    `${basePath}?${buildQueryString(query, { page: targetPage, pageSize })}`;
+    `${basePath}?${buildQueryString(query, pageKey === "page"
+      ? { page: targetPage, pageSize }
+      : { [pageKey]: targetPage })}`;
 
   return (
     <div

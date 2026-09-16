@@ -51,7 +51,7 @@ async function generateMetadataContent({
     title,
     description,
     alternates: { canonical },
-    ...(reviewQuery.page > 1 || reviewQuery.sort !== "newest"
+    ...(reviewQuery.page > 1 || reviewQuery.sort !== "newest" || reviewQuery.search || reviewQuery.rating
       ? { robots: { index: false, follow: true } }
       : {}),
     openGraph: {
@@ -87,6 +87,8 @@ async function BoardGameDetailPage({
   if (reviews.totalPages > 0 && reviewQuery.page > reviews.totalPages) {
     redirect(`/board-games/${boardGame.id}?${buildQueryString({
       reviewPage: reviews.totalPages,
+      reviewSearch: reviewQuery.search,
+      reviewRating: reviewQuery.rating,
       reviewSort: reviewQuery.sort === "newest" ? undefined : reviewQuery.sort,
       returnTo: returnTo === "/board-games" ? undefined : returnTo,
     })}`);
@@ -199,7 +201,7 @@ async function BoardGameDetailPage({
             boardGameId={boardGame.id}
             aggregate={reviewAggregate}
             reviews={reviews}
-            sort={reviewQuery.sort}
+            query={reviewQuery}
             returnTo={returnTo === "/board-games" ? undefined : returnTo}
             authorAction={<ReviewAuthorAction boardGameId={boardGame.id} ownReview={ownReview} eligibility={viewer.status === "unavailable" ? "unavailable" : !user ? "anonymous" : !user.email_verified_at ? "unverified" : "verified"} />}
           />

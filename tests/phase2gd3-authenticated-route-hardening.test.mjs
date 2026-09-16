@@ -9,7 +9,6 @@ test("authenticated routes provide page or result-shaped busy states and a share
   const [errorBoundary, ...loadingStates] = await Promise.all([
     readSource("src/app/(authenticated)/error.tsx"),
     readSource("src/app/(authenticated)/dashboard/loading.tsx"),
-    readSource("src/app/(authenticated)/profile/loading.tsx"),
     readSource("src/app/(authenticated)/settings/loading.tsx"),
     readSource("src/components/(authenticated)/borrowings/BorrowingsResultsLoading.tsx"),
     readSource("src/components/(authenticated)/memberships/MembershipRecordsLoading.tsx"),
@@ -27,9 +26,10 @@ test("authenticated routes provide page or result-shaped busy states and a share
   }
 
   assert.match(loadingStates[0], /aria-label="頁面載入中"/);
-  assert.match(loadingStates[3], /aria-label="正在更新借用紀錄"/);
-  assert.match(loadingStates[4], /aria-label="正在更新社員紀錄"/);
-  assert.notEqual(loadingStates[0], loadingStates[3]);
+  assert.match(loadingStates[2], /aria-label="正在更新借用紀錄"/);
+  assert.match(loadingStates[3], /aria-label="正在更新社員紀錄"/);
+  assert.notEqual(loadingStates[0], loadingStates[2]);
+  await assert.rejects(readSource("src/app/(authenticated)/profile/loading.tsx"), /ENOENT/);
 });
 
 test("profile and memberships recover from distinct missing and empty data states", async () => {

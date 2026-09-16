@@ -6,6 +6,7 @@ import { buildPaginationResult, normalizePaginationOptions } from "@/repositorie
 import type { BoardGameReview } from "@/types/database";
 import type { PublicIdentitySource } from "@/services/users/public-identity";
 import type { ReviewSort } from "@/services/reviews/reviews.types";
+import { buildIlikeSearch } from "@/repositories/shared/search";
 
 const REVIEW_FIELDS = "id,board_game_id,user_id,rating,content,created_at,updated_at";
 const PUBLIC_REVIEW_FIELDS = `${REVIEW_FIELDS},author:users!board_game_reviews_user_id_fkey(id,name,avatar,closed_at)`;
@@ -45,13 +46,15 @@ export const boardGameReviewsRepository = {
     return data;
   },
 
-  findPublicPage: async (boardGameId: string, options: { page: number; pageSize: number; sort: ReviewSort }) => {
+  findPublicPage: async (boardGameId: string, options: { page: number; pageSize: number; search?: string; rating?: number; sort: ReviewSort }) => {
     const { page, pageSize, from, to } = normalizePaginationOptions({ ...options, maxPageSize: 50 });
     let query = supabase
       .from("board_game_reviews")
       .select(PUBLIC_REVIEW_FIELDS, { count: "exact" })
       .eq("board_game_id", boardGameId);
 
+    if (options.search) query = query.or(buildIlikeSearch(["content"], options.search));
+    if (options.rating) query = query.eq("rating", options.rating);
     if (options.sort === "highest" || options.sort === "lowest") {
       query = query.order("rating", { ascending: options.sort === "lowest" });
     }
@@ -63,14 +66,40 @@ export const boardGameReviewsRepository = {
     return buildPaginationResult((data ?? []) as unknown as PublicReviewSource[], count, page, pageSize);
   },
 
-  findPublicPageByUser: async (userId: string, options: { page: number; pageSize: number }) => {
+  findPublicPageByUser: async (userId: string, options: { page: number; pageSize: number; search?: string; rating?: number; sort?: ReviewSort }) => {
     const { page, pageSize, from, to } = normalizePaginationOptions({ ...options, maxPageSize: 12 });
-    const { data, error, count } = await supabase
+    let matchingBoardGameIds: string[] = [];
+    if (options.search) {
+      const { data: boardGames, error: boardGameError } = await supabase
+        .from("board_games")
+        .select("id")
+        .or(buildIlikeSearch(["name"], options.search));
+      if (boardGameError) throwRepositoryError("搜尋個人評論桌遊失敗", boardGameError);
+      matchingBoardGameIds = (boardGames ?? []).map((boardGame) => boardGame.id);
+    }
+
+    let query = supabase
       .from("board_game_reviews")
       .select(`${REVIEW_FIELDS},board_game:board_games!board_game_reviews_board_game_id_fkey(id,name)`, { count: "exact" })
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .order("id", { ascending: false })
+      .eq("user_id", userId);
+
+    if (options.search) {
+      const conditions = [
+        buildIlikeSearch(["content"], options.search),
+        matchingBoardGameIds.length ? `board_game_id.in.(${matchingBoardGameIds.join(",")})` : "",
+      ].filter(Boolean);
+      query = query.or(conditions.join(","));
+    }
+    if (options.rating) query = query.eq("rating", options.rating);
+
+    const sort = options.sort ?? "newest";
+    if (sort === "highest" || sort === "lowest") {
+      query = query.order("rating", { ascending: sort === "lowest" });
+    }
+    const ascending = sort === "oldest";
+    const { data, error, count } = await query
+      .order("created_at", { ascending })
+      .order("id", { ascending })
       .range(from, to);
     if (error) throwRepositoryError("查詢公開個人頁評論失敗", error);
     return buildPaginationResult((data ?? []) as unknown as PublicProfileReviewSource[], count, page, pageSize);

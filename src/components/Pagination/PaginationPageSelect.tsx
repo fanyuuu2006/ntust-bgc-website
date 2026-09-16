@@ -11,6 +11,7 @@ type PaginationPageSelectProps = React.LabelHTMLAttributes<HTMLLabelElement> & {
   totalPages: number;
   basePath: string;
   query: Record<string, QueryValue>;
+  pageKey?: string;
 };
 
 export function PaginationPageSelect({
@@ -19,16 +20,19 @@ export function PaginationPageSelect({
   totalPages,
   basePath,
   query,
+  pageKey = "page",
   className,
   ...rest
 }: PaginationPageSelectProps) {
   const router = useRouter();
 
   function handleChange(event: React.ChangeEvent<HTMLSelectElement>) {
-    const queryString = buildQueryString(query, {
-      page: event.target.value,
-      pageSize,
-    });
+    const queryString = buildQueryString(
+      query,
+      pageKey === "page"
+        ? { page: event.target.value, pageSize }
+        : { [pageKey]: event.target.value },
+    );
 
     router.push(`${basePath}?${queryString}`);
   }

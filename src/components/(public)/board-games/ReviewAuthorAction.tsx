@@ -18,10 +18,11 @@ import { RatingStars } from "./RatingStars";
 
 type OwnReview = { rating: ReviewRating; content: string | null };
 
-export function ReviewAuthorAction({ boardGameId, eligibility, ownReview }: {
+export function ReviewAuthorAction({ boardGameId, eligibility, ownReview, actionsOnly = false }: {
   boardGameId: string;
   eligibility: "anonymous" | "unverified" | "verified" | "unavailable";
   ownReview: OwnReview | null;
+  actionsOnly?: boolean;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -85,16 +86,16 @@ export function ReviewAuthorAction({ boardGameId, eligibility, ownReview }: {
     } finally { inFlight.current = false; setBusy(false); }
   };
 
-  return <div className="mt-5 min-w-0 space-y-3">
-    {ownReview ? <div className="relative min-w-0 border-t border-(--border-muted) pt-4 pr-12">
-      <div className="min-w-0">
+  return <div className={actionsOnly ? "contents" : "mt-5 min-w-0 space-y-3"}>
+    {ownReview ? <div className={actionsOnly ? "contents" : "relative min-w-0 border-t border-(--border-muted) pt-4 pr-12"}>
+      {!actionsOnly ? <div className="min-w-0">
         <p className="text-xs font-medium text-(--text-muted)">你的評分</p>
         <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
           <RatingStars rating={ownReview.rating} label={`你的評分 ${ownReview.rating} 分`} />
           <span className="text-xs text-(--text-muted)">{ownReview.content ? "已留下文字評論" : "只有評分"}</span>
         </div>
-      </div>
-      <div ref={actionMenuRef} className="absolute right-0 top-3">
+      </div> : null}
+      <div ref={actionMenuRef} className={actionsOnly ? "absolute right-0 top-2" : "absolute right-0 top-3"}>
         <button
           type="button"
           aria-label="評論操作"
@@ -112,8 +113,8 @@ export function ReviewAuthorAction({ boardGameId, eligibility, ownReview }: {
           </div>
         ) : null}
       </div>
-    </div> : <Button variant="outline" size="sm" className="min-h-11" onClick={openEditor}>評分這款桌遊</Button>}
-    <FormFeedback error={editing ? null : error} success={success} />
+    </div> : actionsOnly ? null : <Button variant="outline" size="sm" className="min-h-11" onClick={openEditor}>評分這款桌遊</Button>}
+    {actionsOnly && !error && !success ? null : <FormFeedback error={editing ? null : error} success={success} />}
     {editing ? <Modal open onClose={() => { if (!busy) setEditing(false); }} closeDisabled={busy} title={ownReview ? "編輯我的評分" : "評分這款桌遊"}>
       <form onSubmit={submit} className="space-y-5">
         <RatingInput value={rating} onChange={setRating} disabled={busy} invalid={rating === null && Boolean(error)} />

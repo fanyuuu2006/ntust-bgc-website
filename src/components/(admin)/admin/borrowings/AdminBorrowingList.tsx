@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { UserRound } from "lucide-react";
 
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
@@ -473,9 +474,12 @@ function BoardGameSummary({
 }) {
   return (
     <div className="min-w-0">
-      <p className={`${titleClassName} font-medium text-(--text-primary)`}>
+      <Link
+        href={`/board-games/${borrowing.board_game.id}`}
+        className={`${titleClassName} font-medium text-(--interactive-primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)`}
+      >
         {borrowing.board_game.name}
-      </p>
+      </Link>
       <p className="mt-1 text-xs text-(--text-muted)">
         社產編號 #
         {borrowing.board_game.inventory_number}

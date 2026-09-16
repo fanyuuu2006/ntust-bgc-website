@@ -108,7 +108,7 @@ test("board-game card carries the canonical return target without changing its d
 });
 
 test("review navigation preserves return state while metadata remains detail-canonical", async () => {
-  const { BoardGameReviews } = load("src/components/(public)/board-games/BoardGameReviews.tsx");
+  const { BoardGameReviews } = load("src/components/(public)/board-games/BoardGameReviews.tsx", { "next/navigation": { useRouter: () => ({ push: () => {}, replace: () => {} }) } });
   const returnTo = "/board-games?page=4&sort=rating%3Adesc";
   const html = renderToStaticMarkup(createElement(BoardGameReviews, {
     boardGameId: "game", returnTo, sort: "oldest",
@@ -116,7 +116,7 @@ test("review navigation preserves return state while metadata remains detail-can
     reviews: { data: [], page: 1, pageSize: 10, total: 2, totalPages: 2 },
   }));
   assert.match(html, /name="returnTo" value="\/board-games\?page=4&amp;sort=rating%3Adesc"/);
-  assert.match(html, /reviewPage=2[^"#]*returnTo=/);
+  assert.match(html, /returnTo=[^"#]*reviewPage=2/);
   const detailSource = await import("node:fs/promises").then(({ readFile }) => readFile("src/app/(public)/board-games/[id]/page.tsx", "utf8"));
   assert.match(detailSource, /const canonical = `\/board-games\/\$\{boardGame\.id\}`/);
   assert.doesNotMatch(detailSource, /canonical\s*=.*returnTo/);
@@ -168,9 +168,8 @@ test("profile review repository uses one bounded relationship query and determin
 });
 
 test("profile review presentation includes written and rating-only rows without filler", () => {
-  const { ProfileReviews } = load("src/components/(public)/profile/ProfileReviews.tsx");
-  const html = renderToStaticMarkup(createElement(ProfileReviews, {
-    userId: "user",
+  const { ProfileReviewItems } = load("src/components/(public)/profile/ProfileReviews.tsx");
+  const html = renderToStaticMarkup(createElement(ProfileReviewItems, {
     reviews: {
       page: 1, pageSize: 10, total: 2, totalPages: 1,
       data: [
@@ -203,6 +202,7 @@ test("profile review service exposes only review and narrow board-game fields", 
 test("active public profile loads one public review page and closed profile suppresses history", async () => {
   let calls = 0;
   const activePage = load("src/app/(public)/profile/[id]/page.tsx", {
+    "next/navigation": { useRouter: () => ({ push: () => {}, replace: () => {} }), redirect: () => {} },
     "./public-profile": { getPublicProfile: async () => ({ identity: { id: "00000000-0000-4000-8000-000000000001", name: "會員", avatar: null }, identityBadges: [], clubFootprint: { totalBorrowedCount: 0, attendedCount: 0, joinedAcademicYear: null } }) },
     "@/services/reviews/reviews.service": { reviewsService: { listPublicByUser: async () => { calls++; return { data: [], page: 1, pageSize: 10, total: 0, totalPages: 0 }; } } },
   });
@@ -213,6 +213,7 @@ test("active public profile loads one public review page and closed profile supp
   assert.equal(calls, 2);
 
   const closedPage = load("src/app/(public)/profile/[id]/page.tsx", {
+    "next/navigation": { useRouter: () => ({ push: () => {}, replace: () => {} }), redirect: () => {} },
     "./public-profile": { getPublicProfile: async () => ({ identity: { id: "u", name: "已註銷使用者", avatar: null }, identityBadges: [], clubFootprint: null }) },
     "@/services/reviews/reviews.service": { reviewsService: { listPublicByUser: async () => { throw new Error("must not query"); } } },
   });

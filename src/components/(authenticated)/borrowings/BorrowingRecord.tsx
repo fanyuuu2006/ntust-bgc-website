@@ -1,4 +1,5 @@
 import { CalendarClock, TriangleAlert } from "lucide-react";
+import Link from "next/link";
 
 import { CancelBorrowingAction } from "@/components/(authenticated)/borrowings/CancelBorrowingAction";
 import { BoardGameImage } from "@/components/BoardGameImage";
@@ -28,11 +29,14 @@ export function BorrowingRecord({
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-start gap-2">
             <div className="min-w-0 flex-1">
-              <h2
-                title={borrowing.board_game.name}
-                className="min-w-0 flex-1 line-clamp-2 text-sm font-semibold leading-snug text-(--text-primary) md:text-base"
-              >
-                {borrowing.board_game.name}
+              <h2 className="min-w-0 flex-1 text-sm font-semibold leading-snug md:text-base">
+                <Link
+                  href={`/board-games/${borrowing.board_game.id}`}
+                  title={borrowing.board_game.name}
+                  className="line-clamp-2 text-(--interactive-primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+                >
+                  {borrowing.board_game.name}
+                </Link>
               </h2>
               <p className="mt-0.5 text-xs text-(--text-muted)">
                 社產編號 #{borrowing.board_game.inventory_number}
