@@ -59,6 +59,20 @@ function renderNode(node: RichBlock | RichInline | RichListItem): ReactNode {
         您的瀏覽器無法播放這段音訊。<a href={node.attrs.src}>開啟音訊</a>
       </audio>
     );
+  if (node.type === "image")
+    return (
+      <figure className="rich-content-image">
+        {/* Rich Content 圖片已由 canonical Storage URL validator 限制，不使用 Vercel image optimization。 */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={node.attrs.src}
+          alt={node.attrs.alt}
+          loading="lazy"
+          decoding="async"
+        />
+        {node.attrs.caption ? <figcaption>{node.attrs.caption}</figcaption> : null}
+      </figure>
+    );
   const children = node.content?.map((child, index) => (
     <Fragment key={index}>{renderNode(child)}</Fragment>
   ));

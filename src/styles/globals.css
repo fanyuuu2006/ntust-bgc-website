@@ -15,6 +15,11 @@
 .rich-content h3 { margin-top: 1.2em; font-size: 1.2rem; font-weight: 600; line-height: 1.5; }
 .rich-content h4 { margin-top: 1em; font-size: 1.05rem; font-weight: 600; line-height: 1.5; }
 .rich-content video, .rich-content audio { display: block; width: 100%; min-width: 0; max-width: 100%; }
+.rich-content-image { max-width: 100%; }
+.rich-content-image img { display: block; width: auto; max-width: 100%; height: auto; border-radius: .5rem; }
+.rich-content-image figcaption { margin-top: .4rem; color: var(--text-muted); font-size: .875rem; line-height: 1.5; overflow-wrap: anywhere; }
+.rich-editor-image { cursor: pointer; }
+.rich-editor-image.ProseMirror-selectednode { outline: 2px solid var(--interactive-primary); outline-offset: 3px; border-radius: .5rem; }
 .rich-media-video { aspect-ratio: 16 / 9; width: 100%; min-width: 0; }
 .rich-media-video iframe { width: 100%; height: 100%; border: 0; border-radius: .5rem; }
 .rich-editor-media { padding: .5rem .75rem; border: 1px solid var(--border-default); border-radius: .5rem; background: var(--surface-subtle); overflow-wrap: anywhere; cursor: pointer; }

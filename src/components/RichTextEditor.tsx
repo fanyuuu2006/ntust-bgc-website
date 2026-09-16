@@ -20,6 +20,7 @@ import {
   ListOrdered,
   Minus,
   Film,
+  Image as ImageIcon,
   Quote,
   Redo2,
   Undo2,
@@ -31,6 +32,19 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { isSafeRichLink, type RichContent } from "@/libs/rich-content/content";
 import { canonicalEditorContent } from "@/libs/rich-content/editor-document";
+import { RichContentImageExtension } from "@/libs/rich-content/editor-image";
+import {
+  isCanonicalRichContentImageUrl,
+  RICH_CONTENT_IMAGE_MAX_BYTES,
+  RICH_CONTENT_IMAGE_MIME_TYPES,
+  type RichImageNode,
+} from "@/libs/rich-content/image";
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KiB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MiB`;
+}
 
 /**
  * 讓 Tiptap 啟用的節點與 mark 對齊網站 v1 schema；工具列不是 Server 驗證的替代品。
@@ -39,6 +53,7 @@ export function createRichTextExtensions(
   onEditMedia?: (node: RichMediaNode) => void,
 ) {
   return [
+    RichContentImageExtension,
     ...createMediaExtensions(onEditMedia),
     StarterKit.configure({
       // 公告／桌遊／活動名稱由頁面擁有 H1；作者內容只開放 H2／H3／H4。
@@ -96,6 +111,18 @@ export function RichTextEditor({
   const [linkError, setLinkError] = useState("");
   const linkInputRef = useRef<HTMLInputElement>(null);
   const [linkSelection, setLinkSelection] = useState<{ from: number; to: number; existing: boolean } | null>(null);
+  const [imageOpen, setImageOpen] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageAlt, setImageAlt] = useState("");
+  const [imageCaption, setImageCaption] = useState("");
+  const [imageDecorative, setImageDecorative] = useState(false);
+  const [imageError, setImageError] = useState("");
+  const [imagePending, setImagePending] = useState(false);
+  const [imageTarget, setImageTarget] = useState<{
+    position: number;
+    existing: RichImageNode | null;
+  } | null>(null);
+  const imageFileRef = useRef<HTMLInputElement>(null);
   function showMedia(node?: RichMediaNode) {
     setMediaKind("auto");
     setMediaUrl(node ? mediaSource(node) : "");
@@ -123,6 +150,14 @@ export function RichTextEditor({
         class:
           "rich-content rich-editor-content min-w-0 max-w-full outline-none",
       },
+      handlePaste: (_view, event) =>
+        [...(event.clipboardData?.files ?? [])].some((file) =>
+          file.type.startsWith("image/"),
+        ),
+      handleDrop: (_view, event) =>
+        [...(event.dataTransfer?.files ?? [])].some((file) =>
+          file.type.startsWith("image/"),
+        ),
     },
   });
   useEffect(() => {
@@ -148,6 +183,7 @@ export function RichTextEditor({
             empty: editor.isEmpty,
             media:
               editor.isActive("videoEmbed") || editor.isActive("audioEmbed"),
+            image: editor.isActive("image"),
             bold: editor.isActive("bold"),
             italic: editor.isActive("italic"),
             bullet: editor.isActive("bulletList"),
@@ -265,6 +301,135 @@ export function RichTextEditor({
       );
     }
   }
+
+  function resetImageForm() {
+    setImageFile(null);
+    setImageAlt("");
+    setImageCaption("");
+    setImageDecorative(false);
+    setImageError("");
+    if (imageFileRef.current) imageFileRef.current.value = "";
+  }
+
+  function openImage() {
+    if (!editor || disabled) return;
+    const existing = editor.isActive("image")
+      ? canonicalEditorContent({
+          type: "image",
+          attrs: editor.getAttributes("image"),
+        }) as RichImageNode
+      : null;
+    const position = editor.state.selection.from;
+    setImageTarget({ position, existing });
+    setImageFile(null);
+    setImageAlt(existing?.attrs.alt ?? "");
+    setImageCaption(existing?.attrs.caption ?? "");
+    setImageDecorative(existing?.attrs.alt === "");
+    setImageError("");
+    setImageOpen(true);
+  }
+
+  function closeImage() {
+    if (imagePending) return;
+    setImageOpen(false);
+    setImageTarget(null);
+    resetImageForm();
+    requestAnimationFrame(() => {
+      if (!editor || editor.isDestroyed) return;
+      editor.commands.focus(undefined, { scrollIntoView: false });
+    });
+  }
+
+  function validateImageForm(): string | null {
+    if (!imageTarget?.existing) {
+      if (!imageFile) return "請選擇一張圖片。";
+      if (imageFile.size === 0) return "圖片檔案不能是空白檔案。";
+      if (imageFile.size > RICH_CONTENT_IMAGE_MAX_BYTES) {
+        return "圖片檔案不得超過 4 MiB。";
+      }
+      if (!RICH_CONTENT_IMAGE_MIME_TYPES.includes(
+        imageFile.type as (typeof RICH_CONTENT_IMAGE_MIME_TYPES)[number],
+      )) return "僅支援 JPEG、PNG 或 WebP 圖片。";
+    }
+    if (!imageDecorative && !imageAlt.trim()) {
+      return "請輸入圖片說明，或將圖片標示為裝飾。";
+    }
+    if (Array.from(imageAlt.trim()).length > 300) return "圖片說明不得超過 300 字。";
+    if (Array.from(imageCaption.trim()).length > 500) return "圖片標題不得超過 500 字。";
+    return null;
+  }
+
+  async function applyImage() {
+    if (!editor || disabled || !imageTarget || imagePending) return;
+    const validationError = validateImageForm();
+    if (validationError) {
+      setImageError(validationError);
+      return;
+    }
+    setImageError("");
+    setImagePending(true);
+    try {
+      let src = imageTarget.existing?.attrs.src;
+      if (!src) {
+        const formData = new FormData();
+        formData.append("file", imageFile!);
+        const response = await fetch("/api/admin/rich-content/images", {
+          method: "POST",
+          body: formData,
+        });
+        const payload = await response.json().catch(() => null) as
+          | { data?: { src?: unknown }; message?: unknown }
+          | null;
+        if (!response.ok) {
+          throw new Error(
+            typeof payload?.message === "string"
+              ? payload.message
+              : "圖片上傳失敗，請稍後再試。",
+          );
+        }
+        if (
+          typeof payload?.data?.src !== "string" ||
+          !isCanonicalRichContentImageUrl(payload.data.src)
+        ) throw new Error("圖片服務回傳了無效的網址，請稍後再試。");
+        src = payload.data.src;
+      }
+      const node: RichImageNode = {
+        type: "image",
+        attrs: {
+          src,
+          alt: imageDecorative ? "" : imageAlt.trim(),
+          caption: imageCaption.trim() || null,
+        },
+      };
+      const { position, existing } = imageTarget;
+      if (existing && editor.state.doc.nodeAt(position)?.type.name === "image") {
+        editor.chain().command(({ tr }) => {
+          tr.setNodeMarkup(position, undefined, node.attrs);
+          return true;
+        }).run();
+      } else {
+        const safePosition = Math.min(
+          Math.max(position, 0),
+          editor.state.doc.content.size,
+        );
+        const inserted = editor.commands.insertContentAt(safePosition, node);
+        if (!inserted) editor.commands.insertContentAt(editor.state.doc.content.size, node);
+      }
+      setImagePending(false);
+      setImageOpen(false);
+      setImageTarget(null);
+      resetImageForm();
+      requestAnimationFrame(() => {
+        if (editor.isDestroyed) return;
+        editor.commands.focus(undefined, { scrollIntoView: false });
+      });
+    } catch (error) {
+      setImagePending(false);
+      setImageError(
+        error instanceof Error ? error.message : "圖片上傳失敗，請稍後再試。",
+      );
+    }
+  }
   const actions = [
     {
       group: "復原與重做",
@@ -363,6 +528,13 @@ export function RichTextEditor({
       Icon: Film,
       pressed: !!selectedMedia,
       run: openMedia,
+    },
+    {
+      group: "媒體",
+      label: state?.image ? "編輯圖片" : "插入圖片",
+      Icon: ImageIcon,
+      pressed: !!state?.image,
+      run: openImage,
     },
     {
       group: "引言與插入",
@@ -534,6 +706,112 @@ export function RichTextEditor({
             </Button>
             <Button size="sm" onClick={applyMedia} disabled={disabled}>
               {selectedMedia ? "更新媒體" : "插入媒體"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        open={imageOpen}
+        onClose={closeImage}
+        title={imageTarget?.existing ? "編輯圖片" : "插入圖片"}
+        size="sm"
+        contentClassName="max-h-[70dvh]"
+        closeDisabled={imagePending}
+      >
+        <div className="space-y-4">
+          {!imageTarget?.existing ? (
+            <div className="space-y-2">
+              <label htmlFor={id + "-image-file"} className="block text-sm font-medium">
+                圖片
+              </label>
+              <Input
+                ref={imageFileRef}
+                id={id + "-image-file"}
+                type="file"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                disabled={imagePending}
+                aria-invalid={!!imageError && !imageFile}
+                aria-describedby={id + "-image-file-help" + (imageError ? " " + id + "-image-error" : "")}
+                onChange={(event) => {
+                  setImageFile(event.target.files?.[0] ?? null);
+                  setImageError("");
+                }}
+              />
+              <p id={id + "-image-file-help"} className="text-xs leading-5 text-(--text-muted)">
+                JPEG、PNG 或 WebP，單一檔案上限 4 MiB。
+              </p>
+              {imageFile ? (
+                <p className="wrap-anywhere text-xs text-(--text-muted)">
+                  {imageFile.name} · {formatFileSize(imageFile.size)}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+          <div className="space-y-2">
+            <label htmlFor={id + "-image-alt"} className="block text-sm font-medium">
+              圖片說明（替代文字）
+            </label>
+            <Input
+              id={id + "-image-alt"}
+              value={imageAlt}
+              maxLength={300}
+              disabled={imagePending || imageDecorative}
+              aria-required={!imageDecorative}
+              aria-invalid={!!imageError && !imageDecorative && !imageAlt.trim()}
+              aria-describedby={id + "-image-alt-help" + (imageError ? " " + id + "-image-error" : "")}
+              placeholder="社員們一起遊玩桌遊"
+              onChange={(event) => {
+                setImageAlt(event.target.value);
+                setImageError("");
+              }}
+            />
+            <p id={id + "-image-alt-help"} className="text-xs leading-5 text-(--text-muted)">
+              描述圖片中的重要內容，協助無法看見圖片的使用者理解內容。
+            </p>
+            <label className="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={imageDecorative}
+                disabled={imagePending}
+                onChange={(event) => {
+                  const decorative = event.target.checked;
+                  setImageDecorative(decorative);
+                  if (decorative) setImageAlt("");
+                  setImageError("");
+                }}
+              />
+              此圖片僅為裝飾，不需要替代文字
+            </label>
+          </div>
+          <div className="space-y-2">
+            <label htmlFor={id + "-image-caption"} className="block text-sm font-medium">
+              圖片標題（選填）
+            </label>
+            <Input
+              id={id + "-image-caption"}
+              value={imageCaption}
+              maxLength={500}
+              disabled={imagePending}
+              placeholder="九月新生社課"
+              onChange={(event) => {
+                setImageCaption(event.target.value);
+                setImageError("");
+              }}
+            />
+          </div>
+          {imageError ? (
+            <p id={id + "-image-error"} role="alert" className="text-sm text-(--status-danger)">{imageError}</p>
+          ) : null}
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button size="sm" variant="outline" disabled={imagePending} onClick={closeImage}>
+              取消
+            </Button>
+            <Button size="sm" disabled={imagePending} onClick={applyImage}>
+              {imagePending
+                ? "上傳中…"
+                : imageTarget?.existing
+                  ? "儲存圖片設定"
+                  : "上傳並插入"}
             </Button>
           </div>
         </div>

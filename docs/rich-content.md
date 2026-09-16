@@ -616,3 +616,39 @@ docs/rich-content.md
 套用時使用開啟 Modal 前保存的範圍。顯示文字未改動時只更新 link mark，保留原有格式；改名或新增文字時，以單一 ProseMirror transaction 替換範圍，保留起點的非連結 marks。完成後游標位於連結後方，stored marks 明確排除 link，避免後續輸入沿用網址。移除連結只移除 mark，取消不改文件。
 
 網址仍須通過既有 HTTP(S) 與禁止帳密的驗證；空白顯示文字與不安全網址只顯示欄位錯誤。此調整不涉及 schema、renderer 或資料庫。
+# Phase 3L-A：Rich Content 圖片契約與 Storage 基礎
+
+Rich Content v1 新增明確的 `image` block atom，僅保留 `src`、`alt`、`caption`。
+`src` 必須是目前 Supabase project 的 `rich-content-images` public bucket URL，object key
+固定為 `uploads/YYYY/MM/<UUID>.<jpg|png|webp>`；不接受外部圖片網址。Server 以
+`SUPABASE_URL` 建立 URL，Client-side 文件驗證使用同值的公開設定
+`NEXT_PUBLIC_SUPABASE_URL`。Supabase project URL 不是憑證，secret key 仍只存在 Server。
+
+圖片只允許管理員經 `POST /api/admin/rich-content/images` 上傳。Route 接收一個
+`multipart/form-data` 的 `file`，Server 同時檢查 4 MiB 上限、宣告 MIME 與 JPEG／PNG／WebP
+signature，使用隨機路徑且 `upsert: false`。這項 signature 檢查只確認容器識別碼與宣告格式
+一致，不解碼像素、不保證圖片內容完整，也不是惡意程式掃描或影像轉檔。
+
+Storage migration `202609160002_add_rich_content_images_bucket.sql` 宣告 public-read bucket、
+大小與 MIME 限制，不建立 anon/authenticated 寫入 policy。公開 renderer 使用結構化
+`figure/img/figcaption`、lazy loading 與原生 `<img>`，不使用 raw HTML、signed URL、
+Next/Image 或 Vercel image optimization。
+
+V1 不提供刪除 Storage object 的 API，也不在移除 node 或刪除 entity 時自動刪檔。
+目前沒有 reference table 可證明 object 未被其他文件引用；小量 orphan 暫時保留，避免破壞
+仍在發布中的內容。
+
+### Phase 3L-B：共用 Editor 圖片操作
+
+公告、桌遊描述與活動沿用同一個 `RichTextEditor` 圖片按鈕。插入流程保存開啟 Modal 時的
+ProseMirror 位置，完成非同步上傳後在該位置插入；若文件同時改變導致位置超出範圍，位置會
+限制在目前文件內容尾端。Client 不組合 Storage URL，只使用 upload API 回傳且再次通過
+canonical validator 的 `data.src`。
+
+選取既有 image atom 後，同一按鈕顯示「編輯圖片」，可修改 alt、裝飾狀態與 caption，且
+`src` 不可編輯、不會重新上傳。選取 node 後可用標準 Backspace／Delete 移除；這只修改文件，
+不刪除 Storage object。圖片檔案 paste/drop 會被攔截，普通文字 paste/drop 不受影響。
+
+`SUPABASE_URL` 與 `NEXT_PUBLIC_SUPABASE_URL` 必須正規化為相同 HTTPS origin。前者只供 Server；
+後者是可公開的 project origin，供瀏覽器驗證 persisted image URL。任何 secret/service-role key
+仍禁止進入 `NEXT_PUBLIC_*`。Vercel 環境變數變更會在下一次 Preview／Production build 生效。
