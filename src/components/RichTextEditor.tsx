@@ -784,21 +784,62 @@ export function RichTextEditor({
         contentClassName="max-h-[70dvh]"
         closeDisabled={imagePending}
       >
-        <div className="space-y-4">
+        <div className="space-y-5">
           {!imageTarget?.existing ? (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <label htmlFor={id + "-image-file"} className="block text-sm font-medium">
                 圖片<RequiredIndicator />
               </label>
-              <Input
+              {imageFile ? (
+                <div
+                  role="group"
+                  aria-label="已選擇圖片"
+                  className="flex min-w-0 flex-wrap items-center gap-3 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2.5"
+                >
+                  <ImageIcon aria-hidden="true" className="size-5 shrink-0 text-(--text-muted)" />
+                  <div className="min-w-0 flex-1 basis-40">
+                    <p className="wrap-anywhere text-sm font-semibold text-(--text-primary)">
+                      {imageFileLabel(imageFile, imageFileSource)}
+                    </p>
+                    <p className="text-xs text-(--text-muted)">{formatFileSize(imageFile.size)}</p>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={imagePending}
+                    aria-controls={id + "-image-file"}
+                    onClick={() => imageFileRef.current?.click()}
+                  >
+                    更換圖片
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={imagePending}
+                  aria-controls={id + "-image-file"}
+                  aria-describedby={id + "-image-file-help"}
+                  onClick={() => imageFileRef.current?.click()}
+                >
+                  選擇圖片
+                </Button>
+              )}
+              <input
                 ref={imageFileRef}
                 id={id + "-image-file"}
                 type="file"
+                className="sr-only"
                 accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                 disabled={imagePending}
                 aria-required="true"
                 aria-invalid={!!imageError && !imageFile}
                 aria-describedby={id + "-image-file-help" + (imageError ? " " + id + "-image-error" : "")}
+                onClick={(event) => {
+                  event.currentTarget.value = "";
+                }}
                 onChange={(event) => {
                   const file = event.target.files?.[0] ?? null;
                   setImageFile(file);
@@ -806,17 +847,18 @@ export function RichTextEditor({
                   setImageError(file ? validateImageFile(file) ?? "" : "");
                 }}
               />
-              <p id={id + "-image-file-help"} className="text-xs leading-5 text-(--text-muted)">
-                JPEG、PNG 或 WebP，單一檔案上限 4 MiB。
-              </p>
               {imageFile ? (
-                <p className="wrap-anywhere text-xs text-(--text-muted)">
-                  {imageFileLabel(imageFile, imageFileSource)} · {formatFileSize(imageFile.size)}
-                </p>
+                <span role="status" aria-live="polite" className="sr-only">
+                  已選擇圖片：{imageFileLabel(imageFile, imageFileSource)}，
+                  {formatFileSize(imageFile.size)}
+                </span>
               ) : null}
+              <p id={id + "-image-file-help"} className="text-xs leading-5 text-(--text-muted)">
+                JPEG、PNG、WebP，最大 4 MiB
+              </p>
             </div>
           ) : null}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label htmlFor={id + "-image-alt"} className="block text-sm font-medium">
               圖片說明（替代文字）
               {imageDecorative ? null : <RequiredIndicator />}
@@ -836,9 +878,9 @@ export function RichTextEditor({
               }}
             />
             <p id={id + "-image-alt-help"} className="text-xs leading-5 text-(--text-muted)">
-              描述圖片中的重要內容，協助無法看見圖片的使用者理解內容。
+              描述圖片中的重要內容，供無法看見圖片的使用者理解。
             </p>
-            <label className="flex min-h-11 items-center gap-2 text-sm">
+            <label className="flex min-h-11 items-center gap-2 pt-1 text-sm">
               <input
                 type="checkbox"
                 checked={imageDecorative}
@@ -853,7 +895,7 @@ export function RichTextEditor({
               此圖片僅為裝飾，不需要替代文字
             </label>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label htmlFor={id + "-image-caption"} className="block text-sm font-medium">
               圖片標題（選填）
             </label>

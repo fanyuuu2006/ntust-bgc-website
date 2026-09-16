@@ -73,12 +73,20 @@ test("image toolbar uploads once and inserts at the captured document position",
   });
   const dialog = [...ui.host.querySelectorAll("dialog")].find((item) => item.open && item.textContent.includes("插入圖片"));
   assert.ok(dialog);
+  assert.equal([...dialog.querySelectorAll("button")].some((button) => button.textContent === "選擇圖片"), true);
+  assert.equal(dialog.querySelector('[role="status"]'), null);
   const file = new window.File([Uint8Array.from([0x52,0x49,0x46,0x46,0,0,0,0,0x57,0x45,0x42,0x50])], "club.webp", { type: "image/webp" });
   await React.act(async () => {
     selectFile(dialog.querySelector('input[type="file"]'), file);
     setInput(dialog.querySelector('#image-editor-image-alt'), "社員一起遊玩");
     setInput(dialog.querySelector('#image-editor-image-caption'), "九月社課");
   });
+  const selectedFile = dialog.querySelector('[role="group"][aria-label="已選擇圖片"]');
+  assert.ok(selectedFile);
+  assert.match(selectedFile.textContent, /club\.webp/);
+  assert.match(selectedFile.textContent, /12 B/);
+  assert.equal([...selectedFile.querySelectorAll("button")].some((button) => button.textContent === "更換圖片"), true);
+  assert.equal([...dialog.querySelectorAll("button")].some((button) => button.textContent === "選擇圖片"), false);
   await React.act(async () => [...dialog.querySelectorAll("button")].find((button) => button.textContent === "上傳並插入").click());
   assert.equal(uploads, 1);
   assert.match(dialog.textContent, /上傳中/);
@@ -166,6 +174,12 @@ test("image, media, and link dialogs show required indicators that match validat
   await React.act(async () => ui.host.querySelector('button[aria-label="插入圖片"]').click());
   let dialog = openDialog(ui, "插入圖片");
   assert.match(dialog.querySelector('label[for="image-editor-image-file"]').textContent, /圖片\*/);
+  const hiddenFileInput = dialog.querySelector('input[type="file"]');
+  assert.equal(hiddenFileInput.className, "sr-only");
+  let pickerActivations = 0;
+  hiddenFileInput.click = () => { pickerActivations++; };
+  await React.act(async () => [...dialog.querySelectorAll("button")].find((button) => button.textContent === "選擇圖片").click());
+  assert.equal(pickerActivations, 1);
   const altLabel = dialog.querySelector('label[for="image-editor-image-alt"]');
   assert.match(altLabel.textContent, /替代文字）\*/);
   assert.equal(dialog.querySelector('label[for="image-editor-image-caption"]').textContent.trim(), "圖片標題（選填）");
@@ -203,7 +217,11 @@ test("clipboard PNG opens the shared modal and uploads at the paste position", a
   });
   const dialog = openDialog(ui, "插入圖片");
   assert.ok(dialog);
-  assert.match(dialog.textContent, /剪貼簿圖片 · 3 B/);
+  const selectedFile = dialog.querySelector('[role="group"][aria-label="已選擇圖片"]');
+  assert.match(selectedFile.textContent, /剪貼簿圖片3 B/);
+  assert.equal([...selectedFile.querySelectorAll("button")].some((button) => button.textContent === "更換圖片"), true);
+  assert.doesNotMatch(dialog.textContent, /未選擇任何檔案/);
+  assert.equal([...dialog.querySelectorAll("button")].some((button) => button.textContent === "上傳並插入"), true);
   await React.act(async () => setInput(dialog.querySelector('#image-editor-image-alt'), "剪貼簿截圖"));
   await React.act(async () => {
     [...dialog.querySelectorAll("button")].find((button) => button.textContent === "上傳並插入").click();
