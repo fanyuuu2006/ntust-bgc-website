@@ -10,6 +10,13 @@ export function canonicalEditorContent(node: JSONContent): unknown {
     ...(node.text !== undefined ? { text: node.text } : {}),
     ...(node.type === "videoEmbed" ? { attrs: ["youtube", "bilibili"].includes(node.attrs?.provider) ? { provider: node.attrs?.provider, videoId: node.attrs?.videoId } : { provider: node.attrs?.provider, src: node.attrs?.src } } : {}),
     ...(node.type === "audioEmbed" ? { attrs: { src: node.attrs?.src } } : {}),
+    ...(node.type === "image" ? { attrs: {
+      src: node.attrs?.src,
+      alt: node.attrs?.alt,
+      caption: typeof node.attrs?.caption === "string"
+        ? node.attrs.caption.trim() || null
+        : null,
+    } } : {}),
     ...(node.type === "heading" ? { attrs: { level: node.attrs?.level } } : {}),
     ...(node.type === "orderedList" ? { attrs: { start: node.attrs?.start ?? 1 } } : {}),
     ...(node.content ? { content: node.content.map(canonicalEditorContent) } : {}),

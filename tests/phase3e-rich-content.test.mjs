@@ -33,7 +33,7 @@ test("supported rich document validates and SSR renders semantic features", () =
 test("mutation validation rejects unsafe links, unknown nodes/marks/attributes and H1", () => {
   const bad = ["javascript:alert(1)", "data:text/html,hi", "vbscript:x", "//evil.example", "java\nscript:x", " https://example.com", "https://user:password@example.com"];
   for (const href of bad) assert.equal(model().richContentSchema.safeParse(doc(paragraph(text("x", [{ type: "link", attrs: { href } }])))).success, false, href);
-  for (const type of ["script", "iframe", "image", "style", "html"]) assert.equal(model().richContentSchema.safeParse(doc({ type })).success, false);
+  for (const type of ["script", "iframe", "style", "html"]) assert.equal(model().richContentSchema.safeParse(doc({ type })).success, false);
   for (const mark of [{ type: "unknown" }, { type: "bold", attrs: { onclick: "alert(1)" } }]) assert.equal(model().richContentSchema.safeParse(doc(paragraph(text("x", [mark])))).success, false);
   assert.equal(model().richContentSchema.safeParse(doc({ type: "heading", attrs: { level: 1 }, content: [text("x")] })).success, false);
   assert.equal(model().richContentSchema.safeParse(doc({ ...paragraph(text("x")), onclick: "alert(1)" })).success, false);
@@ -204,7 +204,8 @@ test("actual editor schema round-trips canonical structure without adding unsupp
   parsed.check();
   const canonical = model().richContentSchema.parse(canonicalEditorContent(parsed.toJSON()));
   assert.deepEqual(canonical, rich);
-  for (const disabled of ["image", "iframe", "table", "codeBlock"]) assert.equal(schema.nodes[disabled], undefined);
+  assert.ok(schema.nodes.image);
+  for (const disabled of ["iframe", "table", "codeBlock"]) assert.equal(schema.nodes[disabled], undefined);
   assert.deepEqual(Object.keys(schema.marks).sort(), ["bold", "italic", "link"]);
   assert.throws(() => schema.nodeFromJSON(doc({ type: "script" })));
 });

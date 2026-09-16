@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isRichMediaNode, mediaSource, type RichMediaNode } from "./media";
+import { normalizeRichImageNode, type RichImageNode } from "./image";
 
 export const RICH_TEXT_MAX_LENGTH = 20_000;
 // 分別限制文字、序列化位元組、節點與深度，控制儲存量和走訪成本；很少的可見文字也可能帶有大量結構。
@@ -16,6 +17,7 @@ export type RichBlock =
   | { type: "orderedList"; attrs?: { start: number }; content: RichListItem[] }
   | { type: "blockquote"; content: RichBlock[] }
   | { type: "horizontalRule" }
+  | RichImageNode
   | RichMediaNode;
 export type RichListItem = { type: "listItem"; content: RichBlock[] };
 export type RichContent = { type: "doc"; content: RichBlock[] };
@@ -86,6 +88,7 @@ function validDocument(value: unknown): value is RichContent {
       // 頁面 entity title 擁有 H1；文件章節僅允許 H2／H3／H4。
       case "heading": return keys(value, ["type", "attrs", "content"]) && record(value.attrs) && keys(value.attrs, ["level"]) && [2, 3, 4].includes(value.attrs.level as number) && children("inline", false);
       case "videoEmbed": case "audioEmbed": return isRichMediaNode(value);
+      case "image": return normalizeRichImageNode(value) !== null;
       case "horizontalRule": return keys(value, ["type"]);
       case "blockquote": return keys(value, ["type", "content"]) && children("block");
       case "bulletList": return keys(value, ["type", "content"]) && children("item");
@@ -94,6 +97,15 @@ function validDocument(value: unknown): value is RichContent {
     }
   }
   return node(value, "doc", 0);
+}
+
+function canonicalizeImages(document: RichContent): RichContent {
+  function node(value: RichBlock | RichInline | RichListItem): typeof value {
+    if (value.type === "image") return normalizeRichImageNode(value)! as typeof value;
+    if (!("content" in value) || !value.content) return value;
+    return { ...value, content: value.content.map((child) => node(child)) } as typeof value;
+  }
+  return { ...document, content: document.content.map((value) => node(value) as RichBlock) };
 }
 
 /**
@@ -107,6 +119,7 @@ export function plainTextFromRichContent(document: RichContent): string {
       case "hardBreak": return "\n";
       case "horizontalRule": return "";
       case "videoEmbed": case "audioEmbed": return mediaSource(node);
+      case "image": return node.attrs.caption || node.attrs.alt;
       case "paragraph": case "heading": return node.content?.map(text).join("") ?? "";
       case "bulletList": case "orderedList": return node.content.map(text).join("\n");
       default: return node.content.map(text).join("\n\n");
@@ -120,7 +133,7 @@ export function plainTextFromRichContent(document: RichContent): string {
  * 拒絕未支援節點、attributes、marks、不安全 URL 及超限文件，不解析 HTML。
  * 允許選填描述使用空文件；必填內容由 richContentSchema 額外檢查。
  */
-export const richDocumentSchema = z.custom<RichContent>(validDocument, "內容格式不支援或超過大小限制").superRefine((document, ctx) => {
+export const richDocumentSchema = z.custom<RichContent>(validDocument, "內容格式不支援或超過大小限制").transform(canonicalizeImages).superRefine((document, ctx) => {
   // 前面的自訂驗證可能已失敗；不能再走訪不合法的文件結構。
   if (!validDocument(document)) return;
   const text = plainTextFromRichContent(document);
