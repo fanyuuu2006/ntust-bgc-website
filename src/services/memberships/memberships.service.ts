@@ -97,13 +97,9 @@ function compareMembershipRecords(
   right: MembershipWithAcademicYear,
   orderDirection: "asc" | "desc",
 ) {
-  const leftStart = left.academic_year
-    ? new Date(left.academic_year.start_date).getTime()
-    : Number.NEGATIVE_INFINITY;
-  const rightStart = right.academic_year
-    ? new Date(right.academic_year.start_date).getTime()
-    : Number.NEGATIVE_INFINITY;
-  const academicYearOrder = leftStart - rightStart;
+  const leftStart = left.academic_year?.start_date ?? "";
+  const rightStart = right.academic_year?.start_date ?? "";
+  const academicYearOrder = leftStart.localeCompare(rightStart);
 
   if (academicYearOrder !== 0) {
     return orderDirection === "asc" ? academicYearOrder : -academicYearOrder;

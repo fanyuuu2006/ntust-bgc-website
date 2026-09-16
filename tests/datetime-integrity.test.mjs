@@ -132,7 +132,7 @@ test("membership edit uses Taiwan wall time and preserves original sub-minute pr
   assert.equal(h.calls[0][1].body.joined_at, membership.joined_at);
 });
 
-test("affected forms use explicit Taiwan boundaries while Academic Year remains deferred", () => {
+test("instant forms use explicit Taiwan boundaries and Academic Year remains date-only", () => {
   const eventActions = readFileSync("src/components/(admin)/admin/events/EventActions.tsx", "utf8");
   const eventRecords = readFileSync("src/components/(admin)/admin/events/EventRecords.tsx", "utf8");
   const memberships = readFileSync("src/components/(admin)/admin/memberships/MembershipRecords.tsx", "utf8");
@@ -143,5 +143,5 @@ test("affected forms use explicit Taiwan boundaries while Academic Year remains 
   }
   assert.match(eventRecords, /formatTaipeiDateTimeLocal/);
   assert.match(memberships, /formatTaipeiDateTimeLocal/);
-  assert.match(academicYears, /slice\(0, 10\)/);
+  assert.doesNotMatch(academicYears, /slice\(0, 10\)/);
 });

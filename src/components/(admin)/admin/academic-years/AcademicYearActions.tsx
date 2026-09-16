@@ -25,8 +25,8 @@ export function AcademicYearActions({ year }: { year?: AcademicYear }) {
   const [workflowError, setWorkflowError] = useState<string | null>(null);
   const [values, setValues] = useState({
     year: year?.year ?? "",
-    start_date: year?.start_date.slice(0, 10) ?? "",
-    end_date: year?.end_date.slice(0, 10) ?? "",
+    start_date: year?.start_date ?? "",
+    end_date: year?.end_date ?? "",
   });
 
   const closeForm = () => !formBusy && setFormOpen(false);

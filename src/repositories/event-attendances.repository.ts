@@ -13,6 +13,7 @@ import {
   EventAttendance,
   EventAttendanceId,
 } from "@/types/database";
+import { getTaipeiDateOnlyInstantRange } from "@/utils/date";
 
 export type EventAttendanceWithEvent = EventAttendance & {
   event: Pick<Event, "id" | "name" | "start_time"> | null;
@@ -196,12 +197,16 @@ export const eventAttendancesRepository = {
     academicYear: { start_date: string; end_date: string },
     statuses?: AttendanceStatus[],
   ): Promise<number> => {
+    const { startInclusive, endExclusive } = getTaipeiDateOnlyInstantRange(
+      academicYear.start_date,
+      academicYear.end_date,
+    );
     let query = supabase
       .from("event_attendances")
       .select("id, events!inner(start_time)", { count: "exact", head: true })
       .eq("user_id", userId)
-      .gte("events.start_time", academicYear.start_date)
-      .lte("events.start_time", academicYear.end_date);
+      .gte("events.start_time", startInclusive)
+      .lt("events.start_time", endExclusive);
 
     if (statuses && statuses.length > 0) {
       query = query.in("status", statuses);

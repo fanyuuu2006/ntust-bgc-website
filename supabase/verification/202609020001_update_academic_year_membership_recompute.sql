@@ -32,8 +32,8 @@ begin
   perform public.update_academic_year(
     v_officer_year_id,
     'verification-officer-' || v_suffix,
-    '2029-01-01 00:00:00+00',
-    '2030-12-31 23:59:59+00'
+    '2029-01-01',
+    '2030-12-31'
   );
 
   select type into v_type
@@ -63,8 +63,8 @@ begin
   perform public.update_academic_year(
     v_membership_year_id,
     'verification-membership-' || v_suffix,
-    '2026-01-01 00:00:00+00',
-    '2026-12-31 23:59:59+00'
+    '2026-01-01',
+    '2026-12-31'
   );
 
   select type into v_type

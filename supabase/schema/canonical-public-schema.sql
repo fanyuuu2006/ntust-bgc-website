@@ -85,11 +85,12 @@ create index email_verification_tokens_user_created_idx
 
 create table public.academic_years (
   id uuid constraint academic_years_pkey primary key default gen_random_uuid(),
-  start_date timestamptz not null,
-  end_date timestamptz not null,
+  start_date date not null,
+  end_date date not null,
   year text not null,
   is_current boolean not null,
-  constraint academic_years_year_key unique (year)
+  constraint academic_years_year_key unique (year),
+  constraint academic_years_date_range_check check (start_date < end_date)
 );
 
 create table public.board_game_categories (
@@ -961,8 +962,8 @@ $$;
 create function public.update_academic_year(
   p_academic_year_id uuid,
   p_year text,
-  p_start_date timestamptz,
-  p_end_date timestamptz
+  p_start_date date,
+  p_end_date date
 )
 returns public.academic_years
 language plpgsql
@@ -1152,7 +1153,7 @@ revoke all privileges on function public.reject_borrowing(bigint, uuid) from pub
 revoke all privileges on function public.cancel_pending_borrowing(bigint, uuid) from public, anon, authenticated;
 revoke all privileges on function public.set_current_academic_year(uuid)
   from public, anon, authenticated;
-revoke all privileges on function public.update_academic_year(uuid, text, timestamptz, timestamptz)
+revoke all privileges on function public.update_academic_year(uuid, text, date, date)
   from public, anon, authenticated;
 revoke all privileges on function public.recompute_membership_types_for_user(uuid)
   from public, anon, authenticated, service_role;
@@ -1188,7 +1189,7 @@ grant execute on function public.approve_borrowing(bigint, uuid) to service_role
 grant execute on function public.reject_borrowing(bigint, uuid) to service_role;
 grant execute on function public.cancel_pending_borrowing(bigint, uuid) to service_role;
 grant execute on function public.set_current_academic_year(uuid) to service_role;
-grant execute on function public.update_academic_year(uuid, text, timestamptz, timestamptz) to service_role;
+grant execute on function public.update_academic_year(uuid, text, date, date) to service_role;
 grant execute on function public.create_admin_membership(uuid, uuid, public.merbership_status, timestamptz) to service_role;
 grant execute on function public.update_admin_membership(uuid, uuid, public.merbership_status, timestamptz) to service_role;
 grant execute on function public.create_officer_position(uuid, uuid, text) to service_role;
