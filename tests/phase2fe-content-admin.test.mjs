@@ -162,7 +162,10 @@ test("admin borrowing records compose approver identity in one server batch and 
   assert.match(service, /approversById/);
   assert.match(service, /usersRepository\.findManyByIds\(approverIds\)/);
   assert.match(service, /userProfilesRepository\.findManyByUserIds\(identityUserIds\)/);
-  assert.match(service, /approved_by_user_id: approverUserId/);
+  assert.match(
+    service,
+    /approved_by_user:\s*borrowing\.approved_by_user_id[\s\S]*?approversById\.get\(borrowing\.approved_by_user_id\)/,
+  );
   assert.match(types, /approved_by_user: User \| null/);
   assert.match(types, /approved_by_user_profile: UserProfile \| null/);
   assert.match(list, /approved_by_user/);

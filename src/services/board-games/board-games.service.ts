@@ -719,10 +719,10 @@ export const boardGamesService = {
     }
 
     try {
-      const approved = await boardGameBorrowingsRepository.updateByIdIfCurrentStatus(borrowingId, "pending", {
-        status: "approved",
-        approved_by_user_id: approverUserId,
-      });
+      const approved = await boardGameBorrowingsRepository.approve(
+        borrowingId,
+        approverUserId,
+      );
       if (approved) return approved;
 
       const latest = await boardGameBorrowingsRepository.findById(borrowingId);
@@ -743,10 +743,10 @@ export const boardGamesService = {
       throw new BorrowingStatusTransitionError("pending", borrowing.status);
     }
 
-    const rejected = await boardGameBorrowingsRepository.updateByIdIfCurrentStatus(borrowingId, "pending", {
-      status: "rejected",
-      approved_by_user_id: approverUserId,
-    });
+    const rejected = await boardGameBorrowingsRepository.reject(
+      borrowingId,
+      approverUserId,
+    );
     if (rejected) return rejected;
 
     const latest = await boardGameBorrowingsRepository.findById(borrowingId);

@@ -1,5 +1,11 @@
 # Rich Content：公告、桌遊與活動
 
+## RichEditor 圖片 migration 版本保留
+
+借用生命週期 migration 已使用並部署版本 `202609160001`。RichEditor 圖片 Phase A
+草稿中的 Storage migration 尚未部署；在恢復該工作並準備套用前，必須先將它改為當時
+下一個可用的 migration 版本。不得以相同的 `202609160001` 版本套用第二份 migration。
+
 ## Phase 3E-E：Link Modal、中文註解與遠端 migration 完成
 
 本節是最新狀態；下方 3E-D「尚未套用」保留當時唯讀診斷紀錄，不代表目前狀態。

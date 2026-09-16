@@ -6,7 +6,7 @@ import { BoardGameImage } from "@/components/BoardGameImage";
 import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
 import { Card } from "@/components/ui/Card";
 import type { UserBorrowingListItem } from "@/services/board-games/board-games.types";
-import { formatDateTime, getDueTimePresentation } from "@/utils/date";
+import { formatCompactLifecycleDate, formatDateTime, getDueTimePresentation } from "@/utils/date";
 
 export function BorrowingRecord({
   borrowing,
@@ -95,29 +95,30 @@ function BorrowingLifecycle({
           <span className="wrap-anywhere">{due.relative}</span>
         </p>
         <p className="wrap-anywhere text-xs leading-5 text-(--text-muted)">
-          {due.absolute ? `歸還期限：${due.absolute}` : "尚未設定歸還期限"}
+          {due.absolute ? `歸還期限 · ${due.absolute}` : "尚未設定歸還期限"}
         </p>
+        <LifecycleFacts borrowing={borrowing} include={["created_at", "approved_at", "borrowed_at"]} />
       </div>
     );
   }
 
   if (borrowing.status === "pending") {
-    return <LifecycleMessage message="等待幹部確認" timestampLabel="提出申請" timestamp={borrowing.created_at} />;
+    return <LifecycleMessage message="等待幹部審核" timestampLabel="申請於" timestamp={borrowing.created_at} />;
   }
 
   if (borrowing.status === "approved") {
-    return <LifecycleMessage message="已核准，等待領取" timestampLabel="提出申請" timestamp={borrowing.created_at} />;
+    return <div className="min-w-0 space-y-1"><LifecycleMessage message="已核准，等待領取" timestampLabel="核准於" timestamp={borrowing.approved_at} /><LifecycleFacts borrowing={borrowing} include={["created_at", "approved_at"]} /></div>;
   }
 
   if (borrowing.status === "returned") {
-    return <LifecycleMessage message="已完成歸還" timestampLabel="歸還時間" timestamp={borrowing.returned_at} />;
+    return <div className="min-w-0 space-y-1"><LifecycleMessage message={borrowing.returned_at ? `${formatDateTime(borrowing.returned_at)} 已歸還` : "已完成歸還"} /><LifecycleFacts borrowing={borrowing} include={["created_at", "approved_at", "borrowed_at", "returned_at"]} /></div>;
   }
 
   if (borrowing.status === "cancelled") {
-    return <LifecycleMessage message="借用申請已取消" timestampLabel="提出申請" timestamp={borrowing.created_at} />;
+    return <div className="min-w-0 space-y-1"><LifecycleMessage message="借用申請已取消" timestampLabel="取消於" timestamp={borrowing.cancelled_at} /><LifecycleFacts borrowing={borrowing} include={["created_at", "cancelled_at"]} /></div>;
   }
 
-  return <LifecycleMessage message="申請未獲核准" timestampLabel="提出申請" timestamp={borrowing.created_at} />;
+  return <div className="min-w-0 space-y-1"><LifecycleMessage message="申請未獲核准" timestampLabel="拒絕於" timestamp={borrowing.rejected_at} /><LifecycleFacts borrowing={borrowing} include={["created_at", "rejected_at"]} /></div>;
 }
 
 function LifecycleMessage({
@@ -126,17 +127,30 @@ function LifecycleMessage({
   timestamp,
 }: {
   message: string;
-  timestampLabel: string;
-  timestamp: string | null;
+  timestampLabel?: string;
+  timestamp?: string | null;
 }) {
   return (
     <div className="min-w-0 space-y-1">
       <p className="wrap-anywhere text-sm font-medium text-(--text-secondary)">{message}</p>
       {timestamp ? (
         <p className="wrap-anywhere text-xs leading-5 text-(--text-muted)">
-          {timestampLabel}：{formatDateTime(timestamp)}
+          {timestampLabel} {formatDateTime(timestamp)}
         </p>
       ) : null}
     </div>
   );
+}
+
+type LifecycleTimestampKey = "created_at" | "approved_at" | "borrowed_at" | "returned_at" | "rejected_at" | "cancelled_at";
+
+function LifecycleFacts({ borrowing, include }: { borrowing: UserBorrowingListItem; include: LifecycleTimestampKey[] }) {
+  const labels: Record<LifecycleTimestampKey, string> = {
+    created_at: "申請", approved_at: "核准", borrowed_at: "領取", returned_at: "歸還", rejected_at: "拒絕", cancelled_at: "取消",
+  };
+  const facts = include.flatMap((key) => {
+    const date = formatCompactLifecycleDate(borrowing[key], borrowing.created_at);
+    return date ? [`${labels[key]} ${date}`] : [];
+  });
+  return facts.length ? <p className="wrap-anywhere text-xs leading-5 text-(--text-muted)">{facts.join(" · ")}</p> : null;
 }

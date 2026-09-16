@@ -259,6 +259,9 @@ export type BoardGameBorrowing = {
   board_game_id: UUID;
   user_id: UUID;
   created_at: Timestamp;
+  approved_at: Timestamp | null;
+  rejected_at: Timestamp | null;
+  cancelled_at: Timestamp | null;
   borrowed_at: Timestamp | null;
   due_at: Timestamp | null;
   returned_at: Timestamp | null;

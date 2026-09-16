@@ -23,12 +23,12 @@ test("user cancellation is a preserved pending-to-cancelled transition, not admi
   assert.match(types, /\| "cancelled"/);
   assert.match(repository, /cancelPendingByIdAndUserId/);
   assert.match(repository, /updateByIdIfCurrentStatus/);
-  assert.match(repository, /\.update\(\{ status: "cancelled" \}\)[\s\S]*?\.eq\("id", id\)[\s\S]*?\.eq\("user_id", userId\)[\s\S]*?\.eq\("status", "pending"\)/);
+  assert.match(repository, /rpc\("cancel_pending_borrowing"[\s\S]*?p_borrowing_id: id[\s\S]*?p_user_id: userId/);
   assert.match(service, /cancelPendingBorrowingByUserId/);
   assert.match(service, /cancelPendingByIdAndUserId\([\s\S]*?borrowingId,[\s\S]*?userId/);
   assert.match(service, /new BorrowingCancellationConflictError\(\)/);
-  assert.match(service, /approveBorrowing[\s\S]*?updateByIdIfCurrentStatus\(borrowingId, "pending"/);
-  assert.match(service, /rejectBorrowing[\s\S]*?updateByIdIfCurrentStatus\(borrowingId, "pending"/);
+  assert.match(service, /approveBorrowing[\s\S]*?boardGameBorrowingsRepository\.approve/);
+  assert.match(service, /rejectBorrowing[\s\S]*?boardGameBorrowingsRepository\.reject/);
   assert.doesNotMatch(service.slice(service.indexOf("cancelPendingBorrowingByUserId"), service.indexOf("approveBorrowing")), /deleteBorrowing|deleteTransactionally|membershipService/);
 });
 

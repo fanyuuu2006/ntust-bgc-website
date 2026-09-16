@@ -12,7 +12,7 @@ export type BoardGameBorrowingWithBoardGame = BoardGameBorrowing & {
 };
 
 /** 個人借用列表與 Dashboard 只需要狀態、時間與桌遊識別，不載入介紹 JSON。 */
-export type UserBorrowingListItem = Pick<BoardGameBorrowing, "id" | "status" | "created_at" | "due_at" | "returned_at"> & {
+export type UserBorrowingListItem = Pick<BoardGameBorrowing, "id" | "status" | "created_at" | "approved_at" | "rejected_at" | "cancelled_at" | "borrowed_at" | "due_at" | "returned_at"> & {
   board_game: Pick<BoardGame, "id" | "name" | "inventory_number" | "image">;
 };
 

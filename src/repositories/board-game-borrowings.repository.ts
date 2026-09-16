@@ -117,7 +117,7 @@ export const boardGameBorrowingsRepository = {
     exactCount = true,
   ) => findMany<UserBorrowingListItem>(
     { ...options, user_id: userId },
-    "id,status,created_at,due_at,returned_at,board_game:board_games(id,name,inventory_number,image)",
+    "id,status,created_at,approved_at,rejected_at,cancelled_at,borrowed_at,due_at,returned_at,board_game:board_games(id,name,inventory_number,image)",
     exactCount,
   ),
   findById: async (id: BoardGameBorrowingId): Promise<BoardGameBorrowing | null> => {
@@ -307,6 +307,30 @@ export const boardGameBorrowingsRepository = {
     return borrowing as BoardGameBorrowing;
   },
 
+  approve: async (
+    borrowingId: BoardGameBorrowingId,
+    approverUserId: string,
+  ): Promise<BoardGameBorrowing | null> => {
+    const { data, error } = await supabase.rpc("approve_borrowing", {
+      p_borrowing_id: borrowingId,
+      p_approver_user_id: approverUserId,
+    });
+    if (error) throwRepositoryError("核准借用失敗", error);
+    return (Array.isArray(data) ? data[0] : data) as BoardGameBorrowing | null;
+  },
+
+  reject: async (
+    borrowingId: BoardGameBorrowingId,
+    approverUserId: string,
+  ): Promise<BoardGameBorrowing | null> => {
+    const { data, error } = await supabase.rpc("reject_borrowing", {
+      p_borrowing_id: borrowingId,
+      p_approver_user_id: approverUserId,
+    });
+    if (error) throwRepositoryError("拒絕借用失敗", error);
+    return (Array.isArray(data) ? data[0] : data) as BoardGameBorrowing | null;
+  },
+
   updateById: async (
     id: BoardGameBorrowingId,
     payload: UpdateBoardGameBorrowingInput,
@@ -362,17 +386,13 @@ export const boardGameBorrowingsRepository = {
     id: BoardGameBorrowingId,
     userId: string,
   ): Promise<BoardGameBorrowing | null> => {
-    const { data, error } = await supabase
-      .from("board_game_borrowings")
-      .update({ status: "cancelled" })
-      .eq("id", id)
-      .eq("user_id", userId)
-      .eq("status", "pending")
-      .select()
-      .maybeSingle();
+    const { data, error } = await supabase.rpc("cancel_pending_borrowing", {
+      p_borrowing_id: id,
+      p_user_id: userId,
+    });
 
     if (error) throwRepositoryError("取消待處理借用申請失敗", error);
-    return data;
+    return (Array.isArray(data) ? data[0] : data) as BoardGameBorrowing | null;
   },
 
 };
