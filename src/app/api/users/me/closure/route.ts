@@ -6,6 +6,7 @@ import { InvalidCredentialsError, InvalidCurrentPasswordError } from "@/services
 import { AccountClosureBlockedError } from "@/services/auth/account-closure.errors";
 import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { checkRateLimit } from "@/libs/security/rate-limit";
+import { removeOwnedAvatarObject } from "@/services/avatars/avatars.service";
 
 export async function POST(request: Request) {
   try {
@@ -21,6 +22,7 @@ export async function POST(request: Request) {
     try { body = await request.json(); }
     catch { return NextResponse.json({ message: "請求格式錯誤" }, { status: 400 }); }
     await authService.closeAccount(user.id, token, body);
+    await removeOwnedAvatarObject(user.id, user.avatar);
     const response = NextResponse.json({ data: { success: true } });
     response.cookies.delete(SESSION_COOKIE_NAME);
     return response;
