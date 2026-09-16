@@ -24,14 +24,11 @@ function compareAcademicYear(
   right: { academic_year: ProfileAcademicYear | null },
   direction: "asc" | "desc",
 ) {
-  const leftTime = left.academic_year
-    ? new Date(left.academic_year.start_date).getTime()
-    : Number.NEGATIVE_INFINITY;
-  const rightTime = right.academic_year
-    ? new Date(right.academic_year.start_date).getTime()
-    : Number.NEGATIVE_INFINITY;
-
-  return direction === "asc" ? leftTime - rightTime : rightTime - leftTime;
+  const leftDate = left.academic_year ? left.academic_year.start_date : "";
+  const rightDate = right.academic_year ? right.academic_year.start_date : "";
+  return direction === "asc"
+    ? leftDate.localeCompare(rightDate)
+    : rightDate.localeCompare(leftDate);
 }
 
 export function buildIdentityBadges(

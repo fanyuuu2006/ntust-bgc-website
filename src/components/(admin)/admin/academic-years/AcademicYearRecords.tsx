@@ -6,7 +6,7 @@ import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { AcademicYear } from "@/types/database";
-import { formatDate } from "@/utils/date";
+import { formatDateOnly } from "@/utils/date";
 
 export function AcademicYearRecords({ years, hasQuery = false }: { years: AcademicYear[]; hasQuery?: boolean }) {
   if (!years.length) {
@@ -40,7 +40,7 @@ export function AcademicYearRecords({ years, hasQuery = false }: { years: Academ
               {year.is_current ? <Badge tone="info">目前學年度</Badge> : null}
             </div>
             <p className="mt-1 text-sm text-(--text-muted)">
-              {formatDate(year.start_date)} 至 {formatDate(year.end_date)}
+              {formatDateOnly(year.start_date)} 至 {formatDateOnly(year.end_date)}
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-1.5 sm:justify-end">

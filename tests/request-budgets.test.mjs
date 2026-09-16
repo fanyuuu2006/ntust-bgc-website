@@ -223,11 +223,14 @@ test('admin result query retains management fields, filters and pagination witho
     assert.equal(q.get('limit'), '10');
 });
 
-test('current-year attendance reuses the exact inclusive boundaries and statuses', async () => {
+test('current-year attendance converts inclusive Taiwan dates to a half-open instant range', async () => {
     await measure(() => e.getAttendedCountByCurrentAcademicYear(id));
     assert.equal(requests.length, 2);
     assert.deepEqual(requests.map((r) => r.table), ['academic_years', 'event_attendances']);
     const q = new URLSearchParams(requests[1].query);
-    assert.deepEqual(q.getAll('events.start_time'), ['gte.2026-01-01', 'lte.2027-01-01']);
+    assert.deepEqual(q.getAll('events.start_time'), [
+      'gte.2025-12-31T16:00:00.000Z',
+      'lt.2027-01-01T16:00:00.000Z',
+    ]);
     assert.ok(q.get('status'));
 });

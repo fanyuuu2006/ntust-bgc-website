@@ -16,6 +16,9 @@ export type AnnouncementId = number;
 
 export type ISODateString = string;
 
+/** Calendar date serialized as YYYY-MM-DD, without a time zone. */
+export type DateOnly = string;
+
 export type Timestamp = string;
 
 /* =========================================================
@@ -135,8 +138,8 @@ export type Session = {
 export type AcademicYear = {
   id: UUID;
   year: string;
-  start_date: Timestamp;
-  end_date: Timestamp;
+  start_date: DateOnly;
+  end_date: DateOnly;
   is_current: boolean;
 };
 

@@ -1,5 +1,7 @@
 export const CLUB_TIME_ZONE = "Asia/Taipei";
 
+const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+
 type DateTimeParts = Record<string, string>;
 
 function getDateTimeParts(date: Date, timeZone = CLUB_TIME_ZONE): DateTimeParts {
@@ -55,6 +57,43 @@ export function parseTaipeiDateTimeLocal(value: string): string | null {
   ) - wallTimeAsUtc;
 
   return new Date(wallTimeAsUtc - offset).toISOString();
+}
+
+export function isValidDateOnly(value: string): boolean {
+  const match = DATE_ONLY_PATTERN.exec(value);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year
+    && date.getUTCMonth() === month - 1
+    && date.getUTCDate() === day;
+}
+
+export function addDaysToDateOnly(value: string, days: number): string {
+  if (!isValidDateOnly(value) || !Number.isInteger(days)) {
+    throw new RangeError("Invalid date-only arithmetic");
+  }
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day + days));
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+}
+
+export function formatDateOnly(value: string): string {
+  if (!isValidDateOnly(value)) return "—";
+  const [year, month, day] = value.split("-").map(Number);
+  return `${year}年${month}月${day}日`;
+}
+
+export function getTaipeiDateOnlyInstantRange(startDate: string, inclusiveEndDate: string) {
+  if (!isValidDateOnly(startDate) || !isValidDateOnly(inclusiveEndDate)) {
+    throw new RangeError("Invalid Academic Year date range");
+  }
+  const startInclusive = parseTaipeiDateTimeLocal(`${startDate}T00:00`);
+  const endExclusive = parseTaipeiDateTimeLocal(`${addDaysToDateOnly(inclusiveEndDate, 1)}T00:00`);
+  if (!startInclusive || !endExclusive) throw new RangeError("Invalid Academic Year date range");
+  return { startInclusive, endExclusive };
 }
 
 function toValidDate(value: string | null | undefined): Date | null {
