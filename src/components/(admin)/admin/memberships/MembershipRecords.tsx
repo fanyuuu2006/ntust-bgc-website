@@ -17,7 +17,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { apiClient } from "@/libs/api/client";
 import type { AdminMembership } from "@/services/memberships/memberships.types";
 import type { AcademicYear, MembershipStatus } from "@/types/database";
-import { formatAdminDateTime } from "@/utils/date";
+import {
+  formatAdminDateTime,
+  formatTaipeiDateTimeLocal,
+  parseTaipeiDateTimeLocal,
+} from "@/utils/date";
 import { MemberStatusBadge, MEMBERSHIP_STATUS_LABEL, MembershipTypeLabel } from "./MemberStatusBadge";
 
 type Query = {
@@ -72,7 +76,9 @@ export function MembershipRecords({
     setValues({
       academic_year_id: membership.academic_year_id,
       status: membership.status,
-      joined_at: membership.joined_at?.slice(0, 16) ?? "",
+      joined_at: membership.joined_at
+        ? formatTaipeiDateTimeLocal(new Date(membership.joined_at))
+        : "",
     });
     setEditError(null);
   };
@@ -108,7 +114,13 @@ export function MembershipRecords({
         method: "PATCH",
         body: {
           ...values,
-          joined_at: values.joined_at ? new Date(values.joined_at).toISOString() : null,
+          joined_at: values.joined_at
+            ? editingMembership.joined_at &&
+              values.joined_at ===
+                formatTaipeiDateTimeLocal(new Date(editingMembership.joined_at))
+              ? editingMembership.joined_at
+              : parseTaipeiDateTimeLocal(values.joined_at)
+            : null,
         },
       });
       setSelectedMembership(null);
