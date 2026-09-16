@@ -6,7 +6,7 @@ import type { PublicUserIdentity } from "@/types/public-user";
 export function PublicUserLink({ identity }: { identity: PublicUserIdentity }) {
   return (
     <Link href={`/profile/${identity.id}`} className="inline-flex min-h-10 min-w-0 max-w-full items-center gap-2 rounded-md text-sm text-(--interactive-primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2">
-      <UserAvatar user={identity} referrerPolicy="no-referrer" className="size-8 shrink-0 rounded-full object-cover" />
+      <UserAvatar user={identity} className="size-8 shrink-0 rounded-full" />
       <span className="min-w-0 wrap-anywhere">{identity.name}</span>
     </Link>
   );

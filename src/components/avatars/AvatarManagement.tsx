@@ -32,7 +32,7 @@ async function readAvatarResponse(response: Response): Promise<AvatarResponse> {
 export function AvatarManagement({ user, endpoint, admin = false }: AvatarManagementProps) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [avatar, setAvatar] = useState(user.avatar);
+  const [avatarOverride, setAvatarOverride] = useState<{ base: string | null; value: string | null } | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [removeOpen, setRemoveOpen] = useState(false);
@@ -42,7 +42,9 @@ export function AvatarManagement({ user, endpoint, admin = false }: AvatarManage
   const [removeError, setRemoveError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  useEffect(() => setAvatar(user.avatar), [user.avatar]);
+  const avatar = avatarOverride !== null && avatarOverride.base === user.avatar
+    ? avatarOverride.value
+    : user.avatar;
   const previewUrl = useMemo(() => file ? URL.createObjectURL(file) : null, [file]);
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
 
@@ -70,7 +72,7 @@ export function AvatarManagement({ user, endpoint, admin = false }: AvatarManage
     try {
       const body = new FormData(); body.append("file", file);
       const payload = await readAvatarResponse(await fetch(endpoint, { method: "POST", body }));
-      setAvatar(payload.data.avatar); setSuccess(avatar ? "頭像已更新" : "頭像已上傳");
+      setAvatarOverride({ base: user.avatar, value: payload.data.avatar }); setSuccess(avatar ? "頭像已更新" : "頭像已上傳");
       setUploadOpen(false); resetSelection(); router.refresh();
     } catch (error) {
       if (error instanceof ApiError && error.status === 409) {
@@ -84,7 +86,7 @@ export function AvatarManagement({ user, endpoint, admin = false }: AvatarManage
     setRemoveError(null); setSuccess(null); setRemoving(true);
     try {
       await readAvatarResponse(await fetch(endpoint, { method: "DELETE" }));
-      setAvatar(null); setRemoveOpen(false); setSuccess("頭像已移除"); router.refresh();
+      setAvatarOverride({ base: user.avatar, value: null }); setRemoveOpen(false); setSuccess("頭像已移除"); router.refresh();
     } catch (error) {
       if (error instanceof ApiError && error.status === 409) {
         setRemoveOpen(false); setRemoveError("頭像已在其他操作中更新，已重新載入最新狀態。"); router.refresh();
@@ -95,7 +97,7 @@ export function AvatarManagement({ user, endpoint, admin = false }: AvatarManage
   const actionLabel = avatar ? "更換頭像" : "上傳頭像";
   return <section aria-label={admin ? "使用者頭像管理" : "頭像管理"}>
     <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-      <UserAvatar user={{ ...user, avatar }} className="size-16 shrink-0 rounded-full border border-(--border-default) object-cover" />
+      <UserAvatar user={{ ...user, avatar }} className="size-16 shrink-0 rounded-full border border-(--border-default)" />
       <div className="min-w-0 flex-1">
         <p className="text-sm text-(--text-muted)">上傳 JPEG、PNG 或 WebP，最大 2 MiB</p>
         <div className="mt-2 flex flex-wrap items-center gap-2">

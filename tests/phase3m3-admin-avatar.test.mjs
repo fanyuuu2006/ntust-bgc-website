@@ -15,7 +15,7 @@ function uploadRequest(entries = [["file", PNG]]) {
 
 function route({ response = null, replace, remove, errors = load("src/services/avatars/avatars.errors.ts") } = {}) {
   const calls = [];
-  const module = load("src/app/api/admin/users/[id]/avatar/route.ts", {
+  const routeModule = load("src/app/api/admin/users/[id]/avatar/route.ts", {
     "@/libs/api/admin-authorization": { authorizeAdminRequest: async (...args) => { calls.push(["authorize", ...args]); return { response }; } },
     "@/services/avatars/avatars.errors": errors,
     "@/services/avatars/avatars.service": { avatarsService: {
@@ -24,7 +24,7 @@ function route({ response = null, replace, remove, errors = load("src/services/a
     } },
   });
   const params = { params: Promise.resolve({ id: TARGET }) };
-  return { ...module, params, calls };
+  return { ...routeModule, params, calls };
 }
 
 test("Admin Avatar endpoints authorize before reading target or mutating", async () => {
