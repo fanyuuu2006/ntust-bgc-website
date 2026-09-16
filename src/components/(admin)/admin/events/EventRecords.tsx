@@ -20,7 +20,11 @@ import { editableRichContent, readRichContent } from "@/libs/rich-content/conten
 import { storedDescription } from "@/libs/rich-content/description";
 import { apiClient } from "@/libs/api/client";
 import type { Event } from "@/types/database";
-import { formatAdminDateTime } from "@/utils/date";
+import {
+  formatAdminDateTime,
+  formatTaipeiDateTimeLocal,
+  parseTaipeiDateTimeLocal,
+} from "@/utils/date";
 import { EventStatusBadge } from "./EventStatusBadge";
 
 // Editor runtime 僅供管理端編輯，不帶入伺服器渲染的閱讀頁面。
@@ -62,12 +66,16 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
     setValues({
       name: event.name,
       description: editableRichContent(storedDescription(event)),
-      start_time: event.start_time.slice(0, 16),
-      end_time: event.end_time.slice(0, 16),
+      start_time: formatTaipeiDateTimeLocal(new Date(event.start_time)),
+      end_time: formatTaipeiDateTimeLocal(new Date(event.end_time)),
       selfCheckInEnabled:
         event.check_in_opens_at !== null && event.check_in_closes_at !== null,
-      check_in_opens_at: event.check_in_opens_at?.slice(0, 16) ?? "",
-      check_in_closes_at: event.check_in_closes_at?.slice(0, 16) ?? "",
+      check_in_opens_at: event.check_in_opens_at
+        ? formatTaipeiDateTimeLocal(new Date(event.check_in_opens_at))
+        : "",
+      check_in_closes_at: event.check_in_closes_at
+        ? formatTaipeiDateTimeLocal(new Date(event.check_in_closes_at))
+        : "",
     });
     setEditError(null);
   };
@@ -106,13 +114,13 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
           name: values.name,
           description_format: "rich_text_v1",
           rich_description: values.description,
-          start_time: new Date(values.start_time).toISOString(),
-          end_time: new Date(values.end_time).toISOString(),
+          start_time: parseTaipeiDateTimeLocal(values.start_time),
+          end_time: parseTaipeiDateTimeLocal(values.end_time),
           check_in_opens_at: values.selfCheckInEnabled
-            ? new Date(values.check_in_opens_at).toISOString()
+            ? parseTaipeiDateTimeLocal(values.check_in_opens_at)
             : null,
           check_in_closes_at: values.selfCheckInEnabled
-            ? new Date(values.check_in_closes_at).toISOString()
+            ? parseTaipeiDateTimeLocal(values.check_in_closes_at)
             : null,
         },
       });

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/Input";
 import dynamic from "next/dynamic";
 import { editableRichContent } from "@/libs/rich-content/content";
 import { apiClient } from "@/libs/api/client";
+import { parseTaipeiDateTimeLocal } from "@/utils/date";
 
 // Editor runtime 僅供管理端編輯，不帶入伺服器渲染的閱讀頁面。
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor").then((module) => module.RichTextEditor), { ssr: false });
@@ -67,13 +68,13 @@ export function EventActions() {
           name: values.name,
           description_format: "rich_text_v1",
           rich_description: values.description,
-          start_time: new Date(values.start_time).toISOString(),
-          end_time: new Date(values.end_time).toISOString(),
+          start_time: parseTaipeiDateTimeLocal(values.start_time),
+          end_time: parseTaipeiDateTimeLocal(values.end_time),
           check_in_opens_at: values.selfCheckInEnabled
-            ? new Date(values.check_in_opens_at).toISOString()
+            ? parseTaipeiDateTimeLocal(values.check_in_opens_at)
             : null,
           check_in_closes_at: values.selfCheckInEnabled
-            ? new Date(values.check_in_closes_at).toISOString()
+            ? parseTaipeiDateTimeLocal(values.check_in_closes_at)
             : null,
         },
       });
