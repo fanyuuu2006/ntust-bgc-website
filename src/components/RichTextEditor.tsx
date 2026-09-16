@@ -46,6 +46,45 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MiB`;
 }
 
+function validateImageFile(file: File): string | null {
+  if (file.size === 0) return "圖片檔案不能是空白檔案。";
+  if (file.size > RICH_CONTENT_IMAGE_MAX_BYTES) {
+    return "圖片檔案不得超過 4 MiB。";
+  }
+  if (
+    !RICH_CONTENT_IMAGE_MIME_TYPES.includes(
+      file.type as (typeof RICH_CONTENT_IMAGE_MIME_TYPES)[number],
+    )
+  ) {
+    return "僅支援 JPEG、PNG 或 WebP 圖片。";
+  }
+  return null;
+}
+
+function imageFileLabel(file: File, source: "picker" | "clipboard"): string {
+  if (
+    source === "clipboard" &&
+    (!file.name || /^image\.(?:jpe?g|png|webp)$/i.test(file.name))
+  ) {
+    return "剪貼簿圖片";
+  }
+  return file.name || "剪貼簿圖片";
+}
+
+function imageFilesFromClipboard(data: DataTransfer | null): File[] {
+  if (!data) return [];
+  const files = [...data.files].filter((file) => file.type.startsWith("image/"));
+  if (files.length > 0) return files;
+  return [...(data.items ?? [])]
+    .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
+    .map((item) => item.getAsFile())
+    .filter((file): file is File => file !== null);
+}
+
+function RequiredIndicator() {
+  return <span aria-hidden="true" className="ml-0.5 text-(--status-danger)">*</span>;
+}
+
 /**
  * 讓 Tiptap 啟用的節點與 mark 對齊網站 v1 schema；工具列不是 Server 驗證的替代品。
  */
@@ -113,6 +152,9 @@ export function RichTextEditor({
   const [linkSelection, setLinkSelection] = useState<{ from: number; to: number; existing: boolean } | null>(null);
   const [imageOpen, setImageOpen] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFileSource, setImageFileSource] = useState<
+    "picker" | "clipboard"
+  >("picker");
   const [imageAlt, setImageAlt] = useState("");
   const [imageCaption, setImageCaption] = useState("");
   const [imageDecorative, setImageDecorative] = useState(false);
@@ -129,6 +171,18 @@ export function RichTextEditor({
     setLinkOpen(false);
     setMediaError("");
     setMediaOpen(true);
+  }
+
+  function showImageInsert(position: number, file?: File) {
+    if (disabled) return;
+    setImageTarget({ position, existing: null });
+    setImageFile(file ?? null);
+    setImageFileSource(file ? "clipboard" : "picker");
+    setImageAlt("");
+    setImageCaption("");
+    setImageDecorative(false);
+    setImageError(file ? validateImageFile(file) ?? "" : "");
+    setImageOpen(true);
   }
   const editor = useEditor({
     // Next.js 可能預先渲染 Client Component；等 hydration 後才建立可編輯 DOM，避免 SSR 不一致。
@@ -150,10 +204,20 @@ export function RichTextEditor({
         class:
           "rich-content rich-editor-content min-w-0 max-w-full outline-none",
       },
-      handlePaste: (_view, event) =>
-        [...(event.clipboardData?.files ?? [])].some((file) =>
-          file.type.startsWith("image/"),
-        ),
+      handlePaste: (view, event) => {
+        const imageFiles = imageFilesFromClipboard(event.clipboardData);
+        if (imageFiles.length === 0) return false;
+
+        event.preventDefault();
+        const file =
+          imageFiles.find((candidate) =>
+            RICH_CONTENT_IMAGE_MIME_TYPES.includes(
+              candidate.type as (typeof RICH_CONTENT_IMAGE_MIME_TYPES)[number],
+            ),
+          ) ?? imageFiles[0];
+        showImageInsert(view.state.selection.from, file);
+        return true;
+      },
       handleDrop: (_view, event) =>
         [...(event.dataTransfer?.files ?? [])].some((file) =>
           file.type.startsWith("image/"),
@@ -304,6 +368,7 @@ export function RichTextEditor({
 
   function resetImageForm() {
     setImageFile(null);
+    setImageFileSource("picker");
     setImageAlt("");
     setImageCaption("");
     setImageDecorative(false);
@@ -320,8 +385,13 @@ export function RichTextEditor({
         }) as RichImageNode
       : null;
     const position = editor.state.selection.from;
+    if (!existing) {
+      showImageInsert(position);
+      return;
+    }
     setImageTarget({ position, existing });
     setImageFile(null);
+    setImageFileSource("picker");
     setImageAlt(existing?.attrs.alt ?? "");
     setImageCaption(existing?.attrs.caption ?? "");
     setImageDecorative(existing?.attrs.alt === "");
@@ -343,13 +413,8 @@ export function RichTextEditor({
   function validateImageForm(): string | null {
     if (!imageTarget?.existing) {
       if (!imageFile) return "請選擇一張圖片。";
-      if (imageFile.size === 0) return "圖片檔案不能是空白檔案。";
-      if (imageFile.size > RICH_CONTENT_IMAGE_MAX_BYTES) {
-        return "圖片檔案不得超過 4 MiB。";
-      }
-      if (!RICH_CONTENT_IMAGE_MIME_TYPES.includes(
-        imageFile.type as (typeof RICH_CONTENT_IMAGE_MIME_TYPES)[number],
-      )) return "僅支援 JPEG、PNG 或 WebP 圖片。";
+      const fileError = validateImageFile(imageFile);
+      if (fileError) return fileError;
     }
     if (!imageDecorative && !imageAlt.trim()) {
       return "請輸入圖片說明，或將圖片標示為裝飾。";
@@ -653,13 +718,14 @@ export function RichTextEditor({
             htmlFor={id + "-media-url"}
             className="block text-sm font-medium"
           >
-            媒體網址或嵌入碼
+            媒體網址或嵌入碼<RequiredIndicator />
           </label>
           <Textarea
             ref={mediaInputRef}
             id={id + "-media-url"}
             rows={3}
             value={mediaUrl}
+            aria-required="true"
             disabled={disabled}
             placeholder="https://… 或官方 iframe 嵌入碼"
             aria-invalid={!!mediaError}
@@ -722,7 +788,7 @@ export function RichTextEditor({
           {!imageTarget?.existing ? (
             <div className="space-y-2">
               <label htmlFor={id + "-image-file"} className="block text-sm font-medium">
-                圖片
+                圖片<RequiredIndicator />
               </label>
               <Input
                 ref={imageFileRef}
@@ -730,11 +796,14 @@ export function RichTextEditor({
                 type="file"
                 accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                 disabled={imagePending}
+                aria-required="true"
                 aria-invalid={!!imageError && !imageFile}
                 aria-describedby={id + "-image-file-help" + (imageError ? " " + id + "-image-error" : "")}
                 onChange={(event) => {
-                  setImageFile(event.target.files?.[0] ?? null);
-                  setImageError("");
+                  const file = event.target.files?.[0] ?? null;
+                  setImageFile(file);
+                  setImageFileSource("picker");
+                  setImageError(file ? validateImageFile(file) ?? "" : "");
                 }}
               />
               <p id={id + "-image-file-help"} className="text-xs leading-5 text-(--text-muted)">
@@ -742,7 +811,7 @@ export function RichTextEditor({
               </p>
               {imageFile ? (
                 <p className="wrap-anywhere text-xs text-(--text-muted)">
-                  {imageFile.name} · {formatFileSize(imageFile.size)}
+                  {imageFileLabel(imageFile, imageFileSource)} · {formatFileSize(imageFile.size)}
                 </p>
               ) : null}
             </div>
@@ -750,6 +819,7 @@ export function RichTextEditor({
           <div className="space-y-2">
             <label htmlFor={id + "-image-alt"} className="block text-sm font-medium">
               圖片說明（替代文字）
+              {imageDecorative ? null : <RequiredIndicator />}
             </label>
             <Input
               id={id + "-image-alt"}
@@ -818,13 +888,13 @@ export function RichTextEditor({
       </Modal>
       <Modal open={linkOpen} onClose={closeLink} title={linkSelection?.existing ? "編輯連結" : "新增連結"} size="sm" contentClassName="max-h-[60dvh]" closeDisabled={disabled}>
         <div className="space-y-3">
-          <label htmlFor={id + "-link-text"} className="block text-sm font-medium">顯示文字</label>
+          <label htmlFor={id + "-link-text"} className="block text-sm font-medium">顯示文字<RequiredIndicator /></label>
           <Input ref={linkTextRef} id={id + "-link-text"} value={linkText} disabled={disabled} aria-required="true" aria-invalid={!!textError} aria-describedby={textError ? id + "-link-text-error" : undefined} onChange={(event) => setLinkText(event.target.value)} onKeyDown={(event) => {
             if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); applyLink(); }
             if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); closeLink(); }
           }} />
           {textError ? <p id={id + "-link-text-error"} role="alert" className="text-sm text-(--status-danger)">{textError}</p> : null}
-          <label htmlFor={id + "-link"} className="text-sm font-medium">連結網址</label>
+          <label htmlFor={id + "-link"} className="text-sm font-medium">連結網址<RequiredIndicator /></label>
           <Input ref={linkInputRef} id={id + "-link"} value={url} aria-required="true" type="url" placeholder="https://example.com" disabled={disabled} aria-invalid={!!linkError} aria-describedby={id + "-link-help" + (linkError ? " " + id + "-link-error" : "")} onChange={(event) => setUrl(event.target.value)} onKeyDown={(event) => {
             if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); applyLink(); }
             if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); closeLink(); }

@@ -99,10 +99,14 @@ test("selected image edits canonical attrs without upload and can be deleted", a
   await React.act(async () => ui.host.querySelector('button[aria-label="編輯圖片"]').click());
   const dialog = [...ui.host.querySelectorAll("dialog")].find((item) => item.open && item.textContent.includes("編輯圖片"));
   assert.equal(dialog.querySelector('input[type="file"]'), null);
+  assert.equal(dialog.querySelector('label[for="image-editor-image-file"]'), null);
+  const editAltLabel = dialog.querySelector('label[for="image-editor-image-alt"]');
+  assert.match(editAltLabel.textContent, /\*/);
   await React.act(async () => {
     dialog.querySelector('input[type="checkbox"]').click();
     setInput(dialog.querySelector('#image-editor-image-caption'), "新標題");
   });
+  assert.doesNotMatch(editAltLabel.textContent, /\*/);
   await React.act(async () => [...dialog.querySelectorAll("button")].find((button) => button.textContent === "儲存圖片設定").click());
   const node = ui.editor.state.doc.nodeAt(position);
   assert.deepEqual({ ...node.attrs }, { src, alt: "", caption: "新標題" });
@@ -125,7 +129,7 @@ test("selected image edits canonical attrs without upload and can be deleted", a
   assert.equal(ui.editor.getJSON().content.some((item) => item.type === "image"), false);
 });
 
-test("failed upload inserts no image and paste/drop image files are blocked", async (t) => {
+test("failed upload inserts no image and image-file drop remains blocked", async (t) => {
   const ui = await mountEditor(t, async () => Response.json({ message: "上傳暫時失敗" }, { status: 500 }));
   await React.act(async () => ui.host.querySelector('button[aria-label="插入圖片"]').click());
   const dialog = [...ui.host.querySelectorAll("dialog")].find((item) => item.open && item.textContent.includes("插入圖片"));
@@ -138,9 +142,121 @@ test("failed upload inserts no image and paste/drop image files are blocked", as
   assert.match(dialog.textContent, /上傳暫時失敗/);
   assert.equal(ui.editor.getJSON().content.some((item) => item.type === "image"), false);
   const imageFile = new window.File(["x"], "x.png", { type: "image/png" });
-  assert.equal(ui.editor.options.editorProps.handlePaste(null, { clipboardData: { files: [imageFile] } }), true);
   assert.equal(ui.editor.options.editorProps.handleDrop(null, { dataTransfer: { files: [imageFile] } }), true);
-  assert.equal(ui.editor.options.editorProps.handlePaste(null, { clipboardData: { files: [] } }), false);
+  assert.equal(ui.editor.options.editorProps.handlePaste(ui.editor.view, { clipboardData: { files: [] } }), false);
+});
+
+function pasteFiles(ui, files, items = []) {
+  let prevented = false;
+  const handled = ui.editor.options.editorProps.handlePaste(ui.editor.view, {
+    clipboardData: { files, items },
+    preventDefault() { prevented = true; },
+  });
+  return { handled, prevented };
+}
+
+function openDialog(ui, title) {
+  return [...ui.host.querySelectorAll("dialog")].find(
+    (item) => item.open && item.textContent.includes(title),
+  );
+}
+
+test("image, media, and link dialogs show required indicators that match validation state", async (t) => {
+  const ui = await mountEditor(t, () => assert.fail("labels must not upload"));
+  await React.act(async () => ui.host.querySelector('button[aria-label="插入圖片"]').click());
+  let dialog = openDialog(ui, "插入圖片");
+  assert.match(dialog.querySelector('label[for="image-editor-image-file"]').textContent, /圖片\*/);
+  const altLabel = dialog.querySelector('label[for="image-editor-image-alt"]');
+  assert.match(altLabel.textContent, /替代文字）\*/);
+  assert.equal(dialog.querySelector('label[for="image-editor-image-caption"]').textContent.trim(), "圖片標題（選填）");
+  await React.act(async () => dialog.querySelector('input[type="checkbox"]').click());
+  assert.doesNotMatch(altLabel.textContent, /\*/);
+  assert.equal(dialog.querySelector('#image-editor-image-alt').disabled, true);
+  await React.act(async () => [...dialog.querySelectorAll("button")].find((button) => button.textContent === "取消").click());
+
+  await React.act(async () => ui.host.querySelector('button[aria-label="新增或編輯媒體"]').click());
+  dialog = openDialog(ui, "插入媒體");
+  assert.match(dialog.querySelector('label[for="image-editor-media-url"]').textContent, /\*/);
+  assert.equal(dialog.querySelector('#image-editor-media-url').getAttribute("aria-required"), "true");
+  await React.act(async () => [...dialog.querySelectorAll("button")].find((button) => button.textContent === "取消").click());
+
+  await React.act(async () => ui.host.querySelector('button[aria-label="新增或編輯連結"]').click());
+  dialog = openDialog(ui, "新增連結");
+  assert.match(dialog.querySelector('label[for="image-editor-link-text"]').textContent, /\*/);
+  assert.match(dialog.querySelector('label[for="image-editor-link"]').textContent, /\*/);
+});
+
+test("clipboard PNG opens the shared modal and uploads at the paste position", async (t) => {
+  let uploadedFile;
+  const ui = await mountEditor(t, async (_url, options) => {
+    uploadedFile = options.body.get("file");
+    return Response.json({ data: { src } }, { status: 201 });
+  });
+  const clipboardFile = new window.File(["png"], "image.png", { type: "image/png" });
+  await React.act(async () => {
+    ui.editor.commands.setTextSelection(7);
+    assert.deepEqual(pasteFiles(ui, [], [{
+      kind: "file",
+      type: "image/png",
+      getAsFile: () => clipboardFile,
+    }]), { handled: true, prevented: true });
+  });
+  const dialog = openDialog(ui, "插入圖片");
+  assert.ok(dialog);
+  assert.match(dialog.textContent, /剪貼簿圖片 · 3 B/);
+  await React.act(async () => setInput(dialog.querySelector('#image-editor-image-alt'), "剪貼簿截圖"));
+  await React.act(async () => {
+    [...dialog.querySelectorAll("button")].find((button) => button.textContent === "上傳並插入").click();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  });
+  assert.equal(uploadedFile, clipboardFile);
+  assert.deepEqual(ui.editor.getJSON().content.map((node) => node.type), ["paragraph", "image", "paragraph"]);
+});
+
+test("clipboard JPEG and WebP preselect one supported image and allow picker replacement", async (t) => {
+  for (const [type, name] of [["image/jpeg", "capture.jpg"], ["image/webp", "capture.webp"]]) {
+    const ui = await mountEditor(t, () => assert.fail("cancelled paste must not upload"));
+    const first = new window.File(["first"], name, { type });
+    const second = new window.File(["second"], "second.png", { type: "image/png" });
+    await React.act(async () => pasteFiles(ui, [first, second]));
+    const dialog = openDialog(ui, "插入圖片");
+    assert.match(dialog.textContent, new RegExp(name.replace(".", "\\.")));
+    await React.act(async () => selectFile(dialog.querySelector('input[type="file"]'), second));
+    assert.match(dialog.textContent, /second\.png/);
+    await React.act(async () => [...dialog.querySelectorAll("button")].find((button) => button.textContent === "取消").click());
+    assert.equal(ui.editor.getJSON().content.some((item) => item.type === "image"), false);
+  }
+});
+
+test("clipboard validation shares file rules and ordinary paste remains unhandled", async (t) => {
+  const ui = await mountEditor(t, () => assert.fail("invalid clipboard files must not upload"));
+  for (const [file, expected] of [
+    [new window.File([], "image.png", { type: "image/png" }), /空白檔案/],
+    [new window.File(["gif"], "image.gif", { type: "image/gif" }), /僅支援 JPEG、PNG 或 WebP/],
+    [new window.File([new Uint8Array(4 * 1024 * 1024 + 1)], "image.png", { type: "image/png" }), /不得超過 4 MiB/],
+  ]) {
+    await React.act(async () => pasteFiles(ui, [file]));
+    const dialog = openDialog(ui, "插入圖片");
+    assert.match(dialog.textContent, expected);
+    await React.act(async () => [...dialog.querySelectorAll("button")].find((button) => button.textContent === "取消").click());
+  }
+  let prevented = false;
+  assert.equal(ui.editor.options.editorProps.handlePaste(ui.editor.view, {
+    clipboardData: { files: [] },
+    preventDefault() { prevented = true; },
+  }), false);
+  assert.equal(prevented, false);
+});
+
+test("pasted external, data, and blob img HTML cannot create canonical image nodes", async (t) => {
+  const ui = await mountEditor(t, () => assert.fail("HTML paste must not upload"));
+  await React.act(async () => {
+    for (const unsafeSrc of ["https://foreign.example/image.png", "data:image/png;base64,AAAA", "blob:http://localhost/id"]) {
+      ui.editor.commands.insertContent(`<img src="${unsafeSrc}" alt="unsafe"><p>保留文字</p>`);
+    }
+  });
+  assert.equal(ui.editor.getJSON().content.some((item) => item.type === "image"), false);
+  assert.match(ui.editor.getText(), /保留文字/);
 });
 
 test("image form rejects missing, empty, unsupported and oversized files before fetch", async (t) => {
