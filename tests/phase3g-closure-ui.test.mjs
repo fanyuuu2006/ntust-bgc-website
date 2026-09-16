@@ -77,7 +77,7 @@ for (const closed of [false, true]) test(`Admin account/profile/history composit
   } else { assert.match(html, /編輯個人資料/); assert.match(html, /編輯帳號資料/); assert.equal(verificationReads, 1); }
 });
 
-test("Admin account modal validates avatar locally, saves exact account fields and supports clearing", async t => {
+test("Admin account modal edits only the display name and has no URL mutation field", async t => {
   const calls = [];
   let refreshes = 0;
   const Component = load("src/components/(admin)/admin/users/UserAccountEditButton.tsx", {
@@ -95,18 +95,11 @@ test("Admin account modal validates avatar locally, saves exact account fields a
     input.dispatchEvent(new window.Event("input", { bubbles: true }));
   });
   await click("編輯帳號資料");
-  assert.equal(host.querySelectorAll("input").length, 2);
+  assert.equal(host.querySelectorAll("input").length, 1);
+  assert.equal(host.querySelector("#admin-account-avatar"), null);
   await fill("#admin-account-name", "新名稱");
-  await fill("#admin-account-avatar", "javascript:alert(1)");
   await click("儲存");
-  assert.equal(calls.length, 0);
-  assert.equal(host.querySelector("#admin-account-avatar").getAttribute("aria-invalid"), "true");
-  await fill("#admin-account-avatar", "https://example.com/new.png");
-  await click("儲存");
-  assert.deepEqual(calls[0], ["/api/admin/users/id/account", { method: "PATCH", body: { name: "新名稱", avatar: "https://example.com/new.png" } }]);
-  await click("編輯帳號資料");
-  await fill("#admin-account-avatar", ""); await click("儲存");
-  assert.equal(calls[1][1].body.avatar, null);
+  assert.deepEqual(calls[0], ["/api/admin/users/id/account", { method: "PATCH", body: { name: "新名稱" } }]);
   await click("編輯帳號資料"); await fill("#admin-account-name", "取消內容"); await click("取消");
-  assert.equal(calls.length, 2); assert.equal(refreshes, 2);
+  assert.equal(calls.length, 1); assert.equal(refreshes, 1);
 });

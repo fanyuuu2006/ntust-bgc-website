@@ -4,11 +4,11 @@ import { load } from './helpers/load-app-module.mjs';
 import { readFileSync } from 'node:fs';
 
 const schema = load('src/services/users/users.schema.tsx').updateUserAccountSchema;
-test('account schema accepts trimmed name and avatar clearing', () => {
-  assert.deepEqual(schema.parse({ name: ' 社員 ', avatar: null }), { name: '社員', avatar: null });
+test('account schema accepts a trimmed display name', () => {
+  assert.deepEqual(schema.parse({ name: ' 社員 ' }), { name: '社員' });
 });
-test('account schema rejects unsafe avatar URLs and sensitive fields', () => {
-  for (const avatar of ['not a url', 'javascript:alert(1)', 'data:image/png;base64,abc', 'https://user:pass@example.com/a']) assert.equal(schema.safeParse({ avatar }).success, false);
+test('account schema rejects every avatar write and sensitive fields', () => {
+  for (const avatar of [null, 'https://example.com/a.png', 'data:image/png;base64,abc']) assert.equal(schema.safeParse({ name: 'name', avatar }).success, false);
   for (const key of ['email', 'email_verified_at', 'closed_at', 'password']) assert.equal(schema.safeParse({ name: 'name', [key]: 'forged' }).success, false);
 });
 test('shared account update rejects closed accounts before writing', async () => {
@@ -20,17 +20,18 @@ test('shared account update rejects closed accounts before writing', async () =>
   await assert.rejects(() => service.updateAccount('id', { name: 'new' }));
   assert.equal(writes, 0);
 });
-test('shared account update persists name, avatar and clearing with canonical validation', async () => {
+test('shared account update persists only the display name and rejects avatar writes', async () => {
   const writes = [];
   const service = load('src/services/users/users.service.tsx', {
     '@/libs/supabase/server': { supabase: {} },
     '@/repositories/users.repository': { usersRepository: { findById: async () => ({ closed_at: null }), updateById: async (...args) => { writes.push(args); return {}; } } },
   }).usersService;
-  await service.updateAccount('id', { name: ' 新名稱 ', avatar: 'https://example.com/a.png' });
-  await service.updateAccount('id', { avatar: null });
-  assert.deepEqual(writes, [['id', { name: '新名稱', avatar: 'https://example.com/a.png' }], ['id', { avatar: null }]]);
+  await service.updateAccount('id', { name: ' 新名稱 ' });
+  await assert.rejects(() => service.updateAccount('id', { name: '新名稱', avatar: 'https://example.com/a.png' }));
+  await assert.rejects(() => service.updateAccount('id', { avatar: null }));
+  assert.deepEqual(writes, [['id', { name: '新名稱' }]]);
   await assert.rejects(() => service.updateAccount('id', { name: '' }));
-  assert.equal(writes.length, 2);
+  assert.equal(writes.length, 1);
 });
 test('admin account route authorizes before invoking the shared service', async () => {
   for (const allowed of [false, true]) {

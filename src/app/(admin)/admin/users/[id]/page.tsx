@@ -9,7 +9,7 @@ import {
 } from "@/components/(admin)/admin/memberships/MemberStatusBadge";
 import { UserProfileEditButton } from "@/components/(admin)/admin/users/UserProfileEditButton";
 import { UserAccountEditButton } from "@/components/(admin)/admin/users/UserAccountEditButton";
-import { UserAvatar } from "@/components/UserAvatar";
+import { AvatarManagement } from "@/components/avatars/AvatarManagement";
 import { EmailVerificationBadge } from "@/components/(admin)/admin/users/EmailVerificationBadge";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -53,9 +53,10 @@ async function AdminUserDetailPage({
 
       <section className="space-y-8 px-4 pb-6 sm:px-6 lg:px-8">
         <DetailSection title="帳號資料" action={!user.closed_at && <UserAccountEditButton user={user} />}>
-          <p className="mb-3 text-sm text-(--text-muted)">可編輯顯示名稱與頭像；Email、驗證狀態與密碼不在此修改。</p>
+          <p className="mb-3 text-sm text-(--text-muted)">可編輯顯示名稱並管理頭像；Email、驗證狀態與密碼不在此修改。</p>
           <Card className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="flex min-w-0 items-center gap-3"><UserAvatar user={user} className="size-10 shrink-0 rounded-full" /><Info label="顯示名稱" value={user.name} /></div>
+            {!user.closed_at ? <div className="sm:col-span-2 lg:col-span-3"><p className="mb-3 text-sm font-medium text-(--text-primary)">頭像</p><AvatarManagement user={user} endpoint={`/api/admin/users/${user.id}/avatar`} admin /></div> : null}
+            <Info label="顯示名稱" value={user.name} />
             <Info label="帳號狀態" value={user.closed_at ? "已註銷使用者" : "使用中"} />
             {user.closed_at && <Info label="註銷時間" value={formatDateTime(user.closed_at)} />}
             <Info label="Email" value={user.closed_at ? "已清除" : user.email} />
