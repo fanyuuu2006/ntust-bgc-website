@@ -11,7 +11,7 @@ after(()=>dom.window.close());
 const initial={name:'桌遊',inventory_number:'608',category_id:'00000000-0000-4000-8000-000000000001',location_id:'00000000-0000-4000-8000-000000000002'};
 async function mount(t,mode='create'){
  const calls=[],paths=[];
- const {BoardGameForm}=load('src/components/(admin)/admin/board-games/BoardGameForm.tsx',{'next/navigation':{useRouter:()=>({push:p=>paths.push(p),refresh(){}})},'next/dynamic':{default:()=>props=>createElement('div',{'aria-label':props.label})},'@/libs/api/client':{apiClient:async(...args)=>calls.push(args)}});
+ const {BoardGameForm}=load('src/components/(admin)/admin/board-games/BoardGameForm.tsx',{'next/navigation':{useRouter:()=>({push:p=>paths.push(p),refresh(){}})},'next/dynamic':{default:()=>props=>createElement('div',{'aria-label':props.label})},'@/libs/api/client':{apiClient:async(...args)=>{calls.push(args);return {data:{id:'00000000-0000-4000-8000-000000000003'}};}}});
  const host=document.createElement('div');document.body.append(host);const root=createRoot(host);
  await act(async()=>root.render(createElement(BoardGameForm,{mode,boardGameId:'game',initialValues:initial,categories:[{id:initial.category_id,name:'策略'}],locations:[{id:initial.location_id,name:'社辦'}],returnTo:'/admin/board-games?page=3&status=available'})));
  t.after(async()=>{await act(async()=>root.unmount());host.remove()});

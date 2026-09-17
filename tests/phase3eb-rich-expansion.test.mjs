@@ -95,14 +95,14 @@ function formHarness(path, name, props, fail = false) {
   const states = [], calls = [], navigations = [];
   function EditorStub() {}
   const component = load(path, {
-    react: { ...React, useMemo: (fn) => fn(), useState(initial) {
+    react: { ...React, useEffect() {}, useMemo: (fn) => fn(), useRef: (initial) => ({ current: initial }), useState(initial) {
       const index = cursor++;
       if (!(index in states)) states[index] = typeof initial === "function" ? initial() : initial;
       return [states[index], (next) => { states[index] = typeof next === "function" ? next(states[index]) : next; }];
     } },
     "next/dynamic": { default: () => EditorStub },
     "next/navigation": { useRouter: () => ({ push: (href) => navigations.push(href), refresh: () => navigations.push("refresh") }) },
-    "@/libs/api/client": { apiClient: async (...args) => { calls.push(args); if (fail) throw new Error("受控失敗"); } },
+    "@/libs/api/client": { apiClient: async (...args) => { calls.push(args); if (fail) throw new Error("受控失敗"); return { data: { id: "11111111-1111-4111-8111-111111111111" } }; } },
   })[name];
   const tree = () => { cursor = 0; return component(props); };
   function find(element, predicate) {

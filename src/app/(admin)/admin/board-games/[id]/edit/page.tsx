@@ -53,6 +53,7 @@ async function BoardGameEditPage({
           returnTo={returnTo}
           mode="edit"
           boardGameId={id}
+          initialImage={boardGame.image}
           categories={categories}
           locations={locations}
           initialValues={{

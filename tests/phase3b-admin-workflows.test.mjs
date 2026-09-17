@@ -171,7 +171,7 @@ function componentHarness(path, exportName, props, api) {
   const pushes = [];
   const React = require("react");
   const loadedModule = load(path, {
-    react: { ...React, useMemo: (fn) => fn(), useState: (initial) => {
+    react: { ...React, useEffect() {}, useMemo: (fn) => fn(), useRef: (initial) => ({ current: initial }), useState: (initial) => {
       const index = cursor++;
       if (!(index in state)) state[index] = typeof initial === "function" ? initial() : initial;
       return [state[index], (value) => { state[index] = typeof value === "function" ? value(state[index]) : value; }];
@@ -190,7 +190,7 @@ test("board-game create/edit submit and cancel retain filters; failed submit ret
     const harness = componentHarness("src/components/(admin)/admin/board-games/BoardGameForm.tsx", "BoardGameForm", {
       mode, returnTo, boardGameId: "game", categories: [], locations: [],
       initialValues: { name: "測試桌遊", inventory_number: "608", category_id: "11111111-1111-4111-8111-111111111111", location_id: "11111111-1111-4111-8111-111111111111" },
-    }, async (...args) => { requests.push(args); if (fail) throw new Error("conflict"); });
+    }, async (...args) => { requests.push(args); if (fail) throw new Error("conflict"); return { data: { id: "11111111-1111-4111-8111-111111111111" } }; });
     let tree = harness.render();
     tree.find((n) => n.props?.field?.id === "inventory_number").props.onChange({ target: { name: "inventory_number", value: "701" } });
     tree = harness.render();
@@ -201,9 +201,10 @@ test("board-game create/edit submit and cancel retain filters; failed submit ret
     harness.render().find((n) => n.props?.children === "取消").props.onClick();
     assert.deepEqual(harness.pushes, [returnTo, returnTo]);
     fail = true;
+    harness.render().find((n) => n.props?.field?.id === "inventory_number").props.onChange({ target: { name: "inventory_number", value: "702" } });
     await harness.render().find((n) => n.type === "form").props.onSubmit({ preventDefault() {} });
     assert.equal(harness.pushes.length, 2);
-    assert.equal(harness.render().find((n) => n.props?.field?.id === "inventory_number").props.value, "701");
+    assert.equal(harness.render().find((n) => n.props?.field?.id === "inventory_number").props.value, "702");
   }
 });
 
