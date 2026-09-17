@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/utils/className";
 import { apiClient } from "@/libs/api/client";
@@ -9,7 +9,8 @@ import { ApiError } from "@/libs/api/errors";
 import { FieldInput, type FieldInputField } from "@/components/FieldInput";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Button } from "@/components/ui/Button";
-import { getSafeReturnPath } from "@/utils/redirect";
+import { getSafeLoginReturnPath } from "@/utils/redirect";
+import { replaceAuthBoundary } from "@/libs/navigation/auth-boundary";
 
 type LoginFormValues = {
   email: string;
@@ -56,10 +57,9 @@ type LoginFormProps = Omit<
 >;
 
 export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const rawReturnTo = searchParams.get("returnTo");
-  const returnTo = getSafeReturnPath(rawReturnTo);
+  const returnTo = getSafeLoginReturnPath(rawReturnTo);
   const registerHref = rawReturnTo === returnTo
     ? `/register?returnTo=${encodeURIComponent(returnTo)}`
     : "/register";
@@ -91,7 +91,7 @@ export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
         body: values,
       });
 
-      router.replace(
+      replaceAuthBoundary(
         result.data.emailVerified ? returnTo : "/verify-email/pending",
       );
     } catch (err) {
