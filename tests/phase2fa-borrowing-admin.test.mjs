@@ -42,7 +42,7 @@ test("board-game detail keeps the entry visible and treats non-current membershi
 test("login preserves only a safe same-site return destination", () => {
   assert.match(redirectUtils, /value\.startsWith\("\/"\)/);
   assert.match(redirectUtils, /value\.startsWith\("\/\/"\)/);
-  assert.match(loginForm, /getSafeReturnPath/);
+  assert.match(loginForm, /getSafeLoginReturnPath/);
   assert.match(loginForm, /emailVerified \? returnTo/);
   assert.match(registerForm, /getSafeReturnPath/);
   assert.match(registerForm, /loginHref/);
