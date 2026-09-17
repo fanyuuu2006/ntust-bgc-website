@@ -203,7 +203,7 @@ export function BoardGameForm({
     const error = file.size === 0
       ? "圖片檔案不可為空"
       : file.size > BOARD_GAME_IMAGE_MAX_BYTES
-        ? "圖片檔案不可超過 4 MiB"
+        ? "圖片檔案不可超過 4 MB"
         : !ACCEPTED_IMAGE_TYPES.has(file.type)
           ? "僅支援 JPG、PNG 或 WebP 圖片"
           : null;
@@ -366,7 +366,7 @@ export function BoardGameForm({
               // eslint-disable-next-line @next/next/no-img-element
               <img src={previewUrl} alt="待上傳的桌遊封面預覽" className="h-28 w-24 shrink-0 rounded-lg border border-(--border-default) object-cover" />
             ) : (
-              <BoardGameImage boardGame={{ name: values.name || "桌遊", image: persistedImage }} onError={() => setImageOverride({ base: initialImage, value: null })} className="h-28 w-24 shrink-0 rounded-lg border border-(--border-default) object-cover" />
+              <BoardGameImage boardGame={{ name: values.name || "桌遊", image: persistedImage }} className="h-28 w-24 shrink-0 rounded-lg border border-(--border-default) object-cover" />
             )}
             <div className="min-w-0 flex-1 space-y-2">
               {selectedImage ? <div><p className="truncate text-sm font-semibold text-(--text-primary)" title={selectedImage.name}>{selectedImage.name}</p><p className="text-xs text-(--text-muted)">{formatFileSize(selectedImage.size)} · 尚未上傳</p></div> : <p className="text-sm text-(--text-muted)">{persistedImage ? "目前使用中的桌遊封面" : "尚未設定桌遊封面"}</p>}

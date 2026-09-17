@@ -1,4 +1,7 @@
+"use client";
+
 import type { BoardGame } from "@/types/database";
+import { useState } from "react";
 import { cn } from "@/utils/className";
 
 type BoardGameImageProps = React.ImgHTMLAttributes<HTMLImageElement> & {
@@ -9,11 +12,14 @@ export function BoardGameImage({
   boardGame,
   alt,
   className,
+  onError,
+  referrerPolicy,
   ...rest
 }: BoardGameImageProps) {
   const accessibleName = alt ?? boardGame.name;
+  const [failedImage, setFailedImage] = useState<string | null>(null);
 
-  if (!boardGame.image) {
+  if (!boardGame.image || failedImage === boardGame.image) {
     return (
       <BoardGameImageFallback
         name={accessibleName}
@@ -29,7 +35,12 @@ export function BoardGameImage({
     <img
       src={boardGame.image}
       alt={accessibleName}
+      referrerPolicy={referrerPolicy ?? "no-referrer"}
       className={cn("shrink-0", className)}
+      onError={(event) => {
+        setFailedImage(boardGame.image);
+        onError?.(event);
+      }}
       {...rest}
     />
   );

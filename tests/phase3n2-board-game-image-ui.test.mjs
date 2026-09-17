@@ -59,7 +59,7 @@ test("selection validates locally, previews, reselects, and revokes object URLs"
   await selectFile(ui.host, new File([], "empty.png", { type: "image/png" }));
   assert.match(ui.host.textContent, /不可為空/);
   await selectFile(ui.host, new File([new Uint8Array(4 * 1024 * 1024 + 1)], "large.png", { type: "image/png" }));
-  assert.match(ui.host.textContent, /不可超過 4 MiB/);
+  assert.match(ui.host.textContent, /不可超過 4 MB/);
 });
 
 test("create uploads only after JSON create and uses the returned ID", async (t) => {

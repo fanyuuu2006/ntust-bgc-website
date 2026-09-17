@@ -221,6 +221,28 @@ test("hard delete captures the image, deletes DB first, then performs owned clea
   const end=source.indexOf("/* ============================================================",start);
   const block=source.slice(start,end);
   assert.ok(block.indexOf("getBoardGameById") < block.indexOf("deleteById"));
+  assert.ok(block.indexOf("findManyByBoardGameId") < block.indexOf("deleteById"));
+  assert.ok(block.indexOf("throw new BoardGameHasOpenBorrowingError") < block.indexOf("deleteById"));
   assert.ok(block.indexOf("deleteById") < block.indexOf("removeOwnedBoardGameImageObject"));
+  assert.match(block, /deleteById\(id\)\.catch\(rethrowBoardGameDeleteConflict\)/);
   assert.match(block,/boardGame\.image/);
+});
+
+test("hard-delete cleanup helper ignores external URLs and safely tolerates owned cleanup failure", async () => {
+  const removals = [], diagnostics = [];
+  const { removeOwnedBoardGameImageObject } = load("src/services/board-game-images/board-game-images.service.ts", {
+    "@/libs/env": { SUPABASE_URL: ORIGIN },
+    "@/repositories/board-game-image-storage.repository": { boardGameImageStorageRepository: {
+      remove: async (path) => { removals.push(path); throw new Error("provider detail"); },
+    } },
+    "@/repositories/board-games.repository": { boardGamesRepository: {} },
+    "@/libs/observability/report": { reportUnexpectedError: (_error, context) => diagnostics.push(context) },
+    "@/libs/cache/public-data": { invalidatePublicData() {} },
+  });
+  await removeOwnedBoardGameImageObject(GAME_ID, "https://external.example/legacy.jpg");
+  assert.deepEqual(removals, []);
+  const path = `${GAME_ID}/${OBJECT_ID}.webp`;
+  await removeOwnedBoardGameImageObject(GAME_ID, `${ORIGIN}/storage/v1/object/public/board-game-images/${path}`);
+  assert.deepEqual(removals, [path]);
+  assert.deepEqual(diagnostics, [{ context: "board-game-image.cleanup" }]);
 });

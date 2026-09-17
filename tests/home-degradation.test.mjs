@@ -27,6 +27,7 @@ for (const [announcementsFail, gamesFail] of [[true, false], [false, true], [tru
         shellProps = props;
         return React.createElement("div", {}, React.createElement("header", {}, "public header"), props.children);
       } },
+      "@/components/BoardGameImage": { BoardGameImage: ({ boardGame }) => React.createElement("span", {}, boardGame.name) },
       "@/services/announcements/announcements.service": { announcementsService: { getHomepagePreview: async () => {
         if (announcementsFail) throw Error("fixture unavailable");
         return [{ id: 1, title: "Visible announcement", content: "public text", published_at: "2026-01-01", created_at: "2026-01-01" }];
