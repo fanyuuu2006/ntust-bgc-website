@@ -61,7 +61,6 @@ async function BoardGameEditPage({
             description: boardGame.description ?? "",
             description_format: boardGame.description_format,
             rich_description: boardGame.rich_description,
-            image: boardGame.image ?? "",
             category_id: boardGame.category_id,
             location_id: boardGame.location_id,
             status: boardGame.status,

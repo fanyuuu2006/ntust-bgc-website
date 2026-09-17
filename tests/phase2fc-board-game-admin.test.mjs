@@ -45,7 +45,8 @@ test("create and edit share one canonical form hierarchy", async () => {
   assert.match(form, /基本資料/);
   assert.match(form, /種類與位置/);
   assert.match(form, /id="board-game-content"/);
-  assert.match(form, /id="board-game-image"/);
+  assert.doesNotMatch(form, /id="board-game-image"/);
+  assert.doesNotMatch(form, /圖片網址/);
   assert.match(form, /儲存變更/);
   assert.doesNotMatch(form, /className="card/);
   assert.match(createPage, /<BoardGameForm/);

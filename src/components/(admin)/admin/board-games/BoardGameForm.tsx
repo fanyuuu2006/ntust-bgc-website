@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormFeedback } from "@/components/FormFeedback";
 import { FieldInput } from "@/components/FieldInput";
-import { BoardGameImage } from "@/components/BoardGameImage";
 import { ApiError } from "@/libs/api/errors";
 import { apiClient } from "@/libs/api/client";
 import { createBoardGameSchema, updateBoardGameSchema } from "@/services/board-games/board-games.schema";
@@ -33,7 +32,6 @@ type BoardGameFormValues = {
   description: string;
   description_format?: string;
   rich_description?: unknown;
-  image: string;
   category_id: string;
   location_id: string;
   status: BoardGameStatus;
@@ -52,7 +50,6 @@ const DEFAULT_VALUES: BoardGameFormValues = {
   name: "",
   inventory_number: "",
   description: "",
-  image: "",
   category_id: "",
   location_id: "",
   status: "available",
@@ -66,7 +63,6 @@ function buildInitialValues(
     ...initialValues,
     inventory_number: initialValues?.inventory_number ?? "",
     description: initialValues?.description ?? "",
-    image: initialValues?.image ?? "",
     status: initialValues?.status ?? "available",
   };
 }
@@ -82,7 +78,6 @@ function getFieldErrors(
     ...values,
     inventory_number: values.inventory_number === "" ? undefined : Number(values.inventory_number),
     description: values.description.trim() === "" ? null : values.description,
-    image: values.image.trim() === "" ? null : values.image,
     status: values.status,
   };
 
@@ -125,15 +120,6 @@ export function BoardGameForm({
   >({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [failedImage, setFailedImage] = useState<string | null>(null);
-  const imageUrl = values.image.trim();
-  // 預覽只讓瀏覽器載入 HTTP(S) 圖片，不使用 Server fetch，也不改變既有儲存 schema。
-  let previewUrl: string | null = null;
-  try {
-    const url = new URL(imageUrl);
-    if (["http:", "https:"].includes(url.protocol) && !url.username && !url.password) previewUrl = imageUrl;
-  } catch { /* 尚未輸入完整網址時不發出圖片請求。 */ }
-
   const statusOptions = useMemo<BoardGameStatus[]>(
     () => [
       "available",
@@ -151,7 +137,6 @@ export function BoardGameForm({
   ) {
     const { name, value } = event.target;
     const fieldName = name as keyof BoardGameFormValues;
-    if (fieldName === "image") setFailedImage(null);
 
     setValues((prev) => ({
       ...prev,
@@ -178,7 +163,6 @@ export function BoardGameForm({
       inventory_number: Number(values.inventory_number),
       description_format: "rich_text_v1",
       rich_description: richDescription,
-      image: values.image.trim() === "" ? null : values.image.trim(),
       category_id: values.category_id,
       location_id: values.location_id,
       status: values.status,
@@ -251,22 +235,6 @@ export function BoardGameForm({
             <RichTextEditor id="description" label="桌遊描述" initialContent={initialDescription} onChange={setRichDescription} disabled={isSubmitting || unsupportedDescription} invalid={!!errors.description} />
             <p className="text-xs text-(--text-muted)">{unsupportedDescription ? "此描述格式暫不支援編輯。" : "可留空；格式化內容最多 20,000 字元。"}</p>
           </Field>
-        </section>
-
-        <section className="space-y-4" aria-labelledby="board-game-image">
-          <h2 id="board-game-image" className="border-b border-(--border-default) pb-2 text-base font-semibold text-(--text-primary)">圖片</h2>
-          <div className="grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_12rem]">
-            <FieldInput field={{ id: "image", label: "圖片網址", type: "url", placeholder: "https://example.com/board-game.jpg", hint: "可留空；預覽由瀏覽器載入外部圖片。", error: errors.image }} value={values.image} onChange={handleChange} onBlur={() => {
-              const result = updateBoardGameSchema.safeParse({ image: values.image });
-              setErrors((previous) => ({ ...previous, image: result.success ? undefined : result.error.issues[0]?.message }));
-            }} />
-            <figure className="min-w-0 space-y-2">
-              <figcaption className="text-sm font-medium text-(--text-primary)">圖片預覽</figcaption>
-              <div className="flex h-32 items-center justify-center overflow-hidden rounded-lg border border-(--border-muted) bg-(--surface-subtle) md:h-36">
-                {previewUrl && failedImage !== previewUrl ? <BoardGameImage key={previewUrl} boardGame={{ name: values.name || "桌遊圖片預覽", image: previewUrl }} className="h-full w-full object-contain" referrerPolicy="no-referrer" onError={() => setFailedImage(previewUrl)} /> : <p className="px-3 text-center text-sm text-(--text-muted)">{!imageUrl ? "尚未設定圖片" : previewUrl && failedImage === previewUrl ? "無法載入圖片，請確認網址。" : "輸入 HTTP 或 HTTPS 圖片網址以預覽。"}</p>}
-              </div>
-            </figure>
-          </div>
         </section>
 
         <FormFeedback error={formError} />

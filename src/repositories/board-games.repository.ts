@@ -18,20 +18,24 @@ export type CreateBoardGameInput = Pick<
   BoardGame,
   "name" | "category_id" | "location_id" | "inventory_number"
 > &
-  Partial<Pick<BoardGame, "description" | "description_format" | "rich_description" | "image" | "status">>;
+  Partial<Pick<BoardGame, "description" | "description_format" | "rich_description" | "status">>;
 
 export type UpdateBoardGameInput = Partial<
   Pick<
     BoardGame,
     | "name"
     | "description" | "description_format" | "rich_description"
-    | "image"
     | "category_id"
     | "location_id"
     | "status"
     | "inventory_number"
   >
 >;
+
+export type BoardGameImageCasResult =
+  | { status: "updated"; boardGame: Pick<BoardGame, "id" | "image"> }
+  | { status: "missing" }
+  | { status: "conflict" };
 
 export type FindManyBoardGamesOptions = PaginationQuery &
   OrderOptions<"name" | "created_at" | "updated_at" | "inventory_number"> & {
@@ -280,6 +284,22 @@ export const boardGamesRepository = {
     status: BoardGameStatus,
   ): Promise<BoardGame | null> => {
     return boardGamesRepository.updateById(id, { status });
+  },
+
+  compareAndSwapImage: async (
+    id: string,
+    expectedImage: string | null,
+    image: string | null,
+  ): Promise<BoardGameImageCasResult> => {
+    let query = supabase.from("board_games").update({ image }).eq("id", id);
+    query = expectedImage === null
+      ? query.is("image", null)
+      : query.eq("image", expectedImage);
+    const { data, error } = await query.select("id,image").maybeSingle();
+    if (error) throwRepositoryError("條件式更新桌遊圖片失敗", error);
+    if (data) return { status: "updated", boardGame: data };
+    const current = await boardGamesRepository.findById(id);
+    return current ? { status: "conflict" } : { status: "missing" };
   },
 
   deleteById: async (id: string): Promise<void> => {
