@@ -57,7 +57,7 @@ test("file validation enforces non-empty, 4 MiB, supported signature and MIME ag
   }
   await assert.rejects(() => validateBoardGameImageFile(new File([], "x.png", { type: "image/png" })), { name: "BoardGameImageInputError" });
   await assert.rejects(() => validateBoardGameImageFile(new File([Uint8Array.from(signatures["image/png"])], "x.jpg", { type: "image/jpeg" })), { name: "BoardGameImageInputError" });
-  await assert.rejects(() => validateBoardGameImageFile(new File([new Uint8Array(4 * 1024 * 1024 + 1)], "x.png", { type: "image/png" })), { name: "BoardGameImageInputError" });
+  await assert.rejects(() => validateBoardGameImageFile(new File([new Uint8Array(4 * 1024 * 1024 + 1)], "x.png", { type: "image/png" })), { name: "BoardGameImageInputError", message: "圖片檔案不可超過 4 MB" });
   for (const [type, bytes] of [["image/gif", [0x47,0x49,0x46,0x38]], ["image/svg+xml", [0x3c,0x73,0x76,0x67]], ["image/avif", [0,0,0,0,0x66,0x74,0x79,0x70,0x61,0x76,0x69,0x66]]]) {
     await assert.rejects(() => validateBoardGameImageFile(new File([Uint8Array.from(bytes)], "x", { type })), { name: "BoardGameImageInputError" });
   }

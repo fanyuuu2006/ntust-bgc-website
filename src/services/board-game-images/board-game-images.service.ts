@@ -11,7 +11,7 @@ import { BoardGameImageInputError,BoardGameImageMutationConflictError } from "./
 
 export async function validateBoardGameImageFile(file:File){
   if(file.size===0)throw new BoardGameImageInputError("圖片檔案不可為空");
-  if(file.size>BOARD_GAME_IMAGE_MAX_BYTES)throw new BoardGameImageInputError("圖片檔案不可超過 4 MiB");
+  if(file.size>BOARD_GAME_IMAGE_MAX_BYTES)throw new BoardGameImageInputError("圖片檔案不可超過 4 MB");
   const bytes=new Uint8Array(await file.arrayBuffer()); const detected=detectSupportedImage(bytes);
   if(!detected)throw new BoardGameImageInputError("僅支援 JPEG、PNG 或 WebP 圖片");
   if(file.type!==detected.mimeType)throw new BoardGameImageInputError("圖片格式與檔案內容不一致");
