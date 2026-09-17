@@ -62,6 +62,7 @@ import {
   BorrowingCancellationConflictError,
 } from "./board-games.errors";
 import { RepositoryError } from "@/repositories/shared/errors";
+import { removeOwnedBoardGameImageObject } from "@/services/board-game-images/board-game-images.service";
 import {
   createBoardGameSchema,
   updateBoardGameSchema,
@@ -442,7 +443,7 @@ export const boardGamesService = {
   },
 
   deleteBoardGame: async (id: string): Promise<void> => {
-    await boardGamesService.getBoardGameById(id);
+    const boardGame = await boardGamesService.getBoardGameById(id);
 
     const openBorrowings =
       await boardGameBorrowingsRepository.findManyByBoardGameId(id, [
@@ -455,6 +456,7 @@ export const boardGamesService = {
     }
 
     await boardGamesRepository.deleteById(id).catch(rethrowBoardGameDeleteConflict);
+    await removeOwnedBoardGameImageObject(id, boardGame.image);
     invalidatePublicData("popularGames");
   },
 

@@ -36,24 +36,14 @@ export const boardGameMasterDataSchema = z.object({
   description: nullableText(500).optional(),
 });
 
-const optionalImage = z.preprocess(
-  (value) => {
-    if (value === null || value === undefined) return null;
-    if (typeof value === "string" && value.trim() === "") return null;
-    return value;
-  },
-  z.union([z.url("請輸入有效的圖片網址"), z.null()]).optional(),
-);
-
 const boardGameInputSchema = z.object({
   name: z.string().trim().min(1, "請輸入名稱").max(100, "名稱不可超過 100 字"),
   inventory_number: z.number().int().min(1, "請輸入有效的社產編號"),
   category_id: z.uuid("請選擇分類"),
   location_id: z.uuid("請選擇位置"),
   ...descriptionFields,
-  image: optionalImage,
   status: boardGameStatusSchema.default("available"),
-});
+}).strict();
 
 export const createBoardGameSchema = boardGameInputSchema.superRefine(validateDescription).transform(canonicalizeDescription);
 export const updateBoardGameSchema = boardGameInputSchema.partial().superRefine(validateDescription).transform(canonicalizeDescription);
