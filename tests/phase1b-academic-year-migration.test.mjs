@@ -10,7 +10,9 @@ test("academic-year migration preflights and enforces at most one current year",
   );
 
   assert.match(sql, /current_year_count > 1/);
-  assert.match(sql, /create unique index academic_years_one_current_year_idx/);
+  assert.match(sql, /create unique index if not exists academic_years_one_current_year_idx/);
+  assert.match(sql, /Index public\.academic_years_one_current_year_idx has an unexpected definition/);
+  assert.match(sql, /pg_catalog\.pg_get_expr\(index_\.indpred/);
   assert.match(sql, /where is_current = true/);
   assert.match(sql, /create function public\.set_current_academic_year/);
   assert.match(sql, /pg_catalog\.pg_advisory_xact_lock/);

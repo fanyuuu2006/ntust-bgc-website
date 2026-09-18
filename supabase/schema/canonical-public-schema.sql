@@ -1,17 +1,9 @@
--- NTUST Board Game Club canonical public schema snapshot.
+-- NTUST Board Game Club canonical public schema reference.
 --
--- Source: verified current remote metadata and Phase 1F deployment catalog.
--- Purpose: readable handover reference and a schema-only starting point for a
--- brand-new Supabase database. This is NOT a migration and must not be applied
--- to an existing environment.
--- Semantics: remote baseline through 202609010006, plus the explicitly marked
--- Phase 3E 公告欄位（202609130001）已於 2026-09-14 遠端套用並唯讀驗證。
--- Phase 3E-B 桌遊／活動欄位（202609130002）已於同日遠端套用並驗證。
--- Other tables remain the historical reference, not a complete deployment inventory.
---
--- This snapshot intentionally contains no data, seed records, credentials,
--- sessions, secrets, or application migration-history assumptions.
-
+-- Migrations are the authoritative reconstruction/deployment source.
+-- This schema-only reference is normalized from the clean replay through
+-- 202609170002 and verified semantically against Production.
+-- Do not use this file instead of replaying migrations.
 -- pgcrypto is required by gen_random_uuid() and generate_membership_register_keys().
 create schema if not exists extensions;
 create extension if not exists pgcrypto with schema extensions;

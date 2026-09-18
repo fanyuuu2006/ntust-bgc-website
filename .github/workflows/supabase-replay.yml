@@ -1,0 +1,26 @@
+name: Supabase migration replay
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - "scripts/verify-local-database.mjs"
+      - "package.json"
+      - ".github/workflows/supabase-replay.yml"
+  workflow_dispatch:
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.117.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: supabase start
+      - run: npm run db:verify:replay

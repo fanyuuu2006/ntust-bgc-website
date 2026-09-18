@@ -43,6 +43,9 @@ create table if not exists membership_register_keys (
   )
 );
 
+alter table public.membership_register_keys
+  enable row level security;
+
 create index if not exists membership_register_keys_year_status_created_idx
   on membership_register_keys (academic_year_id, status, created_at desc);
 

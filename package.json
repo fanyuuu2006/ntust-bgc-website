@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test"
+    "test": "node --test",
+    "db:start": "npx supabase@2.117.0 start",
+    "db:reset": "npx supabase@2.117.0 db reset",
+    "db:verify": "node scripts/verify-local-database.mjs",
+    "db:verify:replay": "npx supabase@2.117.0 db reset && npm run db:verify"
   },
   "dependencies": {
     "@marsidev/react-turnstile": "^1.5.4",
