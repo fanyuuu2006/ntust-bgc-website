@@ -14,6 +14,11 @@ export type UserEmailVerificationFilter = "verified" | "unverified";
 type CreateUserInput = Pick<User, "email" | "name">;
 type UpdateUserInput = Partial<Pick<User, "name" | "avatar">>;
 
+export type AdminUserIdentityRow = Pick<
+  User,
+  "id" | "name" | "email" | "avatar" | "closed_at"
+>;
+
 type FindManyUsersOptions = PaginationQuery &
   OrderOptions<"name" | "email" | "created_at" | "updated_at"> & {
     search?: string;
@@ -101,6 +106,18 @@ export const usersRepository = {
       .select("*")
       .in("id", ids);
     if (error) throwRepositoryError("依 ID 批次尋找用戶失敗", error);
+    return data ?? [];
+  },
+
+  findAdminIdentitiesByIds: async (
+    ids: string[],
+  ): Promise<AdminUserIdentityRow[]> => {
+    if (ids.length === 0) return [];
+    const { data, error } = await supabase
+      .from("users")
+      .select("id,name,email,avatar,closed_at")
+      .in("id", ids);
+    if (error) throwRepositoryError("依 ID 批次取得管理端使用者識別失敗", error);
     return data ?? [];
   },
 

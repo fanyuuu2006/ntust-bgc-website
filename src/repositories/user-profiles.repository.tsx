@@ -11,6 +11,11 @@ export type CreateUserProfileInput = Partial<
 
 export type UpdateUserProfileInput = Partial<CreateUserProfileInput>;
 
+export type AdminUserProfileIdentityRow = Pick<
+  UserProfile,
+  "user_id" | "real_name" | "student_id"
+>;
+
 export const userProfilesRepository = {
   findUserIdsBySearch: async (search: string): Promise<string[]> => {
     const keyword = search.trim();
@@ -34,6 +39,20 @@ export const userProfilesRepository = {
       .in("user_id", userIds);
 
     if (error) throwRepositoryError("依用戶 ID 批次取得個人資料失敗", error);
+    return data ?? [];
+  },
+
+  findAdminIdentitiesByUserIds: async (
+    userIds: string[],
+  ): Promise<AdminUserProfileIdentityRow[]> => {
+    if (userIds.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("user_id,real_name,student_id")
+      .in("user_id", userIds);
+
+    if (error) throwRepositoryError("依使用者 ID 批次取得管理端身分資料失敗", error);
     return data ?? [];
   },
 

@@ -2,6 +2,7 @@ import "server-only";
 
 import { supabase } from "@/libs/supabase/server";
 import { throwRepositoryError } from "@/repositories/shared/errors";
+import { buildIlikeSearch } from "@/repositories/shared/search";
 import {
   buildPaginationResult,
   normalizePaginationOptions,
@@ -26,7 +27,8 @@ export type FindManyOfficerPositionsOptions = PaginationQuery &
   OrderOptions<"created_at"> & {
     academicYearId?: UUID;
     userId?: UUID;
-    titleSearch?: string;
+    search?: string;
+    matchedUserIds?: UUID[];
   };
 
 export const officerPositionsRepository = {
@@ -49,11 +51,13 @@ export const officerPositionsRepository = {
     let query = supabase.from("officer_positions").select("*", { count: "exact" });
     if (options.academicYearId) query = query.eq("academic_year_id", options.academicYearId);
     if (options.userId) query = query.eq("user_id", options.userId);
-    if (options.titleSearch?.trim()) {
-      query = query.ilike(
-        "title",
-        `%${options.titleSearch.trim().replace(/[%,_]/g, "")}%`,
-      );
+    const keyword = options.search?.trim();
+    if (keyword) {
+      const predicates = [buildIlikeSearch(["title"], keyword)];
+      if (options.matchedUserIds?.length) {
+        predicates.push(`user_id.in.(${options.matchedUserIds.join(",")})`);
+      }
+      query = query.or(predicates.join(","));
     }
     const { data, error, count } = await query.order("created_at", { ascending: options.orderDirection === "asc" }).range(from, to);
     if (error) throwRepositoryError("讀取幹部職位失敗", error);
