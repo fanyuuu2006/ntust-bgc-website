@@ -14,14 +14,11 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
-import type { AcademicYear, User } from "@/types/database";
+import type { AcademicYear } from "@/types/database";
+import { AdminUserIdentity } from "@/components/(admin)/admin/users/AdminUserIdentity";
+import type { AdminOfficerPosition } from "@/services/officer-positions/officer-positions.types";
 
-type Officer = {
-  id: string;
-  title: string;
-  user: User;
-  academic_year: AcademicYear | null;
-};
+type Officer = AdminOfficerPosition;
 
 type OfficerFormValues = {
   academic_year_id: string;
@@ -142,9 +139,15 @@ export function OfficerRecords({
           <TableBody>
             {officers.map((officer) => (
               <TableRow key={officer.id}>
-                <TableCell className="min-w-52">
-                  <p className="wrap-anywhere">{officer.user.name}</p>
-                  <p className="wrap-anywhere text-xs text-(--muted)">{officer.user.email}</p>
+                <TableCell className="w-64 max-w-64 min-w-0">
+                  <AdminUserIdentity
+                    identity={{
+                      ...officer.user,
+                      real_name: officer.user_profile?.real_name ?? null,
+                      student_id: officer.user_profile?.student_id ?? null,
+                    }}
+                    disambiguation={officer.user_profile?.student_id ? "studentId" : "email"}
+                  />
                 </TableCell>
                 <TableCell className="min-w-32">{officer.title}</TableCell>
                 <TableCell className="whitespace-nowrap">{officer.academic_year?.year ?? "—"}</TableCell>
@@ -161,8 +164,15 @@ export function OfficerRecords({
         {officers.map((officer) => (
           <Card key={officer.id} className="w-full min-w-0 max-w-full p-4">
             <div className="min-w-0">
-              <p className="wrap-anywhere font-semibold">{officer.user.name}</p>
-              <p className="wrap-anywhere text-sm text-(--muted)">{officer.user.email}</p>
+              <AdminUserIdentity
+                identity={{
+                  ...officer.user,
+                  real_name: officer.user_profile?.real_name ?? null,
+                  student_id: officer.user_profile?.student_id ?? null,
+                }}
+                disambiguation={officer.user_profile?.student_id ? "studentId" : "email"}
+                variant="mobile"
+              />
               <p>{officer.title} · {officer.academic_year?.year ?? "—"}</p>
             </div>
             <div className="mt-3 flex min-w-0 max-w-full flex-wrap gap-2">

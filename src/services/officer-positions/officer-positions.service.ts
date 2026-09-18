@@ -8,19 +8,33 @@ import {
 } from "@/repositories/officer-positions.repository";
 import type { UUID } from "@/types/database";
 import { usersRepository } from "@/repositories/users.repository";
+import { userProfilesRepository } from "@/repositories/user-profiles.repository";
 import type { OfficerPositionWithAcademicYear } from "./officer-positions.types";
 import { OfficerAcademicYearNotFoundError, OfficerInputError, OfficerPositionNotFoundError, OfficerUserNotFoundError } from "./officer-positions.errors";
 
 export const officerPositionsService = {
   listForAdmin: async (options: FindManyOfficerPositionsOptions = {}) => {
-    const result = await officerPositionsRepository.findMany(options);
-    const [users, academicYears] = await Promise.all([
-      usersRepository.findManyByIds(result.data.map((item) => item.user_id)),
+    const keyword = options.search?.trim();
+    const matchedUserIds = keyword
+      ? [...new Set((await Promise.all([
+          usersRepository.findIdsBySearch(keyword),
+          userProfilesRepository.findUserIdsBySearch(keyword),
+        ])).flat())]
+      : undefined;
+    const result = await officerPositionsRepository.findMany({
+      ...options,
+      ...(keyword ? { search: keyword, matchedUserIds } : {}),
+    });
+    const userIds = result.data.map((item) => item.user_id);
+    const [users, profiles, academicYears] = await Promise.all([
+      usersRepository.findAdminIdentitiesByIds(userIds),
+      userProfilesRepository.findAdminIdentitiesByUserIds(userIds),
       academicYearsRepository.findManyByIds(result.data.map((item) => item.academic_year_id)),
     ]);
     const usersById = new Map(users.map((user) => [user.id, user]));
+    const profilesByUserId = new Map(profiles.map((profile) => [profile.user_id, profile]));
     const yearsById = new Map(academicYears.map((year) => [year.id, year]));
-    return { ...result, data: result.data.flatMap((item) => { const user = usersById.get(item.user_id); if (!user) return []; return [{ ...item, user, academic_year: yearsById.get(item.academic_year_id) ?? null }]; }) };
+    return { ...result, data: result.data.flatMap((item) => { const user = usersById.get(item.user_id); if (!user) return []; return [{ ...item, user, user_profile: profilesByUserId.get(item.user_id) ?? null, academic_year: yearsById.get(item.academic_year_id) ?? null }]; }) };
   },
 
   createForAdmin: async (input: unknown) => {

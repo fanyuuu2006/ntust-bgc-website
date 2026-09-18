@@ -48,7 +48,7 @@ async function OfficersPage({
       page,
       pageSize,
       academicYearId: params.academicYearId,
-      titleSearch: params.search?.trim() || undefined,
+      search: params.search?.trim() || undefined,
     }),
   ]);
   const clearSearchParams = new URLSearchParams();
@@ -67,7 +67,7 @@ async function OfficersPage({
         <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_12rem] md:items-center">
           <form className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]" aria-label="搜尋幹部職位">
             <PreservedQueryFields query={{ search: params.search, academicYearId: params.academicYearId, pageSize }} ownedKeys={["search"]} />
-            <ClearableSearchInput initialValue={params.search} clearHref={clearSearchHref} name="search" placeholder="搜尋職位" aria-label="搜尋幹部職位" className="w-full" />
+            <ClearableSearchInput initialValue={params.search} clearHref={clearSearchHref} name="search" placeholder="搜尋姓名、帳號、學號、Email 或職位" aria-label="搜尋幹部" className="w-full" />
             <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
           </form>
             <ImmediateQuerySelect appliedQuery={{ search: params.search, academicYearId: params.academicYearId, pageSize }} basePath="/admin/officers" queryKey="academicYearId" value={params.academicYearId ?? ""} aria-label="學年度" className="w-full">
