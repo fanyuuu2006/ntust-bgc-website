@@ -16,7 +16,11 @@ npm run db:verify
 
 ## Shared Development
 
-**NOT CREATED YET.** The intended path is local Supabase -> isolated Development Supabase -> reviewed Production promotion. Collaborators receive Development-only values and never Production credentials. Vercel Preview is unchanged by this checkpoint.
+The hosted Development project is isolated from Production and has been
+bootstrapped from the repository migration chain. The intended path is local
+Supabase -> isolated Development Supabase -> reviewed Production promotion.
+Collaborators receive Development-only values and never Production
+credentials.
 
 ## Production safety
 
@@ -30,12 +34,19 @@ Use `.env.example` for variable names. Local and Development values must target 
 
 ## Development Admin bootstrap
 
-The bootstrap tool is maintainer-only and accepts only the hosted Development
-project `mrsyfssstigartmhofuz`. It explicitly rejects Production, localhost,
-unknown projects, malformed URLs, and execution without
-`--confirm-development`. It is not an authorization bypass: the resulting
-account still needs a normal Session, an open verified User, and historical
-Officer status.
+The bootstrap tool is maintainer-only and exists solely to establish the first
+Admin in a new Shared Development environment, or to recover Development when
+no usable Admin remains to provision Officers. It is not ordinary collaborator
+onboarding and must never be used for Production provisioning. Once one
+Development Admin is available, that Admin grants subsequent Development Admin
+access through the normal `/admin/officers` workflow.
+
+The command accepts only the hosted Development project
+`mrsyfssstigartmhofuz`. It explicitly rejects Production, localhost, unknown
+projects, malformed URLs, and execution without `--confirm-development`. It is
+not an authorization bypass: the resulting account still needs a normal
+Session, an open verified User, and historical Officer status. Subsequent Admin
+authorization uses exactly the same historical-Officer rule.
 
 1. Configure Development-only `.env.local` values.
 2. Start the website and register the account normally at `/register`.
