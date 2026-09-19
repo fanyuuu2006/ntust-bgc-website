@@ -32,7 +32,7 @@ test("homepage popular preview stays bounded from mobile through wide desktop", 
 test("homepage popular cards remain compact visual teasers without ranking statistics", async () => {
   const [section, preview] = await Promise.all([
     readSource("src/components/(public)/home/PopularBoardGamesSection.tsx"),
-    readSource("src/components/(public)/home/HomeBoardGamePreview.tsx"),
+    readSource("src/components/(public)/board-games/BoardGameCard.tsx"),
   ]);
 
   assert.match(section, /listPopularBoardGames\(\{\s*limit:\s*6/);
@@ -40,14 +40,15 @@ test("homepage popular cards remain compact visual teasers without ranking stati
   assert.equal((preview.match(/<Link\b/g) ?? []).length, 1);
   assert.match(preview, /BoardGameImage/);
   assert.match(preview, /BoardGameStatusBadge/);
-  assert.match(preview, /aspect-3\/2/);
+  assert.match(preview, /aspect-square/);
   assert.match(preview, /boardGame\.name/);
   assert.match(preview, /boardGame\.category|metadata/);
   assert.match(preview, /boardGame\.location|metadata/);
   assert.doesNotMatch(
     preview,
-    /BoardGamePopularity|completedBorrowCount|inventory_number|description/,
+    /BoardGamePopularity|completedBorrowCount|description/,
   );
+  assert.match(preview, /inventory_number/);
   assert.match(preview, /BoardGameRatingMetadata/);
 });
 

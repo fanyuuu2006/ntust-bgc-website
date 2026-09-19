@@ -9,9 +9,10 @@ import { buildBoardGameDetailHref } from "@/libs/board-game-return";
 type BoardGameCardProps = {
   boardGame: BoardGameDiscoveryItem;
   returnTo?: string;
+  showAction?: boolean;
 };
 
-export function BoardGameCard({ boardGame, returnTo }: BoardGameCardProps) {
+export function BoardGameCard({ boardGame, returnTo, showAction = true }: BoardGameCardProps) {
   return (
     <Link
       href={returnTo ? buildBoardGameDetailHref(boardGame.id, returnTo) : `/board-games/${boardGame.id}`}
@@ -61,10 +62,12 @@ export function BoardGameCard({ boardGame, returnTo }: BoardGameCardProps) {
           <BoardGameRatingMetadata stats={boardGame.stats} />
         </div>
 
-        <span className="mt-auto inline-flex items-center gap-1 pt-3 text-sm font-semibold text-(--interactive-primary)">
-          查看詳情
-          <ArrowRight aria-hidden="true" className="size-4" />
-        </span>
+        {showAction ? (
+          <span className="mt-auto inline-flex items-center gap-1 pt-3 text-sm font-semibold text-(--interactive-primary)">
+            查看詳情
+            <ArrowRight aria-hidden="true" className="size-4" />
+          </span>
+        ) : null}
       </div>
     </Link>
   );

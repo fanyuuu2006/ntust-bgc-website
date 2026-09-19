@@ -40,12 +40,10 @@ export type BoardGameWithStats = BoardGame & {
   stats: BoardGameStats;
 };
 
-export type HomeBoardGameItem = Pick<BoardGame, "id" | "name" | "image" | "status"> & {
+export type BoardGameDiscoveryItem = Pick<BoardGame, "id" | "name" | "image" | "status" | "inventory_number"> & {
   category: Pick<BoardGameCategory, "name"> | null;
   location: Pick<BoardGameLocation, "name"> | null;
   stats: BoardGameStats;
 };
 
-export type BoardGameDiscoveryItem = HomeBoardGameItem & Pick<BoardGame, "inventory_number"> & {
-  stats: BoardGameStats;
-};
+export type HomeBoardGameItem = BoardGameDiscoveryItem;

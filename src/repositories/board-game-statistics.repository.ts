@@ -184,7 +184,7 @@ export const boardGameStatisticsRepository = {
   findPopular: async ({ limit = 6 }: { limit?: number } = {}): Promise<HomeBoardGameItem[]> => {
     const { data, error } = await supabase
       .from("board_game_popularity_statistics")
-      .select("id:board_game_id,name,image,status,completed_borrow_count,average_rating,rating_count,review_count,category:board_game_categories(name),location:board_game_locations(name)")
+      .select("id:board_game_id,name,image,status,inventory_number,completed_borrow_count,average_rating,rating_count,review_count,category:board_game_categories(name),location:board_game_locations(name)")
       .order("popularity_score", { ascending: false })
       .order("rating_count", { ascending: false })
       .order("completed_borrow_count", { ascending: false })

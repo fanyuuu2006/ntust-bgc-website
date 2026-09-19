@@ -21,25 +21,27 @@ test("homepage popular grid keeps mobile density while bounding wide desktop car
   );
 });
 
-test("homepage preview uses a complete equal-height chain without artificial body spacers", async () => {
+test("homepage preview reuses the canonical equal-height card", async () => {
   const preview = await readSource(
-    "src/components/(public)/home/HomeBoardGamePreview.tsx",
+    "src/components/(public)/board-games/BoardGameCard.tsx",
   );
 
   assert.match(preview, /className="group flex h-full min-w-0 flex-col/);
-  assert.match(preview, /aspect-3\/2/);
-  assert.doesNotMatch(preview, /aspect-4\/3/);
+  assert.match(preview, /aspect-square/);
   assert.match(preview, /line-clamp-2 min-h-10/);
-  assert.doesNotMatch(preview, /flex-1|mt-auto/);
+  assert.match(preview, /flex-1|mt-auto/);
 });
 
-test("homepage preview remains a single-link discovery summary without ranking statistics", async () => {
-  const preview = await readSource(
-    "src/components/(public)/home/HomeBoardGamePreview.tsx",
-  );
+test("homepage composition suppresses the CTA without duplicating card presentation", async () => {
+  const [section, preview] = await Promise.all([
+    readSource("src/components/(public)/home/PopularBoardGamesSection.tsx"),
+    readSource("src/components/(public)/board-games/BoardGameCard.tsx"),
+  ]);
 
   assert.equal((preview.match(/<Link\b/g) ?? []).length, 1);
-  assert.doesNotMatch(preview, /<button\b|inventory_number|description|查看詳情/);
+  assert.match(section, /showAction=\{false\}/);
+  assert.doesNotMatch(preview, /<button\b|description/);
+  assert.match(preview, /inventory_number|查看詳情/);
   assert.doesNotMatch(preview, /BoardGamePopularity|completedBorrowCount/);
   assert.match(preview, /BoardGameRatingMetadata/);
 });

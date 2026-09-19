@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Suspense } from "react";
 
-import { HomeBoardGamePreview } from "@/components/(public)/home/HomeBoardGamePreview";
+import { BoardGameCard } from "@/components/(public)/board-games/BoardGameCard";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 
 export function PopularBoardGamesSection() {
@@ -65,7 +65,12 @@ async function PopularBoardGamesContent() {
   return (
     <div className="mt-6 grid min-w-0 grid-cols-2 items-stretch gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6">
       {boardGames.map((boardGame) => (
-        <HomeBoardGamePreview key={boardGame.id} boardGame={boardGame} />
+        <BoardGameCard
+          key={boardGame.id}
+          boardGame={boardGame}
+          returnTo="/"
+          showAction={false}
+        />
       ))}
     </div>
   );
@@ -83,7 +88,7 @@ function PopularBoardGamesLoading() {
           key={item}
           className="h-full overflow-hidden rounded-2xl border border-(--border-muted) bg-(--surface-default)"
         >
-          <div className="skeleton aspect-3/2 w-full" />
+          <div className="skeleton aspect-square w-full" />
           <div className="space-y-2 p-3 sm:p-4">
             <div className="skeleton skeleton-line h-5 w-4/5" />
             <div className="skeleton skeleton-line h-4 w-1/2" />

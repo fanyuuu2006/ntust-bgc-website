@@ -52,7 +52,7 @@ test("popular games preview consumes the reusable top-six service contract", asy
     readSource(
       "src/components/(public)/home/PopularBoardGamesSection.tsx",
     ),
-    readSource("src/components/(public)/home/HomeBoardGamePreview.tsx"),
+    readSource("src/components/(public)/board-games/BoardGameCard.tsx"),
   ]);
 
   assert.match(
@@ -68,8 +68,10 @@ test("popular games preview consumes the reusable top-six service contract", asy
   assert.match(preview, /BoardGameStatusBadge/);
   assert.doesNotMatch(
     preview,
-    /BoardGamePopularity|completedBorrowCount|inventory_number|description|fetch\(/,
+    /BoardGamePopularity|completedBorrowCount|description|fetch\(/,
   );
+  assert.match(section, /<BoardGameCard[\s\S]*returnTo="\/"[\s\S]*showAction=\{false\}/);
+  assert.match(preview, /inventory_number/);
   assert.match(preview, /BoardGameRatingMetadata/);
 });
 
