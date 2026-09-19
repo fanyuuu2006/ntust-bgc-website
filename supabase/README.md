@@ -67,3 +67,29 @@ or register keys. Verification uses the existing issue/consume RPC pair,
 Academic Year creation follows the existing service/repository contract, and
 Officer creation uses `create_officer_position`. Never use this tool against
 Production.
+
+## Development QA fixture
+
+The versioned QA fixture is a small, synthetic dataset for Shared Development
+and Preview testing. It is not a Production clone, demo database, migration, or
+general-purpose seeder. It preserves the existing bootstrap Admin and creates
+no synthetic Sessions or register keys. All fixture identities use the reserved
+`example.test` domain, images remain null, and no Production content or Storage
+objects are copied. The one closed-account tombstone uses the canonical
+`closed-<uuid>@account.invalid` identity required by the database constraint.
+Transient verification-token timestamps and database-managed `created_at`
+values use execution time; all QA lifecycle dates come from the explicit
+reference date.
+
+The command accepts only the exact hosted Development project and requires an
+explicit reference date and `--confirm-development`. Inspect the complete,
+read-only plan first:
+
+```powershell
+node scripts/development-qa-fixture.mjs --reference-date 2026-09-19 --confirm-development --dry-run
+```
+
+After the aggregate plan is reviewed, run the same command without
+`--dry-run`. Repeating an identical fixture version reuses exact rows; a
+fixture-owned identity with unexpected content fails closed. The tool never
+truncates or resets Development data.
