@@ -12,12 +12,6 @@ type BoardGameCardProps = {
 };
 
 export function BoardGameCard({ boardGame, returnTo }: BoardGameCardProps) {
-  const metadata = [
-    boardGame.category?.name,
-    boardGame.location?.name,
-    `#${boardGame.inventory_number}`,
-  ].filter((value): value is string => Boolean(value?.trim()));
-
   return (
     <Link
       href={returnTo ? buildBoardGameDetailHref(boardGame.id, returnTo) : `/board-games/${boardGame.id}`}
@@ -47,12 +41,31 @@ export function BoardGameCard({ boardGame, returnTo }: BoardGameCardProps) {
           {boardGame.name}
         </h2>
 
-        <p
-          className="mt-2 min-h-5 min-w-0 truncate text-xs leading-5 text-(--text-secondary) sm:text-sm"
-          title={metadata.join(" · ")}
-        >
-          {metadata.join(" · ")}
-        </p>
+        <div className="mt-2 flex min-h-5 min-w-0 items-center gap-1 text-xs leading-5 text-(--text-secondary) sm:text-sm">
+          {boardGame.category ? (
+            <span className="min-w-0 flex-1 truncate" title={boardGame.category.name}>
+              {boardGame.category.name}
+            </span>
+          ) : null}
+          {boardGame.category && boardGame.location ? (
+            <span aria-hidden="true" className="shrink-0 text-(--text-muted)">
+              ·
+            </span>
+          ) : null}
+          {boardGame.location ? (
+            <span className="min-w-0 flex-1 truncate" title={boardGame.location.name}>
+              {boardGame.location.name}
+            </span>
+          ) : null}
+          {boardGame.category || boardGame.location ? (
+            <span aria-hidden="true" className="shrink-0 text-(--text-muted)">
+              ·
+            </span>
+          ) : null}
+          <span className="shrink-0 whitespace-nowrap text-(--text-muted)">
+            #{boardGame.inventory_number}
+          </span>
+        </div>
 
         <div className="mt-2 min-h-5 min-w-0">
           <BoardGameRatingMetadata stats={boardGame.stats} />
