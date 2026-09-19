@@ -4,6 +4,7 @@ import { BoardGameImage } from "@/components/BoardGameImage";
 import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGameStatusBadge";
 import { BoardGameRatingMetadata } from "@/components/(public)/board-games/BoardGameRatingMetadata";
 import type { HomeBoardGameItem } from "@/services/board-games/board-games.types";
+import { buildBoardGameDetailHref } from "@/libs/board-game-return";
 
 type HomeBoardGamePreviewProps = {
   boardGame: HomeBoardGameItem;
@@ -18,7 +19,7 @@ export function HomeBoardGamePreview({
 
   return (
     <Link
-      href={`/board-games/${boardGame.id}`}
+      href={buildBoardGameDetailHref(boardGame.id, "/")}
       aria-label={`查看桌遊：${boardGame.name}`}
       className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-(--border-default) bg-(--surface-default) shadow-(--shadow-base) transition-[border-color,box-shadow] hover:border-(--border-strong) hover:shadow-(--shadow-card) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
     >

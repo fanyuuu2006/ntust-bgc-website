@@ -7,6 +7,7 @@ import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import type { PublicProfileReview, PublicProfileReviewsPage, ReviewListQuery } from "@/services/reviews/reviews.types";
+import { buildQueryString } from "@/utils/url";
 
 export function ProfileReviewCollection({ basePath, reviews, query, own, renderActions }: {
   basePath: string;
@@ -18,6 +19,8 @@ export function ProfileReviewCollection({ basePath, reviews, query, own, renderA
   const appliedQuery = reviewAppliedQuery(query);
   const hasCriteria = hasReviewCriteria(query);
   const resetHref = reviewQueryHref(basePath, { reviewSort: query.sort === "newest" ? undefined : query.sort });
+  const returnQuery = buildQueryString(appliedQuery);
+  const returnTo = `${basePath}${returnQuery ? `?${returnQuery}` : ""}`;
 
   return (
     <section id="profile-reviews" aria-labelledby="profile-reviews-title">
@@ -37,7 +40,7 @@ export function ProfileReviewCollection({ basePath, reviews, query, own, renderA
               <ButtonLink href="/board-games" variant="text" size="sm" className="mt-2 px-0">找桌遊來評分</ButtonLink>
             </div>
           ) : <p className="mt-4 text-sm text-(--text-muted)">尚未留下桌遊評分</p>
-        ) : <ProfileReviewItems reviews={reviews} renderActions={renderActions} />}
+        ) : <ProfileReviewItems reviews={reviews} renderActions={renderActions} returnTo={returnTo} />}
 
         <Pagination page={reviews.page} pageSize={reviews.pageSize} total={reviews.total} totalPages={reviews.totalPages} basePath={basePath} query={appliedQuery} pageKey="reviewPage" showPageSize={false} className="mt-5 border-t border-(--border-muted) pt-4" />
       </Card>

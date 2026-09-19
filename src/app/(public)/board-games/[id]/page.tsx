@@ -24,7 +24,7 @@ import { buildQueryString } from "@/utils/url";
 import { redirect } from "next/navigation";
 import { getBoardGameDetail } from "./board-game-detail";
 import { normalizeBoardGameReviewQuery, type BoardGameReviewSearchParams } from "./review-query";
-import { normalizeBoardGameDiscoveryReturnTo } from "../discovery-return";
+import { normalizeBoardGameReturnTo } from "@/libs/board-game-return";
 
 type BoardGameDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -72,7 +72,7 @@ async function BoardGameDetailPage({
   const boardGame = await getBoardGameDetail(id);
   const rawSearchParams = (await searchParams) ?? {};
   const reviewQuery = normalizeBoardGameReviewQuery(rawSearchParams);
-  const returnTo = normalizeBoardGameDiscoveryReturnTo(
+  const returnTo = normalizeBoardGameReturnTo(
     Array.isArray(rawSearchParams.returnTo)
       ? rawSearchParams.returnTo[0]
       : rawSearchParams.returnTo,
@@ -117,7 +117,7 @@ async function BoardGameDetailPage({
             className="px-0"
           >
             <ArrowLeft aria-hidden="true" className="size-4" />
-            返回桌遊列表
+            返回
           </ButtonLink>
 
           <div className="mt-5 grid min-w-0 gap-5 lg:grid-cols-2 lg:items-start lg:gap-8">

@@ -4,6 +4,7 @@ import { BoardGameImage } from "@/components/BoardGameImage";
 import { BoardGameRatingMetadata } from "@/components/(public)/board-games/BoardGameRatingMetadata";
 import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGameStatusBadge";
 import type { BoardGameDiscoveryItem } from "@/services/board-games/board-games.types";
+import { buildBoardGameDetailHref } from "@/libs/board-game-return";
 
 type BoardGameCardProps = {
   boardGame: BoardGameDiscoveryItem;
@@ -16,7 +17,7 @@ export function BoardGameCard({ boardGame, returnTo }: BoardGameCardProps) {
   );
   return (
     <Link
-      href={`/board-games/${boardGame.id}${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ""}`}
+      href={returnTo ? buildBoardGameDetailHref(boardGame.id, returnTo) : `/board-games/${boardGame.id}`}
       className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-(--border-default) bg-(--surface-default) text-left shadow-(--shadow-base) transition-[border-color,box-shadow] hover:border-(--border-strong) hover:shadow-(--shadow-card) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
     >
       <div className="relative aspect-square overflow-hidden border-b border-(--border-default) bg-(--surface-subtle)">

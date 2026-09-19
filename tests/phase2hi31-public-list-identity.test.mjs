@@ -52,7 +52,7 @@ test("board games use shared page flow and flat discovery controls", async () =>
     form,
     /<form[^>]*className="[^"]*(?:rounded-xl|shadow-|bg-\(--surface-default\)|border border-)/,
   );
-  assert.match(form, /aria-live="polite"/);
+  assert.match(page, /<PaginationSummary/);
   assert.doesNotMatch(form, /aria-hidden="true"[^>]*border-b/);
   assert.doesNotMatch(page, /["']use client["']|useEffect|fetch\(/);
 });

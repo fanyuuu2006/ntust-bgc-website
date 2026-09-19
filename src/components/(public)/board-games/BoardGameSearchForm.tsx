@@ -24,7 +24,6 @@ type BoardGameSearchFormProps = {
   locations: BoardGameLocation[];
   query: BoardGamesQuery;
   pageSize: number;
-  total: number;
 };
 
 export function BoardGameSearchForm({
@@ -32,7 +31,6 @@ export function BoardGameSearchForm({
   locations,
   query,
   pageSize,
-  total,
 }: BoardGameSearchFormProps) {
   const hasFilters = Boolean(
     query.search ||
@@ -137,7 +135,6 @@ export function BoardGameSearchForm({
       </div>
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-(--text-muted)">
-        <p aria-live="polite">共找到 {total} 款桌遊</p>
         {hasFilters ? (
           <Link
             href={BASE_PATH}

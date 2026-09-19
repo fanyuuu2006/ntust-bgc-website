@@ -93,15 +93,15 @@ test("board-game discovery converts only PGRST103 into an empty page with a filt
   assert.doesNotMatch(repository, /if \(error\) return buildPaginationResult/);
 });
 
-test("out-of-range pages render a legal empty pagination summary", async () => {
-  const [paginationUtils, pagination] = await Promise.all([
+test("out-of-range pages retain legal range math and omit a misleading visible range", async () => {
+  const [paginationUtils, paginationSummary] = await Promise.all([
     loadCommonJsModule("src/utils/pagination.tsx"),
-    readSource("src/components/Pagination/Pagination.tsx"),
+    readSource("src/components/Pagination/PaginationSummary.tsx"),
   ]);
 
   assert.deepEqual(paginationUtils.getPageRange(2, 24, 11), {
     start: 0,
     end: 0,
   });
-  assert.match(pagination, /目前頁面沒有資料，共 \{total\} 筆/);
+  assert.match(paginationSummary, /summary\.start > 0/);
 });

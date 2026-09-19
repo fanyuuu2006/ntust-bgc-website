@@ -254,6 +254,7 @@ test("board-game detail keeps core content but skips personalization when viewer
         }),
       },
       "@/libs/metadata-content": {},
+      "@/libs/board-game-return": { normalizeBoardGameReturnTo: () => "/board-games" },
       "@/services/board-games/board-games.service": {
         boardGamesService: {
           getOpenBorrowingForUserAndBoardGame: async () => {

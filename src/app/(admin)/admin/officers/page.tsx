@@ -8,6 +8,7 @@ import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { OfficerActions } from "@/components/(admin)/admin/officers/OfficerActions";
 import { OfficerRecords } from "@/components/(admin)/admin/officers/OfficerRecords";
 import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginationSummary } from "@/components/Pagination/PaginationSummary";
 import { Button } from "@/components/ui/Button";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { officerPositionsService } from "@/services/officer-positions/officer-positions.service";
@@ -75,6 +76,7 @@ async function OfficersPage({
               {years.map((year) => <option key={year.id} value={year.id}>{year.year} 學年度</option>)}
             </ImmediateQuerySelect>
         </AdminToolbar>
+        <PaginationSummary page={page} pageSize={pageSize} total={officers.total} totalPages={officers.totalPages} />
         <OfficerRecords
           officers={officers.data}
           years={years}

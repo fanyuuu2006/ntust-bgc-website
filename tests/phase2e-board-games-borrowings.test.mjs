@@ -68,7 +68,7 @@ test("borrowings remain server-rendered, queryable, and time-aware", async () =>
   assert.match(record, /className="size-12 shrink-0 rounded-lg/);
   assert.match(record, /className="flex min-w-0 items-start gap-2\.5"/);
   assert.doesNotMatch(record, /aspect-\[4\/3\] w-full/);
-  assert.match(record, /href=\{`\/board-games\/\$\{borrowing\.board_game\.id\}`\}/);
+  assert.match(record, /buildBoardGameDetailHref\(borrowing\.board_game\.id, returnTo\)/);
   assert.match(record, /line-clamp-2 text-\(--interactive-primary\)/);
   assert.match(record, /title=\{borrowing\.board_game\.name\}/);
   assert.doesNotMatch(record, /md:grid-cols/);

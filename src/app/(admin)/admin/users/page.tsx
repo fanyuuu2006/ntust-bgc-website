@@ -9,6 +9,7 @@ import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginationSummary } from "@/components/Pagination/PaginationSummary";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -261,6 +262,7 @@ async function AdminUsersPage({ searchParams }: Props) {
           </>
         )}
 
+        <PaginationSummary page={page} pageSize={pageSize} total={users.total} totalPages={users.totalPages} />
         <Pagination
           className="p-4"
           page={page}

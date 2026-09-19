@@ -76,7 +76,7 @@ test("public board-game card keeps one vertical composition at every breakpoint"
   );
 
   assert.equal((card.match(/<Link\b/g) ?? []).length, 1);
-  assert.match(card, /href=\{`\/board-games\/\$\{boardGame\.id\}\$\{returnTo/);
+  assert.match(card, /buildBoardGameDetailHref\(boardGame\.id, returnTo\)/);
   assert.match(card, /flex h-full min-w-0 flex-col/);
   assert.doesNotMatch(
     card,
