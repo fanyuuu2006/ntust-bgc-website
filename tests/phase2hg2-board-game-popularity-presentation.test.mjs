@@ -64,7 +64,7 @@ test("card IA keeps identity, descriptive metadata, quiet asset reference, popul
   assert.match(card, /<h2/);
   assert.match(card, /boardGame\.category\?\.name/);
   assert.match(card, /boardGame\.location\?\.name/);
-  assert.match(card, /sr-only[^>]*>社產編號/);
+  assert.match(card, /metadata\.join\(" · "\)/);
   assert.match(card, /mt-auto[^>]*>[\s\S]*查看詳情/);
   assert.equal((card.match(/<Link\b/g) ?? []).length, 1);
   assert.doesNotMatch(card, /boardGame\.description|description\s*\?/);

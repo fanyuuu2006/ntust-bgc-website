@@ -20,15 +20,16 @@ test("generated register keys occupy the content flow instead of the heading act
   assert.match(form, /w-full min-w-0/);
 });
 
-test("discovery cards keep category and code together above a bounded location row", async () => {
+test("discovery cards keep one compact bounded metadata region and reserve rating rhythm", async () => {
   const card = await source("src/components/(public)/board-games/BoardGameCard.tsx");
 
-  assert.doesNotMatch(card, /metadata\.join/);
+  assert.match(card, /metadata\.join\(" · "\)/);
   assert.match(card, /boardGame\.category\?\.name/);
-  assert.match(card, /#\s*\{boardGame\.inventory_number\}/);
   assert.match(card, /boardGame\.location\?\.name/);
-  assert.match(card, /truncate/);
-  assert.match(card, /min-h-5/);
+  assert.match(card, /`#\$\{boardGame\.inventory_number\}`/);
+  assert.match(card, /title=\{metadata\.join\(" · "\)\}/);
+  assert.match(card, /min-h-5 min-w-0 truncate/);
+  assert.match(card, /className="mt-2 min-h-5 min-w-0"[\s\S]*<BoardGameRatingMetadata/);
   assert.match(card, /flex min-w-0 flex-1 flex-col/);
   assert.match(card, /mt-auto[^"\n]*pt-3[^>]*>[\s\S]*查看詳情/);
 });

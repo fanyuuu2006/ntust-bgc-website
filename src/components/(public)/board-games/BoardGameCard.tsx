@@ -12,6 +12,12 @@ type BoardGameCardProps = {
 };
 
 export function BoardGameCard({ boardGame, returnTo }: BoardGameCardProps) {
+  const metadata = [
+    boardGame.category?.name,
+    boardGame.location?.name,
+    `#${boardGame.inventory_number}`,
+  ].filter((value): value is string => Boolean(value?.trim()));
+
   return (
     <Link
       href={returnTo ? buildBoardGameDetailHref(boardGame.id, returnTo) : `/board-games/${boardGame.id}`}
@@ -41,27 +47,16 @@ export function BoardGameCard({ boardGame, returnTo }: BoardGameCardProps) {
           {boardGame.name}
         </h2>
 
-        <div className="mt-2 flex min-h-5 min-w-0 items-center gap-1 text-xs leading-5 sm:text-sm">
-          {boardGame.category?.name ? (
-            <span className="min-w-0 truncate text-(--text-secondary)" title={boardGame.category.name}>
-              {boardGame.category.name}
-            </span>
-          ) : null}
-          {boardGame.category?.name ? <span aria-hidden="true" className="shrink-0 text-(--text-muted)">·</span> : null}
-          <span className="shrink-0 whitespace-nowrap text-(--text-muted)">
-            <span className="sr-only">社產編號 </span>#
-            {boardGame.inventory_number}
-          </span>
-        </div>
-
         <p
-          className="min-h-5 min-w-0 truncate text-xs leading-5 text-(--text-secondary) sm:text-sm"
-          title={boardGame.location?.name}
+          className="mt-2 min-h-5 min-w-0 truncate text-xs leading-5 text-(--text-secondary) sm:text-sm"
+          title={metadata.join(" · ")}
         >
-          {boardGame.location?.name ?? ""}
+          {metadata.join(" · ")}
         </p>
 
-        <BoardGameRatingMetadata stats={boardGame.stats} className="mt-2" />
+        <div className="mt-2 min-h-5 min-w-0">
+          <BoardGameRatingMetadata stats={boardGame.stats} />
+        </div>
 
         <span className="mt-auto inline-flex items-center gap-1 pt-3 text-sm font-semibold text-(--interactive-primary)">
           查看詳情

@@ -96,10 +96,10 @@ test("public board-game card keeps one vertical composition at every breakpoint"
   );
   assert.match(card, /boardGame\.category\?\.name/);
   assert.match(card, /boardGame\.location\?\.name/);
+  assert.match(card, /metadata\.join\(" · "\)/);
   assert.match(card, /min-h-5[^"\n]*min-w-0/);
   assert.match(card, /truncate/);
-  assert.match(card, /sr-only[^>]*>社產編號/);
-  assert.match(card, /#\s*\{boardGame\.inventory_number\}/);
+  assert.match(card, /`#\$\{boardGame\.inventory_number\}`/);
   assert.doesNotMatch(card, /boardGame\.description|description\s*\?/);
   assert.doesNotMatch(card, /尚未補充桌遊描述/);
   assert.match(card, /boardGame\.image\s*\?/);
