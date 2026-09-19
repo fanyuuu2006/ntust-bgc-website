@@ -42,3 +42,15 @@ export const listReviewsSchema = z.object({
 });
 
 export const profileReviewsQuerySchema = listReviewsSchema.extend({ pageSize: z.literal(10).catch(10) });
+
+export const adminReviewsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).catch(1),
+  pageSize: z.coerce.number().int().min(1).max(100).catch(20),
+  search: z.string().trim().max(100).optional().catch(undefined).transform((value) => value || undefined),
+  rating: z.union([
+    z.enum(["1", "2", "3", "4", "5"]).transform((value) => Number(value) as 1 | 2 | 3 | 4 | 5),
+    rating,
+  ]).optional().catch(undefined),
+  boardGameId: z.uuid().optional().catch(undefined),
+  sort: z.enum(["newest", "oldest", "highest", "lowest"]).catch("newest"),
+});

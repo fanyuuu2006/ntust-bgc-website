@@ -42,6 +42,7 @@ export const adminSidebarGroups: readonly AdminNavigationGroup[] = [
     items: [
       { label: "桌遊管理", href: "/admin/board-games" },
       { label: "桌遊借用管理", href: "/admin/board-games/borrowings" },
+      { label: "評價管理", href: "/admin/reviews" },
       { label: "桌遊種類管理", href: "/admin/board-games/categories" },
       { label: "桌遊位置管理", href: "/admin/board-games/locations" },
     ],
