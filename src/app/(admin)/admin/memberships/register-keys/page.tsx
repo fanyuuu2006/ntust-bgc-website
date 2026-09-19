@@ -30,18 +30,16 @@ async function MembershipRegisterKeysPage({ searchParams }: Props) {
         title="社員註冊序號管理"
         description="產生序號，供已完成入社流程的使用者建立社員資格。"
         actions={
-          <>
-            <ButtonLink href="/admin/memberships" variant="outline">
-              返回社員資格管理
-            </ButtonLink>
-            <RegisterKeyGenerateForm
-              academicYears={academicYears}
-              defaultAcademicYearId={academicYears.find((year) => year.is_current)?.id}
-            />
-          </>
+          <ButtonLink href="/admin/memberships" variant="outline">
+            返回社員資格管理
+          </ButtonLink>
         }
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+        <RegisterKeyGenerateForm
+          academicYears={academicYears}
+          defaultAcademicYearId={academicYears.find((year) => year.is_current)?.id}
+        />
         <RegisterKeyFilterBar academicYears={academicYears} query={query} />
         <RegisterKeyTable
           registerKeys={registerKeys.data}

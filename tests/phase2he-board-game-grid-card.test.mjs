@@ -94,8 +94,10 @@ test("public board-game card keeps one vertical composition at every breakpoint"
     card,
     /BoardGameStatusBadge[\s\S]*className="absolute[^"\n]*top-2[^"\n]*right-2/,
   );
-  assert.match(card, /\.filter\(/);
-  assert.match(card, /items-start justify-between gap-2/);
+  assert.match(card, /boardGame\.category\?\.name/);
+  assert.match(card, /boardGame\.location\?\.name/);
+  assert.match(card, /min-h-5[^"\n]*min-w-0/);
+  assert.match(card, /truncate/);
   assert.match(card, /sr-only[^>]*>社產編號/);
   assert.match(card, /#\s*\{boardGame\.inventory_number\}/);
   assert.doesNotMatch(card, /boardGame\.description|description\s*\?/);
