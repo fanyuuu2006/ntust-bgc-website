@@ -2,8 +2,8 @@
 
 import { useId, useReducer } from "react";
 
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { apiClient } from "@/libs/api/client";
 import type { AdminUserPickerItem } from "@/services/users/users.types";
 import {
@@ -92,15 +92,15 @@ export function AdminUserPicker({
             搜尋使用者
           </label>
           <div className="flex min-w-0 gap-2">
-            <Input
+            <ClearableSearchInput
               id={inputId}
               value={state.searchText}
               disabled={disabled || state.isSearching}
               placeholder="搜尋姓名、使用者名稱、學號或 Email"
               className="min-w-0 flex-1"
-              onChange={(event) =>
-                dispatch({ type: "search_changed", value: event.target.value })
-              }
+              aria-label="搜尋使用者"
+              onValueChange={(value) => dispatch({ type: "search_changed", value })}
+              onClear={() => dispatch({ type: "candidates_dismissed" })}
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   event.preventDefault();

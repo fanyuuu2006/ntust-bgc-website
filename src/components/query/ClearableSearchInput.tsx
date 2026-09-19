@@ -9,12 +9,17 @@ import { cn } from "@/utils/className";
 
 type ClearableSearchInputProps = {
   initialValue?: string;
-  clearHref: string;
-  name: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  onClear?: () => void;
+  clearHref?: string;
+  name?: string;
   id?: string;
   placeholder: string;
   className?: string;
   inputClassName?: string;
+  disabled?: boolean;
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
   "aria-label"?: string;
 };
 
@@ -27,17 +32,28 @@ export function ClearableSearchInput({
 
 function ClearableSearchInputControl({
   initialValue = "",
+  value: controlledValue,
+  onValueChange,
+  onClear,
   clearHref,
   name,
   id,
   placeholder,
   className,
   inputClassName,
+  disabled,
+  onKeyDown,
   "aria-label": ariaLabel,
 }: ClearableSearchInputProps) {
   const router = useRouter();
-  const [value, setValue] = useState(initialValue);
+  const [localValue, setLocalValue] = useState(initialValue);
+  const value = controlledValue ?? localValue;
   const hasValue = value.trim().length > 0;
+
+  function updateValue(nextValue: string) {
+    if (controlledValue === undefined) setLocalValue(nextValue);
+    onValueChange?.(nextValue);
+  }
 
   return (
     <div className={cn("relative min-w-0 w-full", className)}>
@@ -51,7 +67,9 @@ function ClearableSearchInputControl({
         name={hasValue ? name : undefined}
         id={id}
         value={value}
-        onChange={(event) => setValue(event.target.value)}
+        onInput={(event) => updateValue(event.currentTarget.value)}
+        onKeyDown={onKeyDown}
+        disabled={disabled}
         placeholder={placeholder}
         aria-label={ariaLabel}
         className={cn("pl-9", hasValue && "pr-10", inputClassName)}
@@ -60,9 +78,11 @@ function ClearableSearchInputControl({
         <button
           type="button"
           aria-label="清除搜尋"
+          disabled={disabled}
           onClick={() => {
-            setValue("");
-            router.replace(clearHref);
+            updateValue("");
+            onClear?.();
+            if (!onClear && clearHref) router.replace(clearHref);
           }}
           className="absolute top-1/2 right-2 grid size-7 -translate-y-1/2 place-items-center rounded-full text-(--text-muted) transition-colors hover:bg-(--surface-subtle) hover:text-(--text-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
         >

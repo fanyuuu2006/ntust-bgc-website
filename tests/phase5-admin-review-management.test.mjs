@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { JSDOM } from "jsdom";
+import { act, createElement } from "react";
+import { createRoot } from "react-dom/client";
 
 import { load } from "./helpers/load-app-module.mjs";
 
@@ -191,14 +194,20 @@ test("Admin Review route, responsive records and navigation preserve moderation 
   assert.match(records, /variant="ghost"/);
   assert.match(records, /max-h-\[65dvh\]/);
   assert.doesNotMatch(records, /disambiguation=.*email/);
+  assert.match(filters, /QueryFilterDisclosure/);
   assert.match(filters, /QueryFilterForm/);
+  assert.match(filters, /PreservedQueryFields/);
   assert.match(filters, /lg:hidden/);
   assert.match(picker, /搜尋桌遊名稱或社產編號/);
   assert.doesNotMatch(filters, /館藏/);
   assert.match(picker, /onBlur/);
   assert.match(picker, /event\.key === "Escape"/);
-  assert.match(picker, /type="hidden" name=\{name\}/);
+  assert.match(picker, /ClearableSearchInput/);
+  assert.match(picker, /type="hidden" name=\{state\.selected \? name : undefined\}/);
   assert.match(sortable, /sortValues/);
+  assert.match(records, /variant="danger"/);
+  assert.match(records, /完整評論內容/);
+  assert.doesNotMatch(page + records + filters + picker + navigation, /館藏編號|完整評價內容/);
   assert.match(route, /authorizeAdminRequest/);
   assert.match(route, /deleteForAdmin/);
   assert.match(navigation, /評價與評論管理/);
@@ -232,6 +241,97 @@ test("Board Game Review picker closes stale results on selection, clear, Escape 
   state = adminBoardGamePickerReducer(state, { type: "dismissed" });
   assert.equal(state.open, false);
   assert.deepEqual(state.candidates, []);
+});
+
+test("rendered Board Game picker selects, clears, searches again and serializes only a selected filter", async () => {
+  const dom = new JSDOM("<!doctype html><html><body><div id='app'></div></body></html>", {
+    url: "https://example.test/admin/reviews",
+    pretendToBeVisual: true,
+  });
+  const previous = {
+    window: globalThis.window,
+    document: globalThis.document,
+    IS_REACT_ACT_ENVIRONMENT: globalThis.IS_REACT_ACT_ENVIRONMENT,
+  };
+  globalThis.window = dom.window;
+  globalThis.document = dom.window.document;
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  const games = [
+    { id: "11111111-1111-4111-8111-111111111111", name: "第一款桌遊", inventoryNumber: 900001 },
+    { id: "22222222-2222-4222-8222-222222222222", name: "第二款桌遊", inventoryNumber: 900002 },
+  ];
+  let searchCount = 0;
+  const { AdminBoardGameFilter } = load(
+    "src/components/(admin)/admin/reviews/AdminBoardGameFilter.tsx",
+    {
+      "next/navigation": { useRouter: () => ({ replace() {} }) },
+      "@/libs/api/client": {
+        apiClient: async () => ({ data: [games[Math.min(searchCount++, 1)]] }),
+      },
+    },
+  );
+  const root = createRoot(dom.window.document.getElementById("app"));
+  const inputValueSetter = Object.getOwnPropertyDescriptor(
+    dom.window.HTMLInputElement.prototype,
+    "value",
+  ).set;
+  const fill = async (value) => {
+    const input = dom.window.document.querySelector('input[type="search"]');
+    await act(async () => {
+      inputValueSetter.call(input, value);
+      input.dispatchEvent(new dom.window.InputEvent("input", { bubbles: true, data: value }));
+      input.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+    });
+  };
+  const clickButton = async (name) => {
+    const button = [...dom.window.document.querySelectorAll("button")]
+      .find((candidate) => candidate.textContent.trim() === name || candidate.textContent.includes(name) || candidate.getAttribute("aria-label")?.startsWith(name));
+    assert.ok(button, `missing button: ${name}`);
+    await act(async () => {
+      button.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+  };
+  const selectedId = () => new dom.window.FormData(dom.window.document.querySelector("form")).get("boardGameId");
+
+  try {
+    await act(async () => root.render(createElement("form", null, createElement(AdminBoardGameFilter, { selected: null }))));
+    assert.equal(dom.window.document.querySelector('[aria-label="桌遊搜尋結果"]'), null);
+
+    await fill("第一");
+    assert.equal(dom.window.document.querySelector('input[type="search"]').value, "第一");
+    await clickButton("搜尋");
+    assert.equal(searchCount, 1);
+    assert.ok(dom.window.document.querySelector('[aria-label="桌遊搜尋結果"]'));
+    await clickButton("第一款桌遊");
+    assert.equal(selectedId(), games[0].id);
+    assert.equal(dom.window.document.querySelector('[aria-label="桌遊搜尋結果"]'), null);
+
+    await clickButton("清除桌遊篩選");
+    assert.equal(selectedId(), null);
+    await fill("第二");
+    await clickButton("搜尋");
+    await clickButton("第二款桌遊");
+    assert.equal(selectedId(), games[1].id);
+
+    await clickButton("清除桌遊篩選");
+    await fill("暫存文字");
+    await clickButton("清除搜尋");
+    assert.equal(dom.window.document.querySelector('input[type="search"]').value, "");
+    assert.equal(dom.window.document.querySelector('[aria-label="桌遊搜尋結果"]'), null);
+
+    await fill("第二");
+    await clickButton("搜尋");
+    const picker = dom.window.document.querySelector('[aria-label="桌遊搜尋結果"]').parentElement.parentElement;
+    await act(async () => picker.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+    assert.equal(dom.window.document.querySelector('[aria-label="桌遊搜尋結果"]'), null);
+  } finally {
+    await act(async () => root.unmount());
+    globalThis.window = previous.window;
+    globalThis.document = previous.document;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = previous.IS_REACT_ACT_ENVIRONMENT;
+    dom.window.close();
+  }
 });
 
 test("Admin Review delete API enforces authorization and maps success, invalid and missing records", async () => {

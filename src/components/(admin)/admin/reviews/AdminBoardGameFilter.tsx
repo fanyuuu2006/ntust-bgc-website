@@ -1,9 +1,10 @@
 "use client";
 
 import { useId, useReducer } from "react";
+import { X } from "lucide-react";
 
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { apiClient } from "@/libs/api/client";
 import {
   adminBoardGamePickerReducer,
@@ -63,23 +64,26 @@ export function AdminBoardGameFilter({
         }
       }}
     >
-      <input type="hidden" name={name} value={state.selected?.id ?? ""} />
+      <input type="hidden" name={state.selected ? name : undefined} value={state.selected?.id ?? ""} />
       {state.selected ? (
-        <div className="flex min-h-10 min-w-0 items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
-          <span className="min-w-0 flex-1 truncate text-sm" title={state.selected.name}>
-            {state.selected.name}
-          </span>
-          <span className="shrink-0 text-xs text-(--text-muted)">
-            #{state.selected.inventoryNumber}
+        <div className="flex min-h-10 min-w-0 items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-default) pl-3 pr-1">
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium" title={state.selected.name}>
+              {state.selected.name}
+            </span>
+            <span className="block text-xs text-(--text-muted)">
+              社產編號 #{state.selected.inventoryNumber}
+            </span>
           </span>
           <Button
             type="button"
             size="sm"
-            variant="text"
+            variant="ghost"
+            iconOnly
             aria-label={`清除桌遊篩選：${state.selected.name}`}
             onClick={() => dispatch({ type: "cleared" })}
           >
-            清除
+            <X aria-hidden="true" className="size-4" />
           </Button>
         </div>
       ) : (
@@ -88,13 +92,14 @@ export function AdminBoardGameFilter({
             搜尋桌遊名稱或社產編號
           </label>
           <div className="flex min-w-0 gap-2">
-            <Input
+            <ClearableSearchInput
               id={inputId}
               value={state.searchText}
-              autoComplete="off"
               placeholder="搜尋桌遊名稱或社產編號"
               className="min-w-0 flex-1"
-              onChange={(event) => dispatch({ type: "search_changed", value: event.target.value })}
+              aria-label="搜尋桌遊名稱或社產編號"
+              onValueChange={(value) => dispatch({ type: "search_changed", value })}
+              onClear={() => dispatch({ type: "dismissed" })}
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   event.preventDefault();

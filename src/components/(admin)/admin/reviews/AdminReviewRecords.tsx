@@ -122,7 +122,7 @@ export function AdminReviewRecords({
                   ) : null}
                 </TableCell>
                 <TableCell className="align-middle text-right">
-                  <Button type="button" size="sm" variant="text" className="text-(--status-danger)" onClick={() => { setDeleting(review); setError(null); }}>
+                  <Button type="button" size="sm" variant="danger" onClick={() => { setDeleting(review); setError(null); }}>
                     刪除
                   </Button>
                 </TableCell>
@@ -158,7 +158,7 @@ export function AdminReviewRecords({
             </div>
             <div className="mt-3 flex min-w-0 items-center justify-between gap-3 border-t border-(--border-default) pt-3">
               <TimeMetadata review={review} compact />
-              <Button type="button" size="sm" variant="text" className="shrink-0 text-(--status-danger)" onClick={() => { setDeleting(review); setError(null); }}>
+              <Button type="button" size="sm" variant="danger" className="shrink-0" onClick={() => { setDeleting(review); setError(null); }}>
                 刪除
               </Button>
             </div>
@@ -169,14 +169,16 @@ export function AdminReviewRecords({
       <Modal
         open={viewing !== null}
         onClose={() => setViewing(null)}
-        title="完整評價內容"
+        title="完整評論內容"
         description={viewing ? `${viewing.boardGame.name} · ${viewing.rating} 星` : undefined}
         size="lg"
         contentClassName="max-h-[65dvh] overscroll-contain px-4 py-4 sm:px-5"
       >
-        <p className="wrap-anywhere whitespace-pre-wrap text-sm leading-7 sm:text-base">
-          {viewing?.content ?? EMPTY_CONTENT}
-        </p>
+        <div className="mx-auto w-full max-w-2xl pb-2">
+          <p className="wrap-anywhere whitespace-pre-wrap text-sm leading-7 sm:text-base">
+            {viewing?.content ?? EMPTY_CONTENT}
+          </p>
+        </div>
       </Modal>
 
       <ConfirmDialog
