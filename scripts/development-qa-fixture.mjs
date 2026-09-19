@@ -112,7 +112,6 @@ export function buildFixture(referenceDate = CANONICAL_REFERENCE_DATE) {
   const officers = [
     { user_id: users[0].id, academic_year: "114", title: "DEV QA 歷史幹部" },
     { user_id: users[1].id, academic_year: "115", title: `DEV QA ${"很長的幹部職稱".repeat(6)}` },
-    { user_id: users[2].id, academic_year: "115", title: "DEV QA 現任幹部" },
   ];
   const membershipStatuses = ["active", "pending", "suspended", "expired", "cancelled"];
   const memberships = users.map((user, index) => ({
@@ -264,7 +263,17 @@ export function planFixture(fixture, state) {
   plans.user_profiles = planStableRows("user_profiles", profiles, state.user_profiles, (row) => row.user_id, ["user_id", "real_name", "phone", "student_id", "school", "department", "grade"]);
   const openUsers = fixture.users.filter((user) => !user.closed_at);
   plans.auth_credentials = { reuse: openUsers.filter((user) => state.auth_credentials.some((credential) => credential.user_id === user.id)).length, create: openUsers.filter((user) => !state.auth_credentials.some((credential) => credential.user_id === user.id)) };
-  plans.verifications = { reuse: openUsers.filter((user) => !user.email_verified_at || state.users.find((row) => row.id === user.id)?.email_verified_at).length, create: openUsers.filter((user) => user.email_verified_at && !state.users.find((row) => row.id === user.id)?.email_verified_at) };
+  plans.verifications = {
+    reuse: openUsers.filter((user) => !user.email_verified_at || state.users.find((row) => row.id === user.id)?.email_verified_at).length,
+    create: openUsers
+      .filter((user) => user.email_verified_at && !state.users.find((row) => row.id === user.id)?.email_verified_at)
+      .map((user) => ({
+        ...user,
+        resumable_token_hash: state.email_verification_tokens
+          .filter((token) => token.user_id === user.id && !token.consumed_at && Date.parse(token.expires_at) > Date.now())
+          .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at))[0]?.token_hash ?? null,
+      })),
+  };
   plans.current_academic_year = { reuse: year115.is_current ? 1 : 0, create: year115.is_current ? [] : [year115] };
 
   const totals = Object.fromEntries(Object.entries(plans).map(([key, value]) => [key, { reuse: value.reuse, create: value.create.length }]));
@@ -291,6 +300,7 @@ export async function readFixtureState(client) {
     events: "id,name,description,description_format,rich_description,start_time,end_time,check_in_opens_at,check_in_closes_at",
     event_attendances: "id,event_id,user_id,status,attended_at",
     announcements: "id,title,content,content_format,rich_content,is_published,published_at,author_id",
+    email_verification_tokens: "user_id,token_hash,expires_at,consumed_at,created_at",
   };
   const state = {};
   for (const [table, columns] of Object.entries(selects)) {
@@ -314,6 +324,11 @@ export async function applyFixture(client, fixture, plan) {
   }
   await insertRows(client, "user_profiles", plan.plans.user_profiles.create);
   for (const user of plan.plans.verifications.create) {
+    if (user.resumable_token_hash) {
+      const resumed = await client.rpc("consume_email_verification_token", { p_token_hash: user.resumable_token_hash });
+      if (resumed.error || resumed.data !== "verified") throw new Error("Canonical verification resume failed");
+      continue;
+    }
     const rawToken = randomBytes(32).toString("base64url");
     const tokenHash = createHash("sha256").update(rawToken).digest("hex");
     const now = new Date();

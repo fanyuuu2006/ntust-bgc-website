@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   CANONICAL_REFERENCE_DATE,
   buildFixture,
+  applyFixture,
   formatPlan,
   parseArguments,
   parseDevelopmentTarget,
@@ -18,7 +19,7 @@ function emptyState() {
     user_profiles: [], auth_credentials: [],
     academic_years: [{ id: "00000000-0000-4000-8000-000000000115", year: "115", start_date: "2026-09-07", end_date: "2027-09-05", is_current: false }],
     officer_positions: [{ id: "00000000-0000-4000-8000-000000000002", user_id: "00000000-0000-4000-8000-000000000001", academic_year_id: "00000000-0000-4000-8000-000000000115", title: "神" }],
-    memberships: [], board_game_categories: [], board_game_locations: [], board_games: [], board_game_reviews: [], board_game_borrowings: [], events: [], event_attendances: [], announcements: [],
+    memberships: [], board_game_categories: [], board_game_locations: [], board_games: [], board_game_reviews: [], board_game_borrowings: [], events: [], event_attendances: [], announcements: [], email_verification_tokens: [],
   };
 }
 
@@ -46,6 +47,23 @@ test("fixture is QA-case-driven and respects domain invariants", () => {
   assert.equal(new Set(fixture.attendances.map((item) => `${item.event_id}:${item.user_id}`)).size, fixture.attendances.length);
   assert.ok(fixture.announcements.some((item) => item.is_published));
   assert.ok(fixture.announcements.some((item) => !item.is_published && item.published_at === null));
+  assert.equal(fixture.officers.length, 2);
+  assert.equal(fixture.users.filter((user) => user.closed_at).length, 1);
+  assert.equal(fixture.users.filter((user) => !user.closed_at).length, 19);
+  for (const borrowing of fixture.borrowings) {
+    const has = (field) => borrowing[field] !== null;
+    const expected = {
+      pending: [], approved: ["approved_at"], rejected: ["rejected_at"],
+      borrowed: ["approved_at", "borrowed_at", "due_at"],
+      returned: ["approved_at", "borrowed_at", "due_at", "returned_at"],
+      cancelled: ["cancelled_at"],
+    }[borrowing.status];
+    for (const field of ["approved_at", "rejected_at", "cancelled_at", "borrowed_at", "due_at", "returned_at"]) {
+      assert.equal(has(field), expected.includes(field), `${borrowing.status} ${field}`);
+    }
+    const timeline = [borrowing.created_at, borrowing.approved_at ?? borrowing.rejected_at ?? borrowing.cancelled_at, borrowing.borrowed_at, borrowing.returned_at].filter(Boolean).map(Date.parse);
+    assert.deepEqual(timeline, [...timeline].sort((a, b) => a - b));
+  }
 });
 
 test("clean Development plan preserves bootstrap Admin and plans fixture", () => {
@@ -79,6 +97,47 @@ test("partially created fixture user can resume canonical verification", () => {
   const plan = planFixture(fixture, state);
   assert.equal(plan.totals.users.reuse, 1);
   assert.equal(plan.totals.verifications.create, 18);
+});
+
+test("verification planning resumes an active issued token without exposing its hash", () => {
+  const fixture = buildFixture();
+  const state = emptyState();
+  const pending = { ...fixture.users[0], email_verified_at: null };
+  delete pending.profile;
+  state.users.push(pending);
+  state.auth_credentials.push({ user_id: pending.id });
+  state.email_verification_tokens.push({
+    user_id: pending.id,
+    token_hash: "sensitive-hash",
+    expires_at: "2999-01-01T00:00:00.000Z",
+    consumed_at: null,
+    created_at: "2026-09-19T00:00:00.000Z",
+  });
+  const plan = planFixture(fixture, state);
+  const resumed = plan.plans.verifications.create.find((user) => user.id === pending.id);
+  assert.equal(resumed.resumable_token_hash, "sensitive-hash");
+  assert.doesNotMatch(formatPlan(fixture, plan, true), /sensitive-hash/);
+});
+
+test("verification resume consumes the existing hash instead of issuing a replacement", async () => {
+  const calls = [];
+  const client = {
+    from() { return { insert: async () => ({ error: null }) }; },
+    async rpc(name, input) {
+      calls.push({ name, input });
+      return { data: name === "consume_email_verification_token" ? "verified" : null, error: null };
+    },
+  };
+  const empty = { reuse: 0, create: [] };
+  const plans = Object.fromEntries([
+    "users", "auth_credentials", "user_profiles", "academic_years", "current_academic_year",
+    "board_game_categories", "board_game_locations", "board_games", "officer_positions",
+    "memberships", "board_game_reviews", "board_game_borrowings", "events",
+    "event_attendances", "announcements",
+  ].map((key) => [key, empty]));
+  plans.verifications = { reuse: 0, create: [{ id: "fixture-user", resumable_token_hash: "sensitive-hash" }] };
+  await applyFixture(client, buildFixture(), { plans, year115: { id: "year-115" } });
+  assert.deepEqual(calls, [{ name: "consume_email_verification_token", input: { p_token_hash: "sensitive-hash" } }]);
 });
 
 test("planner rejects conflicting membership, Officer, and borrowing lifecycle identities", () => {
