@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { AdminUserIdentity } from "@/components/(admin)/admin/users/AdminUserIdentity";
+import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { RatingStars } from "@/components/(public)/board-games/RatingStars";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Modal } from "@/components/Modal";
@@ -15,6 +16,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
 import type { AdminReview } from "@/services/reviews/admin-reviews.types";
+import type { ReviewSort } from "@/services/reviews/reviews.types";
 import { formatDateTime } from "@/utils/date";
 import { wasReviewMeaningfullyEdited } from "@/utils/review-presentation";
 
@@ -23,9 +25,11 @@ const EMPTY_CONTENT = "未填寫文字評價";
 export function AdminReviewRecords({
   reviews,
   hasQuery,
+  query,
 }: {
   reviews: AdminReview[];
   hasQuery: boolean;
+  query: Record<string, string | number | undefined> & { sort: ReviewSort };
 }) {
   const router = useRouter();
   const [viewing, setViewing] = useState<AdminReview | null>(null);
@@ -63,15 +67,29 @@ export function AdminReviewRecords({
   return (
     <>
       <Card className="hidden overflow-x-auto p-0 lg:block">
-        <Table className="min-w-[1120px] table-fixed">
+        <Table className="min-w-[1080px] table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-56">作者</TableHead>
+              <TableHead className="w-52">作者</TableHead>
               <TableHead className="w-48">桌遊</TableHead>
-              <TableHead className="w-32">評分</TableHead>
-              <TableHead>文字評價</TableHead>
-              <TableHead className="w-40">時間</TableHead>
-              <TableHead className="w-36 text-right">操作</TableHead>
+              <SortableTableHeader
+                label="評價"
+                column="rating"
+                basePath="/admin/reviews"
+                query={query}
+                sortValues={{ asc: "lowest", desc: "highest" }}
+                className="w-28"
+              />
+              <TableHead>評論</TableHead>
+              <SortableTableHeader
+                label="建立時間"
+                column="created_at"
+                basePath="/admin/reviews"
+                query={query}
+                sortValues={{ asc: "oldest", desc: "newest" }}
+                className="w-40"
+              />
+              <TableHead className="w-24 text-right">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -80,7 +98,6 @@ export function AdminReviewRecords({
                 <TableCell className="min-w-0 align-top">
                   <AdminUserIdentity
                     identity={review.author}
-                    disambiguation={review.author.closed_at ? undefined : "email"}
                   />
                 </TableCell>
                 <TableCell className="min-w-0 align-top">
@@ -92,20 +109,20 @@ export function AdminReviewRecords({
                     {review.boardGame.name}
                   </Link>
                 </TableCell>
-                <TableCell className="align-top">
+                <TableCell className="align-middle">
                   <RatingStars rating={review.rating} size="sm" label={`評分 ${review.rating} 分`} />
                 </TableCell>
-                <TableCell className="min-w-0 align-top">
+                <TableCell className="min-w-0 align-middle">
                   <ReviewExcerpt review={review} onView={() => setViewing(review)} />
                 </TableCell>
-                <TableCell className="align-top text-sm tabular-nums text-(--text-muted)">
+                <TableCell className="align-middle text-xs tabular-nums text-(--text-muted)">
                   <p>{formatDateTime(review.createdAt)}</p>
                   {wasReviewMeaningfullyEdited(review.createdAt, review.updatedAt) ? (
                     <p className="mt-1">已編輯 {formatDateTime(review.updatedAt)}</p>
                   ) : null}
                 </TableCell>
-                <TableCell className="align-top text-right">
-                  <Button type="button" size="sm" variant="danger" onClick={() => { setDeleting(review); setError(null); }}>
+                <TableCell className="align-middle text-right">
+                  <Button type="button" size="sm" variant="text" className="text-(--status-danger)" onClick={() => { setDeleting(review); setError(null); }}>
                     刪除
                   </Button>
                 </TableCell>
@@ -117,27 +134,31 @@ export function AdminReviewRecords({
 
       <div className="grid min-w-0 gap-3 lg:hidden">
         {reviews.map((review) => (
-          <Card key={review.id} className="min-w-0 p-4">
-            <div className="flex min-w-0 items-start justify-between gap-3">
+          <Card key={review.id} className="min-w-0 overflow-hidden p-4">
+            <div className="flex min-w-0 items-start gap-3">
               <AdminUserIdentity
                 identity={review.author}
-                disambiguation={review.author.closed_at ? undefined : "email"}
                 variant="mobile"
-                className="flex-1"
+                className="min-w-0 flex-1"
               />
-              <RatingStars rating={review.rating} size="sm" label={`評分 ${review.rating} 分`} />
+              <span className="shrink-0">
+                <RatingStars rating={review.rating} size="sm" label={`評分 ${review.rating} 分`} />
+              </span>
             </div>
-            <Link
-              href={`/board-games/${review.boardGame.id}`}
-              className="mt-3 block truncate text-sm font-medium hover:underline"
-              title={review.boardGame.name}
-            >
-              {review.boardGame.name}
-            </Link>
-            <div className="mt-3"><ReviewExcerpt review={review} onView={() => setViewing(review)} /></div>
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs tabular-nums text-(--text-muted)">{formatDateTime(review.createdAt)}</p>
-              <Button type="button" size="sm" variant="danger" onClick={() => { setDeleting(review); setError(null); }}>
+            <div className="mt-3 min-w-0 border-t border-(--border-default) pt-3">
+              <p className="text-xs text-(--text-muted)">桌遊</p>
+              <Link
+                href={`/board-games/${review.boardGame.id}`}
+                className="mt-0.5 block truncate text-sm font-semibold hover:underline"
+                title={review.boardGame.name}
+              >
+                {review.boardGame.name}
+              </Link>
+              <div className="mt-3"><ReviewExcerpt review={review} onView={() => setViewing(review)} /></div>
+            </div>
+            <div className="mt-3 flex min-w-0 items-center justify-between gap-3 border-t border-(--border-default) pt-3">
+              <TimeMetadata review={review} compact />
+              <Button type="button" size="sm" variant="text" className="shrink-0 text-(--status-danger)" onClick={() => { setDeleting(review); setError(null); }}>
                 刪除
               </Button>
             </div>
@@ -151,8 +172,11 @@ export function AdminReviewRecords({
         title="完整評價內容"
         description={viewing ? `${viewing.boardGame.name} · ${viewing.rating} 星` : undefined}
         size="lg"
+        contentClassName="max-h-[65dvh] overscroll-contain px-4 py-4 sm:px-5"
       >
-        <p className="wrap-anywhere whitespace-pre-wrap leading-7">{viewing?.content ?? EMPTY_CONTENT}</p>
+        <p className="wrap-anywhere whitespace-pre-wrap text-sm leading-7 sm:text-base">
+          {viewing?.content ?? EMPTY_CONTENT}
+        </p>
       </Modal>
 
       <ConfirmDialog
@@ -170,14 +194,34 @@ export function AdminReviewRecords({
 
 function ReviewExcerpt({ review, onView }: { review: AdminReview; onView: () => void }) {
   if (!review.content) return <p className="text-sm text-(--text-muted)">{EMPTY_CONTENT}</p>;
+  const needsFullContent = Array.from(review.content).length > 120 || review.content.includes("\n");
+
   return (
     <div className="min-w-0">
-      <p className="line-clamp-3 wrap-anywhere whitespace-pre-line text-sm leading-6">
+      <p className={needsFullContent
+        ? "line-clamp-2 wrap-anywhere whitespace-pre-line text-sm leading-6"
+        : "wrap-anywhere whitespace-pre-line text-sm leading-6"}
+      >
         {review.content}
       </p>
-      <Button type="button" size="sm" variant="text" className="mt-1" onClick={onView}>
-        查看完整內容
-      </Button>
+      {needsFullContent ? (
+        <Button type="button" size="sm" variant="ghost" className="mt-1 -ml-2" onClick={onView}>
+          查看完整內容
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
+function TimeMetadata({ review, compact = false }: { review: AdminReview; compact?: boolean }) {
+  return (
+    <div className="min-w-0 text-xs tabular-nums text-(--text-muted)">
+      <p className={compact ? "truncate" : undefined}>{formatDateTime(review.createdAt)}</p>
+      {wasReviewMeaningfullyEdited(review.createdAt, review.updatedAt) ? (
+        <p className={compact ? "mt-0.5 truncate" : "mt-1"}>
+          已編輯 {formatDateTime(review.updatedAt)}
+        </p>
+      ) : null}
     </div>
   );
 }

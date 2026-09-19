@@ -28,8 +28,8 @@ async function AdminReviewsPage({
   return (
     <>
       <HeadingSection
-        title="評價管理"
-        description="管理網站使用者留下的桌遊評價。"
+        title="評價與評論管理"
+        description="管理使用者留下的桌遊評價與文字評論。"
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <AdminReviewFilters query={filterQuery} selectedBoardGame={selectedBoardGame} />
@@ -41,6 +41,7 @@ async function AdminReviewsPage({
         />
         <AdminReviewRecords
           reviews={reviews.data}
+          query={filterQuery}
           hasQuery={Boolean(query.search || query.rating || query.boardGameId || query.page > 1)}
         />
         <Pagination

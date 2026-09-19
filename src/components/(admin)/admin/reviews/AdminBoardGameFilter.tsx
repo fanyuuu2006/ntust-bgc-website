@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useId, useReducer } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { apiClient } from "@/libs/api/client";
+import {
+  adminBoardGamePickerReducer,
+  createAdminBoardGamePickerState,
+} from "./adminBoardGamePickerState";
 
 export type AdminBoardGameFilterValue = {
   id: string;
@@ -15,67 +18,83 @@ export type AdminBoardGameFilterValue = {
 
 export function AdminBoardGameFilter({
   selected,
-  basePath,
-  query,
+  name = "boardGameId",
+  id,
 }: {
   selected: AdminBoardGameFilterValue | null;
-  basePath: string;
-  query: Record<string, string | number | undefined>;
+  name?: string;
+  id?: string;
 }) {
-  const router = useRouter();
-  const [search, setSearch] = useState("");
-  const [results, setResults] = useState<AdminBoardGameFilterValue[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  function navigate(boardGameId?: string) {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(query)) {
-      if (value !== undefined && value !== "" && key !== "page" && key !== "boardGameId") {
-        params.set(key, String(value));
-      }
-    }
-    if (boardGameId) params.set("boardGameId", boardGameId);
-    router.push(params.size ? `${basePath}?${params}` : basePath);
-  }
+  const generatedInputId = useId();
+  const inputId = id ?? generatedInputId;
+  const [state, dispatch] = useReducer(
+    adminBoardGamePickerReducer,
+    selected,
+    createAdminBoardGamePickerState,
+  );
 
   async function findBoardGames() {
-    const keyword = search.trim();
-    if (!keyword || busy) return;
-    setBusy(true);
-    setError(null);
+    const keyword = state.searchText.trim();
+    if (!keyword || state.isSearching) return;
+    dispatch({ type: "search_started" });
     try {
       const response = await apiClient<{ data: AdminBoardGameFilterValue[] }>(
         `/api/admin/board-games/search?search=${encodeURIComponent(keyword)}`,
       );
-      setResults(response.data);
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "搜尋桌遊失敗");
-    } finally {
-      setBusy(false);
+      dispatch({ type: "search_succeeded", candidates: response.data });
+    } catch {
+      dispatch({ type: "search_failed", message: "搜尋桌遊失敗，請稍後再試" });
     }
   }
 
   return (
-    <div className="min-w-0 space-y-2">
-      <p className="text-xs font-medium text-(--text-muted)">桌遊篩選</p>
-      {selected ? (
-        <div className="flex min-w-0 items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
-          <p className="min-w-0 flex-1 truncate text-sm" title={selected.name}>
-            {selected.name} <span className="text-(--text-muted)">#{selected.inventoryNumber}</span>
-          </p>
-          <Button type="button" size="sm" variant="text" onClick={() => navigate()}>
+    <div
+      className="relative min-w-0"
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && state.open) {
+          event.preventDefault();
+          event.stopPropagation();
+          dispatch({ type: "dismissed" });
+        }
+      }}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          dispatch({ type: "dismissed" });
+        }
+      }}
+    >
+      <input type="hidden" name={name} value={state.selected?.id ?? ""} />
+      {state.selected ? (
+        <div className="flex min-h-10 min-w-0 items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
+          <span className="min-w-0 flex-1 truncate text-sm" title={state.selected.name}>
+            {state.selected.name}
+          </span>
+          <span className="shrink-0 text-xs text-(--text-muted)">
+            #{state.selected.inventoryNumber}
+          </span>
+          <Button
+            type="button"
+            size="sm"
+            variant="text"
+            aria-label={`清除桌遊篩選：${state.selected.name}`}
+            onClick={() => dispatch({ type: "cleared" })}
+          >
             清除
           </Button>
         </div>
       ) : (
         <>
+          <label htmlFor={inputId} className="sr-only">
+            搜尋桌遊名稱或社產編號
+          </label>
           <div className="flex min-w-0 gap-2">
             <Input
-              value={search}
-              placeholder="搜尋桌遊名稱或館藏編號"
+              id={inputId}
+              value={state.searchText}
+              autoComplete="off"
+              placeholder="搜尋桌遊名稱或社產編號"
               className="min-w-0 flex-1"
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => dispatch({ type: "search_changed", value: event.target.value })}
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   event.preventDefault();
@@ -83,26 +102,46 @@ export function AdminBoardGameFilter({
                 }
               }}
             />
-            <Button type="button" variant="outline" isLoading={busy} onClick={() => void findBoardGames()}>
+            <Button
+              type="button"
+              variant="outline"
+              isLoading={state.isSearching}
+              onClick={() => void findBoardGames()}
+            >
               搜尋
             </Button>
           </div>
-          {error ? <p role="alert" className="text-sm text-(--status-danger)">{error}</p> : null}
-          {results.length > 0 ? (
-            <ul className="max-h-48 overflow-y-auto rounded-lg border border-(--border-default) bg-(--surface-elevated)">
-              {results.map((game) => (
-                <li key={game.id} className="border-b border-(--border-default) last:border-b-0">
-                  <button
-                    type="button"
-                    className="flex min-h-11 w-full min-w-0 items-center gap-2 px-3 py-2 text-left hover:bg-(--surface-subtle)"
-                    onClick={() => navigate(game.id)}
-                  >
-                    <span className="min-w-0 flex-1 truncate" title={game.name}>{game.name}</span>
-                    <span className="shrink-0 text-xs text-(--text-muted)">#{game.inventoryNumber}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+          {state.open ? (
+            <div className="absolute right-0 left-0 top-full z-20 mt-1 max-h-56 overflow-y-auto rounded-lg border border-(--border-default) bg-(--surface-elevated) shadow-(--shadow-card)">
+              {state.error ? (
+                <p role="alert" className="px-3 py-2 text-sm text-(--status-danger)">
+                  {state.error}
+                </p>
+              ) : state.candidates.length ? (
+                <ul aria-label="桌遊搜尋結果" className="divide-y divide-(--border-default)">
+                  {state.candidates.map((game) => (
+                    <li key={game.id}>
+                      <button
+                        type="button"
+                        className="flex min-h-11 w-full min-w-0 items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-(--surface-subtle) focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--focus-ring)"
+                        onClick={() => dispatch({ type: "selected", value: game })}
+                      >
+                        <span className="min-w-0 flex-1 truncate" title={game.name}>
+                          {game.name}
+                        </span>
+                        <span className="shrink-0 text-xs text-(--text-muted)">
+                          #{game.inventoryNumber}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="px-3 py-2 text-sm text-(--text-muted)">
+                  找不到符合條件的桌遊
+                </p>
+              )}
+            </div>
           ) : null}
         </>
       )}
