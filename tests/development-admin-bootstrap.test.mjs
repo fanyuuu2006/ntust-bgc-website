@@ -4,11 +4,22 @@ import test from "node:test";
 
 import {
   bootstrapDevelopmentAdmin,
+  parseBootstrapArguments,
   parseBootstrapInput,
   parseDevelopmentTarget,
 } from "../scripts/bootstrap-development-admin.mjs";
 
 const input = { email: "admin@example.test", year: "115", startDate: "2026-08-01", endDate: "2027-07-31", title: "Development Officer" };
+
+const canonicalArguments = [
+  "--email", "synthetic@example.test",
+  "--year", "115",
+  "--start", "2026-09-07",
+  "--end", "2027-09-05",
+  "--title", "神",
+  "--confirm-development",
+  "--dry-run",
+];
 
 function fakeAdapter(overrides = {}) {
   const calls = [];
@@ -29,6 +40,52 @@ test("target safety accepts only the exact hosted Development project", () => {
   for (const unsafe of ["https://gcydchpuckbmctcjpokz.supabase.co", "https://unknown.supabase.co", "http://localhost:54321", "not-a-url", "https://mrsyfssstigartmhofuz.supabase.co/path"]) {
     assert.throws(() => parseDevelopmentTarget(unsafe));
   }
+});
+
+test("canonical direct Node invocation preserves named values, Unicode, and boolean flags", () => {
+  assert.deepEqual(parseBootstrapArguments(canonicalArguments), {
+    input: {
+      email: "synthetic@example.test",
+      year: "115",
+      startDate: "2026-09-07",
+      endDate: "2027-09-05",
+      title: "神",
+    },
+    confirmDevelopment: true,
+    dryRun: true,
+  });
+});
+
+test("documentation exposes only the reliable direct Node bootstrap command", async () => {
+  const [packageSource, documentation] = await Promise.all([
+    readFile(new URL("../package.json", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/README.md", import.meta.url), "utf8"),
+  ]);
+  const packageJson = JSON.parse(packageSource);
+
+  assert.equal(packageJson.scripts["dev:bootstrap-admin"], undefined);
+  assert.match(
+    documentation,
+    /node scripts\/bootstrap-development-admin\.mjs --email [^\r\n]+ --confirm-development --dry-run/,
+  );
+  assert.doesNotMatch(documentation, /npm run dev:bootstrap-admin/);
+});
+
+test("argument parsing rejects missing values and unexpected positional input", () => {
+  assert.throws(
+    () => parseBootstrapArguments(["--email"]),
+    /requires a value/,
+  );
+  assert.throws(
+    () => parseBootstrapArguments(["synthetic@example.test"]),
+    /Unexpected argument/,
+  );
+  assert.throws(
+    () => parseBootstrapInput(parseBootstrapArguments([
+      "--email", "synthetic@example.test",
+    ]).input),
+    /Academic Year identifier/,
+  );
 });
 
 test("confirmation and canonical input validation fail before any write", async () => {
