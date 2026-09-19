@@ -4,9 +4,13 @@
 
 do $$
 declare
+  academic_year_count bigint;
   mismatch_count integer;
 begin
-  with expected(id, year, start_date, end_date) as (
+  select count(*) into academic_year_count from public.academic_years;
+
+  if academic_year_count <> 0 then
+    with expected(id, year, start_date, end_date) as (
     values
       ('5a289639-49df-4b45-83ee-d4b2a8e8379b'::uuid, '101', '2012-09-03 00:00:00+00'::timestamptz, '2013-09-01 00:00:00+00'::timestamptz),
       ('3bc43a3c-916e-4518-a1ec-41294374149b'::uuid, '111', '2022-09-05 00:00:00+00'::timestamptz, '2023-09-03 00:00:00+00'::timestamptz),
@@ -24,8 +28,9 @@ begin
      or expected.start_date is distinct from actual.start_date
      or expected.end_date is distinct from actual.end_date;
 
-  if mismatch_count <> 0 then
-    raise exception using errcode = 'P0001', message = 'ACADEMIC_YEAR_PREFLIGHT_MISMATCH';
+    if mismatch_count <> 0 then
+      raise exception using errcode = 'P0001', message = 'ACADEMIC_YEAR_PREFLIGHT_MISMATCH';
+    end if;
   end if;
 
   if to_regprocedure('public.update_academic_year(uuid, text, timestamp with time zone, timestamp with time zone)') is null then

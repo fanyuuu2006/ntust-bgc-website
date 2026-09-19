@@ -39,12 +39,15 @@ npm run dev
 | `EMAIL_FROM` | 測試寄信時需要 | 否 | Brevo 已驗證的寄件地址 |
 | `EMAIL_FROM_NAME` | 測試寄信時需要 | 否 | 寄件者顯示名稱 |
 | `REGISTER_KEY_SECRET` | 測試產生社員註冊碼時需要 | 是 | Server 產生註冊碼；至少 16 字元 |
-| `DATABASE_URL` | 一般開發不需要 | 是 | 維護／資料庫驗證工具的直接連線字串 |
-| `SUPABASE_SERVICE_ROLE_KEY` | 一般開發不需要 | 是 | 舊有維護設定；目前 application client 不使用 |
 
 `SUPABASE_URL` 與 `NEXT_PUBLIC_SUPABASE_URL` 在一般開發環境應指向同一個 Supabase
 project origin。`NEXT_PUBLIC_*` 會被打包到瀏覽器，因此只能放公開設定；
 `SUPABASE_SECRET_KEY` 絕對不可改名成 `NEXT_PUBLIC_SUPABASE_SECRET_KEY` 或以其他方式傳到 client。
+
+Supabase CLI 與本機 schema replay 使用 `supabase/config.toml`、本機容器及 CLI
+link metadata，不讀取 application `.env.local` 的 `DATABASE_URL` 或 legacy
+`SUPABASE_SERVICE_ROLE_KEY`。需要直接資料庫維護憑證的特殊工作由維護者另行提供，
+不屬於一般協作者環境變數 contract。
 
 Brevo 設定採延遲讀取：瀏覽首頁或進行不寄信的開發工作不需要 Production Brevo API key；
 只有實際寄送／重寄驗證信的流程才需要三項 email 設定。請向維護者索取開發用途設定，

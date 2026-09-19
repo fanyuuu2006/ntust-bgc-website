@@ -43,11 +43,13 @@
 環境變數實際使用方式如下：
 
 - `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_SECRET_KEY`
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
 - `TURNSTILE_SECRET_KEY`
 
-其中 `SUPABASE_SERVICE_ROLE_KEY` 與 `TURNSTILE_SECRET_KEY` 只能在 server-side 使用。
+其中 `SUPABASE_SECRET_KEY` 與 `TURNSTILE_SECRET_KEY` 只能在 server-side 使用；
+`NEXT_PUBLIC_SUPABASE_URL` 是 browser-visible project origin，不是憑證。
 
 ## Architecture
 
@@ -539,7 +541,7 @@ API response contract：
 
 絕對禁止：
 
-- 將 `SUPABASE_SERVICE_ROLE_KEY` 暴露到 client 或 `NEXT_PUBLIC_*`
+- 將 `SUPABASE_SECRET_KEY` 暴露到 client 或 `NEXT_PUBLIC_*`
 - 在 Client Component import `server-only` repository 或 Supabase server client
 - 信任 client 傳入的 `user_id`、`author_id`、社員資格或幹部資格
 - 只依 route group 或 URL 判斷授權
