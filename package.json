@@ -11,7 +11,8 @@
     "db:start": "npx supabase@2.117.0 start",
     "db:reset": "npx supabase@2.117.0 db reset",
     "db:verify": "node scripts/verify-local-database.mjs",
-    "db:verify:replay": "npx supabase@2.117.0 db reset && npm run db:verify"
+    "db:verify:replay": "npx supabase@2.117.0 db reset && npm run db:verify",
+    "dev:bootstrap-admin": "node scripts/bootstrap-development-admin.mjs"
   },
   "dependencies": {
     "@marsidev/react-turnstile": "^1.5.4",
