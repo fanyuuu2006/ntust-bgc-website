@@ -149,7 +149,9 @@ export function OfficerRecords({
                     disambiguation={officer.user_profile?.student_id ? "studentId" : "email"}
                   />
                 </TableCell>
-                <TableCell className="min-w-32">{officer.title}</TableCell>
+                <TableCell className="w-56 max-w-56 min-w-0">
+                  <p className="truncate" title={officer.title}>{officer.title}</p>
+                </TableCell>
                 <TableCell className="whitespace-nowrap">{officer.academic_year?.year ?? "—"}</TableCell>
                 <TableCell className="whitespace-nowrap text-right">
                   <OfficerRowActions officer={officer} onEdit={openEditDialog} onDelete={openDeleteDialog} />
@@ -173,7 +175,9 @@ export function OfficerRecords({
                 disambiguation={officer.user_profile?.student_id ? "studentId" : "email"}
                 variant="mobile"
               />
-              <p>{officer.title} · {officer.academic_year?.year ?? "—"}</p>
+              <p className="mt-2 min-w-0 line-clamp-2 wrap-anywhere" title={officer.title}>
+                {officer.title} · {officer.academic_year?.year ?? "—"}
+              </p>
             </div>
             <div className="mt-3 flex min-w-0 max-w-full flex-wrap gap-2">
               <OfficerRowActions officer={officer} onEdit={openEditDialog} onDelete={openDeleteDialog} />

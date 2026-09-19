@@ -17,6 +17,7 @@ import {
 } from "./constants";
 import { ButtonLink } from "@/components/ui/Button";
 import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginationSummary } from "@/components/Pagination/PaginationSummary";
 import { Plus } from "lucide-react";
 
 type BoardGamesSearchParams = {
@@ -115,6 +116,8 @@ async function BoardGamesAdminPage({
           query={query}
           clearSearchHref={clearSearchHref}
         />
+
+        <PaginationSummary page={page} pageSize={pageSize} total={boardGames.total} totalPages={boardGames.totalPages} />
 
         <BoardGameTable
           boardGames={boardGames.data}

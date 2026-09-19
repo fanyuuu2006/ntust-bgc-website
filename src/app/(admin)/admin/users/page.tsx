@@ -9,6 +9,7 @@ import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginationSummary } from "@/components/Pagination/PaginationSummary";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -30,6 +31,7 @@ import { formatDateTime } from "@/utils/date";
 import { parsePage } from "@/utils/pagination";
 import { UserAvatar } from "@/components/UserAvatar";
 import { EmailVerificationBadge } from "@/components/(admin)/admin/users/EmailVerificationBadge";
+import { AdminUserIdentity } from "@/components/(admin)/admin/users/AdminUserIdentity";
 import { normalizeAdminUserEmailVerification } from "./query";
 
 type Props = {
@@ -154,10 +156,15 @@ async function AdminUsersPage({ searchParams }: Props) {
                 <Card key={user.id} className="min-w-0 space-y-3 p-4">
                   <div className="flex min-w-0 items-start gap-3">
                     <UserAvatar user={user} className="size-10 shrink-0 rounded-full" />
-                    <div className="min-w-0 flex-1 wrap-anywhere">
-                      <p className="font-semibold">{user.name}</p>
-                      <p className="text-sm text-(--text-muted)">{user.profile?.real_name || MISSING_VALUE}</p>
-                    </div>
+                    <AdminUserIdentity
+                      identity={{
+                        ...user,
+                        real_name: user.profile?.real_name ?? null,
+                        student_id: user.profile?.student_id ?? null,
+                      }}
+                      variant="mobile"
+                      className="flex-1"
+                    />
                     <div className="shrink-0">
                       <EmailVerificationBadge
                         verifiedAt={user.email_verified_at} closedAt={user.closed_at}
@@ -217,13 +224,17 @@ async function AdminUsersPage({ searchParams }: Props) {
                 <TableBody>
                   {users.data.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="max-w-64">
+                      <TableCell className="w-64 max-w-64 min-w-0">
                         <div className="flex min-w-0 items-center gap-3">
                           <UserAvatar user={user} className="size-9 shrink-0 rounded-full" />
-                          <div className="min-w-0 wrap-anywhere">
-                            <p className="font-medium">{user.name}</p>
-                            <p className="text-xs text-(--text-muted)">{user.profile?.real_name || MISSING_VALUE}</p>
-                          </div>
+                          <AdminUserIdentity
+                            identity={{
+                              ...user,
+                              real_name: user.profile?.real_name ?? null,
+                              student_id: user.profile?.student_id ?? null,
+                            }}
+                            className="flex-1"
+                          />
                         </div>
                       </TableCell>
                       <TableCell className="max-w-56 break-all text-(--text-muted)">
@@ -261,6 +272,7 @@ async function AdminUsersPage({ searchParams }: Props) {
           </>
         )}
 
+        <PaginationSummary page={page} pageSize={pageSize} total={users.total} totalPages={users.totalPages} />
         <Pagination
           className="p-4"
           page={page}

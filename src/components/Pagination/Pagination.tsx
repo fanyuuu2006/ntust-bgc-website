@@ -1,7 +1,7 @@
 import { PaginationPageSizeSelect } from "@/components/Pagination/PaginationPageSizeSelect";
 import { PaginationPageSelect } from "@/components/Pagination/PaginationPageSelect";
 import { PaginationNavLinks } from "@/components/Pagination/PaginationNavLinks";
-import { DEFAULT_PAGE_SIZE_OPTIONS, getPageRange } from "@/utils/pagination";
+import { DEFAULT_PAGE_SIZE_OPTIONS } from "@/utils/pagination";
 import type { QueryValue } from "@/utils/url";
 import { cn } from "@/utils/className";
 
@@ -32,8 +32,6 @@ export function Pagination({
 }: PaginationProps) {
   if (total === 0) return null;
 
-  const { start, end } = getPageRange(page, pageSize, total);
-
   return (
     <nav
       aria-label="分頁"
@@ -43,14 +41,6 @@ export function Pagination({
       )}
       {...rest}
     >
-      <p className="text-sm text-(--muted)">
-        {start === 0 ? (
-          <>目前頁面沒有資料，共 {total} 筆</>
-        ) : (
-          <>顯示 {start}–{end}，共 {total} 筆</>
-        )}
-      </p>
-
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         {showPageSize ? (
           <PaginationPageSizeSelect

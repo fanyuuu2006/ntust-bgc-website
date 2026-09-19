@@ -41,16 +41,17 @@ test("announcement search remains native GET controls without an outer surface",
 });
 
 test("board-game controls remain one flat URL-authoritative utility group", async () => {
-  const formSource = await readSource(
-    "src/components/(public)/board-games/BoardGameSearchForm.tsx",
-  );
+  const [formSource, page] = await Promise.all([
+    readSource("src/components/(public)/board-games/BoardGameSearchForm.tsx"),
+    readSource("src/app/(public)/board-games/page.tsx"),
+  ]);
   const form = formSource.match(/<form[\s\S]*?<\/form>/)?.[0] ?? "";
   const formOpeningTag = form.match(/<form[^>]*>/)?.[0] ?? "";
 
   assert.match(form, /method="GET"/);
   assert.match(form, /action=\{BASE_PATH\}/);
   assert.match(form, /PreservedQueryFields/);
-  assert.match(formSource, /aria-live="polite"/);
+  assert.match(page, /<PaginationSummary/);
   assert.doesNotMatch(
     formOpeningTag,
     /rounded-xl|shadow-|bg-\(--surface-default\)|border border-\(--border-default\)/,

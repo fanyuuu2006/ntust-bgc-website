@@ -12,6 +12,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import type { UserBorrowingListItem } from "@/services/board-games/board-games.types";
 import { getDueTimePresentation } from "@/utils/date";
+import { buildBoardGameDetailHref } from "@/libs/board-game-return";
 
 export function DashboardBorrowingSummary({
   borrowings,
@@ -81,7 +82,7 @@ function BorrowingRow({
       <div className="flex flex-wrap items-start justify-between gap-1.5">
         <div className="min-w-0 flex-1">
           <Link
-            href={`/board-games/${borrowing.board_game.id}`}
+            href={buildBoardGameDetailHref(borrowing.board_game.id, "/dashboard")}
             className="wrap-anywhere font-semibold leading-6 text-(--interactive-primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
           >
             {borrowing.board_game.name}

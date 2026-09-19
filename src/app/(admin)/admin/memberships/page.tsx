@@ -4,6 +4,7 @@ import { MembershipCreateButton } from "@/components/(admin)/admin/memberships/M
 import { MembershipRecords } from "@/components/(admin)/admin/memberships/MembershipRecords";
 import { MemberFilterBar } from "@/components/(admin)/admin/memberships/MembershipFilterBar";
 import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginationSummary } from "@/components/Pagination/PaginationSummary";
 import { ButtonLink } from "@/components/ui/Button";
 import { listAdminMembershipsQuerySchema } from "@/services/memberships/memberships.schema";
 import { membershipService } from "@/services/memberships/memberships.service";
@@ -40,6 +41,7 @@ async function MembershipsPage({ searchParams }: Props) {
           academicYears={years}
           query={query}
         />
+        <PaginationSummary page={page} pageSize={pageSize} total={memberships.total} totalPages={memberships.totalPages} />
         <MembershipRecords
           memberships={memberships.data}
           years={years}

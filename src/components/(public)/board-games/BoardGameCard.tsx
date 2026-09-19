@@ -4,6 +4,7 @@ import { BoardGameImage } from "@/components/BoardGameImage";
 import { BoardGameRatingMetadata } from "@/components/(public)/board-games/BoardGameRatingMetadata";
 import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGameStatusBadge";
 import type { BoardGameDiscoveryItem } from "@/services/board-games/board-games.types";
+import { buildBoardGameDetailHref } from "@/libs/board-game-return";
 
 type BoardGameCardProps = {
   boardGame: BoardGameDiscoveryItem;
@@ -11,12 +12,9 @@ type BoardGameCardProps = {
 };
 
 export function BoardGameCard({ boardGame, returnTo }: BoardGameCardProps) {
-  const metadata = [boardGame.category?.name, boardGame.location?.name].filter(
-    (value): value is string => Boolean(value?.trim()),
-  );
   return (
     <Link
-      href={`/board-games/${boardGame.id}${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ""}`}
+      href={returnTo ? buildBoardGameDetailHref(boardGame.id, returnTo) : `/board-games/${boardGame.id}`}
       className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-(--border-default) bg-(--surface-default) text-left shadow-(--shadow-base) transition-[border-color,box-shadow] hover:border-(--border-strong) hover:shadow-(--shadow-card) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
     >
       <div className="relative aspect-square overflow-hidden border-b border-(--border-default) bg-(--surface-subtle)">
@@ -43,19 +41,25 @@ export function BoardGameCard({ boardGame, returnTo }: BoardGameCardProps) {
           {boardGame.name}
         </h2>
 
-        <div className="mt-2 flex min-w-0 items-start justify-between gap-2 text-xs leading-5 sm:text-sm">
-          {metadata.length > 0 ? (
-            <span className="min-w-0 wrap-anywhere text-(--text-secondary)">
-              {metadata.join(" · ")}
+        <div className="mt-2 flex min-h-5 min-w-0 items-center gap-2 text-xs leading-5 text-(--text-secondary) sm:text-sm">
+          {boardGame.category ? (
+            <span className="min-w-0 flex-1 truncate" title={boardGame.category.name}>
+              {boardGame.category.name}
+            </span>
+          ) : null}
+          {boardGame.location ? (
+            <span className="min-w-0 flex-1 truncate" title={boardGame.location.name}>
+              {boardGame.location.name}
             </span>
           ) : null}
           <span className="shrink-0 whitespace-nowrap text-(--text-muted)">
-            <span className="sr-only">社產編號 </span>#
-            {boardGame.inventory_number}
+            #{boardGame.inventory_number}
           </span>
         </div>
 
-        <BoardGameRatingMetadata stats={boardGame.stats} className="mt-2" />
+        <div className="mt-2 min-h-5 min-w-0">
+          <BoardGameRatingMetadata stats={boardGame.stats} />
+        </div>
 
         <span className="mt-auto inline-flex items-center gap-1 pt-3 text-sm font-semibold text-(--interactive-primary)">
           查看詳情

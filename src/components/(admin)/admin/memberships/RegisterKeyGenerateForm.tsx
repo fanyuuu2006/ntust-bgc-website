@@ -65,18 +65,20 @@ export function RegisterKeyGenerateForm({
   }
 
   return (
-    <>
-      <Button
-        type="button"
-        className="rounded-lg"
-        onClick={() => {
-          setGeneratedKeys([]);
-          setError(null);
-          setOpen(true);
-        }}
-      >
-        產生社員註冊序號
-      </Button>
+    <div className="w-full min-w-0 space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          className="rounded-lg"
+          onClick={() => {
+            setGeneratedKeys([]);
+            setError(null);
+            setOpen(true);
+          }}
+        >
+          產生社員註冊序號
+        </Button>
+      </div>
 
       <Modal
         open={open}
@@ -124,10 +126,10 @@ export function RegisterKeyGenerateForm({
       </Modal>
 
       {generatedKeys.length > 0 ? (
-        <div className="rounded-xl border border-(--border-default) bg-(--surface-subtle) p-3">
+        <div className="w-full min-w-0 rounded-xl border border-(--border-default) bg-(--surface-subtle) p-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm font-semibold text-(--text-primary)">
-              本次產生的社員註冊序號
+              已產生 {generatedKeys.length} 組社員註冊序號
             </p>
             <Button
               type="button"
@@ -145,6 +147,6 @@ export function RegisterKeyGenerateForm({
           </pre>
         </div>
       ) : null}
-    </>
+    </div>
   );
 }

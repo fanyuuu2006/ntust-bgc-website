@@ -2,6 +2,7 @@ import { withServerErrorReference } from "@/libs/observability/server-render";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { AdminBorrowingList } from "@/components/(admin)/admin/borrowings/AdminBorrowingList";
 import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginationSummary } from "@/components/Pagination/PaginationSummary";
 import { listBorrowingsQuerySchema } from "@/services/board-games/board-games.schema";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 
@@ -29,6 +30,7 @@ async function AdminBorrowingsPage({ searchParams }: Props) {
         description="管理社員借用申請，並確認借出與歸還。"
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+        <PaginationSummary page={page} pageSize={pageSize} total={borrowings.total} totalPages={borrowings.totalPages} />
         <AdminBorrowingList borrowings={borrowings.data} query={query} />
         <Pagination
           className="p-4"

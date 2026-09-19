@@ -8,6 +8,7 @@ import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { EventActions } from "@/components/(admin)/admin/events/EventActions";
 import { EventRecords } from "@/components/(admin)/admin/events/EventRecords";
 import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginationSummary } from "@/components/Pagination/PaginationSummary";
 import { Button } from "@/components/ui/Button";
 import { eventsService } from "@/services/events/events.service";
 import {
@@ -95,6 +96,7 @@ async function AdminEventsPage({
               <option value="created_at">建立時間</option>
             </ImmediateQuerySelect>
         </AdminToolbar>
+        <PaginationSummary page={page} pageSize={pageSize} total={result.total} totalPages={result.totalPages} />
         <EventRecords
           events={result.data}
           returnTo={buildAdminListHref("/admin/events", { search: params.search, status, orderBy, orderDirection, page, pageSize })}

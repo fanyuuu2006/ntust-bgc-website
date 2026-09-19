@@ -6,6 +6,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import type { BorrowingStatus } from "@/types/database";
+import { buildQueryString } from "@/utils/url";
 
 const BASE_PATH = "/borrowings";
 
@@ -36,6 +37,14 @@ async function BorrowingsResultsContent({
     orderBy: query.orderBy,
     orderDirection: query.orderDirection,
   });
+  const returnQuery = buildQueryString({
+    page: query.page,
+    pageSize: query.pageSize,
+    status: query.status,
+    search: query.search,
+    sort: query.sort,
+  });
+  const returnTo = `${BASE_PATH}${returnQuery ? `?${returnQuery}` : ""}`;
 
   return (
     <>
@@ -60,7 +69,7 @@ async function BorrowingsResultsContent({
         <ul className="flex flex-col gap-2.5">
           {borrowings.data.map((borrowing) => (
             <li key={borrowing.id}>
-              <BorrowingRecord borrowing={borrowing} />
+              <BorrowingRecord borrowing={borrowing} returnTo={returnTo} />
             </li>
           ))}
         </ul>

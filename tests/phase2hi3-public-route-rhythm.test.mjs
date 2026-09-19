@@ -38,14 +38,15 @@ test("announcements group a bounded native search utility ahead of editorial res
 });
 
 test("board-game controls and result utility form one flat region", async () => {
-  const form = await readSource(
-    "src/components/(public)/board-games/BoardGameSearchForm.tsx",
-  );
+  const [form, page] = await Promise.all([
+    readSource("src/components/(public)/board-games/BoardGameSearchForm.tsx"),
+    readSource("src/app/(public)/board-games/page.tsx"),
+  ]);
 
   assert.match(form, /<form[\s\S]*?method="GET"[\s\S]*?action=\{BASE_PATH\}/);
   assert.match(form, /PreservedQueryFields/);
   assert.match(form, /pageSize/);
-  assert.match(form, /aria-live="polite"/);
+  assert.match(page, /<PaginationSummary/);
   assert.match(form, /<div className="space-y-2"/);
   assert.doesNotMatch(
     form,

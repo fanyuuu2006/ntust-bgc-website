@@ -76,7 +76,7 @@ test("public board-game card keeps one vertical composition at every breakpoint"
   );
 
   assert.equal((card.match(/<Link\b/g) ?? []).length, 1);
-  assert.match(card, /href=\{`\/board-games\/\$\{boardGame\.id\}\$\{returnTo/);
+  assert.match(card, /buildBoardGameDetailHref\(boardGame\.id, returnTo\)/);
   assert.match(card, /flex h-full min-w-0 flex-col/);
   assert.doesNotMatch(
     card,
@@ -94,10 +94,13 @@ test("public board-game card keeps one vertical composition at every breakpoint"
     card,
     /BoardGameStatusBadge[\s\S]*className="absolute[^"\n]*top-2[^"\n]*right-2/,
   );
-  assert.match(card, /\.filter\(/);
-  assert.match(card, /items-start justify-between gap-2/);
-  assert.match(card, /sr-only[^>]*>社產編號/);
-  assert.match(card, /#\s*\{boardGame\.inventory_number\}/);
+  assert.match(card, /title=\{boardGame\.category\.name\}/);
+  assert.match(card, /title=\{boardGame\.location\.name\}/);
+  assert.doesNotMatch(card, /metadata\.join/);
+  assert.match(card, /min-h-5[^"\n]*min-w-0/);
+  assert.match(card, /truncate/);
+  assert.match(card, /shrink-0 whitespace-nowrap/);
+  assert.match(card, /#\{boardGame\.inventory_number\}/);
   assert.doesNotMatch(card, /boardGame\.description|description\s*\?/);
   assert.doesNotMatch(card, /尚未補充桌遊描述/);
   assert.match(card, /boardGame\.image\s*\?/);

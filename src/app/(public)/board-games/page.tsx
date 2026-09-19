@@ -1,6 +1,7 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginationSummary } from "@/components/Pagination/PaginationSummary";
 import { BoardGameSearchForm } from "@/components/(public)/board-games/BoardGameSearchForm";
 import { BoardGameGrid } from "@/components/(public)/board-games/BoardGameGrid";
 import { PageHeader } from "@/components/PageHeader";
@@ -109,11 +110,12 @@ async function BoardGamesPage({
             locations={locations}
             query={query}
             pageSize={pageSize}
-            total={boardGames.total}
           />
         </div>
 
-        <div className="mt-6">
+        <PaginationSummary className="mt-4" page={page} pageSize={pageSize} total={boardGames.total} totalPages={boardGames.totalPages} unit="款桌遊" />
+
+        <div className="mt-4 sm:mt-6">
           <BoardGameGrid
             boardGames={boardGames.data}
             hasActiveQuery={hasActiveQuery}

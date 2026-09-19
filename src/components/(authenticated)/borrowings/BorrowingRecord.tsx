@@ -7,11 +7,14 @@ import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
 import { Card } from "@/components/ui/Card";
 import type { UserBorrowingListItem } from "@/services/board-games/board-games.types";
 import { formatCompactLifecycleDate, formatDateTime, getDueTimePresentation } from "@/utils/date";
+import { buildBoardGameDetailHref } from "@/libs/board-game-return";
 
 export function BorrowingRecord({
   borrowing,
+  returnTo,
 }: {
   borrowing: UserBorrowingListItem;
+  returnTo?: string;
 }) {
   const due = borrowing.status === "borrowed"
     ? getDueTimePresentation(borrowing.due_at)
@@ -31,7 +34,7 @@ export function BorrowingRecord({
             <div className="min-w-0 flex-1">
               <h2 className="min-w-0 flex-1 text-sm font-semibold leading-snug md:text-base">
                 <Link
-                  href={`/board-games/${borrowing.board_game.id}`}
+                  href={returnTo ? buildBoardGameDetailHref(borrowing.board_game.id, returnTo) : `/board-games/${borrowing.board_game.id}`}
                   title={borrowing.board_game.name}
                   className="line-clamp-2 text-(--interactive-primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
                 >

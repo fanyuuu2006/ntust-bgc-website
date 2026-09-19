@@ -254,7 +254,7 @@ test("member borrowing and dashboard identities link to the existing Board Game 
     renderToStaticMarkup(createElement(BorrowingRecord, { borrowing })),
     renderToStaticMarkup(createElement(DashboardBorrowingSummary, { borrowings: [borrowing] })),
   ]) {
-    assert.match(html, new RegExp(`href="/board-games/${gameId}"`));
+    assert.match(html, new RegExp(`href="/board-games/${gameId}(?:\\?returnTo=[^"]+)?"`));
     assert.match(html, /測試桌遊/);
   }
 });
@@ -279,7 +279,7 @@ test("Admin borrowing desktop and mobile presentations use the same Board Game l
     "next/navigation": { useRouter: () => ({ push: () => {}, refresh: () => {} }) },
   });
   const html = renderToStaticMarkup(createElement(AdminBorrowingList, { borrowings: [borrowing], query: {} }));
-  assert.ok((html.match(new RegExp(`href="/board-games/${gameId}"`, "g")) ?? []).length >= 2);
-  const anchors = [...new JSDOM(html).window.document.querySelectorAll(`a[href="/board-games/${gameId}"]`)];
+  assert.ok((html.match(new RegExp(`href="/board-games/${gameId}\\?returnTo=`, "g")) ?? []).length >= 2);
+  const anchors = [...new JSDOM(html).window.document.querySelectorAll(`a[href^="/board-games/${gameId}?returnTo="]`)];
   assert.equal(anchors.some((anchor) => anchor.querySelector("button")), false);
 });
