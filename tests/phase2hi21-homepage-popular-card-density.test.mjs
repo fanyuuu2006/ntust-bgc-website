@@ -10,7 +10,7 @@ test("homepage popular cards use compact natural-height bodies inside the equal-
     readSource(
       "src/components/(public)/home/PopularBoardGamesSection.tsx",
     ),
-    readSource("src/components/(public)/home/HomeBoardGamePreview.tsx"),
+    readSource("src/components/(public)/board-games/BoardGameCard.tsx"),
   ]);
 
   assert.match(
@@ -18,22 +18,23 @@ test("homepage popular cards use compact natural-height bodies inside the equal-
     /grid-cols-2 items-stretch gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6/,
   );
   assert.match(preview, /className="group flex h-full min-w-0 flex-col/);
-  assert.match(preview, /<div className="min-w-0 p-3">/);
-  assert.doesNotMatch(preview, /<div className="[^"]*(?:h-full|flex-1|mt-auto)[^"]*p-3/);
+  assert.match(preview, /<div className="flex min-w-0 flex-1 flex-col p-3">/);
+  assert.match(section, /showAction=\{false\}/);
   assert.doesNotMatch(preview, /sm:p-4/);
 });
 
 test("homepage popular card keeps one title anchor and compact metadata", async () => {
   const preview = await readSource(
-    "src/components/(public)/home/HomeBoardGamePreview.tsx",
+    "src/components/(public)/board-games/BoardGameCard.tsx",
   );
 
   assert.match(preview, /line-clamp-2 min-h-10/);
   assert.match(preview, /sm:min-h-11/);
-  assert.match(preview, /className="mt-2 break-words/);
+  assert.match(preview, /min-w-0 flex-1 truncate/);
   assert.doesNotMatch(
     preview,
-    /BoardGamePopularity|completedBorrowCount|inventory_number|description|查看詳情/,
+    /BoardGamePopularity|completedBorrowCount|description/,
   );
+  assert.match(preview, /inventory_number|查看詳情/);
   assert.match(preview, /BoardGameRatingMetadata/);
 });

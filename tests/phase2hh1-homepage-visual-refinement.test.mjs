@@ -46,7 +46,7 @@ test("popular preview stays two-column on mobile and uses the container for its 
     readSource(
       "src/components/(public)/home/PopularBoardGamesSection.tsx",
     ),
-    readSource("src/components/(public)/home/HomeBoardGamePreview.tsx"),
+    readSource("src/components/(public)/board-games/BoardGameCard.tsx"),
   ]);
 
   assert.match(section, /grid-cols-2/);
@@ -56,7 +56,8 @@ test("popular preview stays two-column on mobile and uses the container for its 
   assert.match(section, /items-stretch/);
   assert.doesNotMatch(section, /max-w-5xl/);
   assert.match(preview, /className="group flex h-full/);
-  assert.doesNotMatch(preview, /className="flex min-w-0 flex-1/);
+  assert.match(section, /<BoardGameCard[\s\S]*showAction=\{false\}/);
   assert.match(preview, /line-clamp-2 min-h-10/);
-  assert.doesNotMatch(preview, /inventory_number|description|查看詳情/);
+  assert.match(preview, /inventory_number/);
+  assert.doesNotMatch(preview, /description/);
 });

@@ -66,7 +66,6 @@ test("a failed source does not prevent a changed source from loading", async (t)
 
 test("persisted-cover consumers converge on BoardGameImage while local draft preview stays native", () => {
   const consumers = [
-    "src/components/(public)/home/HomeBoardGamePreview.tsx",
     "src/components/(public)/board-games/BoardGameCard.tsx",
     "src/app/(public)/board-games/[id]/page.tsx",
     "src/components/(admin)/admin/board-games/BoardGameTable.tsx",

@@ -103,7 +103,7 @@ test("pagination summary models zero, single and multi-page datasets", () => {
 test("real Board Game entry points explicitly propagate contextual return URLs", async () => {
   const paths = [
     "src/app/(public)/board-games/page.tsx",
-    "src/components/(public)/home/HomeBoardGamePreview.tsx",
+    "src/components/(public)/home/PopularBoardGamesSection.tsx",
     "src/components/(authenticated)/dashboard/DashboardBorrowingSummary.tsx",
     "src/components/(authenticated)/borrowings/BorrowingRecord.tsx",
     "src/components/(public)/profile/ProfileReviews.tsx",

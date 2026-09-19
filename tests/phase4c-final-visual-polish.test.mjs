@@ -35,12 +35,13 @@ test("discovery cards give each metadata field an independent overflow boundary"
   assert.match(card, /mt-auto[^"\n]*pt-3[^>]*>[\s\S]*查看詳情/);
 });
 
-test("homepage preview remains a deliberately separate compact card composition", async () => {
+test("homepage preview reuses the canonical card with its action suppressed", async () => {
   const [discovery, home] = await Promise.all([
     source("src/components/(public)/board-games/BoardGameCard.tsx"),
-    source("src/components/(public)/home/HomeBoardGamePreview.tsx"),
+    source("src/components/(public)/home/PopularBoardGamesSection.tsx"),
   ]);
 
   assert.match(discovery, /inventory_number/);
-  assert.doesNotMatch(home, /inventory_number|查看詳情/);
+  assert.match(home, /<BoardGameCard[\s\S]*returnTo="\/"[\s\S]*showAction=\{false\}/);
+  assert.doesNotMatch(home, /HomeBoardGamePreview/);
 });
