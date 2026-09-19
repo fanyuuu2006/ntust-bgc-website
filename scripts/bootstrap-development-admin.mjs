@@ -156,7 +156,7 @@ export function createSupabaseBootstrapAdapter(supabase) {
   };
 }
 
-function parseArguments(args) {
+export function parseBootstrapArguments(args) {
   const values = {};
   const flags = new Set();
   for (let index = 0; index < args.length; index += 1) {
@@ -178,7 +178,7 @@ function parseArguments(args) {
 
 async function main() {
   if (existsSync(".env.local") && typeof process.loadEnvFile === "function") process.loadEnvFile(".env.local");
-  const args = parseArguments(process.argv.slice(2));
+  const args = parseBootstrapArguments(process.argv.slice(2));
   const projectRef = parseDevelopmentTarget(process.env.SUPABASE_URL);
   if (!process.env.SUPABASE_SECRET_KEY) throw new Error("SUPABASE_SECRET_KEY is required in the environment");
   const input = parseBootstrapInput(args.input);

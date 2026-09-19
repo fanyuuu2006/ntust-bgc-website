@@ -51,10 +51,12 @@ authorization uses exactly the same historical-Officer rule.
 1. Configure Development-only `.env.local` values.
 2. Start the website and register the account normally at `/register`.
 3. Review the account and requested synthetic Academic Year values.
-4. Inspect the exact plan without writes:
+4. Inspect the exact plan without writes. Invoke the Node CLI directly because
+   npm's Windows PowerShell shim does not reliably forward named flags after
+   `--`:
 
    ```powershell
-   npm run dev:bootstrap-admin -- --email admin@example.test --year 115 --start 2026-08-01 --end 2027-07-31 --title "Development Officer" --confirm-development --dry-run
+   node scripts/bootstrap-development-admin.mjs --email admin@example.test --year 115 --start 2026-08-01 --end 2027-07-31 --title "Development Officer" --confirm-development --dry-run
    ```
 
 5. After review, omit `--dry-run` to apply the same request.
