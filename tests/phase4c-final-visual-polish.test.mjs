@@ -24,11 +24,12 @@ test("discovery cards give each metadata field an independent overflow boundary"
   const card = await source("src/components/(public)/board-games/BoardGameCard.tsx");
 
   assert.doesNotMatch(card, /metadata\.join/);
-  assert.match(card, /flex min-h-5 min-w-0 items-center/);
+  assert.match(card, /flex min-h-5 min-w-0 items-center gap-2/);
   assert.equal((card.match(/min-w-0 flex-1 truncate/g) ?? []).length, 2);
   assert.match(card, /title=\{boardGame\.category\.name\}/);
   assert.match(card, /title=\{boardGame\.location\.name\}/);
   assert.match(card, /shrink-0 whitespace-nowrap[^>]*>[\s\S]*#\{boardGame\.inventory_number\}/);
+  assert.doesNotMatch(card, /<span aria-hidden="true"/);
   assert.match(card, /className="mt-2 min-h-5 min-w-0"[\s\S]*<BoardGameRatingMetadata/);
   assert.match(card, /flex min-w-0 flex-1 flex-col/);
   assert.match(card, /mt-auto[^"\n]*pt-3[^>]*>[\s\S]*查看詳情/);

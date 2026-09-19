@@ -41,25 +41,15 @@ export function BoardGameCard({ boardGame, returnTo }: BoardGameCardProps) {
           {boardGame.name}
         </h2>
 
-        <div className="mt-2 flex min-h-5 min-w-0 items-center gap-1 text-xs leading-5 text-(--text-secondary) sm:text-sm">
+        <div className="mt-2 flex min-h-5 min-w-0 items-center gap-2 text-xs leading-5 text-(--text-secondary) sm:text-sm">
           {boardGame.category ? (
             <span className="min-w-0 flex-1 truncate" title={boardGame.category.name}>
               {boardGame.category.name}
             </span>
           ) : null}
-          {boardGame.category && boardGame.location ? (
-            <span aria-hidden="true" className="shrink-0 text-(--text-muted)">
-              ·
-            </span>
-          ) : null}
           {boardGame.location ? (
             <span className="min-w-0 flex-1 truncate" title={boardGame.location.name}>
               {boardGame.location.name}
-            </span>
-          ) : null}
-          {boardGame.category || boardGame.location ? (
-            <span aria-hidden="true" className="shrink-0 text-(--text-muted)">
-              ·
             </span>
           ) : null}
           <span className="shrink-0 whitespace-nowrap text-(--text-muted)">
