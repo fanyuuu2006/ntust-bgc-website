@@ -5,7 +5,7 @@ export default function PrivacyPage() {
     <article className="container min-w-0 max-w-3xl space-y-8 py-8 wrap-anywhere text-sm leading-7 text-(--text-secondary) sm:py-10 sm:text-base [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-(--text-primary) [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_a]:text-(--interactive-primary) [&_a]:underline [&_a]:underline-offset-4 [&_a]:decoration-(--border-default) [&_a:hover]:decoration-current [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-offset-4">
       <header className="space-y-3">
         <h1 className="text-2xl font-bold text-(--text-primary) sm:text-3xl">隱私權政策</h1>
-        <p className="text-sm text-(--text-muted)">最後更新：<time dateTime="2026-09-14">2026/09/14</time></p>
+        <p className="text-sm text-(--text-muted)">最後更新：<time dateTime="2026-09-21">2026/09/21</time></p>
         <p>這裡說明網站與社團服務需要哪些資料、如何使用，以及您可以如何查詢或提出請求。</p>
       </header>
       <nav aria-label="本頁內容" className="border-y border-(--border-default) py-4">
@@ -58,7 +58,7 @@ export default function PrivacyPage() {
         <section id="cookies" aria-labelledby="cookies-title" className="scroll-mt-24 space-y-3">
           <h2 id="cookies-title">5. Cookies 與登入 Session</h2>
           <p>本網站使用必要的登入 Session Cookie「bgc_st」維持登入狀態，並非廣告追蹤 Cookie。它設為 HttpOnly；正式網站使用 Secure 與 SameSite 保護，目前登入有效期為 7 天。登出、撤銷 Session 或到期後，該 Session 不能再用於登入。</p>
-          <p>封鎖或清除這個 Cookie 會影響登入功能，但仍可瀏覽公開內容。本網站目前未自行使用 localStorage 或 sessionStorage 保存個人資料，也未整合廣告追蹤或 Google Analytics。</p>
+          <p>封鎖或清除這個 Cookie 會影響登入功能，但仍可瀏覽公開內容。本網站目前未自行使用 localStorage 或 sessionStorage 保存個人資料。正式網站使用 Google Analytics 4 了解頁面瀏覽與網站使用情形；Google Analytics 可能使用 Cookie 或類似技術處理頁面、瀏覽器、裝置及概略地區等使用資訊。本網站不主動將帳號 Email、真實姓名、學號或電話作為 Analytics 事件內容傳送。</p>
           <p>註冊安全驗證及第三方嵌入內容可能有其自身的 Cookie 或其他技術；不能將本網站的登入 Cookie 說明視為所有第三方都不處理瀏覽資料。</p>
         </section>
 
@@ -75,6 +75,7 @@ export default function PrivacyPage() {
             <li>Vercel：提供網站部署與執行環境，處理網站請求及必要的執行、安全與錯誤紀錄。</li>
             <li>Brevo：提供上述驗證信的寄送服務。</li>
             <li>Cloudflare Turnstile：用於註冊時辨識自動化濫用。您的瀏覽器會與 Cloudflare 連線，該服務可能處理 IP、瀏覽器及裝置訊號。</li>
+            <li>Google Analytics 4：僅於正式網站提供網站使用統計，協助了解公開頁面與功能的使用情形；Local 與 Preview 環境不載入此服務。</li>
             <li>YouTube、Bilibili 及其他圖片／直接影音來源：提供頁面中的外部內容，詳見下一節。</li>
           </ul>
           <p>各服務商在提供服務及其自身政策所述範圍內處理資料；我們無法代替第三方保證其全部處理方式。</p>
@@ -113,7 +114,7 @@ export default function PrivacyPage() {
           <h2 id="reviews-title">桌遊評分與評論</h2>
           <p>使用者主動提交的桌遊評分與文字評論會公開顯示，並連同公開個人頁面所使用的顯示名稱、頭像與公開身份呈現。評分統計只公開平均分數及評分、文字評論數量。</p>
           <p>帳號註銷後，為維持公開討論與評分統計的完整性，既有評分與評論可能繼續保留；作者會改以「已註銷使用者」呈現，不再顯示原名稱或頭像。借用明細、簽到明細、聯絡資料與學籍資料不會因評論而公開。</p>
-          <p>評論編輯與刪除功能將隨評論投稿功能提供；在投稿功能上線前本站只提供既有公開內容的讀取。如需處理公開內容或個人資料，可依本政策的聯絡方式提出。</p>
+          <p>已完成 Email 驗證的使用者可依網站功能新增、編輯或刪除自己的評價與評論；管理者可刪除不適當的公開評論。如需處理公開內容或個人資料，也可依本政策的聯絡方式提出。</p>
         </section>
 
         <section id="updates" aria-labelledby="updates-title" className="scroll-mt-24 space-y-3">
