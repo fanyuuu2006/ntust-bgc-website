@@ -173,6 +173,22 @@ const cachedLocations = cachePublicData("locations", () => boardGameLocationsRep
 const cachedPopularGames = cachePublicData("popularGames", () => boardGameStatisticsRepository.findPopular({ limit: 6 }));
 
 export const boardGamesService = {
+  searchForAdminPicker: async (search: string) => {
+    const keyword = search.trim();
+    if (!keyword) return [];
+    const result = await boardGamesRepository.findManyForAdmin({
+      page: 1,
+      pageSize: 20,
+      search: keyword,
+      orderBy: "name",
+      orderDirection: "asc",
+    });
+    return result.data.map((game) => ({
+      id: game.id,
+      name: game.name,
+      inventoryNumber: game.inventory_number,
+    }));
+  },
   getNextInventoryNumber: async (): Promise<number | null> => {
     const highest = await boardGamesRepository.findHighestInventoryNumber();
     if (highest === null || highest < 1) return 1;

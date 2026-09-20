@@ -1,7 +1,7 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { AnnouncementList } from "@/components/(public)/announcements/AnnouncementList";
 import { PageHeader } from "@/components/PageHeader";
-import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button } from "@/components/ui/Button";
@@ -96,15 +96,10 @@ async function AnnouncementsPage({ searchParams }: Props) {
             </Button>
           </form>
 
-          <div className="mt-6">
+          <PaginatedCollection className="mt-6" page={page} pageSize={pageSize} total={announcements.total} totalPages={announcements.totalPages} basePath="/announcements" pageSizeOptions={[10, 20, 50]} query={{ search }} showPageSize={false}>
+          <div>
             <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2 px-2">
               <p className="font-semibold text-(--text-primary)">全部公告</p>
-              <p
-                aria-live="polite"
-                className="text-sm tabular-nums text-(--text-muted)"
-              >
-                共 {announcements.total} 筆
-              </p>
             </div>
             {announcements.data.length ? (
               <AnnouncementList announcements={announcements.data} />
@@ -118,17 +113,7 @@ async function AnnouncementsPage({ searchParams }: Props) {
             )}
           </div>
 
-          <Pagination
-            page={page}
-            pageSize={pageSize}
-            total={announcements.total}
-            totalPages={announcements.totalPages}
-            basePath="/announcements"
-            pageSizeOptions={[10, 20, 50]}
-            query={{ search }}
-            showPageSize={false}
-            className="mt-5"
-          />
+          </PaginatedCollection>
         </div>
       </div>
     </section>

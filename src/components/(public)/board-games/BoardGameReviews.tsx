@@ -1,6 +1,6 @@
 import { PublicUserLink } from "@/components/PublicUserLink";
 import { hasReviewCriteria, ReviewQueryControls, ReviewResultSummary, reviewAppliedQuery, reviewQueryHref } from "@/components/(public)/reviews/ReviewQueryControls";
-import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import type { BoardGameReviewAggregate, PublicBoardGameReviewsPage, ReviewListQuery } from "@/services/reviews/reviews.types";
 import { formatDateTime } from "@/utils/date";
@@ -44,16 +44,28 @@ export function BoardGameReviews({ boardGameId, aggregate, reviews, query: suppl
       <section className="mt-9" aria-labelledby="public-reviews-title">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 id="public-reviews-title" className="font-semibold text-(--text-primary)">公開評價</h3>
-          <ReviewResultSummary total={reviews.total} filtered={filtered} />
         </div>
         <ReviewQueryControls basePath={basePath} query={query} searchPlaceholder="搜尋評論內容" searchLabel="搜尋這款桌遊的評論" preservedQuery={preservedQuery} anchor="board-game-reviews" />
       </section>
 
-      {reviews.total === 0 ? (
-        filtered ? <QueryEmptyState className="mt-5" title="找不到符合條件的評價" description="試著調整搜尋或評分條件。" clearHref={resetHref} />
-          : <p className="mt-5 py-2 text-sm text-(--text-muted)">目前還沒有評分</p>
-      ) : (
-        <div className="mt-5 divide-y divide-(--border-muted)">
+      <PaginatedCollection
+        className="mt-5"
+        page={reviews.page}
+        pageSize={reviews.pageSize}
+        total={reviews.total}
+        totalPages={reviews.totalPages}
+        basePath={basePath}
+        query={appliedQuery}
+        pageKey="reviewPage"
+        showPageSize={false}
+        aria-label="評論分頁"
+        summary={<ReviewResultSummary total={reviews.total} filtered={filtered} />}
+      >
+        {reviews.total === 0 ? (
+          filtered ? <QueryEmptyState title="找不到符合條件的評價" description="試著調整搜尋或評分條件。" clearHref={resetHref} />
+            : <p className="py-2 text-sm text-(--text-muted)">目前還沒有評分</p>
+        ) : (
+          <div className="divide-y divide-(--border-muted)">
           {reviews.data.map((review) => (
             <article key={review.id} className="min-w-0 py-5 first:pt-4 last:pb-4">
               <header className="min-w-0">
@@ -68,10 +80,10 @@ export function BoardGameReviews({ boardGameId, aggregate, reviews, query: suppl
               {review.content === null ? null : <p className="mt-3 max-w-3xl whitespace-pre-wrap wrap-anywhere text-sm leading-6 text-(--text-secondary)">{review.content}</p>}
             </article>
           ))}
-        </div>
-      )}
+          </div>
+        )}
 
-      <Pagination aria-label="評論分頁" page={reviews.page} pageSize={reviews.pageSize} total={reviews.total} totalPages={reviews.totalPages} basePath={basePath} query={appliedQuery} pageKey="reviewPage" showPageSize={false} className="mt-5" />
+      </PaginatedCollection>
     </section>
   );
 }

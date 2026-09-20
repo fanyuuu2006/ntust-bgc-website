@@ -58,6 +58,11 @@ function toProfileReview(review: Awaited<ReturnType<typeof boardGameReviewsRepos
   };
 }
 
+async function deleteReview(deleteOperation: () => Promise<boolean>) {
+  if (!await deleteOperation()) throw new ReviewNotFoundError();
+  invalidatePublicDataSafely("popularGames");
+}
+
 export const reviewsService = {
   create: async (userId: string, boardGameId: unknown, input: unknown) => {
     const id = await requireBoardGame(boardGameId);
@@ -110,7 +115,11 @@ export const reviewsService = {
 
   deleteOwn: async (userId: string, boardGameId: unknown): Promise<void> => {
     const id = z.uuid().parse(boardGameId);
-    if (!await boardGameReviewsRepository.deleteOwn(id, userId)) throw new ReviewNotFoundError();
-    invalidatePublicDataSafely("popularGames");
+    await deleteReview(() => boardGameReviewsRepository.deleteOwn(id, userId));
+  },
+
+  deleteForAdmin: async (reviewId: unknown): Promise<void> => {
+    const id = z.uuid().parse(reviewId);
+    await deleteReview(() => boardGameReviewsRepository.deleteById(id));
   },
 };

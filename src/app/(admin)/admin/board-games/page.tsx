@@ -16,8 +16,7 @@ import {
   PAGE_SIZE_OPTIONS,
 } from "./constants";
 import { ButtonLink } from "@/components/ui/Button";
-import { Pagination } from "@/components/Pagination/Pagination";
-import { PaginationSummary } from "@/components/Pagination/PaginationSummary";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Plus } from "lucide-react";
 
 type BoardGamesSearchParams = {
@@ -117,24 +116,14 @@ async function BoardGamesAdminPage({
           clearSearchHref={clearSearchHref}
         />
 
-        <PaginationSummary page={page} pageSize={pageSize} total={boardGames.total} totalPages={boardGames.totalPages} />
-
+        <PaginatedCollection page={page} pageSize={pageSize} total={boardGames.total} totalPages={boardGames.totalPages} basePath={BASE_PATH} pageSizeOptions={PAGE_SIZE_OPTIONS} query={query} paginationClassName="p-4">
         <BoardGameTable
           boardGames={boardGames.data}
           query={query}
           hasFilters={Boolean(query.search || query.status || query.category || query.location || page > 1)}
         />
 
-        <Pagination
-          className="p-4"
-          page={page}
-          pageSize={pageSize}
-          total={boardGames.total}
-          totalPages={boardGames.totalPages}
-          basePath={BASE_PATH}
-          pageSizeOptions={PAGE_SIZE_OPTIONS}
-          query={query}
-        />
+        </PaginatedCollection>
       </section>
     </>
   );

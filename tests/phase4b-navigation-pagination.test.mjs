@@ -124,7 +124,7 @@ test("detail review navigation preserves contextual return separately", async ()
   assert.doesNotMatch(reviews, /returnTo:\s*review/);
 });
 
-test("selected long-list pages add orientation without duplicating top navigation", async () => {
+test("selected long-list pages use one collection composition without duplicated navigation", async () => {
   const paths = [
     "src/app/(public)/board-games/page.tsx",
     "src/app/(admin)/admin/users/page.tsx",
@@ -136,7 +136,8 @@ test("selected long-list pages add orientation without duplicating top navigatio
   ];
   for (const path of paths) {
     const content = await source(path);
-    assert.equal((content.match(/<PaginationSummary\b/g) ?? []).length, 1, path);
-    assert.equal((content.match(/<Pagination\b/g) ?? []).length, 1, path);
+    assert.equal((content.match(/<PaginatedCollection\b/g) ?? []).length, 1, path);
+    assert.equal((content.match(/<PaginationSummary\b/g) ?? []).length, 0, path);
+    assert.equal((content.match(/<Pagination\b/g) ?? []).length, 0, path);
   }
 });

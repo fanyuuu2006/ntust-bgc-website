@@ -51,7 +51,7 @@ test("board-game controls remain one flat URL-authoritative utility group", asyn
   assert.match(form, /method="GET"/);
   assert.match(form, /action=\{BASE_PATH\}/);
   assert.match(form, /PreservedQueryFields/);
-  assert.match(page, /<PaginationSummary/);
+  assert.match(page, /<PaginatedCollection/);
   assert.doesNotMatch(
     formOpeningTag,
     /rounded-xl|shadow-|bg-\(--surface-default\)|border border-\(--border-default\)/,

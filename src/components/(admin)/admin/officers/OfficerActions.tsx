@@ -73,6 +73,7 @@ export function OfficerActions({ years }: { years: AcademicYear[] }) {
               key={pickerResetKey}
               id="officer-user"
               disabled={busy}
+              required
               onChange={(user) =>
                 setValues((current) => ({
                   ...current,

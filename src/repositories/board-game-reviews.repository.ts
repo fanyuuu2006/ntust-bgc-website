@@ -21,6 +21,16 @@ export type ReviewAggregateSource = {
 export type PublicProfileReviewSource = BoardGameReview & {
   board_game: { id: string; name: string };
 };
+export type FindAdminReviewsOptions = {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  rating?: number;
+  boardGameId?: string;
+  matchedUserIds?: string[];
+  matchedBoardGameIds?: string[];
+  sort?: ReviewSort;
+};
 function ownedReviewQuery(boardGameId: string, userId: string) {
   return supabase
     .from("board_game_reviews")
@@ -115,6 +125,44 @@ export const boardGameReviewsRepository = {
     return data;
   },
 
+  findAdminPage: async (options: FindAdminReviewsOptions = {}) => {
+    const { page, pageSize, from, to } = normalizePaginationOptions({
+      page: options.page,
+      pageSize: options.pageSize,
+      maxPageSize: 100,
+    });
+    let query = supabase
+      .from("board_game_reviews")
+      .select(REVIEW_FIELDS, { count: "exact" });
+
+    if (options.search) {
+      const conditions = [
+        buildIlikeSearch(["content"], options.search),
+        options.matchedUserIds?.length
+          ? `user_id.in.(${options.matchedUserIds.join(",")})`
+          : "",
+        options.matchedBoardGameIds?.length
+          ? `board_game_id.in.(${options.matchedBoardGameIds.join(",")})`
+          : "",
+      ].filter(Boolean);
+      query = query.or(conditions.join(","));
+    }
+    if (options.rating) query = query.eq("rating", options.rating);
+    if (options.boardGameId) query = query.eq("board_game_id", options.boardGameId);
+
+    const sort = options.sort ?? "newest";
+    if (sort === "highest" || sort === "lowest") {
+      query = query.order("rating", { ascending: sort === "lowest" });
+    }
+    const ascending = sort === "oldest";
+    const { data, error, count } = await query
+      .order("created_at", { ascending })
+      .order("id", { ascending })
+      .range(from, to);
+    if (error) throwRepositoryError("取得管理端評價失敗", error);
+    return buildPaginationResult(data ?? [], count, page, pageSize);
+  },
+
   updateOwn: async (boardGameId: string, userId: string, input: Partial<ReviewWriteInput>): Promise<BoardGameReview | null> => {
     const { data, error } = await supabase
       .from("board_game_reviews")
@@ -136,6 +184,17 @@ export const boardGameReviewsRepository = {
       .select("id")
       .maybeSingle();
     if (error) throwRepositoryError("刪除自己的桌遊評論失敗", error);
+    return data !== null;
+  },
+
+  deleteById: async (id: string): Promise<boolean> => {
+    const { data, error } = await supabase
+      .from("board_game_reviews")
+      .delete()
+      .eq("id", id)
+      .select("id")
+      .maybeSingle();
+    if (error) throwRepositoryError("刪除管理端評價失敗", error);
     return data !== null;
   },
 };

@@ -17,7 +17,7 @@ test("event attendance detail uses URL-authoritative search and pagination witho
   assert.match(page, /ClearableSearchInput/);
   assert.match(page, /<Button type="submit" variant="primary"/);
   assert.match(page, />\s*搜尋\s*<\/Button>/);
-  assert.match(page, /<Pagination/);
+  assert.match(page, /<PaginatedCollection/);
   assert.doesNotMatch(page, /usersService\.listForAdmin\(\{ pageSize: 100 \}\)/);
 });
 

@@ -4,7 +4,7 @@ import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { LocationCreateAction } from "@/components/(admin)/admin/board-games/locations/LocationCreateAction";
 import { LocationRecords } from "@/components/(admin)/admin/board-games/locations/LocationRecords";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
-import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Button } from "@/components/ui/Button";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import {
@@ -65,16 +65,9 @@ async function BoardGameLocationsPage({
             <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
           </AdminToolbar>
         </form>
-        <LocationRecords items={items} hasQuery={Boolean(params.search || page > 1)} />
-        <Pagination
-          page={page}
-          pageSize={pageSize}
-          total={locations.total}
-          totalPages={locations.totalPages}
-          basePath="/admin/board-games/locations"
-          pageSizeOptions={[10, 20, 50, 100]}
-          query={{ search: params.search }}
-        />
+        <PaginatedCollection page={page} pageSize={pageSize} total={locations.total} totalPages={locations.totalPages} basePath="/admin/board-games/locations" pageSizeOptions={[10, 20, 50, 100]} query={{ search: params.search }}>
+          <LocationRecords items={items} hasQuery={Boolean(params.search || page > 1)} />
+        </PaginatedCollection>
       </section>
     </>
   );

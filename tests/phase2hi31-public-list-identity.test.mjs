@@ -20,7 +20,7 @@ test("announcements use shared page flow, flat controls, and an editorial result
     /<form[\s\S]*?className="[^"]*(?:rounded-xl|bg-\(--surface-subtle\)|border border-)/,
   );
   assert.match(page, /全部公告/);
-  assert.match(page, /共 \{announcements\.total\} 筆/);
+  assert.match(page, /<PaginatedCollection[^>]+total=\{announcements\.total\}/);
   assert.match(page, /<AnnouncementList/);
   assert.doesNotMatch(page, /<Card|shadow-|translate-y/);
 });
@@ -52,7 +52,7 @@ test("board games use shared page flow and flat discovery controls", async () =>
     form,
     /<form[^>]*className="[^"]*(?:rounded-xl|shadow-|bg-\(--surface-default\)|border border-)/,
   );
-  assert.match(page, /<PaginationSummary/);
+  assert.match(page, /<PaginatedCollection/);
   assert.doesNotMatch(form, /aria-hidden="true"[^>]*border-b/);
   assert.doesNotMatch(page, /["']use client["']|useEffect|fetch\(/);
 });

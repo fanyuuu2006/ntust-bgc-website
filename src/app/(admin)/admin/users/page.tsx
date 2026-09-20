@@ -8,8 +8,7 @@ import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
-import { Pagination } from "@/components/Pagination/Pagination";
-import { PaginationSummary } from "@/components/Pagination/PaginationSummary";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -138,6 +137,7 @@ async function AdminUsersPage({ searchParams }: Props) {
           </ImmediateQuerySelect>
         </AdminToolbar>
 
+        <PaginatedCollection page={page} pageSize={pageSize} total={users.total} totalPages={users.totalPages} basePath={BASE_PATH} pageSizeOptions={[10, 20, 50, 100]} query={query} paginationClassName="p-4">
         {users.data.length === 0 &&
         Boolean(params.search?.trim() || params.emailVerification || page > 1) ? (
           <QueryEmptyState
@@ -272,17 +272,7 @@ async function AdminUsersPage({ searchParams }: Props) {
           </>
         )}
 
-        <PaginationSummary page={page} pageSize={pageSize} total={users.total} totalPages={users.totalPages} />
-        <Pagination
-          className="p-4"
-          page={page}
-          pageSize={pageSize}
-          total={users.total}
-          totalPages={users.totalPages}
-          basePath={BASE_PATH}
-          pageSizeOptions={[10, 20, 50, 100]}
-          query={query}
-        />
+        </PaginatedCollection>
       </section>
     </>
   );

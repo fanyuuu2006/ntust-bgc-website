@@ -1,6 +1,6 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { MembershipStatusBadge } from "@/components/MembershipStatusBadge";
-import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
@@ -40,21 +40,21 @@ async function MembershipRecordsResultsContent({
   );
 
   return (
-    <>
+    <PaginatedCollection className="mt-4" page={membershipRecords.page} pageSize={membershipRecords.pageSize} total={membershipRecords.total} totalPages={membershipRecords.totalPages} basePath="/memberships" query={{ search: query.search, type: query.type, status: query.status, orderBy: "academic_year", orderDirection: query.orderDirection }} showPageSize={false}>
       {membershipRecords.data.length === 0 && hasQuery ? (
         <QueryEmptyState
-          className="mt-4"
+          className=""
           title="找不到符合條件的社員紀錄"
           clearHref="/memberships"
         />
       ) : membershipRecords.data.length === 0 ? (
         <EmptyState
           compact
-          className="mt-4 border border-(--border-default) bg-(--surface-subtle) p-5 text-left"
+          className="border border-(--border-default) bg-(--surface-subtle) p-5 text-left"
           title="目前沒有社員紀錄"
         />
       ) : (
-        <ul className="mt-4 grid gap-3">
+        <ul className="grid gap-3">
           {membershipRecords.data.map((membership) => {
             const academicYear = membership.academic_year?.year ?? "—";
             const isCurrent = membership.id === currentMembershipId;
@@ -88,24 +88,7 @@ async function MembershipRecordsResultsContent({
         </ul>
       )}
 
-      <div className="mt-5">
-        <Pagination
-          page={membershipRecords.page}
-          pageSize={membershipRecords.pageSize}
-          total={membershipRecords.total}
-          totalPages={membershipRecords.totalPages}
-          basePath="/memberships"
-          query={{
-            search: query.search,
-            type: query.type,
-            status: query.status,
-            orderBy: "academic_year",
-            orderDirection: query.orderDirection,
-          }}
-          showPageSize={false}
-        />
-      </div>
-    </>
+    </PaginatedCollection>
   );
 }
 
