@@ -91,6 +91,7 @@ export function AttendanceActions({ eventId }: { eventId: string }) {
               key={pickerResetKey}
               id="attendance-user-search"
               disabled={busy}
+              required
               onChange={setSelectedUser}
             />
           </Field>

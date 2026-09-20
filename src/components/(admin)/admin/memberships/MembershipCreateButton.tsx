@@ -66,6 +66,7 @@ export function MembershipCreateButton({
               key={pickerResetKey}
               id="membership-user"
               disabled={busy}
+              required
               onChange={(user) =>
                 setValues((current) => ({
                   ...current,

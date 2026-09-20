@@ -1,6 +1,5 @@
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
-import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
 import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { QueryFilterDisclosure } from "@/components/query/QueryFilterDisclosure";
 import { QueryFilterForm } from "@/components/query/QueryFilterForm";
@@ -33,7 +32,7 @@ export function AdminReviewFilters({
   const clearFiltersHref = buildOwnedQueryHref({
     basePath: BASE_PATH,
     appliedQuery: query,
-    ownedKeys: ["rating", "boardGameId"],
+    ownedKeys: ["rating", "boardGameId", "sort"],
     changes: {},
   });
   const activeFilterCount = [query.rating, query.boardGameId].filter(Boolean).length;
@@ -58,7 +57,7 @@ export function AdminReviewFilters({
           搜尋
         </Button>
       </form>
-      <div className="grid grid-cols-2 gap-2 lg:flex lg:justify-end">
+      <div className="min-w-0 lg:flex lg:justify-end">
         <QueryFilterDisclosure
           label={activeFilterCount ? `篩選 (${activeFilterCount})` : "篩選"}
           panelClassName="lg:min-w-80"
@@ -67,11 +66,11 @@ export function AdminReviewFilters({
             method="GET"
             action={BASE_PATH}
             appliedQuery={query}
-            ownedKeys={["rating", "boardGameId"]}
+            ownedKeys={["rating", "boardGameId", "sort"]}
             clearHref={clearFiltersHref}
             className="grid gap-3"
           >
-            <PreservedQueryFields query={query} ownedKeys={["rating", "boardGameId"]} />
+            <PreservedQueryFields query={query} ownedKeys={["rating", "boardGameId", "sort"]} />
             <Field label="評價" htmlFor="admin-review-rating">
               <Select
                 id="admin-review-rating"
@@ -91,21 +90,16 @@ export function AdminReviewFilters({
                 selected={selectedBoardGame}
               />
             </Field>
+            <Field label="排序" htmlFor="admin-review-sort" className="lg:hidden">
+              <Select id="admin-review-sort" name="sort" defaultValue={query.sort} className="w-full">
+                <option value="newest">最新優先</option>
+                <option value="oldest">最舊優先</option>
+                <option value="highest">評價高到低</option>
+                <option value="lowest">評價低到高</option>
+              </Select>
+            </Field>
           </QueryFilterForm>
         </QueryFilterDisclosure>
-        <ImmediateQuerySelect
-          appliedQuery={query}
-          basePath={BASE_PATH}
-          queryKey="sort"
-          value={query.sort}
-          aria-label="評價與評論排序"
-          className="w-full lg:hidden"
-        >
-          <option value="newest">最新優先</option>
-          <option value="oldest">最舊優先</option>
-          <option value="highest">評價高到低</option>
-          <option value="lowest">評價低到高</option>
-        </ImmediateQuerySelect>
       </div>
     </AdminToolbar>
   );

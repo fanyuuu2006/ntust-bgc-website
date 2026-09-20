@@ -3,6 +3,11 @@ import { createRequire } from "node:module";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import ts from "typescript";
+import { JSDOM } from "jsdom";
+import { act, createElement } from "react";
+import { createRoot } from "react-dom/client";
+
+import { load } from "./helpers/load-app-module.mjs";
 
 const root = new URL("../", import.meta.url);
 const nodeRequire = createRequire(import.meta.url);
@@ -113,118 +118,50 @@ test("admin picker search discovers users beyond a preloaded first page by every
   ]);
 });
 
-test("picker state keeps search and selected identity independent", async () => {
-  const stateModule = await loadCommonJsModule(
-    "src/components/(admin)/admin/users/adminUserPickerState.ts",
-  );
-  const user = {
-    id: "user-101",
-    username: "same-name",
-    email: "second@example.com",
-    realName: "王小明",
-    studentId: null,
+test("shared searchable entity picker owns the complete interaction lifecycle", async () => {
+  const dom = new JSDOM("<!doctype html><html><body><div id='app'></div></body></html>", { pretendToBeVisual: true });
+  const previous = { window: globalThis.window, document: globalThis.document, IS_REACT_ACT_ENVIRONMENT: globalThis.IS_REACT_ACT_ENVIRONMENT };
+  globalThis.window = dom.window;
+  globalThis.document = dom.window.document;
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  const { SearchableEntityPicker } = load("src/components/(admin)/admin/SearchableEntityPicker.tsx", {
+    "next/navigation": { useRouter: () => ({ replace() {} }) },
+  });
+  const items = [{ id: "first", label: "第一位" }, { id: "second", label: "第二位" }];
+  let calls = 0;
+  const changes = [];
+  const root = createRoot(dom.window.document.getElementById("app"));
+  const inputValueSetter = Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, "value").set;
+  const props = {
+    name: "entity_id", required: true, onChange: (value) => changes.push(value?.id ?? null),
+    search: async (query) => { calls += 1; if (query === "error") throw new Error("failed"); return query === "empty" ? [] : [items[Math.min(calls - 1, 1)]]; },
+    getKey: (item) => item.id, renderResult: (item) => createElement("span", null, item.label), renderSelected: (item) => createElement("span", null, item.label),
+    searchLabel: "搜尋項目", searchPlaceholder: "搜尋項目", resultsLabel: "項目搜尋結果", emptyMessage: "沒有項目", errorMessage: "搜尋失敗", clearSelectionLabel: (item) => `清除：${item.label}`,
   };
-  let state = stateModule.createAdminUserPickerState();
-  state = stateModule.adminUserPickerReducer(state, {
-    type: "user_selected",
-    user,
-  });
-  state = stateModule.adminUserPickerReducer(state, {
-    type: "search_changed",
-    value: "different query",
-  });
-  assert.equal(state.selectedUserId, "user-101");
-  assert.equal(state.selectedUser.email, "second@example.com");
-  state = stateModule.adminUserPickerReducer(state, {
-    type: "search_changed",
-    value: "",
-  });
-  assert.equal(state.selectedUserId, "user-101");
-  state = stateModule.adminUserPickerReducer(state, {
-    type: "selection_cleared",
-  });
-  assert.equal(state.selectedUser, null);
-  assert.equal(state.selectedUserId, null);
-});
-
-test("editing search text clears stale candidates without clearing the selected user", async () => {
-  const stateModule = await loadCommonJsModule(
-    "src/components/(admin)/admin/users/adminUserPickerState.ts",
-  );
-  const selectedUser = {
-    id: "selected-user",
-    username: "selected",
-    email: "selected@example.com",
-    realName: "已選使用者",
-    studentId: null,
-  };
-  const staleCandidate = {
-    id: "stale-user",
-    username: "stale",
-    email: "stale@example.com",
-    realName: "舊搜尋結果",
-    studentId: null,
-  };
-  let state = stateModule.createAdminUserPickerState();
-  state = stateModule.adminUserPickerReducer(state, {
-    type: "user_selected",
-    user: selectedUser,
-  });
-  state = stateModule.adminUserPickerReducer(state, {
-    type: "change_requested",
-  });
-  state = stateModule.adminUserPickerReducer(state, {
-    type: "search_succeeded",
-    candidates: [staleCandidate],
-  });
-  state = stateModule.adminUserPickerReducer(state, {
-    type: "search_changed",
-    value: "new search",
-  });
-
-  assert.deepEqual(state.candidates, []);
-  assert.equal(state.selectedUserId, "selected-user");
-});
-
-test("candidate lifecycle opens on search and closes on selection or dismissal", async () => {
-  const stateModule = await loadCommonJsModule(
-    "src/components/(admin)/admin/users/adminUserPickerState.ts",
-  );
-  const candidate = {
-    id: "candidate-user",
-    username: "candidate",
-    email: "candidate@example.com",
-    realName: "候選使用者",
-    studentId: "B11309044",
-  };
-  let state = stateModule.createAdminUserPickerState();
-  state = stateModule.adminUserPickerReducer(state, {
-    type: "search_succeeded",
-    candidates: [candidate],
-  });
-  assert.equal(state.candidates.length, 1);
-
-  state = stateModule.adminUserPickerReducer(state, {
-    type: "candidates_dismissed",
-  });
-  assert.deepEqual(state.candidates, []);
-  assert.equal(state.selectedUser, null);
-
-  state = stateModule.adminUserPickerReducer(state, {
-    type: "search_succeeded",
-    candidates: [candidate],
-  });
-  state = stateModule.adminUserPickerReducer(state, {
-    type: "user_selected",
-    user: candidate,
-  });
-  assert.deepEqual(state.candidates, []);
-  assert.equal(state.selectedUserId, "candidate-user");
+  const fill = async (value) => { const input = dom.window.document.querySelector('input[type="search"]'); await act(async () => { inputValueSetter.call(input, value); input.dispatchEvent(new dom.window.InputEvent("input", { bubbles: true, data: value })); }); };
+  const click = async (name) => { const button = [...dom.window.document.querySelectorAll("button")].find((candidate) => candidate.textContent.trim() === name || candidate.getAttribute("aria-label") === name); assert.ok(button, `missing ${name}`); await act(async () => { button.click(); await new Promise((resolve) => setTimeout(resolve, 0)); }); };
+  try {
+    await act(async () => root.render(createElement("form", null, createElement(SearchableEntityPicker, props), createElement("button", { type: "button", id: "outside" }, "外部"))));
+    assert.equal(dom.window.document.querySelector('[role="listbox"]'), null);
+    assert.equal(dom.window.document.querySelector('input[type="search"]').required, true);
+    assert.equal(dom.window.document.querySelector("form").checkValidity(), false);
+    await fill("first"); await click("清除搜尋"); assert.equal(dom.window.document.querySelector('input[type="search"]').value, "");
+    await fill("first"); await click("搜尋"); assert.ok(dom.window.document.querySelector('[role="listbox"]')); await click("第一位");
+    assert.equal(new dom.window.FormData(dom.window.document.querySelector("form")).get("entity_id"), "first");
+    assert.equal(dom.window.document.querySelector("form").checkValidity(), true);
+    await click("清除：第一位"); assert.equal(new dom.window.FormData(dom.window.document.querySelector("form")).get("entity_id"), null);
+    await fill("second"); await click("搜尋"); await click("第二位"); assert.deepEqual(changes, ["first", null, "second"]);
+    await click("清除：第二位"); await fill("empty"); await click("搜尋"); assert.match(dom.window.document.body.textContent, /沒有項目/);
+    await fill("error"); await click("搜尋"); assert.match(dom.window.document.body.textContent, /搜尋失敗/);
+    await fill("first"); await click("搜尋"); const picker = dom.window.document.querySelector('input[type="search"]').closest("div.relative"); await act(async () => picker.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }))); assert.equal(dom.window.document.querySelector('[role="listbox"]'), null);
+  } finally {
+    await act(async () => root.unmount()); Object.assign(globalThis, previous); dom.window.close();
+  }
 });
 
 test("candidate identity uses one primary line and one complete secondary identity", async () => {
   const stateModule = await loadCommonJsModule(
-    "src/components/(admin)/admin/users/adminUserPickerState.ts",
+    "src/components/(admin)/admin/users/adminUserPickerIdentity.ts",
   );
   const identity = stateModule.getAdminUserPickerIdentity({
     id: "duplicate-user",
@@ -260,7 +197,7 @@ test("membership and officer creation no longer depend on the first 100 users", 
 test("picker renders distinguishable compact identities and safe states", async () => {
   const [picker, pickerState] = await Promise.all([
     readSource("src/components/(admin)/admin/users/AdminUserPicker.tsx"),
-    readSource("src/components/(admin)/admin/users/adminUserPickerState.ts"),
+    readSource("src/components/(admin)/admin/users/adminUserPickerIdentity.ts"),
   ]);
   const identitySource = picker + pickerState;
 
@@ -270,21 +207,17 @@ test("picker renders distinguishable compact identities and safe states", async 
   assert.match(identitySource, /user\.email/);
   assert.match(picker, /找不到符合條件的使用者/);
   assert.match(picker, /搜尋使用者失敗/);
-  assert.match(picker, /type="hidden"/);
-  assert.match(picker, /type="button"/);
-  assert.doesNotMatch(picker, /<form|truncate|line-clamp/);
+  assert.match(picker, /SearchableEntityPicker/);
+  assert.doesNotMatch(picker, /<form|useReducer/);
 });
 
 test("candidate results use an anchored overlay with bounded internal scrolling", async () => {
-  const picker = await readSource(
-    "src/components/(admin)/admin/users/AdminUserPicker.tsx",
-  );
+  const picker = await readSource("src/components/(admin)/admin/SearchableEntityPicker.tsx");
 
-  assert.match(picker, /className="relative/);
+  assert.match(picker, /"relative min-w-0 max-w-full"/);
   assert.match(picker, /absolute/);
   assert.match(picker, /top-full/);
-  assert.match(picker, /left-0/);
-  assert.match(picker, /right-0/);
+  assert.match(picker, /inset-x-0/);
   assert.match(picker, /max-h-/);
   assert.match(picker, /overflow-y-auto/);
   assert.match(picker, /onKeyDown/);
@@ -296,14 +229,16 @@ test("candidate results use an anchored overlay with bounded internal scrolling"
 });
 
 test("attendance reuses the picker and Enter cannot submit the outer form", async () => {
-  const [attendance, picker] = await Promise.all([
+  const [attendance, picker, foundation] = await Promise.all([
     readSource("src/components/(admin)/admin/events/AttendanceActions.tsx"),
     readSource("src/components/(admin)/admin/users/AdminUserPicker.tsx"),
+    readSource("src/components/(admin)/admin/SearchableEntityPicker.tsx"),
   ]);
 
   assert.match(attendance, /AdminUserPicker/);
   assert.doesNotMatch(attendance, /attendances\/users|setCandidates|setSearch/);
-  assert.match(picker, /onKeyDown/);
-  assert.match(picker, /event\.preventDefault\(\)/);
-  assert.match(picker, /event\.key === "Enter"/);
+  assert.match(picker, /SearchableEntityPicker/);
+  assert.match(foundation, /onKeyDown/);
+  assert.match(foundation, /event\.preventDefault\(\)/);
+  assert.match(foundation, /event\.key === "Enter"/);
 });

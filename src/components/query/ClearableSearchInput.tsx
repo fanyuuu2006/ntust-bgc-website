@@ -19,6 +19,7 @@ type ClearableSearchInputProps = {
   className?: string;
   inputClassName?: string;
   disabled?: boolean;
+  required?: boolean;
   onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
   "aria-label"?: string;
 };
@@ -42,6 +43,7 @@ function ClearableSearchInputControl({
   className,
   inputClassName,
   disabled,
+  required,
   onKeyDown,
   "aria-label": ariaLabel,
 }: ClearableSearchInputProps) {
@@ -70,6 +72,7 @@ function ClearableSearchInputControl({
         onInput={(event) => updateValue(event.currentTarget.value)}
         onKeyDown={onKeyDown}
         disabled={disabled}
+        required={required}
         placeholder={placeholder}
         aria-label={ariaLabel}
         className={cn("pl-9", hasValue && "pr-10", inputClassName)}

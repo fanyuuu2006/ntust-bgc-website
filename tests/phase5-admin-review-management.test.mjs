@@ -167,11 +167,12 @@ test("Admin Review delete reuses aggregate-safe deletion and cache invalidation"
 });
 
 test("Admin Review route, responsive records and navigation preserve moderation boundaries", async () => {
-  const [page, records, filters, picker, sortable, route, navigation] = await Promise.all([
+  const [page, records, filters, picker, foundation, sortable, route, navigation] = await Promise.all([
     readSource("src/app/(admin)/admin/reviews/page.tsx"),
     readSource("src/components/(admin)/admin/reviews/AdminReviewRecords.tsx"),
     readSource("src/components/(admin)/admin/reviews/AdminReviewFilters.tsx"),
     readSource("src/components/(admin)/admin/reviews/AdminBoardGameFilter.tsx"),
+    readSource("src/components/(admin)/admin/SearchableEntityPicker.tsx"),
     readSource("src/components/(admin)/admin/SortableTableHeader.tsx"),
     readSource("src/app/api/admin/reviews/[id]/route.ts"),
     readSource("src/libs/navigation.tsx"),
@@ -198,12 +199,15 @@ test("Admin Review route, responsive records and navigation preserve moderation 
   assert.match(filters, /QueryFilterForm/);
   assert.match(filters, /PreservedQueryFields/);
   assert.match(filters, /lg:hidden/);
+  assert.doesNotMatch(filters, /grid-cols-2|ImmediateQuerySelect/);
+  assert.match(filters, /<Field label="排序"[^>]*className="lg:hidden"/);
   assert.match(picker, /搜尋桌遊名稱或社產編號/);
   assert.doesNotMatch(filters, /館藏/);
-  assert.match(picker, /onBlur/);
-  assert.match(picker, /event\.key === "Escape"/);
-  assert.match(picker, /ClearableSearchInput/);
-  assert.match(picker, /type="hidden" name=\{state\.selected \? name : undefined\}/);
+  assert.match(picker, /SearchableEntityPicker/);
+  assert.match(foundation, /onBlur/);
+  assert.match(foundation, /event\.key === "Escape"/);
+  assert.match(foundation, /ClearableSearchInput/);
+  assert.match(foundation, /type="hidden" name=\{selected \? name : undefined\}/);
   assert.match(sortable, /sortValues/);
   assert.match(records, /variant="danger"/);
   assert.match(records, /完整評論內容/);
@@ -211,36 +215,6 @@ test("Admin Review route, responsive records and navigation preserve moderation 
   assert.match(route, /authorizeAdminRequest/);
   assert.match(route, /deleteForAdmin/);
   assert.match(navigation, /評價與評論管理/);
-});
-
-test("Board Game Review picker closes stale results on selection, clear, Escape and new input", () => {
-  const {
-    adminBoardGamePickerReducer,
-    createAdminBoardGamePickerState,
-  } = load("src/components/(admin)/admin/reviews/adminBoardGamePickerState.ts");
-  const game = { id: "11111111-1111-4111-8111-111111111111", name: "測試桌遊", inventoryNumber: 900001 };
-
-  let state = createAdminBoardGamePickerState(null);
-  assert.equal(state.open, false);
-  state = adminBoardGamePickerReducer(state, { type: "search_changed", value: "策略" });
-  state = adminBoardGamePickerReducer(state, { type: "search_started" });
-  state = adminBoardGamePickerReducer(state, { type: "search_succeeded", candidates: [game] });
-  assert.equal(state.open, true);
-  assert.deepEqual(state.candidates, [game]);
-
-  state = adminBoardGamePickerReducer(state, { type: "selected", value: game });
-  assert.equal(state.open, false);
-  assert.equal(state.searchText, "");
-  assert.equal(state.selected.id, game.id);
-
-  state = adminBoardGamePickerReducer(state, { type: "cleared" });
-  assert.deepEqual(state, createAdminBoardGamePickerState(null));
-
-  state = adminBoardGamePickerReducer(state, { type: "search_changed", value: "社產" });
-  state = adminBoardGamePickerReducer(state, { type: "search_succeeded", candidates: [game] });
-  state = adminBoardGamePickerReducer(state, { type: "dismissed" });
-  assert.equal(state.open, false);
-  assert.deepEqual(state.candidates, []);
 });
 
 test("rendered Board Game picker selects, clears, searches again and serializes only a selected filter", async () => {
