@@ -35,7 +35,7 @@ test("terms separate third-party rights and reasonable conduct",()=>{
 for(const name of ["privacy","terms"])test(name+" readable semantic document, working anchors and metadata",()=>{
  const d=page(name);
  assert.equal(d.querySelectorAll("h1").length,1);
- assert.ok(d.querySelector('time[dateTime="2026-09-14"]'));
+ assert.ok(d.querySelector(`time[dateTime="${name === "privacy" ? "2026-09-21" : "2026-09-14"}"]`));
  assert.ok(d.querySelector("article"));
  for(const a of d.querySelectorAll('a[href^="#"]'))assert.ok(d.getElementById(a.hash.slice(1)));
  assert.ok(d.querySelector('nav[aria-label="本頁內容"]'));

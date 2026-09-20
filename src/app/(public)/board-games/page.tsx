@@ -17,14 +17,13 @@ import {
   type PublicBoardGamesSearchParams,
 } from "./query";
 import { buildBoardGameDiscoveryPath } from "./discovery-return";
+import { createPublicMetadata } from "@/libs/seo";
 
-const BOARD_GAMES_METADATA = {
+const BOARD_GAMES_METADATA = createPublicMetadata({
   title: "桌遊",
   description: "探索臺科大桌遊社的桌遊，查看分類、位置與借用資訊。",
-  alternates: {
-    canonical: "/board-games",
-  },
-} satisfies Metadata;
+  canonical: "/board-games",
+});
 
 type BoardGamesPageProps = {
   searchParams: Promise<PublicBoardGamesSearchParams>;

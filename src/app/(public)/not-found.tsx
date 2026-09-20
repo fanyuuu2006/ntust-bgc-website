@@ -1,5 +1,11 @@
 import { PageHeader } from "@/components/PageHeader";
 import { ButtonLink } from "@/components/ui/Button";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "找不到頁面",
+  robots: { index: false, follow: false },
+};
 
 export default function PublicNotFound() {
   return (

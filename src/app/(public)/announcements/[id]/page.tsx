@@ -11,6 +11,9 @@ import {
 } from "@/libs/metadata-content";
 import { formatDate } from "@/utils/date";
 import { getPublishedAnnouncement } from "./announcement-detail";
+import { createPublicMetadata } from "@/libs/seo";
+import { StructuredData } from "@/components/StructuredData";
+import { siteConfigs } from "@/libs/siteConfigs";
 
 type AnnouncementDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -26,14 +29,20 @@ async function generateMetadataContent({
   const canonical = `/announcements/${announcement.id}`;
 
   return {
-    title,
-    description,
-    alternates: { canonical },
+    ...createPublicMetadata({
+      title,
+      description,
+      canonical,
+      type: "article",
+    }),
     openGraph: {
       type: "article",
+      locale: "zh_TW",
+      siteName: siteConfigs.name,
       title,
       description,
       url: canonical,
+      images: [{ url: "/images/home/hero.jpg", alt: siteConfigs.fullName }],
       publishedTime: announcement.published_at ?? announcement.created_at,
       modifiedTime: announcement.updated_at,
     },
@@ -50,6 +59,24 @@ async function AnnouncementDetailPage({
 
   return (
     <section className="py-8">
+      <StructuredData
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: announcement.title,
+          description: createMetadataDescription(
+            plainTextFromStoredContent(announcement),
+          ),
+          datePublished: announcement.published_at ?? announcement.created_at,
+          dateModified: announcement.updated_at,
+          url: new URL(`/announcements/${announcement.id}`, siteConfigs.url).toString(),
+          publisher: {
+            "@type": "Organization",
+            name: siteConfigs.fullName,
+            url: siteConfigs.url,
+          },
+        }}
+      />
       <div className="container">
         <div className="mx-auto max-w-3xl">
           <ButtonLink

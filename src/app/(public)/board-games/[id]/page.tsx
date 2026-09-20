@@ -25,6 +25,9 @@ import { redirect } from "next/navigation";
 import { getBoardGameDetail } from "./board-game-detail";
 import { normalizeBoardGameReviewQuery, type BoardGameReviewSearchParams } from "./review-query";
 import { normalizeBoardGameReturnTo } from "@/libs/board-game-return";
+import { createPublicMetadata } from "@/libs/seo";
+import { StructuredData } from "@/components/StructuredData";
+import { siteConfigs } from "@/libs/siteConfigs";
 
 type BoardGameDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -48,19 +51,15 @@ async function generateMetadataContent({
   const image = getSafeMetadataImageUrl(boardGame.image);
 
   return {
-    title,
-    description,
-    alternates: { canonical },
+    ...createPublicMetadata({
+      title,
+      description,
+      canonical,
+      image: image ? { url: image, alt: normalizedName } : undefined,
+    }),
     ...(reviewQuery.page > 1 || reviewQuery.sort !== "newest" || reviewQuery.search || reviewQuery.rating
       ? { robots: { index: false, follow: true } }
       : {}),
-    openGraph: {
-      type: "website",
-      title,
-      description,
-      url: canonical,
-      ...(image ? { images: [{ url: image, alt: normalizedName }] } : {}),
-    },
   };
 }
 
@@ -108,6 +107,20 @@ async function BoardGameDetailPage({
 
   return (
     <section className="py-8">
+      <StructuredData
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Game",
+          name: boardGame.name,
+          description: createMetadataDescription(
+            boardGame.description?.trim() || `查看「${boardGame.name}」的桌遊資訊。`,
+          ),
+          url: new URL(`/board-games/${boardGame.id}`, siteConfigs.url).toString(),
+          ...(getSafeMetadataImageUrl(boardGame.image)
+            ? { image: new URL(getSafeMetadataImageUrl(boardGame.image)!, siteConfigs.url).toString() }
+            : {}),
+        }}
+      />
       <div className="container">
         <div className="mx-auto max-w-6xl">
           <ButtonLink

@@ -15,14 +15,13 @@ import { announcementsService } from "@/services/announcements/announcements.ser
 import { buildQueryString } from "@/utils/url";
 import { parsePage } from "@/utils/pagination";
 import type { Metadata } from "next";
+import { createPublicMetadata } from "@/libs/seo";
 
-const ANNOUNCEMENTS_METADATA = {
+const ANNOUNCEMENTS_METADATA = createPublicMetadata({
   title: "社團公告",
   description: "查看臺科大桌遊社最新社團公告與活動消息。",
-  alternates: {
-    canonical: "/announcements",
-  },
-} satisfies Metadata;
+  canonical: "/announcements",
+});
 
 type AnnouncementsSearchParams = {
   [key: string]: string | string[] | undefined;
