@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
+import { createPublicMetadata } from "@/libs/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPublicMetadata({
   title: "使用條款",
   description:
     "國立臺灣科技大學桌上遊戲研究社官方網站使用條款，說明網站使用規範、帳號管理及使用者權利與義務。",
-  alternates: {
-    canonical: "/terms",
-  },
-};
+  canonical: "/terms",
+});
 
 export default function TermsLayout({
   children,

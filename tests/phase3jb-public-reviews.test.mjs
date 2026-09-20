@@ -137,7 +137,7 @@ test("public detail keeps canonical metadata and noindexes review variants", asy
   assert.match(page, /reviewsService\.getAggregate\(boardGame\.id\)/);
   assert.match(page, /reviewsService\.listPublic\(boardGame\.id, reviewQuery\)/);
   assert.match(page, /Promise\.all/);
-  assert.match(page, /alternates: \{ canonical \}/);
+  assert.match(page, /createPublicMetadata\(\{[\s\S]*?canonical/);
   assert.match(page, /reviewQuery\.page > 1 \|\| reviewQuery\.sort !== "newest"/);
   assert.doesNotMatch(page, /hasReviewQueryVariant/);
   assert.match(page, /robots: \{ index: false, follow: true \}/);

@@ -53,7 +53,7 @@ test("announcement detail metadata shares one cached published-only resolver", a
   assert.match(page, /export const generateMetadata = withServerErrorReference\(generateMetadataContent/);
   assert.equal((page.match(/await getPublishedAnnouncement\(id\)/g) ?? []).length, 2);
   assert.match(page, /const canonical = `\/announcements\/\$\{announcement\.id\}`/);
-  assert.match(page, /alternates:\s*\{ canonical \}/);
+  assert.match(page, /createPublicMetadata\(\{[\s\S]*?canonical/);
   assert.match(page, /type:\s*"article"/);
   assert.doesNotMatch(page, /announcementsService\./);
 
@@ -74,7 +74,7 @@ test("board-game detail metadata shares identity only and safely omits invalid i
   assert.match(page, /export const generateMetadata = withServerErrorReference\(generateMetadataContent/);
   assert.equal((page.match(/await getBoardGameDetail\(id\)/g) ?? []).length, 2);
   assert.match(page, /const canonical = `\/board-games\/\$\{boardGame\.id\}`/);
-  assert.match(page, /alternates:\s*\{ canonical \}/);
+  assert.match(page, /createPublicMetadata\(\{[\s\S]*?canonical/);
   assert.match(page, /getSafeMetadataImageUrl\(boardGame\.image\)/);
   assert.match(page, /const normalizedName = createMetadataDescription\(boardGame\.name\)/);
   assert.match(page, /查看「\$\{normalizedName\}」的分類、位置與借用資訊。/);

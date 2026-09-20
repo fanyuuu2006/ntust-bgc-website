@@ -27,7 +27,7 @@ test("public static routes own concise titles, descriptions, and relative canoni
     const metadata = metadataSource(source);
     assert.match(
       metadata,
-      /export const metadata:\s*Metadata|satisfies Metadata/,
+      /export const metadata:\s*Metadata|satisfies Metadata|createPublicMetadata\(/,
     );
     if (title) assert.match(metadata, new RegExp(`title:\\s*"${title}"`));
     if (description) {
@@ -35,7 +35,7 @@ test("public static routes own concise titles, descriptions, and relative canoni
     }
     assert.match(
       metadata,
-      new RegExp(`alternates:\\s*\\{[\\s\\S]*?canonical:\\s*"${canonical.replaceAll("/", "\\/")}"`),
+      new RegExp(`canonical:\\s*"${canonical.replaceAll("/", "\\/")}"`),
     );
     assert.doesNotMatch(metadata, /https:\/\//);
   }
@@ -101,5 +101,6 @@ test("canonical ownership remains public-page only", async () => {
   for (const source of [rootMetadata, authLayout, authenticatedLayout, adminLayout]) {
     assert.doesNotMatch(source, /alternates\s*:|canonical\s*:/);
   }
-  assert.doesNotMatch(rootMetadata, /openGraph\s*:|twitter\s*:/);
+  assert.match(rootMetadata, /openGraph\s*:/);
+  assert.match(rootMetadata, /twitter\s*:/);
 });

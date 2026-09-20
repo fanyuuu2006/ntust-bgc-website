@@ -244,6 +244,7 @@ test("board-game detail keeps core content but skips personalization when viewer
       },
       "@/components/BoardGameImage": { BoardGameImage: "BoardGameImage" },
       "@/components/RichTextRenderer": { RichTextRenderer: "RichTextRenderer" },
+      "@/components/StructuredData": { StructuredData: "StructuredData" },
       "@/libs/rich-content/description": { storedDescription: (value) => ({ content: value.description }) },
       "@/components/ui/Button": { ButtonLink: "ButtonLink" },
       "@/libs/public-viewer": {
@@ -253,7 +254,16 @@ test("board-game detail keeps core content but skips personalization when viewer
           isAdmin: false,
         }),
       },
-      "@/libs/metadata-content": {},
+      "@/libs/metadata-content": {
+        createMetadataDescription: (value) => value,
+        getSafeMetadataImageUrl: () => null,
+      },
+      "@/libs/seo": {
+        createPublicMetadata: (value) => value,
+      },
+      "@/libs/siteConfigs": {
+        siteConfigs: { name: "site", url: "https://example.test" },
+      },
       "@/libs/board-game-return": { normalizeBoardGameReturnTo: () => "/board-games" },
       "@/services/board-games/board-games.service": {
         boardGamesService: {

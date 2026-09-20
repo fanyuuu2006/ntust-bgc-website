@@ -34,11 +34,14 @@ test("root metadata derives the canonical identity from the shared site configur
   );
 });
 
-test("root metadata establishes a base URL without inheriting unfinished SEO policies", async () => {
+test("root metadata establishes site-wide social, verification, and deployment indexing defaults", async () => {
   const metadata = await readSource("src/libs/metadata.tsx");
 
   assert.doesNotMatch(metadata, /alternates\s*:|canonical\s*:/);
-  assert.doesNotMatch(metadata, /openGraph\s*:|twitter\s*:|robots\s*:/);
+  assert.match(metadata, /openGraph\s*:/);
+  assert.match(metadata, /twitter\s*:/);
+  assert.match(metadata, /verification:\s*\{[\s\S]*?google:\s*GOOGLE_SITE_VERIFICATION/);
+  assert.match(metadata, /robots:\s*isProductionDeployment\(\)/);
 });
 
 test("route groups own their distinct crawler indexing boundaries", async () => {
