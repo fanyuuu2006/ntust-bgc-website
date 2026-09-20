@@ -40,9 +40,23 @@ test("PaginatedCollection composes orientation, records and controls without own
   assert.equal(controls.type, Controls);
   assert.equal(controls.props.basePath, "/things");
   assert.deepEqual(controls.props.query, query);
+
+  const customSummary = { type: "review-summary" };
+  const customized = PaginatedCollection({
+    page: 1,
+    pageSize: 10,
+    total: 1,
+    totalPages: 1,
+    basePath: "/reviews",
+    query: {},
+    summary: customSummary,
+    children: "review records",
+  });
+  assert.equal(customized.props.children[0], customSummary);
+  assert.equal(customized.props.children[1], "review records");
 });
 
-test("collection pages converge while nested review collections keep their specialized summaries", async () => {
+test("collection pages converge while Review collections supply their specialized summaries", async () => {
   const migrated = [
     "src/app/(public)/announcements/page.tsx",
     "src/app/(public)/board-games/page.tsx",
@@ -74,8 +88,25 @@ test("collection pages converge while nested review collections keep their speci
   ]) {
     const content = await source(path);
     assert.match(content, /ReviewResultSummary/);
-    assert.match(content, /<Pagination\b/);
+    assert.match(content, /<PaginatedCollection\b/);
+    assert.match(content, /summary=\{<ReviewResultSummary/);
+    assert.match(content, /pageKey="reviewPage"/);
+    assert.doesNotMatch(content, /<Pagination\b/);
   }
+});
+
+test("own and public Profile Reviews share the same paginated collection", async () => {
+  const [own, publicPage, collection] = await Promise.all([
+    source("src/components/(authenticated)/profile/MyProfileReviews.tsx"),
+    source("src/app/(public)/profile/[id]/page.tsx"),
+    source("src/components/(public)/profile/ProfileReviewCollection.tsx"),
+  ]);
+  assert.match(own, /ProfileReviewCollection/);
+  assert.match(own, /basePath=\{BASE_PATH\}/);
+  assert.match(publicPage, /ProfileReviewCollection/);
+  assert.match(publicPage, /basePath=\{`\/profile\/\$\{identity\.id\}`\}/);
+  assert.match(collection, /query=\{appliedQuery\}/);
+  assert.match(collection, /pageKey="reviewPage"/);
 });
 
 test("Admin Board Game names link to public details without replacing edit or delete", async () => {
