@@ -252,7 +252,7 @@ test("event attendance filters preserve the parent list return context", () => {
   assert.match(page, /new URLSearchParams\(\{ returnTo \}\)/);
   assert.match(page, /PreservedQueryFields query=\{\{ returnTo,/);
   assert.match(page, /ImmediateQuerySelect appliedQuery=\{\{ returnTo,/);
-  assert.match(page, /Pagination[^\n]+query=\{\{ returnTo,/);
+  assert.match(page, /PaginatedCollection[^\n]+query=\{\{ returnTo,/);
   for (const path of ["board-games/BoardGameTable", "events/EventRecords"]) {
     assert.match(read(`src/components/(admin)/admin/${path}.tsx`), /buildAdminReturnHref/);
   }

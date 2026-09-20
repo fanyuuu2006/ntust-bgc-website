@@ -3,6 +3,7 @@
 import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { BASE_PATH } from "@/app/(admin)/admin/board-games/constants";
 import type { BoardGamesQuery } from "@/app/(admin)/admin/board-games/types";
 import { BoardGameStatusBadge } from "@/components/(admin)/admin/board-games/BoardGameStatusBadge";
@@ -150,7 +151,12 @@ export function BoardGameTable({
                       boardGame={game}
                       className="size-10 shrink-0 rounded-md border border-(--border) object-cover"
                     />
-                    <span className="min-w-0 wrap-anywhere font-medium">{game.name}</span>
+                    <Link
+                      href={`/board-games/${game.id}`}
+                      className="min-w-0 wrap-anywhere font-medium text-(--interactive-primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+                    >
+                      {game.name}
+                    </Link>
                   </div>
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
@@ -190,7 +196,14 @@ export function BoardGameTable({
                   className="size-12 shrink-0 rounded-md border border-(--border) object-cover"
                 />
                 <div className="min-w-0 flex-1">
-                  <h2 className="wrap-anywhere font-semibold">{game.name}</h2>
+                  <h2 className="wrap-anywhere font-semibold">
+                    <Link
+                      href={`/board-games/${game.id}`}
+                      className="text-(--interactive-primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+                    >
+                      {game.name}
+                    </Link>
+                  </h2>
                   <p className="mt-1 text-sm text-(--muted)">
                     社產編號 #{game.inventory_number}
                   </p>

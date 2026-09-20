@@ -9,7 +9,7 @@ import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { AnnouncementStatusBadge } from "@/components/(admin)/admin/announcements/AnnouncementStatusBadge";
-import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -139,6 +139,7 @@ async function AdminAnnouncementsPage({
             </ImmediateQuerySelect>
         </AdminToolbar>
 
+        <PaginatedCollection page={page} pageSize={pageSize} total={result.total} totalPages={result.totalPages} basePath="/admin/announcements" pageSizeOptions={[10, 20, 50, 100]} query={query} paginationClassName="p-4">
         {result.data.length === 0 && Boolean(params.search || params.status || page > 1) ? (
           <QueryEmptyState
             title="找不到符合條件的公告"
@@ -250,16 +251,7 @@ async function AdminAnnouncementsPage({
           </>
         )}
 
-        <Pagination
-          className="p-4"
-          page={page}
-          pageSize={pageSize}
-          total={result.total}
-          totalPages={result.totalPages}
-          basePath="/admin/announcements"
-          pageSizeOptions={[10, 20, 50, 100]}
-          query={query}
-        />
+        </PaginatedCollection>
       </section>
     </>
   );

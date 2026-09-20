@@ -1,7 +1,6 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { boardGamesService } from "@/services/board-games/board-games.service";
-import { Pagination } from "@/components/Pagination/Pagination";
-import { PaginationSummary } from "@/components/Pagination/PaginationSummary";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { BoardGameSearchForm } from "@/components/(public)/board-games/BoardGameSearchForm";
 import { BoardGameGrid } from "@/components/(public)/board-games/BoardGameGrid";
 import { PageHeader } from "@/components/PageHeader";
@@ -113,9 +112,18 @@ async function BoardGamesPage({
           />
         </div>
 
-        <PaginationSummary className="mt-4" page={page} pageSize={pageSize} total={boardGames.total} totalPages={boardGames.totalPages} unit="款桌遊" />
-
-        <div className="mt-4 sm:mt-6">
+        <PaginatedCollection
+          className="mt-4 sm:space-y-6"
+          page={page}
+          pageSize={pageSize}
+          total={boardGames.total}
+          totalPages={boardGames.totalPages}
+          basePath={BASE_PATH}
+          pageSizeOptions={PAGE_SIZE_OPTIONS}
+          query={{ search, status: query.status, category: query.category, location: query.location, sort: query.sort }}
+          itemLabel="款桌遊"
+        >
+        <div>
           <BoardGameGrid
             boardGames={boardGames.data}
             hasActiveQuery={hasActiveQuery}
@@ -123,22 +131,7 @@ async function BoardGamesPage({
           />
         </div>
 
-        <Pagination
-          page={page}
-          pageSize={pageSize}
-          total={boardGames.total}
-          totalPages={boardGames.totalPages}
-          basePath={BASE_PATH}
-          pageSizeOptions={PAGE_SIZE_OPTIONS}
-          query={{
-            search,
-            status: query.status,
-            category: query.category,
-            location: query.location,
-            sort: query.sort,
-          }}
-          className="mt-6"
-        />
+        </PaginatedCollection>
       </div>
     </section>
   );

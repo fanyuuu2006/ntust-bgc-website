@@ -7,8 +7,7 @@ import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
 import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { EventActions } from "@/components/(admin)/admin/events/EventActions";
 import { EventRecords } from "@/components/(admin)/admin/events/EventRecords";
-import { Pagination } from "@/components/Pagination/Pagination";
-import { PaginationSummary } from "@/components/Pagination/PaginationSummary";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Button } from "@/components/ui/Button";
 import { eventsService } from "@/services/events/events.service";
 import {
@@ -96,21 +95,13 @@ async function AdminEventsPage({
               <option value="created_at">建立時間</option>
             </ImmediateQuerySelect>
         </AdminToolbar>
-        <PaginationSummary page={page} pageSize={pageSize} total={result.total} totalPages={result.totalPages} />
+        <PaginatedCollection page={page} pageSize={pageSize} total={result.total} totalPages={result.totalPages} basePath="/admin/events" pageSizeOptions={[10, 20, 50, 100]} query={{ search: params.search, status, orderBy, orderDirection }}>
         <EventRecords
           events={result.data}
           returnTo={buildAdminListHref("/admin/events", { search: params.search, status, orderBy, orderDirection, page, pageSize })}
           hasQuery={Boolean(params.search || status || Number(params.page) > 1)}
         />
-        <Pagination
-          page={page}
-          pageSize={pageSize}
-          total={result.total}
-          totalPages={result.totalPages}
-          basePath="/admin/events"
-          pageSizeOptions={[10, 20, 50, 100]}
-          query={{ search: params.search, status, orderBy, orderDirection }}
-        />
+        </PaginatedCollection>
       </section>
     </>
   );

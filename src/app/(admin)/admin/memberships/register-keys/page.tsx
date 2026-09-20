@@ -3,7 +3,7 @@ import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { RegisterKeyFilterBar } from "@/components/(admin)/admin/memberships/RegisterKeyFilterBar";
 import { RegisterKeyGenerateForm } from "@/components/(admin)/admin/memberships/RegisterKeyGenerateForm";
 import { RegisterKeyTable } from "@/components/(admin)/admin/memberships/RegisterKeyTable";
-import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { ButtonLink } from "@/components/ui/Button";
 import { listMembershipRegisterKeysQuerySchema } from "@/services/memberships/memberships.schema";
 import { membershipService } from "@/services/memberships/memberships.service";
@@ -41,22 +41,14 @@ async function MembershipRegisterKeysPage({ searchParams }: Props) {
           defaultAcademicYearId={academicYears.find((year) => year.is_current)?.id}
         />
         <RegisterKeyFilterBar academicYears={academicYears} query={query} />
+        <PaginatedCollection page={page} pageSize={pageSize} total={registerKeys.total} totalPages={registerKeys.totalPages} basePath="/admin/memberships/register-keys" pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
         <RegisterKeyTable
           registerKeys={registerKeys.data}
           hasFilters={Boolean(
             query.search || query.academic_year_id || query.status || page > 1,
           )}
         />
-        <Pagination
-          className="p-4"
-          page={page}
-          pageSize={pageSize}
-          total={registerKeys.total}
-          totalPages={registerKeys.totalPages}
-          basePath="/admin/memberships/register-keys"
-          pageSizeOptions={[10, 20, 50, 100]}
-          query={{ ...query, page }}
-        />
+        </PaginatedCollection>
       </section>
     </>
   );

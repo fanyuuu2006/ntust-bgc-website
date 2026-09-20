@@ -1,6 +1,6 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { BorrowingRecord } from "@/components/(authenticated)/borrowings/BorrowingRecord";
-import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { ButtonLink } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -47,7 +47,7 @@ async function BorrowingsResultsContent({
   const returnTo = `${BASE_PATH}${returnQuery ? `?${returnQuery}` : ""}`;
 
   return (
-    <>
+    <PaginatedCollection page={query.page} pageSize={query.pageSize} total={borrowings.total} totalPages={borrowings.totalPages} basePath={BASE_PATH} pageSizeOptions={pageSizeOptions} query={{ status: query.status, search: query.search, sort: query.sort }} showPageSize={false}>
       {borrowings.data.length === 0 &&
       (query.search || query.status || query.page > 1) ? (
         <QueryEmptyState
@@ -75,21 +75,7 @@ async function BorrowingsResultsContent({
         </ul>
       )}
 
-      <Pagination
-        page={query.page}
-        pageSize={query.pageSize}
-        total={borrowings.total}
-        totalPages={borrowings.totalPages}
-        basePath={BASE_PATH}
-        pageSizeOptions={pageSizeOptions}
-        query={{
-          status: query.status,
-          search: query.search,
-          sort: query.sort,
-        }}
-        showPageSize={false}
-      />
-    </>
+    </PaginatedCollection>
   );
 }
 

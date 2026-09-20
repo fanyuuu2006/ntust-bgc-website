@@ -31,7 +31,7 @@ test("announcements group a bounded native search utility ahead of editorial res
 
   assert.match(page, /<form\s+[\s\S]*?method="GET"[\s\S]*?action="\/announcements"/);
   assert.match(page, /<ClearableSearchInput/);
-  assert.match(page, /<Pagination/);
+  assert.match(page, /<PaginatedCollection/);
   assert.match(page, /max-w-3xl/);
   assert.doesNotMatch(page, /<section className="py-8">/);
   assert.doesNotMatch(page, /max-w-5xl space-y-6/);
@@ -46,7 +46,7 @@ test("board-game controls and result utility form one flat region", async () => 
   assert.match(form, /<form[\s\S]*?method="GET"[\s\S]*?action=\{BASE_PATH\}/);
   assert.match(form, /PreservedQueryFields/);
   assert.match(form, /pageSize/);
-  assert.match(page, /<PaginationSummary/);
+  assert.match(page, /<PaginatedCollection/);
   assert.match(form, /<div className="space-y-2"/);
   assert.doesNotMatch(
     form,
@@ -65,7 +65,7 @@ test("board-game results remain SSR and preserve the accepted catalog grid", asy
   assert.match(page, /boardGamesService\.listBoardGameDiscovery/);
   assert.match(page, /<BoardGameSearchForm/);
   assert.match(page, /<BoardGameGrid/);
-  assert.match(page, /<Pagination/);
+  assert.match(page, /<PaginatedCollection/);
   assert.match(grid, /grid-cols-2/);
   assert.match(grid, /sm:grid-cols-3/);
   assert.match(grid, /md:grid-cols-4/);

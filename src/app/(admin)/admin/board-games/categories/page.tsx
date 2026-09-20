@@ -4,7 +4,7 @@ import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { CategoryCreateAction } from "@/components/(admin)/admin/board-games/categories/CategoryCreateAction";
 import { CategoryRecords } from "@/components/(admin)/admin/board-games/categories/CategoryRecords";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
-import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Button } from "@/components/ui/Button";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import {
@@ -65,16 +65,9 @@ async function BoardGameCategoriesPage({
             <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
           </AdminToolbar>
         </form>
-        <CategoryRecords items={items} hasQuery={Boolean(params.search || page > 1)} />
-        <Pagination
-          page={page}
-          pageSize={pageSize}
-          total={categories.total}
-          totalPages={categories.totalPages}
-          basePath="/admin/board-games/categories"
-          pageSizeOptions={[10, 20, 50, 100]}
-          query={{ search: params.search }}
-        />
+        <PaginatedCollection page={page} pageSize={pageSize} total={categories.total} totalPages={categories.totalPages} basePath="/admin/board-games/categories" pageSizeOptions={[10, 20, 50, 100]} query={{ search: params.search }}>
+          <CategoryRecords items={items} hasQuery={Boolean(params.search || page > 1)} />
+        </PaginatedCollection>
       </section>
     </>
   );

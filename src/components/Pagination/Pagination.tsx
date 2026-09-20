@@ -5,7 +5,7 @@ import { DEFAULT_PAGE_SIZE_OPTIONS } from "@/utils/pagination";
 import type { QueryValue } from "@/utils/url";
 import { cn } from "@/utils/className";
 
-type PaginationProps = React.HTMLAttributes<HTMLElement> & {
+export type PaginationProps = React.HTMLAttributes<HTMLElement> & {
   page: number;
   pageSize: number;
   total: number;

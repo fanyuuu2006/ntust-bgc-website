@@ -11,7 +11,7 @@ import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { AttendanceActions } from "@/components/(admin)/admin/events/AttendanceActions";
 import { AttendanceRecords } from "@/components/(admin)/admin/events/AttendanceRecords";
 import { EventStatusBadge } from "@/components/(admin)/admin/events/EventStatusBadge";
-import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { eventsService } from "@/services/events/events.service";
 import {
@@ -88,6 +88,7 @@ async function AdminEventDetailPage({
               <option value="asc">最早簽到</option>
             </ImmediateQuerySelect>
         </AdminToolbar>
+        <PaginatedCollection page={page} pageSize={pageSize} total={records.total} totalPages={records.totalPages} basePath={`/admin/events/${event.id}`} pageSizeOptions={[10, 20, 50]} query={{ returnTo, search: query.search, orderDirection }}>
         <AttendanceRecords
           returnTo={returnTo}
           eventId={event.id}
@@ -95,7 +96,7 @@ async function AdminEventDetailPage({
           records={records.data}
           hasQuery={Boolean(query.search || page > 1)}
         />
-        <Pagination page={page} pageSize={pageSize} total={records.total} totalPages={records.totalPages} basePath={`/admin/events/${event.id}`} pageSizeOptions={[10, 20, 50]} query={{ returnTo, search: query.search, orderDirection }} />
+        </PaginatedCollection>
       </section>
     </>
   );

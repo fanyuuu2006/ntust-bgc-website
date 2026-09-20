@@ -20,7 +20,7 @@ test("public announcements compose a compact divider-based bulletin list while p
   assert.match(page, /<AnnouncementList[^>]*announcements=/);
   assert.match(page, /<QueryEmptyState/);
   assert.match(page, /<EmptyState/);
-  assert.match(page, /<Pagination/);
+  assert.match(page, /<PaginatedCollection/);
   assert.match(page, /method="GET"/);
   assert.match(page, /announcementsService\.listPublished/);
 

@@ -3,8 +3,7 @@ import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import { MembershipCreateButton } from "@/components/(admin)/admin/memberships/MembershipCreateButton";
 import { MembershipRecords } from "@/components/(admin)/admin/memberships/MembershipRecords";
 import { MemberFilterBar } from "@/components/(admin)/admin/memberships/MembershipFilterBar";
-import { Pagination } from "@/components/Pagination/Pagination";
-import { PaginationSummary } from "@/components/Pagination/PaginationSummary";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { ButtonLink } from "@/components/ui/Button";
 import { listAdminMembershipsQuerySchema } from "@/services/memberships/memberships.schema";
 import { membershipService } from "@/services/memberships/memberships.service";
@@ -41,22 +40,13 @@ async function MembershipsPage({ searchParams }: Props) {
           academicYears={years}
           query={query}
         />
-        <PaginationSummary page={page} pageSize={pageSize} total={memberships.total} totalPages={memberships.totalPages} />
+        <PaginatedCollection page={page} pageSize={pageSize} total={memberships.total} totalPages={memberships.totalPages} basePath="/admin/memberships" pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
         <MembershipRecords
           memberships={memberships.data}
           years={years}
           query={query}
         />
-        <Pagination
-          className="p-4"
-          page={page}
-          pageSize={pageSize}
-          total={memberships.total}
-          totalPages={memberships.totalPages}
-          basePath="/admin/memberships"
-          pageSizeOptions={[10, 20, 50, 100]}
-          query={{ ...query, page }}
-        />
+        </PaginatedCollection>
       </section>
     </>
   );

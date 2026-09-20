@@ -4,7 +4,7 @@ import { AcademicYearRecords } from "@/components/(admin)/admin/academic-years/A
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
-import { Pagination } from "@/components/Pagination/Pagination";
+import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Button } from "@/components/ui/Button";
 import { academicYearsService } from "@/services/academic-years/academic-years.service";
 import {
@@ -56,17 +56,9 @@ async function AcademicYearsPage({
             <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
           </AdminToolbar>
         </form>
-        <AcademicYearRecords years={years.data} hasQuery={Boolean(search || page > 1)} />
-        <Pagination
-          className="p-4"
-          page={page}
-          pageSize={pageSize}
-          total={years.total}
-          totalPages={years.totalPages}
-          basePath="/admin/academic-years"
-          pageSizeOptions={[10, 20, 50, 100]}
-          query={{ search }}
-        />
+        <PaginatedCollection page={page} pageSize={pageSize} total={years.total} totalPages={years.totalPages} basePath="/admin/academic-years" pageSizeOptions={[10, 20, 50, 100]} query={{ search }} paginationClassName="p-4">
+          <AcademicYearRecords years={years.data} hasQuery={Boolean(search || page > 1)} />
+        </PaginatedCollection>
       </section>
     </>
   );
