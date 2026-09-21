@@ -57,6 +57,7 @@ async function findMany<T extends BoardGame>(options: FindManyBoardGamesOptions,
   const { page, pageSize, from, to } = normalizePaginationOptions({
     page: options.page,
     pageSize: options.pageSize,
+    maxPageSize: options.maxPageSize,
   });
   const orderBy = options.orderBy ?? "inventory_number";
   const orderDirection = options.orderDirection ?? "desc";

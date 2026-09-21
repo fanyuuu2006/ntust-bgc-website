@@ -52,6 +52,7 @@ async function findMany<T>(options: FindManyBoardGameBorrowingsOptions, projecti
     const { page, pageSize, from, to } = normalizePaginationOptions({
       page: options.page,
       pageSize: options.pageSize,
+      maxPageSize: options.maxPageSize,
     });
     const orderBy = options.orderBy ?? "created_at";
     const orderDirection = options.orderDirection ?? "desc";

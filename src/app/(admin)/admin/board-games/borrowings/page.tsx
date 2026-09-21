@@ -4,6 +4,7 @@ import { AdminBorrowingList } from "@/components/(admin)/admin/borrowings/AdminB
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { listBorrowingsQuerySchema } from "@/services/board-games/board-games.schema";
 import { boardGamesService } from "@/services/board-games/board-games.service";
+import { AdminExportMenu } from "@/components/(admin)/admin/exports/AdminExportMenu";
 
 const BASE_PATH = "/admin/board-games/borrowings";
 
@@ -27,6 +28,7 @@ async function AdminBorrowingsPage({ searchParams }: Props) {
       <HeadingSection
         title="桌遊借用管理"
         description="管理社員借用申請，並確認借出與歸還。"
+        actions={<AdminExportMenu domain="borrowings" query={query} />}
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <PaginatedCollection page={page} pageSize={pageSize} total={borrowings.total} totalPages={borrowings.totalPages} basePath={BASE_PATH} pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">

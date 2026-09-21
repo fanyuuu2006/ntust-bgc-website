@@ -31,6 +31,7 @@ import { parsePage } from "@/utils/pagination";
 import { UserAvatar } from "@/components/UserAvatar";
 import { EmailVerificationBadge } from "@/components/(admin)/admin/users/EmailVerificationBadge";
 import { AdminUserIdentity } from "@/components/(admin)/admin/users/AdminUserIdentity";
+import { AdminExportMenu } from "@/components/(admin)/admin/exports/AdminExportMenu";
 import { normalizeAdminUserEmailVerification } from "./query";
 
 type Props = {
@@ -102,6 +103,7 @@ async function AdminUsersPage({ searchParams }: Props) {
       <HeadingSection
         title="使用者管理"
         description="管理網站帳號與個人基本資料。"
+        actions={<AdminExportMenu domain="users" query={query} />}
       />
 
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">

@@ -286,11 +286,15 @@ export const membershipService = {
     input: unknown,
   ): Promise<ReturnType<typeof buildPaginationResult<AdminMembership>>> => {
     const query = listAdminMembershipsQuerySchema.parse(input);
+    const maxPageSize = typeof input === "object" && input !== null && "maxPageSize" in input
+      ? Number(input.maxPageSize)
+      : undefined;
     const matchedUserIds = await findMatchedUserIds(query.search);
 
     const options: FindManyAdminMembershipsOptions = {
       page: query.page,
       pageSize: query.pageSize,
+      maxPageSize,
       academicYearId: query.academic_year_id,
       userIds: matchedUserIds,
       status: query.status,
