@@ -13,7 +13,7 @@ export function SelfCheckInEvents({ events }: { events: SelfCheckInEvent[] }) {
   const orderedEvents = [...events].sort((a, b) => Number(Boolean(a.attendance)) - Number(Boolean(b.attendance)));
 
   return (
-    <Card surface={hasAvailableCheckIn ? "default" : "subtle"} className="p-4">
+    <Card surface={hasAvailableCheckIn ? "default" : "subtle"} className="p-3 sm:p-4">
       <section aria-labelledby="self-check-in-title">
         <DashboardSectionHeader
           id="self-check-in-title"
@@ -21,19 +21,17 @@ export function SelfCheckInEvents({ events }: { events: SelfCheckInEvent[] }) {
           title="活動簽到"
         />
 
-        <ul className="mt-3 flex flex-col gap-2">
+        <ul className="mt-2.5 flex flex-col gap-1.5 sm:mt-3 sm:gap-2">
           {orderedEvents.map(({ event, attendance }) => (
-            <li key={event.id} className="rounded-xl bg-(--surface-subtle) px-3 py-2.5">
-              <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <p className="wrap-anywhere font-semibold leading-6 text-(--text-primary)">{event.name}</p>
-                  {!attendance ? <p className="mt-1 flex min-w-0 items-start gap-2 text-sm text-(--text-muted)">
-                    <Clock3 aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-                    <span className="min-w-0 wrap-anywhere">{formatDateTime(event.start_time)}–{formatDateTime(event.end_time)}</span>
-                  </p> : null}
-                </div>
-                {attendance ? <p className="text-sm font-medium text-(--status-success)">已簽到</p> : <CheckInButton eventId={event.id} />}
-              </div>
+            <li key={event.id} className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-x-2 rounded-xl bg-(--surface-subtle) px-2.5 py-2 sm:px-3 sm:py-2.5">
+              <p className="min-w-0 wrap-anywhere font-semibold leading-6 text-(--text-primary)">{event.name}</p>
+              {attendance ? <p className="shrink-0 text-sm font-medium text-(--status-success)">已簽到</p> : <CheckInButton eventId={event.id} />}
+              {!attendance ? (
+                <p className="col-span-2 mt-1 flex min-w-0 items-start gap-2 text-sm text-(--text-muted)">
+                  <Clock3 aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+                  <span className="min-w-0 break-words">{formatDateTime(event.start_time)}–{formatDateTime(event.end_time)}</span>
+                </p>
+              ) : null}
             </li>
           ))}
         </ul>

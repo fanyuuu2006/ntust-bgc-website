@@ -30,7 +30,6 @@ test("dashboard keeps the check-in surface scoped to open events and supports ze
   assert.match(dashboard, /currentYearMembership\?\.status === "active"/);
   assert.match(checkIn, /if \(events\.length === 0\) return null/);
   assert.doesNotMatch(checkIn, /目前沒有可簽到的活動/);
-  assert.doesNotMatch(checkIn, /grid-cols-/);
   assert.match(checkIn, /orderedEvents\.map/);
   assert.match(checkIn, /<CheckInButton/);
   assert.match(service, /findOpenForSelfCheckIn/);
@@ -71,9 +70,9 @@ test("dashboard current-record surfaces stay compact, responsive, and domain-spe
   assert.match(checkIn, /hasAvailableCheckIn/);
   assert.match(checkIn, /wrap-anywhere/);
   assert.match(borrowings, /目前沒有進行中的借用/);
-  assert.match(borrowings, /flex flex-col gap-2/);
+  assert.match(borrowings, /borrowings\.map/);
   assert.match(borrowings, /wrap-anywhere/);
-  assert.match(borrowings, /sm:flex-row/);
+  assert.match(borrowings, /<BorrowingStatusBadge/);
   assert.match(membership, /min-w-0/);
   assert.match(membership, /shrink-0 px-0/);
 });

@@ -28,6 +28,11 @@ test("no attendance renders no empty card; open and completed attendance remain 
   const open = renderToStaticMarkup(createElement(SelfCheckInEvents, { events: [{ event, attendance: null }] }));
   assert.match(open, /桌遊交流/);
   assert.match(open, /簽到 event-1/);
+  assert.ok(open.indexOf("桌遊交流") < open.indexOf("簽到 event-1"));
+  assert.ok(open.indexOf("簽到 event-1") < open.indexOf("2026/09/21"), "time follows the title/action row");
+  const longTitle = renderToStaticMarkup(createElement(SelfCheckInEvents, { events: [{ event: { ...event, name: "很長的活動名稱".repeat(10) }, attendance: null }] }));
+  assert.match(longTitle, /很長的活動名稱/);
+  assert.match(longTitle, /簽到 event-1/);
   const signed = renderToStaticMarkup(createElement(SelfCheckInEvents, { events: [{ event, attendance: { event_id: event.id } }] }));
   assert.match(signed, /已簽到/);
   assert.doesNotMatch(signed, /<button/);
@@ -53,7 +58,8 @@ test("membership and announcement empty states stay contextual without borrowing
   assert.match(missing, /href="\/memberships"/);
   assert.doesNotMatch(missing, /不能借|無法借/);
   const page = await readFile(new URL("../src/app/(authenticated)/dashboard/page.tsx", import.meta.url), "utf8");
-  assert.match(page, /目前沒有需要處理的事項/);
+  assert.match(page, /<PageHeader title=\{`歡迎回來，\$\{user\.name\}`\} \/>/);
+  assert.doesNotMatch(page, /有幾件事情值得你留意|目前沒有需要處理的事項/);
   assert.match(page, /目前還沒有已發布的公告/);
   assert.match(page, /href="\/announcements"/);
   assert.match(page, /announcements\.data\.map/);
