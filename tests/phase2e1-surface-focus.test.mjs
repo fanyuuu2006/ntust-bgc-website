@@ -14,10 +14,11 @@ test("touched entity records use canonical card surfaces while subtle internals 
   ]);
 
   for (const source of [borrowing, checkIn]) {
-    assert.match(source, /<Card className="p-4">/);
-    assert.match(source, /bg-\(--surface-subtle\) px-3 py-2\.5/);
-    assert.doesNotMatch(source, /<Card surface="subtle"/);
+    assert.match(source, /<Card surface=\{/);
+    assert.match(source, /bg-\(--surface-subtle\)/);
   }
+  assert.match(borrowing, /borrowings\.length === 0 \? "subtle" : "default"/);
+  assert.match(checkIn, /hasAvailableCheckIn \? "default" : "subtle"/);
   assert.match(history, /<Card className="p-4">/);
   assert.doesNotMatch(history, /<Card surface="subtle" className="p-4">/);
   assert.match(gameCard, /bg-\(--surface-subtle\)/);

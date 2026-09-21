@@ -15,6 +15,8 @@ import { eventsService } from "@/services/events/events.service";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { formatDate } from "@/utils/date";
 import { getCurrentAcademicYear } from "@/services/academic-years/current-academic-year";
+import { getDashboardBorrowingPriority } from "@/services/board-games/dashboard-borrowing-priority";
+import { cn } from "@/utils/className";
 
 async function DashboardPage() {
   const user = await getCurrentUser();
@@ -35,45 +37,47 @@ async function DashboardPage() {
     currentYearMembership?.status === "active"
       ? await eventsService.getSelfCheckInEventsForUser(user.id)
       : [];
+  const hasAttention = selfCheckInEvents.some(({ attendance }) => !attendance)
+    || openBorrowings.some((borrowing) => getDashboardBorrowingPriority(borrowing) <= 2);
 
   return (
     <section className="container py-8">
-      <div className="space-y-6">
+      <div className="space-y-5 lg:space-y-6">
         <PageHeader title={`歡迎回來，${user.name}`} />
 
-        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-          <div className="space-y-5">
+        <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-5">
+          <div className={cn("min-w-0 space-y-4 lg:order-none lg:space-y-5", hasAttention ? "order-1" : "order-2")}>
             <SelfCheckInEvents events={selfCheckInEvents} />
             <DashboardBorrowingSummary borrowings={openBorrowings} />
           </div>
 
-          <div className="space-y-5">
-            <DashboardMembershipSummary
-              membership={currentYearMembership}
-              academicYearLabel={currentAcademicYear?.year}
-            />
+          <div className="contents lg:block lg:min-w-0 lg:space-y-5">
+            <div className={cn("min-w-0 lg:order-none", hasAttention ? "order-2" : "order-1")}>
+              <DashboardMembershipSummary membership={currentYearMembership} academicYearLabel={currentAcademicYear?.year} />
+            </div>
 
-            <Card className="p-4">
-              <section aria-labelledby="dashboard-announcements-title">
-                <DashboardSectionHeader
-                  id="dashboard-announcements-title"
-                  icon={
-                    <Megaphone
-                      aria-hidden="true"
-                      className="size-5 text-(--status-warning)"
-                    />
-                  }
-                  title="最新公告"
-                  action={
-                    <Link
-                      href="/announcements"
-                      className="inline-flex items-center gap-1 text-sm font-medium text-(--action) hover:text-(--action-hover) hover:underline"
-                    >
-                      查看全部
-                      <ArrowRight aria-hidden="true" className="size-4" />
-                    </Link>
-                  }
-                />
+            <div className="order-3 min-w-0 lg:order-none">
+              <Card surface={announcements.data.length ? "default" : "subtle"} className="p-4">
+                <section aria-labelledby="dashboard-announcements-title">
+                  <DashboardSectionHeader
+                    id="dashboard-announcements-title"
+                    icon={
+                      <Megaphone
+                        aria-hidden="true"
+                        className="size-5 text-(--status-warning)"
+                      />
+                    }
+                    title="最新公告"
+                    action={
+                      <Link
+                        href="/announcements"
+                        className="inline-flex items-center gap-1 text-sm font-medium text-(--action) hover:text-(--action-hover) hover:underline"
+                      >
+                        查看全部
+                        <ArrowRight aria-hidden="true" className="size-4" />
+                      </Link>
+                    }
+                  />
 
                 {announcements.data.length ? (
                   <ul className="mt-3 divide-y divide-(--border-muted)">
@@ -101,8 +105,9 @@ async function DashboardPage() {
                     目前還沒有已發布的公告。
                   </p>
                 )}
-              </section>
-            </Card>
+                </section>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

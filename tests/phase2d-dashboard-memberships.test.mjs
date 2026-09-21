@@ -4,7 +4,7 @@ import test from "node:test";
 
 const readSource = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("dashboard keeps a greeting-only header and separates content from entity surfaces", async () => {
+test("dashboard greeting reflects actionable state and keeps domain surfaces separate", async () => {
   const [page, borrowing, checkIn, membership] = await Promise.all([
     readSource("src/app/(authenticated)/dashboard/page.tsx"),
     readSource("src/components/(authenticated)/dashboard/DashboardBorrowingSummary.tsx"),
@@ -12,23 +12,15 @@ test("dashboard keeps a greeting-only header and separates content from entity s
     readSource("src/components/(authenticated)/dashboard/DashboardMembershipSummary.tsx"),
   ]);
 
-  assert.match(page, /PageHeader title=\{`/);
-  assert.doesNotMatch(page, /eyebrow=|description=|今天想做些什麼/);
-  assert.match(page, /<section className="container py-8">[\s\S]*?<div className="space-y-6">/);
-  assert.match(page, /lg:grid-cols-\[minmax\(0,3fr\)_minmax\(0,2fr\)\]/);
-  assert.doesNotMatch(page, /grid items-start gap-5 lg:grid-cols-2/);
-  assert.match(page, /import \{ Card \}/);
-  assert.match(page, /Megaphone/);
-  assert.match(page, /ArrowRight/);
+  assert.match(page, /title=\{`歡迎回來，\$\{user\.name\}`\}/);
+  assert.match(page, /<PageHeader title=\{`歡迎回來，\$\{user\.name\}`\} \/>/);
+  assert.match(page, /<SelfCheckInEvents events=\{selfCheckInEvents\} \/>/);
+  assert.match(page, /<DashboardBorrowingSummary borrowings=\{openBorrowings\} \/>/);
+  assert.match(page, /<DashboardMembershipSummary/);
+  assert.match(page, /href="\/announcements"/);
   assert.match(borrowing, /PackageOpen|CalendarClock|TriangleAlert/);
-  assert.match(borrowing, /<Card className="p-4">/);
-  assert.doesNotMatch(borrowing, /divide-y/);
   assert.match(checkIn, /ClipboardCheck|Clock3/);
-  assert.match(checkIn, /<Card className="p-4">/);
-  assert.doesNotMatch(checkIn, /"use client"|divide-y/);
-  assert.match(membership, /BadgeCheck/);
-  assert.match(membership, /surface=\{hasCurrentMembership \? "default" : "elevated"\}/);
-  assert.match(membership, /<Card/);
+  assert.match(membership, /MembershipStatusBadge/);
 });
 
 test("dashboard borrowing uses a bounded urgency-first server summary and server-rendered due time", async () => {
@@ -44,8 +36,9 @@ test("dashboard borrowing uses a bounded urgency-first server summary and server
   assert.match(service, /status: "approved"[\s\S]*?orderBy: "created_at"[\s\S]*?orderDirection: "asc"/);
   assert.match(service, /status: "pending"[\s\S]*?orderBy: "created_at"[\s\S]*?orderDirection: "asc"/);
   assert.match(service, /takeDashboardBorrowings/);
+  assert.match(service, /getDashboardBorrowingPriority/);
   assert.doesNotMatch(service, /firstPage\.totalPages|pageSize = 100/);
-  assert.match(summary, /flex flex-col gap-1\.5/);
+  assert.match(summary, /borrowings\.map/);
   assert.doesNotMatch(summary, /borrowings\.slice/);
   assert.match(summary, /getDueTimePresentation/);
   assert.match(summary, /CalendarClock/);

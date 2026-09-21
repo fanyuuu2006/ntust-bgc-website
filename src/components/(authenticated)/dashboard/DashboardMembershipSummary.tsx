@@ -5,7 +5,6 @@ import { MembershipStatusBadge } from "@/components/MembershipStatusBadge";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import type { MembershipWithAcademicYear } from "@/services/memberships/memberships.types";
-import { formatDate } from "@/utils/date";
 import { MEMBERSHIP_TYPE_LABEL } from "@/utils/membership";
 
 export function DashboardMembershipSummary({
@@ -21,7 +20,7 @@ export function DashboardMembershipSummary({
 
   return (
     <Card
-      surface={hasCurrentMembership ? "default" : "elevated"}
+      surface={hasCurrentMembership ? "default" : "subtle"}
       className="p-4"
     >
       <section aria-labelledby="dashboard-membership-title">
@@ -37,8 +36,7 @@ export function DashboardMembershipSummary({
               <KeyRound aria-hidden="true" className="size-5" />
             )
           }
-          title="社員資格"
-          wrap-break-word
+          title="本學年度社員身分"
           action={
             hasCurrentMembership ? (
               <ButtonLink
@@ -46,8 +44,10 @@ export function DashboardMembershipSummary({
                 variant="text"
                 size="sm"
                 className="shrink-0 px-0"
+                aria-label="查看社員資格"
               >
-                查看
+                <span className="sm:hidden">查看</span>
+                <span className="hidden sm:inline">查看社員資格</span>
                 <ArrowRight aria-hidden="true" className="size-4" />
               </ButtonLink>
             ) : undefined
@@ -56,7 +56,7 @@ export function DashboardMembershipSummary({
 
         {membership ? (
           <div className="mt-3 min-w-0">
-            <p className="wrap-break-word text-xl font-semibold text-(--text-primary)">
+            <p className="wrap-break-word text-lg font-semibold text-(--text-primary)">
               {academicYear ?? "本"} 學年度
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
@@ -68,23 +68,18 @@ export function DashboardMembershipSummary({
               </span>
               <MembershipStatusBadge status={membership.status} />
             </div>
-            {membership.joined_at ? (
-              <p className="mt-2 text-sm text-(--text-muted)">
-                完成入社：{formatDate(membership.joined_at)}
-              </p>
-            ) : null}
           </div>
         ) : hasCurrentAcademicYear ? (
           <div className="mt-3 min-w-0">
             <p className="font-semibold text-(--text-primary)">
-              尚未完成 {academicYear} 學年度入社
+              尚未取得 {academicYear} 學年度社員資格
             </p>
             <p className="mt-2 text-sm leading-6 text-(--text-muted)">
-              完成入社後，可使用社員資格相關服務與紀錄。
+              若要加入本學年度社團，可前往社員資格頁查看入社方式。
             </p>
             <ButtonLink
               href="/memberships"
-              variant="primary"
+              variant="outline"
               size="sm"
               className="mt-3"
             >
