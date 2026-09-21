@@ -21,7 +21,7 @@ export function DashboardBorrowingSummary({
   borrowings: UserBorrowingListItem[];
 }) {
   return (
-    <Card surface={borrowings.length === 0 ? "subtle" : "default"} className="p-4">
+    <Card surface={borrowings.length === 0 ? "subtle" : "default"} className="p-3 sm:p-4">
       <section aria-labelledby="dashboard-borrowings-title">
         <DashboardSectionHeader
           id="dashboard-borrowings-title"
@@ -45,7 +45,7 @@ export function DashboardBorrowingSummary({
             目前沒有進行中的借用。
           </p>
         ) : (
-          <ul className="mt-3 flex flex-col gap-2">
+          <ul className="mt-2.5 flex flex-col gap-1.5 sm:mt-3 sm:gap-2">
             {borrowings.map((borrowing) => (
               <BorrowingRow key={borrowing.id} borrowing={borrowing} />
             ))}
@@ -80,8 +80,8 @@ function BorrowingRow({
       : "text-(--text-primary)";
 
   return (
-    <li className={`rounded-xl bg-(--surface-subtle) px-3 py-2.5 ${priority === 0 ? "border-l-2 border-l-(--status-danger)" : priority === 1 ? "border-l-2 border-l-(--status-info)" : ""}`}>
-      <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:justify-between">
+    <li className={`rounded-xl bg-(--surface-subtle) px-2.5 py-2 sm:px-3 sm:py-2.5 ${priority === 0 ? "border-l-2 border-l-(--status-danger)" : priority === 1 ? "border-l-2 border-l-(--status-info)" : ""}`}>
+      <div className="flex min-w-0 items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <Link
             href={buildBoardGameDetailHref(borrowing.board_game.id, "/dashboard")}
@@ -100,7 +100,7 @@ function BorrowingRow({
       </div>
 
       {dueTime ? (
-        <div className="mt-2 space-y-1">
+        <div className="mt-1.5 space-y-0.5 sm:mt-2 sm:space-y-1">
           <p
             className={`flex min-w-0 items-center gap-2 text-sm font-medium ${dueClassName}`}
           >
@@ -120,7 +120,7 @@ function BorrowingRow({
           </p>
         </div>
       ) : statusMessage ? (
-        <p className="mt-2 text-sm text-(--text-muted)">{statusMessage}</p>
+        <p className="mt-1.5 text-sm text-(--text-muted) sm:mt-2">{statusMessage}</p>
       ) : null}
     </li>
   );

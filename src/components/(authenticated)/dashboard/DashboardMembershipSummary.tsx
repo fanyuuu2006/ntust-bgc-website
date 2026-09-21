@@ -44,8 +44,10 @@ export function DashboardMembershipSummary({
                 variant="text"
                 size="sm"
                 className="shrink-0 px-0"
+                aria-label="查看社員資格"
               >
-                查看社員資格
+                <span className="sm:hidden">查看</span>
+                <span className="hidden sm:inline">查看社員資格</span>
                 <ArrowRight aria-hidden="true" className="size-4" />
               </ButtonLink>
             ) : undefined

@@ -42,14 +42,11 @@ async function DashboardPage() {
 
   return (
     <section className="container py-8">
-      <div className="space-y-6">
-        <PageHeader
-          title={`歡迎回來，${user.name}`}
-          description={hasAttention ? "有幾件事情值得你留意。" : "目前沒有需要處理的事項。"}
-        />
+      <div className="space-y-5 lg:space-y-6">
+        <PageHeader title={`歡迎回來，${user.name}`} />
 
-        <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
-          <div className={cn("min-w-0 space-y-5 lg:order-none", hasAttention ? "order-1" : "order-2")}>
+        <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-5">
+          <div className={cn("min-w-0 space-y-4 lg:order-none lg:space-y-5", hasAttention ? "order-1" : "order-2")}>
             <SelfCheckInEvents events={selfCheckInEvents} />
             <DashboardBorrowingSummary borrowings={openBorrowings} />
           </div>

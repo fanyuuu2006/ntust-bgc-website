@@ -13,7 +13,7 @@ test("dashboard greeting reflects actionable state and keeps domain surfaces sep
   ]);
 
   assert.match(page, /title=\{`歡迎回來，\$\{user\.name\}`\}/);
-  assert.match(page, /hasAttention \? "有幾件事情值得你留意。" : "目前沒有需要處理的事項。"/);
+  assert.match(page, /<PageHeader title=\{`歡迎回來，\$\{user\.name\}`\} \/>/);
   assert.match(page, /<SelfCheckInEvents events=\{selfCheckInEvents\} \/>/);
   assert.match(page, /<DashboardBorrowingSummary borrowings=\{openBorrowings\} \/>/);
   assert.match(page, /<DashboardMembershipSummary/);
@@ -38,7 +38,7 @@ test("dashboard borrowing uses a bounded urgency-first server summary and server
   assert.match(service, /takeDashboardBorrowings/);
   assert.match(service, /getDashboardBorrowingPriority/);
   assert.doesNotMatch(service, /firstPage\.totalPages|pageSize = 100/);
-  assert.match(summary, /flex flex-col gap-2/);
+  assert.match(summary, /borrowings\.map/);
   assert.doesNotMatch(summary, /borrowings\.slice/);
   assert.match(summary, /getDueTimePresentation/);
   assert.match(summary, /CalendarClock/);
