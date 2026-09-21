@@ -168,6 +168,16 @@ export type EmailVerificationToken = {
   created_at: Timestamp;
 };
 
+export type PasswordRecoveryToken = {
+  id: UUID;
+  user_id: UUID;
+  token_hash: string;
+  created_at: Timestamp;
+  expires_at: Timestamp;
+  delivered_at: Timestamp | null;
+  consumed_at: Timestamp | null;
+};
+
 export type MembershipRegisterKey = {
   id: UUID;
   academic_year_id: UUID;

@@ -59,6 +59,7 @@ type LoginFormProps = Omit<
 export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
   const searchParams = useSearchParams();
   const rawReturnTo = searchParams.get("returnTo");
+  const passwordWasReset = searchParams.get("passwordReset") === "success";
   const returnTo = getSafeLoginReturnPath(rawReturnTo);
   const registerHref = rawReturnTo === returnTo
     ? `/register?returnTo=${encodeURIComponent(returnTo)}`
@@ -123,9 +124,10 @@ export const LoginForm = ({ className, ...rest }: LoginFormProps) => {
         ))}
       </div>
 
-      <FormFeedback error={error} />
+      <FormFeedback error={error} success={passwordWasReset ? "密碼已重設，請使用新密碼登入。" : null} />
 
       <div className="flex flex-col gap-4">
+        <Link href="/forgot-password" className="self-end text-sm text-(--interactive-primary) hover:underline">忘記密碼？</Link>
         <Button
           type="submit"
           variant="primary"

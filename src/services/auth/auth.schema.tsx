@@ -12,6 +12,11 @@ const PASSWORD_RULES: { regex: RegExp; message: string }[] = [
   { regex: /[^A-Za-z0-9]/, message: "密碼至少需要包含一個特殊符號" },
 ];
 
+export const passwordSchema = z.string()
+  .min(PASSWORD_MIN_LENGTH, { error: `密碼至少需要 ${PASSWORD_MIN_LENGTH} 個字元` })
+  .max(PASSWORD_MAX_LENGTH, { error: `密碼不可超過 ${PASSWORD_MAX_LENGTH} 個字元` })
+  .superRefine(applyPasswordRules);
+
 function applyPasswordRules(password: string, ctx: z.RefinementCtx) {
   for (const { regex, message } of PASSWORD_RULES) {
     if (!regex.test(password)) {
@@ -30,15 +35,7 @@ export const registerSchema = z
       .min(1, { error: "帳號名稱不可為空" })
       .max(NAME_MAX_LENGTH, { error: `帳號名稱不可超過 ${NAME_MAX_LENGTH} 個字` }),
 
-    password: z
-      .string()
-      .min(PASSWORD_MIN_LENGTH, {
-        error: `密碼至少需要 ${PASSWORD_MIN_LENGTH} 個字元`,
-      })
-      .max(PASSWORD_MAX_LENGTH, {
-        error: `密碼不可超過 ${PASSWORD_MAX_LENGTH} 個字元`,
-      })
-      .superRefine(applyPasswordRules),
+    password: passwordSchema,
     confirmPassword: z.string().min(1, { error: "請再次輸入密碼" }),
     acceptTerms: z.literal(true, {
       error: "請先同意使用條款並確認已閱讀隱私權政策",
