@@ -35,6 +35,7 @@ test("no attendance renders no empty card; open and completed attendance remain 
   assert.match(longTitle, /簽到 event-1/);
   const signed = renderToStaticMarkup(createElement(SelfCheckInEvents, { events: [{ event, attendance: { event_id: event.id } }] }));
   assert.match(signed, /已簽到/);
+  assert.match(signed, /2026\/09\/21/);
   assert.doesNotMatch(signed, /<button/);
 });
 
