@@ -197,7 +197,7 @@ test("local HTTP recovery flow is scanner-safe, origin-bound, and token-free aft
   const origin = process.env.RECOVERY_HTTP_ORIGIN ?? "http://localhost:3000";
   const nonce = randomUUID();
   const oldPassword = `Aa1!${randomBytes(18).toString("base64url")}`;
-  const newPassword = `Bb2@${randomBytes(18).toString("base64url")}`;
+  const newPassword = "Test1234!";
   const oldHash = await argon2.hash(oldPassword);
   let userId;
   let closedUserId;

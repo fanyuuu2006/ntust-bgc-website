@@ -6,6 +6,25 @@ import { load } from "./helpers/load-app-module.mjs";
 const root = new URL("../", import.meta.url);
 const source = (path) => readFile(new URL(path, root), "utf8");
 
+test("canonical password policy accepts Test1234! and rejects each missing requirement", () => {
+  const { passwordConfirmationSchema } = load("src/services/auth/auth.schema.tsx");
+  assert.equal(passwordConfirmationSchema.safeParse({ newPassword: "Test1234!", confirmPassword: "Test1234!" }).success, true);
+
+  const cases = [
+    ["Tes1!", "newPassword"],
+    ["test1234!", "newPassword"],
+    ["TEST1234!", "newPassword"],
+    ["TestTest!", "newPassword"],
+    ["Test12345", "newPassword"],
+    ["Test1234!", "confirmPassword", "Different1!"],
+  ];
+  for (const [password, expectedField, confirmation = password] of cases) {
+    const result = passwordConfirmationSchema.safeParse({ newPassword: password, confirmPassword: confirmation });
+    assert.equal(result.success, false);
+    assert.ok(result.error.issues.some((issue) => issue.path[0] === expectedField));
+  }
+});
+
 test("recovery request has the same public result for eligible and ineligible identities", async () => {
   const user = { id: "user-1", email: "person@example.test", closed_at: null };
   const issued = [];
@@ -101,4 +120,14 @@ test("GET inspection is read-only and POST resets without creating a Session", a
   assert.match(openRoute, /httpOnly: true/);
   assert.doesNotMatch(openRoute, /\.reset\(|\.consume\(/);
   assert.doesNotMatch(route, /sessionRepository\.create|authService\.login/);
+});
+
+test("reset form captures canonical values before pending state and binds field errors", async () => {
+  const form = await source("src/components/(auth)/password-recovery/ResetPasswordForm.tsx");
+  assert.match(form, /passwordConfirmationSchema\.safeParse\(values\)/);
+  assert.match(form, /new URLSearchParams\(parsed\.data\)/);
+  assert.match(form, /error: errors\[field\.id\]/);
+  assert.match(form, /hintPlacement: "below"/);
+  assert.doesNotMatch(form, /field=\{\{ \.\.\.field, disabled: pending/);
+  assert.doesNotMatch(form, /onSubmit=\{\(\) => setPending\(true\)\}/);
 });

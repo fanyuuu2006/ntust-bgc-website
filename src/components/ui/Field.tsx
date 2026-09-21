@@ -4,6 +4,7 @@ type FieldProps = React.HTMLAttributes<HTMLDivElement> & {
   label: string;
   htmlFor: string;
   hint?: string;
+  hintPlacement?: "label" | "below";
   action?: React.ReactNode;
   error?: string;
   required?: boolean;
@@ -13,6 +14,7 @@ export function Field({
   label,
   htmlFor,
   hint,
+  hintPlacement = "label",
   action,
   error,
   required = false,
@@ -35,7 +37,7 @@ export function Field({
         >
           {label}
         </span>
-        {hint ? (
+        {hint && hintPlacement === "label" ? (
           <span
             id={hintId}
             className="min-w-0 flex-1 text-right text-xs font-normal text-(--text-muted) sm:text-left"
@@ -50,6 +52,11 @@ export function Field({
     <div className={cn("flex min-w-0 max-w-full flex-col gap-1.5 wrap-anywhere", className)} {...props}>
       {action ? <div className="flex min-w-0 items-center justify-between gap-2">{labelElement}{action}</div> : labelElement}
       {children}
+      {hint && hintPlacement === "below" ? (
+        <p id={hintId} className="text-xs text-(--text-muted)">
+          {hint}
+        </p>
+      ) : null}
       {error ? (
         <p id={errorId} role="alert" className="text-xs text-(--status-danger)">
           {error}
