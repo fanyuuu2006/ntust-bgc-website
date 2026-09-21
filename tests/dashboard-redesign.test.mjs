@@ -28,14 +28,14 @@ test("no attendance renders no empty card; open and completed attendance remain 
   const open = renderToStaticMarkup(createElement(SelfCheckInEvents, { events: [{ event, attendance: null }] }));
   assert.match(open, /桌遊交流/);
   assert.match(open, /簽到 event-1/);
-  assert.ok(open.indexOf("桌遊交流") < open.indexOf("簽到 event-1"));
-  assert.ok(open.indexOf("簽到 event-1") < open.indexOf("2026/09/21"), "time follows the title/action row");
+  assert.ok(open.indexOf("桌遊交流") < open.indexOf("09/21"), "title precedes the datetime/action row");
+  assert.ok(open.indexOf("09/21") < open.indexOf("簽到 event-1"), "datetime and action share the second row");
   const longTitle = renderToStaticMarkup(createElement(SelfCheckInEvents, { events: [{ event: { ...event, name: "很長的活動名稱".repeat(10) }, attendance: null }] }));
   assert.match(longTitle, /很長的活動名稱/);
   assert.match(longTitle, /簽到 event-1/);
   const signed = renderToStaticMarkup(createElement(SelfCheckInEvents, { events: [{ event, attendance: { event_id: event.id } }] }));
   assert.match(signed, /已簽到/);
-  assert.match(signed, /2026\/09\/21/);
+  assert.match(signed, /09\/21/);
   assert.doesNotMatch(signed, /<button/);
 });
 
