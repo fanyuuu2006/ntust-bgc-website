@@ -32,7 +32,9 @@ export function CheckInButton({ eventId }: { eventId: string }) {
         router.refresh();
         return;
       }
-      setError(caught instanceof Error ? caught.message : "簽到失敗，請稍後再試。");
+      setError(
+        caught instanceof Error ? caught.message : "簽到失敗，請稍後再試。",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -40,10 +42,15 @@ export function CheckInButton({ eventId }: { eventId: string }) {
 
   return (
     <div className="shrink-0">
-      <Button type="button" isLoading={isSubmitting} disabled={isSubmitting} onClick={checkIn}>
+      <Button
+        type="button"
+        isLoading={isSubmitting}
+        disabled={isSubmitting}
+        onClick={checkIn}
+      >
         簽到
       </Button>
-      <FormFeedback className="mt-2" error={error} />
+      {error && <FormFeedback className="mt-2" error={error} />}
     </div>
   );
 }
