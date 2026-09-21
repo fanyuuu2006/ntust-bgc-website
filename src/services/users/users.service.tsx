@@ -50,6 +50,7 @@ export const usersService = {
     options: {
       page?: number;
       pageSize?: number;
+      maxPageSize?: number;
       search?: string;
       emailVerification?: UserEmailVerificationFilter;
       orderBy?: "name" | "email" | "created_at" | "updated_at";

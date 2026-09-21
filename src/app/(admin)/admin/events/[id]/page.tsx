@@ -21,6 +21,7 @@ import {
 } from "@/libs/query-params";
 import { formatDateTime } from "@/utils/date";
 import { parsePage } from "@/utils/pagination";
+import { AdminExportMenu } from "@/components/(admin)/admin/exports/AdminExportMenu";
 
 async function AdminEventDetailPage({
   params,
@@ -66,7 +67,7 @@ async function AdminEventDetailPage({
       <HeadingSection
         title={event.name}
         description={`${formatDateTime(event.start_time)} 至 ${formatDateTime(event.end_time)}`}
-        actions={<AttendanceActions eventId={event.id} />}
+        actions={<><AdminExportMenu domain="event-attendance" query={{ eventId: event.id, search: query.search, orderDirection }} /><AttendanceActions eventId={event.id} /></>}
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-(--border-default) pb-4">

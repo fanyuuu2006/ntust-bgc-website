@@ -57,6 +57,7 @@ export const eventAttendancesRepository = {
     const { page, pageSize, from, to } = normalizePaginationOptions({
       page: options.page,
       pageSize: options.pageSize,
+      maxPageSize: options.maxPageSize,
     });
     const orderBy = options.orderBy ?? "attended_at";
     const orderDirection = options.orderDirection ?? "desc";

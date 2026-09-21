@@ -16,6 +16,7 @@ import {
   PAGE_SIZE_OPTIONS,
 } from "./constants";
 import { ButtonLink } from "@/components/ui/Button";
+import { AdminExportMenu } from "@/components/(admin)/admin/exports/AdminExportMenu";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Plus } from "lucide-react";
 
@@ -101,10 +102,13 @@ async function BoardGamesAdminPage({
         title="桌遊管理"
         description="管理社團桌遊、社產編號與基本資訊。"
         actions={
-          <ButtonLink href={buildAdminReturnHref("/admin/board-games/new", buildAdminListHref(BASE_PATH, query), BASE_PATH)}>
-            <Plus aria-hidden="true" className="size-4" />
-            新增桌遊
-          </ButtonLink>
+          <>
+            <AdminExportMenu domain="board-games" query={query} />
+            <ButtonLink href={buildAdminReturnHref("/admin/board-games/new", buildAdminListHref(BASE_PATH, query), BASE_PATH)}>
+              <Plus aria-hidden="true" className="size-4" />
+              新增桌遊
+            </ButtonLink>
+          </>
         }
       />
 

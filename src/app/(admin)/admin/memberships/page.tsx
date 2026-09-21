@@ -7,6 +7,7 @@ import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection
 import { ButtonLink } from "@/components/ui/Button";
 import { listAdminMembershipsQuerySchema } from "@/services/memberships/memberships.schema";
 import { membershipService } from "@/services/memberships/memberships.service";
+import { AdminExportMenu } from "@/components/(admin)/admin/exports/AdminExportMenu";
 
 type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -28,6 +29,7 @@ async function MembershipsPage({ searchParams }: Props) {
         description="管理使用者各學年度的社員資格。"
         actions={
           <>
+            <AdminExportMenu domain="memberships" query={query} />
             <ButtonLink href="/admin/memberships/register-keys" variant="outline">
               社員註冊序號管理
             </ButtonLink>
