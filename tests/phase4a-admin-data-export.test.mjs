@@ -112,6 +112,42 @@ test("row cap matches the reviewed PostgREST max_rows ceiling", async () => {
   assert.match(new exporter.ExportRowLimitExceededError(1001).message, /匯出上限/);
 });
 
+test("exact count distinguishes 1000 complete rows from an upstream-truncated result over the cap", async () => {
+  const makeRows = (count) => Array.from({ length: count }, (_, index) => ({
+    id: `user-${index}`,
+    name: `QA ${index}`,
+    email: `qa-${index}@example.test`,
+    email_verified_at: "2026-09-01T00:00:00.000Z",
+    closed_at: null,
+    created_at: "2026-09-01T00:00:00.000Z",
+    profile: null,
+  }));
+  const loadService = (total) => load("src/services/admin-exports/admin-exports.service.ts", {
+    "@/libs/export/export": {
+      ADMIN_EXPORT_ROW_LIMIT: 1000,
+      ExportRowLimitExceededError: class ExportRowLimitExceededError extends Error {
+        constructor(value) { super(`over:${value}`); }
+      },
+    },
+    "@/libs/export/types": {},
+    "@/services/users/users.service": {
+      usersService: { listForAdmin: async () => ({ data: makeRows(1000), total, page: 1, pageSize: 1000, totalPages: Math.ceil(total / 1000) }) },
+    },
+    "@/services/memberships/memberships.service": { membershipService: {} },
+    "@/services/officer-positions/officer-positions.service": { officerPositionsService: {} },
+    "@/services/board-games/board-games.service": { boardGamesService: {} },
+    "@/services/events/events.service": { eventsService: {} },
+  }).adminExportsService;
+
+  const exactlyAtCap = await loadService(1000).createDocument("users", {});
+  assert.equal(exactlyAtCap.rows.length, 1000);
+  await assert.rejects(
+    loadService(1001).createDocument("users", {}),
+    /over:1001/,
+    "the exact count must reject even when PostgREST returns only the first 1000 rows",
+  );
+});
+
 test("export UI carries applied query but never pagination", async () => {
   const source = await readSource("src/components/(admin)/admin/exports/AdminExportMenu.tsx");
   assert.match(source, /key === "page" \|\| key === "pageSize"/);
