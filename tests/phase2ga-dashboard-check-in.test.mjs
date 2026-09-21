@@ -28,10 +28,10 @@ test("dashboard keeps the check-in surface scoped to open events and supports ze
 
   assert.match(dashboard, /getSelfCheckInEventsForUser/);
   assert.match(dashboard, /currentYearMembership\?\.status === "active"/);
-  assert.match(checkIn, /目前沒有可簽到的活動/);
-  assert.match(checkIn, /flex flex-col gap-1\.5/);
+  assert.match(checkIn, /if \(events\.length === 0\) return null/);
+  assert.doesNotMatch(checkIn, /目前沒有可簽到的活動/);
   assert.doesNotMatch(checkIn, /grid-cols-/);
-  assert.match(checkIn, /events\.map/);
+  assert.match(checkIn, /orderedEvents\.map/);
   assert.match(checkIn, /<CheckInButton/);
   assert.match(service, /findOpenForSelfCheckIn/);
   assert.match(service, /findManyByUserIdAndEventIds/);
@@ -65,17 +65,15 @@ test("dashboard current-record surfaces stay compact, responsive, and domain-spe
     readSource("src/components/(authenticated)/dashboard/DashboardMembershipSummary.tsx"),
   ]);
 
-  assert.match(page, /<section className="container py-8">[\s\S]*?<div className="space-y-6">/);
   assert.match(page, /lg:grid-cols-\[minmax\(0,3fr\)_minmax\(0,2fr\)\]/);
-  assert.doesNotMatch(page, /grid items-start gap-5 lg:grid-cols-2/);
-  assert.doesNotMatch(page, /xl:grid-cols-|justify-self-end|xl:max-w-/);
-  assert.match(checkIn, /<Card className="p-4">/);
-  assert.match(checkIn, /break-words/);
+  assert.match(page, /hasAttention \? "order-1" : "order-2"/);
+  assert.match(page, /hasAttention \? "order-2" : "order-1"/);
+  assert.match(checkIn, /hasAvailableCheckIn/);
+  assert.match(checkIn, /wrap-anywhere/);
   assert.match(borrowings, /目前沒有進行中的借用/);
-  assert.match(borrowings, /flex flex-col gap-1\.5/);
-  assert.doesNotMatch(borrowings, /grid-cols-|min-\[420px\]:flex-row/);
+  assert.match(borrowings, /flex flex-col gap-2/);
   assert.match(borrowings, /wrap-anywhere/);
-  assert.doesNotMatch(borrowings, /EmptyState|truncate|borrowings\.slice/);
+  assert.match(borrowings, /sm:flex-row/);
   assert.match(membership, /min-w-0/);
   assert.match(membership, /shrink-0 px-0/);
 });
@@ -89,22 +87,12 @@ test("dashboard uses an asymmetric operational and context composition without d
     readSource("src/components/(authenticated)/dashboard/DashboardMembershipSummary.tsx"),
   ]);
 
-  assert.match(
-    page,
-    /grid items-start gap-5 lg:grid-cols-\[minmax\(0,3fr\)_minmax\(0,2fr\)\][\s\S]*?<SelfCheckInEvents[\s\S]*?<DashboardBorrowingSummary[\s\S]*?<DashboardMembershipSummary[\s\S]*?<Card className="p-4">/,
-  );
-  assert.match(
-    page,
-    /academicYearLabel=\{currentAcademicYear\?\.year\}[\s\S]*?<Card className="p-4">/,
-  );
-  assert.match(page, /<Card className="p-4">/);
+  assert.match(page, /<SelfCheckInEvents[\s\S]*?<DashboardBorrowingSummary[\s\S]*?<DashboardMembershipSummary[\s\S]*?dashboard-announcements-title/);
+  assert.match(page, /contents lg:block lg:min-w-0 lg:space-y-5/);
   assert.match(header, /DashboardSectionHeader/);
+  assert.match(header, /flex-wrap/);
   assert.match(checkIn, /<DashboardSectionHeader/);
-  assert.match(checkIn, /bg-\(--surface-subtle\) px-3 py-2\.5/);
-  assert.match(checkIn, /<ul className="mt-3 flex flex-col gap-1\.5">/);
   assert.match(borrowings, /<DashboardSectionHeader/);
-  assert.match(borrowings, /bg-\(--surface-subtle\) px-3 py-2\.5/);
-  assert.match(borrowings, /<ul className="mt-3 flex flex-col gap-1\.5">/);
   assert.match(membership, /<DashboardSectionHeader/);
 });
 

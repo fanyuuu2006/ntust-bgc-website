@@ -71,6 +71,7 @@ import { membershipService } from "@/services/memberships/memberships.service";
 import { usersRepository } from "@/repositories/users.repository";
 import { userProfilesRepository } from "@/repositories/user-profiles.repository";
 import type { BoardGameBorrowingForAdmin } from "./board-games.types";
+import { getDashboardBorrowingPriority } from "./dashboard-borrowing-priority";
 
 type PostgrestErrorLike = {
   code?: string;
@@ -554,8 +555,7 @@ export const boardGamesService = {
   getDashboardOpenBorrowingsByUserId: async (
     userId: string,
   ): Promise<UserBorrowingListItem[]> => {
-    // 各組的排序不同：借用中按期限，其餘按申請時間，最後依狀態優先順序取三筆。
-    // 任意 IN + LIMIT 無法保證相同結果；保留三個有上限的查詢，關聯載入桌遊。
+    // 各組保留原有的有界查詢與排序；從候選資料按待處理程度選三筆。
     const [borrowed, approved, pending] = await Promise.all([
       boardGameBorrowingsRepository.findManyByUserIdWithGame(userId, {
         status: "borrowed",
@@ -876,15 +876,9 @@ export const boardGamesService = {
 };
 
 
-function takeDashboardBorrowings<T>(groups: T[][], limit: number) {
-  const selected: T[] = [];
-
-  for (const group of groups) {
-    for (const borrowing of group) {
-      if (selected.length === limit) return selected;
-      selected.push(borrowing);
-    }
-  }
-
-  return selected;
+function takeDashboardBorrowings(groups: UserBorrowingListItem[][], limit: number) {
+  const now = new Date();
+  return groups.flat()
+    .sort((a, b) => getDashboardBorrowingPriority(a, now) - getDashboardBorrowingPriority(b, now))
+    .slice(0, limit);
 }

@@ -129,11 +129,17 @@ test('health uses one zero-row probe without auth; failures return only degraded
   }
 });
 
-test('dashboard keeps group priority, total limit and empty-state behavior without game enrichment', async () => {
+test('dashboard prioritizes overdue and approved over ordinary borrowed while retaining three bounded queries', async () => {
+  const later = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const overdue = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const groups = {
-    borrowed: [{ id: 1, board_game: { name: 'due soon' } }, { id: 2, board_game: { name: 'later' } }],
-    approved: [{ id: 3, board_game: { name: 'approved' } }, { id: 4, board_game: { name: 'later approval' } }],
-    pending: [{ id: 5, board_game: { name: 'pending' } }],
+    borrowed: [
+      { id: 1, status: 'borrowed', due_at: overdue, board_game: { name: 'overdue' } },
+      { id: 2, status: 'borrowed', due_at: later, board_game: { name: 'normal' } },
+      { id: 6, status: 'borrowed', due_at: later, board_game: { name: 'another normal' } },
+    ],
+    approved: [{ id: 3, status: 'approved', board_game: { name: 'approved' } }, { id: 4, status: 'approved', board_game: { name: 'later approval' } }],
+    pending: [{ id: 5, status: 'pending', board_game: { name: 'pending' } }],
   };
   const { boardGamesService } = load('src/services/board-games/board-games.service.ts', {
     '@/libs/supabase/server': { supabase: {} },
@@ -147,7 +153,7 @@ test('dashboard keeps group priority, total limit and empty-state behavior witho
       },
     } },
   });
-  assert.deepEqual((await boardGamesService.getDashboardOpenBorrowingsByUserId(userId)).map(r => r.id), [1, 2, 3]);
+  assert.deepEqual((await boardGamesService.getDashboardOpenBorrowingsByUserId(userId)).map(r => r.id), [1, 3, 4]);
   groups.borrowed = [];
   assert.deepEqual((await boardGamesService.getDashboardOpenBorrowingsByUserId(userId)).map(r => r.id), [3, 4, 5]);
   groups.approved = []; groups.pending = [];
