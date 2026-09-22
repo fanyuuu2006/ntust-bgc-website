@@ -43,11 +43,11 @@ test("identity route parameters are parsed once before numeric repository contra
   assert.match(attendanceRepository, /findById: async \(id: EventAttendanceId\)/);
 });
 
-test("canonical schema preserves historical baseline and rich content fields", async () => {
+test("canonical schema preserves the replayed baseline and current security domains", async () => {
   const schema = await readProjectFile("supabase/schema/canonical-public-schema.sql");
 
   assert.match(schema, /Migrations are the authoritative reconstruction\/deployment source/);
-  assert.match(schema, /202609170002 and verified semantically against Production/);
+  assert.match(schema, /202609210003 and verified semantically against Shared Development/);
   assert.match(schema, /content_format text not null default 'plain_text'/);
   assert.match(schema, /rich_content jsonb/);
   assert.match(schema, /check_in_opens_at timestamptz/);
