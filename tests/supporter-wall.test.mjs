@@ -52,10 +52,11 @@ test("display names allow Unicode and reject blank, long and control text", () =
   }
 });
 
-test("wall renders a restrained zero state and equal-weight literal supporter tiles", () => {
+test("wall renders the shared compact empty state and equal-weight acknowledgement tiles", () => {
   const { SupporterWall } = load("src/components/(public)/support/SupporterWall.tsx");
   const empty = renderToStaticMarkup(React.createElement(SupporterWall, { supporters: [] }));
-  assert.match(empty, /目前還沒有公開的支持者/);
+  assert.match(empty, /目前沒有公開的支持者名單/);
+  assert.doesNotMatch(empty, /0 位/);
   assert.doesNotMatch(empty, /<li/);
   const full = renderToStaticMarkup(React.createElement(SupporterWall, {
     supporters: [{ displayName: "中文 🧋" }, { displayName: "<script>alert(1)</script>" }, { displayName: "VeryLongName".repeat(7) }],
@@ -77,19 +78,22 @@ test("schema keeps private records inaccessible to browser roles and prevents du
   assert.doesNotMatch(sql, /email|user_id|amount|currency|card_number|raw_payload/i);
 });
 
-test("public route centers the support action and keeps detailed clarification secondary", async () => {
+test("public route follows the public-page hierarchy and keeps clarification secondary", async () => {
   const { metadata, default: SupportPage } = load("src/app/(public)/support/page.tsx", {
     "@/services/support/support.service": { supportService: { listPublicSupporters: async () => [] } },
   });
   assert.equal(metadata.alternates.canonical, "/support");
   assert.equal(metadata.title, "支持本站持續經營");
   const html = renderToStaticMarkup(await SupportPage());
+  assert.match(html, /網站從開發、維護到持續改善/);
+  assert.match(html, /如果本站曾經幫上忙/);
   assert.match(html, /請開發者喝杯飲料 🧋/);
   assert.match(html, /disabled/);
   assert.match(html, /支持方式準備中/);
-  assert.match(html, /由網站開發者個人收取，並非社費或社團收入/);
+  assert.match(html, /支持款項由網站開發者個人收取/);
+  assert.match(html, /並非臺科大或桌遊社的社費、捐款或社團收入/);
   assert.match(html, /關於支持本站/);
-  assert.match(html, /不影響網站功能、社員資格或任何社團權益/);
+  assert.match(html, /不影響網站功能、社員資格或其他社團權益/);
   assert.doesNotMatch(html, /一起讓網站慢慢變得更好|<svg/);
   assert.doesNotMatch(html, /href="https?:\/\//);
   assert.ok(source("src/components/Footer/Footer.tsx").includes('href: "/support"'));

@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/EmptyState";
 import type { PublicSupporter } from "@/services/support/support.types";
 
 export function SupporterWall({ supporters }: { supporters: PublicSupporter[] }) {
@@ -13,16 +14,17 @@ export function SupporterWall({ supporters }: { supporters: PublicSupporter[] })
       </div>
 
       {supporters.length === 0 ? (
-        <p className="mt-4 text-sm leading-6 text-(--text-muted)">
-          目前還沒有公開的支持者，仍然謝謝每一份心意。
-        </p>
+        <EmptyState
+          compact
+          className="mt-5 max-w-2xl text-left"
+          description="目前沒有公開的支持者名單，仍然謝謝每一份支持本站的心意。"
+        />
       ) : (
-        <ul className="mt-4 flex min-w-0 flex-wrap gap-2" aria-label="支持本站的朋友">
+        <ul className="mt-5 grid min-w-0 gap-2.5 sm:grid-cols-2 lg:grid-cols-3" aria-label="支持本站的朋友">
           {supporters.map((supporter, index) => (
             <li
               key={`${index}-${supporter.displayName}`}
-              className="max-w-full rounded-xl border border-(--border-default) bg-(--surface-default) px-3 py-1.5 text-sm leading-5 text-(--text-primary) wrap-anywhere"
-              style={{ maxInlineSize: "13rem" }}
+              className="flex min-h-12 min-w-0 items-center rounded-xl border border-(--border-default) bg-(--surface-default) px-4 py-3 text-sm leading-5 font-medium text-(--text-primary) shadow-(--shadow-base) wrap-anywhere"
             >
               {supporter.displayName}
             </li>
