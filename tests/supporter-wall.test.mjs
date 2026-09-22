@@ -52,17 +52,19 @@ test("display names allow Unicode and reject blank, long and control text", () =
   }
 });
 
-test("wall renders zero state and literal Unicode names without HTML interpretation", () => {
+test("wall renders a warm zero state and equal-weight literal supporter tiles", () => {
   const { SupporterWall } = load("src/components/(public)/support/SupporterWall.tsx");
   const empty = renderToStaticMarkup(React.createElement(SupporterWall, { supporters: [] }));
-  assert.match(empty, /謝謝每一位願意支持本站的人/);
+  assert.match(empty, /第一杯飲料還在等人請/);
   assert.doesNotMatch(empty, /<li/);
   const full = renderToStaticMarkup(React.createElement(SupporterWall, {
     supporters: [{ displayName: "中文 🧋" }, { displayName: "<script>alert(1)</script>" }, { displayName: "VeryLongName".repeat(7) }],
   }));
   assert.equal((full.match(/<li/g) ?? []).length, 3);
+  assert.match(full, /謝謝你們讓這個網站可以繼續慢慢變得更好/);
   assert.match(full, /&lt;script&gt;/);
   assert.doesNotMatch(full, /<script>/);
+  assert.match(full, /aria-label="支持本站的朋友"/);
 });
 
 test("schema keeps private records inaccessible to browser roles and prevents duplicate references", () => {
@@ -74,16 +76,20 @@ test("schema keeps private records inaccessible to browser roles and prevents du
   assert.doesNotMatch(sql, /email|user_id|amount|currency|card_number|raw_payload/i);
 });
 
-test("public route has fixed metadata, unavailable payment state and no transaction metadata", async () => {
+test("public route centers the support action and keeps detailed clarification secondary", async () => {
   const { metadata, default: SupportPage } = load("src/app/(public)/support/page.tsx", {
     "@/services/support/support.service": { supportService: { listPublicSupporters: async () => [] } },
   });
   assert.equal(metadata.alternates.canonical, "/support");
   assert.equal(metadata.title, "支持本站持續經營");
   const html = renderToStaticMarkup(await SupportPage());
+  assert.match(html, /請開發者喝杯飲料/);
+  assert.match(html, /disabled/);
   assert.match(html, /支持方式準備中/);
+  assert.match(html, /由網站開發者個人收取，並非社費或社團收入/);
+  assert.match(html, /關於支持本站/);
+  assert.match(html, /不影響網站功能、社員資格或任何社團權益/);
   assert.doesNotMatch(html, /href="https?:\/\//);
-  assert.match(html, /並非臺科大或桌遊社收取的社費/);
   assert.ok(source("src/components/Footer/Footer.tsx").includes('href: "/support"'));
   assert.ok(source("src/app/sitemap.ts").includes('"/support"'));
 });
