@@ -52,18 +52,19 @@ test("display names allow Unicode and reject blank, long and control text", () =
   }
 });
 
-test("wall renders a warm zero state and equal-weight literal supporter tiles", () => {
+test("wall renders a restrained zero state and equal-weight literal supporter tiles", () => {
   const { SupporterWall } = load("src/components/(public)/support/SupporterWall.tsx");
   const empty = renderToStaticMarkup(React.createElement(SupporterWall, { supporters: [] }));
-  assert.match(empty, /第一杯飲料還在等人請/);
+  assert.match(empty, /目前還沒有公開的支持者/);
   assert.doesNotMatch(empty, /<li/);
   const full = renderToStaticMarkup(React.createElement(SupporterWall, {
     supporters: [{ displayName: "中文 🧋" }, { displayName: "<script>alert(1)</script>" }, { displayName: "VeryLongName".repeat(7) }],
   }));
   assert.equal((full.match(/<li/g) ?? []).length, 3);
-  assert.match(full, /謝謝你們讓這個網站可以繼續慢慢變得更好/);
+  assert.match(full, /謝謝每一位願意支持本站的人/);
   assert.match(full, /&lt;script&gt;/);
   assert.doesNotMatch(full, /<script>/);
+  assert.doesNotMatch(full, /Supporter Wall|<svg/);
   assert.match(full, /aria-label="支持本站的朋友"/);
 });
 
@@ -83,12 +84,13 @@ test("public route centers the support action and keeps detailed clarification s
   assert.equal(metadata.alternates.canonical, "/support");
   assert.equal(metadata.title, "支持本站持續經營");
   const html = renderToStaticMarkup(await SupportPage());
-  assert.match(html, /請開發者喝杯飲料/);
+  assert.match(html, /請開發者喝杯飲料 🧋/);
   assert.match(html, /disabled/);
   assert.match(html, /支持方式準備中/);
   assert.match(html, /由網站開發者個人收取，並非社費或社團收入/);
   assert.match(html, /關於支持本站/);
   assert.match(html, /不影響網站功能、社員資格或任何社團權益/);
+  assert.doesNotMatch(html, /一起讓網站慢慢變得更好|<svg/);
   assert.doesNotMatch(html, /href="https?:\/\//);
   assert.ok(source("src/components/Footer/Footer.tsx").includes('href: "/support"'));
   assert.ok(source("src/app/sitemap.ts").includes('"/support"'));
