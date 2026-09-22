@@ -11,6 +11,7 @@ export type FieldInputField = {
   id: string;
   label: string;
   hint?: string;
+  hintPlacement?: "label" | "below";
   type: React.HTMLInputTypeAttribute;
   required?: boolean;
   placeholder?: string;
@@ -58,6 +59,7 @@ export const FieldInput = ({
       label={field.label}
       htmlFor={field.id}
       hint={field.hint}
+      hintPlacement={field.hintPlacement}
       error={field.error}
       required={field.required}
       className={className}
