@@ -8,6 +8,7 @@ type FooterProps = {
 };
 
 const legalNavigation = [
+  { label: "支持本站", href: "/support" },
   { label: "隱私權政策", href: "/privacy" },
   { label: "使用條款", href: "/terms" },
 ] as const;

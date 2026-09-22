@@ -129,6 +129,12 @@ export default function PrivacyPage() {
           <p><a href="mailto:ntustboardgame@gmail.com">ntustboardgame@gmail.com</a></p>
         </section>
       </div>
+      <section aria-labelledby="developer-support-privacy" className="mt-10 space-y-3">
+        <h2 id="developer-support-privacy">網站開發者個人支持</h2>
+        <p>「支持本站」的自願款項由網站開發者個人收取，並非臺科大桌遊社收入。確認第三方付款平台後，付款將由該平台處理；本站不處理或保存卡號、銀行帳號及付款方式明細。</p>
+        <p>為核對真實支持並避免重複公開，本站規劃僅保存付款平台、私人交易參照、付款與退款狀態及必要時間。付款不代表同意公開。只有另行明確同意、經確認且尚未撤回的公開暱稱才會出現在支持者名單；不公開金額、交易參照或付款者的私人身分。</p>
+        <p>支持者可要求撤回公開暱稱；撤回後本站將停止展示，但為核對交易而保留的最少私人紀錄不會因此自動刪除。實際收款平台、聯絡管道與資料保留安排確認後，會在啟用付款連結及名單管理前補充清楚。</p>
+      </section>
     </article>
   );
 }

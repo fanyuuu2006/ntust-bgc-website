@@ -100,6 +100,10 @@ export default function TermsPage() {
           <p><a href="mailto:ntustboardgame@gmail.com">ntustboardgame@gmail.com</a></p>
         </section>
       </div>
+      <section aria-labelledby="developer-support-terms" className="mt-10 space-y-3">
+        <h2 id="developer-support-terms">支持本站</h2>
+        <p>支持本站屬自願支持網站開發者個人持續開發與維護，不是社費、社團收入或購買網站功能。支持與否及金額不影響社員資格、幹部資格、借用、簽到或其他社團權益。付款及退款將依啟用後所選第三方平台的實際規則辦理；本站目前尚未提供付款連結。</p>
+      </section>
     </article>
   );
 }
