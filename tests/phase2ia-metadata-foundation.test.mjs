@@ -16,10 +16,8 @@ test("root metadata derives the canonical identity from the shared site configur
   assert.match(siteConfigs, /fullName:\s*"國立臺灣科技大學桌上遊戲研究社"/);
   assert.match(environment, /export function getSiteUrl/);
   assert.match(siteConfigs, /get url\(\)[\s\S]*return getSiteUrl\(\)/);
-  assert.match(
-    siteConfigs,
-    /description:\s*"臺科大桌遊社官方網站暨社團管理平台，整合社團公告、桌遊查詢與借用、社員資格、活動簽到及後台管理等功能。"/,
-  );
+  assert.match(siteConfigs, /description:\s*"臺科大桌遊社官方網站暨社團管理平台/);
+  assert.match(siteConfigs, /整合社團公告、桌遊查詢與借用、社員資格、活動簽到及後台管理等功能。/);
   assert.match(metadata, /metadataBase:\s*new URL\(siteConfigs\.url\)/);
   assert.match(
     metadata,

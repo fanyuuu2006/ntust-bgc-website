@@ -10,7 +10,8 @@ begin
     ('public.memberships'), ('public.membership_register_keys'),
     ('public.officer_positions'), ('public.board_games'),
     ('public.board_game_borrowings'), ('public.board_game_reviews'),
-    ('public.events'), ('public.event_attendances'), ('public.sessions')
+    ('public.events'), ('public.event_attendances'), ('public.sessions'),
+    ('public.password_recovery_tokens')
   ) required(name)
   where to_regclass(name) is null;
   if missing is not null then raise exception 'Missing required tables: %', missing; end if;
@@ -21,6 +22,17 @@ begin
       and c.relrowsecurity and not c.relforcerowsecurity
   ) then raise exception 'membership_register_keys RLS invariant missing'; end if;
 
+  if not exists (
+    select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
+    where n.nspname='public' and c.relname='password_recovery_tokens'
+      and c.relrowsecurity and not c.relforcerowsecurity
+  ) then raise exception 'password_recovery_tokens RLS invariant missing'; end if;
+
+  if exists (
+    select 1 from pg_policies
+    where schemaname='public' and tablename='password_recovery_tokens'
+  ) then raise exception 'password_recovery_tokens must not expose browser RLS policies'; end if;
+
   if exists (select 1 from pg_policies where schemaname='public' and tablename='membership_register_keys') then
     raise exception 'membership_register_keys must not expose browser RLS policies';
   end if;
@@ -28,6 +40,19 @@ begin
   if to_regprocedure('public.claim_membership_register_key(text,uuid)') is null
      or to_regprocedure('public.generate_membership_register_keys(uuid,integer,text,uuid)') is null then
     raise exception 'Required register-key RPC missing';
+  end if;
+
+  if to_regprocedure('public.issue_password_recovery_token(uuid,text,timestamp with time zone)') is null
+     or to_regprocedure('public.activate_password_recovery_token(text)') is null
+     or to_regprocedure('public.inspect_password_recovery_token(text)') is null
+     or to_regprocedure('public.consume_password_recovery_token(text,text)') is null then
+    raise exception 'Required password recovery RPC missing';
+  end if;
+
+  if not has_function_privilege('service_role', 'public.consume_password_recovery_token(text,text)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.consume_password_recovery_token(text,text)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.consume_password_recovery_token(text,text)', 'EXECUTE') then
+    raise exception 'Password recovery RPC execute ACL invariant missing';
   end if;
 
   if not has_function_privilege('service_role', 'public.claim_membership_register_key(text,uuid)', 'EXECUTE')
