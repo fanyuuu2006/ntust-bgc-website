@@ -26,6 +26,12 @@ test("full Footer exposes the confirmed identity, website, contact, related, and
   assert.ok(footer.includes("\u81fa\u79d1\u5927\u5b98\u7db2"));
   assert.ok(footer.includes("\u96b1\u79c1\u6b0a\u653f\u7b56"));
   assert.ok(footer.includes("\u4f7f\u7528\u689d\u6b3e"));
+  assert.ok(footer.includes("\u5b98\u65b9\u7db2\u7ad9"));
+  assert.ok(footer.includes("\u7db2\u7ad9\u958b\u767c\u8207\u7dad\u8b77\uff1a"));
+  assert.ok(footer.includes("\u98ef\u9b5a"));
+  assert.match(footer, /const developerUrl = "https:\/\/fanyu\.vercel\.app"/);
+  assert.match(footer, /href=\{developerUrl\}/);
+  assert.doesNotMatch(footer, /\u00a9|new Date\(\)\.getFullYear\(\)|\u7248\u6b0a\u6240\u6709|All Rights Reserved/i);
   assert.doesNotMatch(footer, /<Image|siteConfigs\.logo/);
   assert.doesNotMatch(
     footer,
@@ -44,12 +50,14 @@ test("Footer variants retain semantic navigation while legal mode stays a compac
   assert.ok(footer.includes('aria-label="\u76f8\u95dc\u9023\u7d50"'));
   assert.ok(footer.includes('aria-label="\u6cd5\u5f8b\u8cc7\u8a0a"'));
   assert.match(footer, /variant === "legal"/);
-  assert.match(footer, /new Date\(\)\.getFullYear\(\)/);
   assert.match(legalBranch, /legalNavigation\.map/);
-  assert.match(legalBranch, /siteConfigs\.name/);
+  assert.match(legalBranch, /siteConfigs\.fullName/);
+  assert.ok(legalBranch.includes("\u5b98\u65b9\u7db2\u7ad9"));
+  assert.ok(legalBranch.includes("\u7db2\u7ad9\u958b\u767c\u8207\u7dad\u8b77\uff1a"));
+  assert.match(legalBranch, /href=\{developerUrl\}/);
   assert.doesNotMatch(
     legalBranch,
-    /ntustboardgame@gmail\.com|Instagram|www\.ntust\.edu\.tw|publicNavigation|siteConfigs\.fullName/,
+    /ntustboardgame@gmail\.com|Instagram|www\.ntust\.edu\.tw|publicNavigation/,
   );
   assert.doesNotMatch(footer, /"use client"|useUser|usePathname|getCurrentUser/);
 });
@@ -64,7 +72,7 @@ test("full Footer keeps mobile groups stacked and gives identity more room only 
   assert.doesNotMatch(footer, /\bgrid-cols-4\b|\bsm:grid-cols-/);
   assert.match(
     footer,
-    /border-t[^"\n]*pt-4[^"\n]*flex[^"\n]*flex-col[^"\n]*sm:flex-row/,
+    /flex[^"\n]*flex-col[^"\n]*border-t[^"\n]*pt-4[^"\n]*sm:flex-row/,
   );
   assert.match(footer, /<ul className="mt-2 flex flex-col gap-2 text-sm text-\(--text-secondary\)">/);
   assert.doesNotMatch(footer, /mt-2 flex flex-wrap gap-x-4 lg:flex-col/);

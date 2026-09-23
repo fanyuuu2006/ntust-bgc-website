@@ -18,9 +18,9 @@ const relatedLinks = [
   { label: "抽獎系統", href: "https://bgc-lottery.vercel.app/" },
 ] as const;
 
-export function Footer({ variant = "full" }: FooterProps) {
-  const currentYear = new Date().getFullYear();
+const developerUrl = "https://fanyu.vercel.app";
 
+export function Footer({ variant = "full" }: FooterProps) {
   if (variant === "legal") {
     return (
       <footer className="shrink-0 border-t border-(--border-default) bg-(--surface-subtle)">
@@ -39,9 +39,18 @@ export function Footer({ variant = "full" }: FooterProps) {
               ))}
             </ul>
           </nav>
-          <p>
-            © {currentYear} {siteConfigs.name}
-          </p>
+          <div className="space-y-1 sm:text-right">
+            <p>{siteConfigs.fullName}｜官方網站</p>
+            <p>
+              網站開發與維護：
+              <a
+                href={developerUrl}
+                className="hover:text-(--interactive-primary)"
+              >
+                飯魚
+              </a>
+            </p>
+          </div>
         </div>
       </footer>
     );
@@ -121,10 +130,19 @@ export function Footer({ variant = "full" }: FooterProps) {
           </nav>
         </div>
 
-        <div className="mt-6 border-t border-(--border-default) pt-4 flex flex-col gap-1 text-sm leading-5 text-(--text-muted) sm:flex-row sm:items-center sm:justify-between lg:mt-7">
-          <p>
-            © {currentYear} {siteConfigs.fullName}
-          </p>
+        <div className="mt-6 flex flex-col gap-3 border-t border-(--border-default) pt-4 text-sm leading-5 text-(--text-muted) sm:flex-row sm:items-end sm:justify-between lg:mt-7">
+          <div className="space-y-1">
+            <p>{siteConfigs.fullName}｜官方網站</p>
+            <p>
+              網站開發與維護：
+              <a
+                href={developerUrl}
+                className="hover:text-(--interactive-primary)"
+              >
+                飯魚
+              </a>
+            </p>
+          </div>
           <nav aria-label="法律資訊">
             <ul className="flex flex-wrap gap-x-4">
               {legalNavigation.map((item) => (
