@@ -146,3 +146,11 @@ search、filter、sort、page 與 pageSize 必須可在重新整理及瀏覽器�
 
 資料庫 schema snapshot、legacy migrations 與驗證 SQL 位於 supabase/README.md。
 不要將 production data、密碼、session、service-role key 或其他 secrets 放進 repository。
+
+## 權利與授權現況
+
+本 repository 公開供檢視與協作，但目前未採用一般開放原始碼授權。公開可見不表示概括授予重製、修改、散布或商業利用 source code 的權利；相關權利仍依實際作者、既有約定與適用法律判斷。
+
+社團名稱、標誌、公告、活動內容、照片及其他社團素材，不因出現在公開 repository 而自動納入 source code 的授權範圍。Reviews、個人資料及其他使用者提交內容亦保留各自的權利與適用規則；dependencies、icons、嵌入媒體及外部素材則依各自的 license 或服務條款使用。
+
+詳細的 attribution、內容邊界與待確認事項請見 [NOTICE.md](NOTICE.md) 及 [ownership and licensing 說明](docs/ownership-and-licensing.md)。提交 issue 或 pull request 前請先閱讀 [CONTRIBUTING.md](CONTRIBUTING.md)。
