@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
+import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -131,7 +132,7 @@ export function RegisterKeyTable({
         ))}
       </div>
 
-      <Card className="hidden overflow-x-auto p-0 lg:block">
+      <AdminListSection className="hidden lg:block">
         <Table className="min-w-[760px]">
           <TableHeader>
             <TableRow>
@@ -179,7 +180,7 @@ export function RegisterKeyTable({
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </AdminListSection>
 
       <ConfirmDialog
         open={pendingRevocation !== null}

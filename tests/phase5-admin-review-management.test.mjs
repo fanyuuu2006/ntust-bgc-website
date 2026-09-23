@@ -181,7 +181,8 @@ test("Admin Review route, responsive records and navigation preserve moderation 
   assert.match(page, /評價與評論管理/);
   assert.match(page, /PaginatedCollection/);
   assert.match(page, /adminReviewsQuerySchema/);
-  assert.match(records, /AdminUserIdentity/);
+  assert.match(records, /AdminUserLink/);
+  assert.match(records, /AdminBoardGameLink/);
   assert.match(records, /未填寫文字評價/);
   assert.match(records, /line-clamp/);
   assert.match(records, /lg:hidden/);

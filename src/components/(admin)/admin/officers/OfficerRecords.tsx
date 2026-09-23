@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Modal } from "@/components/Modal";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
@@ -15,7 +16,7 @@ import { Select } from "@/components/ui/Select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
 import type { AcademicYear } from "@/types/database";
-import { AdminUserIdentity } from "@/components/(admin)/admin/users/AdminUserIdentity";
+import { AdminUserLink } from "@/components/(admin)/admin/users/AdminUserLink";
 import type { AdminOfficerPosition } from "@/services/officer-positions/officer-positions.types";
 
 type Officer = AdminOfficerPosition;
@@ -126,7 +127,7 @@ export function OfficerRecords({
 
   return (
     <>
-      <Card className="hidden overflow-x-auto p-0 lg:block">
+      <AdminListSection className="hidden lg:block">
         <Table className="min-w-[680px]">
           <TableHeader>
             <TableRow>
@@ -140,7 +141,8 @@ export function OfficerRecords({
             {officers.map((officer) => (
               <TableRow key={officer.id}>
                 <TableCell className="w-64 max-w-64 min-w-0">
-                  <AdminUserIdentity
+                  <AdminUserLink
+                    userId={officer.user.id}
                     identity={{
                       ...officer.user,
                       real_name: officer.user_profile?.real_name ?? null,
@@ -160,13 +162,14 @@ export function OfficerRecords({
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </AdminListSection>
 
       <div className="grid gap-3 lg:hidden">
         {officers.map((officer) => (
           <Card key={officer.id} className="w-full min-w-0 max-w-full p-4">
             <div className="min-w-0">
-              <AdminUserIdentity
+              <AdminUserLink
+                userId={officer.user.id}
                 identity={{
                   ...officer.user,
                   real_name: officer.user_profile?.real_name ?? null,

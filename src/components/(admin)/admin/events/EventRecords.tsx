@@ -1,6 +1,7 @@
 "use client";
 
 import { buildAdminReturnHref } from "@/utils/admin-return";
+import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -164,7 +165,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
 
   return (
     <>
-      <Card className="hidden overflow-x-auto p-0 lg:block">
+      <AdminListSection className="hidden lg:block">
         <Table className="min-w-[720px]">
           <TableHeader>
             <TableRow>
@@ -195,7 +196,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </AdminListSection>
 
       <div className="grid gap-3 lg:hidden">
         {events.map((event) => (

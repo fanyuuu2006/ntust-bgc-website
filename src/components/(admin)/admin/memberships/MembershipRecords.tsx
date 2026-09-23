@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
+import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
+import { AdminUserLink } from "@/components/(admin)/admin/users/AdminUserLink";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Modal } from "@/components/Modal";
@@ -164,7 +166,7 @@ export function MembershipRecords({
 
   return (
     <>
-      <Card className="hidden overflow-x-auto p-0 lg:block">
+      <AdminListSection className="hidden lg:block">
         <Table className="min-w-[820px]">
           <TableHeader>
             <TableRow>
@@ -181,8 +183,15 @@ export function MembershipRecords({
             {memberships.map((membership) => (
               <TableRow key={membership.id}>
                 <TableCell>
-                  <p className="font-medium">{membership.user_profile?.real_name || membership.user.name}</p>
-                  <p className="text-xs text-(--muted)">{membership.user_profile?.student_id ?? membership.user.email}</p>
+                  <AdminUserLink
+                    userId={membership.user.id}
+                    identity={{
+                      ...membership.user,
+                      real_name: membership.user_profile?.real_name ?? null,
+                      student_id: membership.user_profile?.student_id ?? null,
+                    }}
+                    disambiguation={membership.user_profile?.student_id ? "studentId" : "email"}
+                  />
                 </TableCell>
                 <TableCell>
                   <MembershipTypeLabel type={membership.type} />
@@ -204,16 +213,23 @@ export function MembershipRecords({
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </AdminListSection>
 
       <div className="grid gap-3 lg:hidden">
         {memberships.map((membership) => (
           <Card key={membership.id} className="space-y-3 p-4">
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="font-semibold">{membership.user_profile?.real_name || membership.user.name}</p>
-                <p className="text-xs text-(--muted)">{membership.user_profile?.student_id ?? membership.user.email}</p>
-              </div>
+              <AdminUserLink
+                userId={membership.user.id}
+                identity={{
+                  ...membership.user,
+                  real_name: membership.user_profile?.real_name ?? null,
+                  student_id: membership.user_profile?.student_id ?? null,
+                }}
+                disambiguation={membership.user_profile?.student_id ? "studentId" : "email"}
+                variant="mobile"
+                className="min-w-0"
+              />
               <span className="shrink-0">
                 <MemberStatusBadge status={membership.status} />
               </span>

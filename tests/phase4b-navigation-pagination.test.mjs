@@ -107,10 +107,13 @@ test("real Board Game entry points explicitly propagate contextual return URLs",
     "src/components/(authenticated)/dashboard/DashboardBorrowingSummary.tsx",
     "src/components/(authenticated)/borrowings/BorrowingRecord.tsx",
     "src/components/(public)/profile/ProfileReviews.tsx",
-    "src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx",
   ];
   const sources = await Promise.all(paths.map(source));
   for (const content of sources) assert.match(content, /returnTo|buildBoardGameDetailHref/);
+
+  const adminBorrowings = await source("src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx");
+  assert.match(adminBorrowings, /AdminBoardGameLink/);
+  assert.doesNotMatch(adminBorrowings, /buildBoardGameDetailHref/);
 });
 
 test("detail review navigation preserves contextual return separately", async () => {

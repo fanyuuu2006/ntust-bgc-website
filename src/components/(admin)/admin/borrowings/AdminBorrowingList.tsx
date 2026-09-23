@@ -3,11 +3,12 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { UserRound } from "lucide-react";
 
+import { AdminBoardGameLink } from "@/components/(admin)/admin/AdminBoardGameLink";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
+import { AdminUserLink } from "@/components/(admin)/admin/users/AdminUserLink";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
@@ -34,8 +35,6 @@ import { borrowingConfig } from "@/libs/borrowingConfig";
 import { clubPolicies } from "@/libs/clubPolicies";
 import { buildOwnedQueryHref } from "@/libs/query-navigation";
 import type { BoardGameBorrowingForAdmin } from "@/services/board-games/board-games.types";
-import { buildBoardGameDetailHref } from "@/libs/board-game-return";
-import { buildQueryString } from "@/utils/url";
 import type { BorrowingStatus } from "@/types/database";
 import {
   formatAdminDateTime,
@@ -82,8 +81,6 @@ export function AdminBorrowingList({
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const appliedQuery = toHeaderQuery(query);
-  const returnQuery = buildQueryString(appliedQuery);
-  const returnTo = `${BASE_PATH}${returnQuery ? `?${returnQuery}` : ""}`;
   const clearSearchHref = buildOwnedQueryHref({
     basePath: BASE_PATH,
     appliedQuery,
@@ -277,7 +274,7 @@ export function AdminBorrowingList({
                 {borrowings.map((borrowing) => (
                   <TableRow key={borrowing.id}>
                     <TableCell className="min-w-56 max-w-80">
-                      <BoardGameSummary borrowing={borrowing} returnTo={returnTo} />
+                      <BoardGameSummary borrowing={borrowing} />
                     </TableCell>
                     <TableCell className="min-w-56">
                       <BorrowerSummary borrowing={borrowing} />
@@ -310,7 +307,6 @@ export function AdminBorrowingList({
                   <BoardGameSummary
                     borrowing={borrowing}
                     titleClassName="wrap-anywhere"
-                    returnTo={returnTo}
                   />
                   <BorrowingStatusBadge
                     status={borrowing.status}
@@ -335,7 +331,7 @@ export function AdminBorrowingList({
         description={actionDescription}
       >
         <div className="space-y-4">
-          {selected ? <CheckoutContext borrowing={selected.borrowing} returnTo={returnTo} /> : null}
+          {selected ? <CheckoutContext borrowing={selected.borrowing} /> : null}
           <Field label="預計歸還時間（台北時間）" htmlFor="borrowing-due-at" required>
             <Input
               id="borrowing-due-at"
@@ -472,21 +468,19 @@ function BorrowingActions({
 
 function BoardGameSummary({
   borrowing,
-  returnTo,
   titleClassName = "wrap-anywhere",
 }: {
   borrowing: BoardGameBorrowingForAdmin;
-  returnTo: string;
   titleClassName?: string;
 }) {
   return (
     <div className="min-w-0">
-      <Link
-        href={buildBoardGameDetailHref(borrowing.board_game.id, returnTo)}
+      <AdminBoardGameLink
+        boardGameId={borrowing.board_game.id}
         className={`${titleClassName} font-medium text-(--interactive-primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)`}
       >
         {borrowing.board_game.name}
-      </Link>
+      </AdminBoardGameLink>
       <p className="mt-1 text-xs text-(--text-muted)">
         社產編號 #
         {borrowing.board_game.inventory_number}
@@ -502,12 +496,15 @@ function BorrowerSummary({
 }) {
   return (
     <div className="min-w-0">
-      <p className="wrap-anywhere font-medium text-(--text-primary)">
-        {getBorrowerName(borrowing)}
-      </p>
-      <p className="wrap-anywhere text-xs text-(--text-muted)">
-        {borrowing.user.email}
-      </p>
+      <AdminUserLink
+        userId={borrowing.user.id}
+        identity={{
+          ...borrowing.user,
+          real_name: borrowing.user_profile?.real_name ?? null,
+          student_id: borrowing.user_profile?.student_id ?? null,
+        }}
+        disambiguation="email"
+      />
       <div className="mt-1">
         <BorrowerMembershipContext borrowing={borrowing} />
       </div>
@@ -632,10 +629,8 @@ function Timeline({
 
 function CheckoutContext({
   borrowing,
-  returnTo,
 }: {
   borrowing: BoardGameBorrowingForAdmin;
-  returnTo: string;
 }) {
   return (
     <div className="space-y-3 rounded-lg border border-(--border-default) bg-(--surface-subtle) p-3 text-sm">
@@ -648,7 +643,7 @@ function CheckoutContext({
       <div>
         <p className="text-xs font-medium text-(--text-muted)">桌遊</p>
         <div className="mt-1">
-          <BoardGameSummary borrowing={borrowing} returnTo={returnTo} />
+          <BoardGameSummary borrowing={borrowing} />
         </div>
       </div>
     </div>
@@ -752,10 +747,6 @@ function MobileMetadataGrid({ children }: { children: ReactNode }) {
       {children}
     </dl>
   );
-}
-
-function getBorrowerName(borrowing: BoardGameBorrowingForAdmin) {
-  return borrowing.user_profile?.real_name || borrowing.user.name;
 }
 
 function getApprovalActor(borrowing: BoardGameBorrowingForAdmin) {

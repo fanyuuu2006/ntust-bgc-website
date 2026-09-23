@@ -67,7 +67,8 @@ test("checkout uses an editable Taipei-local seven-day default", () => {
 test("admin borrowing shows borrower identity and membership only as operating context", () => {
   assert.match(borrowingService, /getUserMembershipEligibility\(userIds\)/);
   assert.match(borrowingService, /is_current_academic_year_member/);
-  assert.match(adminBorrowings, /borrowing\.user\.email/);
+  assert.match(adminBorrowings, /AdminUserLink/);
+  assert.match(adminBorrowings, /disambiguation="email"/);
   assert.match(adminBorrowings, /本學年度社員/);
   assert.match(adminBorrowings, /非本學年度社員/);
   assert.match(adminBorrowings, /adminNonCurrentAcademicYearMemberBorrowingNotice/);

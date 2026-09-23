@@ -1,8 +1,11 @@
 "use client";
 
 import { buildAdminReturnHref } from "@/utils/admin-return";
+import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
+import { AdminUserLink } from "@/components/(admin)/admin/users/AdminUserLink";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Modal } from "@/components/Modal";
@@ -137,7 +140,7 @@ export function AttendanceRecords({
 
   return (
     <>
-      <Card className="hidden overflow-x-auto p-0 lg:block">
+      <AdminListSection className="hidden lg:block">
         <Table className="min-w-[960px]">
           <TableHeader>
             <TableRow>
@@ -153,7 +156,14 @@ export function AttendanceRecords({
           <TableBody>
             {records.map((record) => (
               <TableRow key={record.id}>
-                <TableCell className="min-w-32 font-medium">{record.user.name}</TableCell>
+                <TableCell className="min-w-32 font-medium">
+                  <Link
+                    href={`/admin/users/${record.user.id}`}
+                    className="wrap-anywhere text-(--interactive-primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+                  >
+                    {record.user.name}
+                  </Link>
+                </TableCell>
                 <TableCell className="min-w-32">{emptyValue(record.profile?.real_name)}</TableCell>
                 <TableCell className="min-w-52 break-all">{record.user.email}</TableCell>
                 <TableCell className="min-w-28">{emptyValue(record.profile?.student_id)}</TableCell>
@@ -164,17 +174,23 @@ export function AttendanceRecords({
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </AdminListSection>
 
       <div className="grid gap-3 lg:hidden">
         {records.map((record) => (
           <Card key={record.id} className="w-full min-w-0 max-w-full p-4">
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold">使用者名稱：{record.user.name}</p>
-                <p className="text-sm">真實姓名：{emptyValue(record.profile?.real_name)}</p>
-                <p className="break-all text-sm text-(--muted)">{record.user.email}</p>
-              </div>
+              <AdminUserLink
+                userId={record.user.id}
+                identity={{
+                  ...record.user,
+                  real_name: record.profile?.real_name ?? null,
+                  student_id: record.profile?.student_id ?? null,
+                }}
+                disambiguation="email"
+                variant="mobile"
+                className="min-w-0 flex-1"
+              />
               <span className="shrink-0"><AttendanceStatusBadge status={record.status} /></span>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
