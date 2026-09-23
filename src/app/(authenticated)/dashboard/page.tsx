@@ -22,11 +22,12 @@ async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const [currentAcademicYear, openBorrowings, announcements] = await Promise.all([
-    getCurrentAcademicYear(),
-    boardGamesService.getDashboardOpenBorrowingsByUserId(user.id),
-    announcementsService.getDashboardLatestPublished(),
-  ]);
+  const [currentAcademicYear, openBorrowings, announcements] =
+    await Promise.all([
+      getCurrentAcademicYear(),
+      boardGamesService.getDashboardOpenBorrowingsByUserId(user.id),
+      announcementsService.getDashboardLatestPublished(),
+    ]);
   const currentYearMembership = currentAcademicYear
     ? await membershipService.getMembershipByUserIdAndAcademicYear(
         user.id,
@@ -37,8 +38,11 @@ async function DashboardPage() {
     currentYearMembership?.status === "active"
       ? await eventsService.getSelfCheckInEventsForUser(user.id)
       : [];
-  const hasAttention = selfCheckInEvents.some(({ attendance }) => !attendance)
-    || openBorrowings.some((borrowing) => getDashboardBorrowingPriority(borrowing) <= 2);
+  const hasAttention =
+    selfCheckInEvents.some(({ attendance }) => !attendance) ||
+    openBorrowings.some(
+      (borrowing) => getDashboardBorrowingPriority(borrowing) <= 2,
+    );
 
   return (
     <section className="container py-8">
@@ -46,18 +50,34 @@ async function DashboardPage() {
         <PageHeader title={`歡迎回來，${user.name}`} />
 
         <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-5">
-          <div className={cn("min-w-0 space-y-4 lg:order-none lg:space-y-5", hasAttention ? "order-1" : "order-2")}>
+          <div
+            className={cn(
+              "min-w-0 space-y-4 lg:order-0 lg:space-y-5",
+              hasAttention ? "order-1" : "order-2",
+            )}
+          >
             <SelfCheckInEvents events={selfCheckInEvents} />
             <DashboardBorrowingSummary borrowings={openBorrowings} />
           </div>
 
           <div className="contents lg:block lg:min-w-0 lg:space-y-5">
-            <div className={cn("min-w-0 lg:order-none", hasAttention ? "order-2" : "order-1")}>
-              <DashboardMembershipSummary membership={currentYearMembership} academicYearLabel={currentAcademicYear?.year} />
+            <div
+              className={cn(
+                "min-w-0 lg:order-0",
+                hasAttention ? "order-2" : "order-1",
+              )}
+            >
+              <DashboardMembershipSummary
+                membership={currentYearMembership}
+                academicYearLabel={currentAcademicYear?.year}
+              />
             </div>
 
-            <div className="order-3 min-w-0 lg:order-none">
-              <Card surface={announcements.data.length ? "default" : "subtle"} className="p-4">
+            <div className="order-3 min-w-0 lg:order-0">
+              <Card
+                surface={announcements.data.length ? "default" : "subtle"}
+                className="p-4"
+              >
                 <section aria-labelledby="dashboard-announcements-title">
                   <DashboardSectionHeader
                     id="dashboard-announcements-title"
@@ -79,32 +99,32 @@ async function DashboardPage() {
                     }
                   />
 
-                {announcements.data.length ? (
-                  <ul className="mt-3 divide-y divide-(--border-muted)">
-                    {announcements.data.map((announcement) => (
-                      <li key={announcement.id}>
-                        <Link
-                          href={`/announcements/${announcement.id}`}
-                          className="block rounded-lg p-2 transition-colors hover:bg-(--surface-subtle) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--interactive-primary)"
-                        >
-                          <p className="wrap-break-word font-medium text-(--text-primary)">
-                            {announcement.title}
-                          </p>
-                          <p className="mt-1 text-xs text-(--text-muted)">
-                            {formatDate(
-                              announcement.published_at ??
-                                announcement.created_at,
-                            )}
-                          </p>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-3 text-sm text-(--text-muted)">
-                    目前還沒有已發布的公告。
-                  </p>
-                )}
+                  {announcements.data.length ? (
+                    <ul className="mt-3 divide-y divide-(--border-muted)">
+                      {announcements.data.map((announcement) => (
+                        <li key={announcement.id}>
+                          <Link
+                            href={`/announcements/${announcement.id}`}
+                            className="block rounded-lg p-2 transition-colors hover:bg-(--surface-subtle) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--interactive-primary)"
+                          >
+                            <p className="wrap-break-word font-medium text-(--text-primary)">
+                              {announcement.title}
+                            </p>
+                            <p className="mt-1 text-xs text-(--text-muted)">
+                              {formatDate(
+                                announcement.published_at ??
+                                  announcement.created_at,
+                              )}
+                            </p>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-3 text-sm text-(--text-muted)">
+                      目前還沒有已發布的公告。
+                    </p>
+                  )}
                 </section>
               </Card>
             </div>
