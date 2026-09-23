@@ -2,94 +2,60 @@
 
 import { useState } from "react";
 
+import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
+import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { FormFeedback } from "@/components/FormFeedback";
+import { Modal } from "@/components/Modal";
+import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
 import type { SupportRecord } from "@/types/database";
 import { formatDateTime, formatTaipeiDateTimeLocal } from "@/utils/date";
+import {
+  SupportRecordStatusBadge,
+  supportRecordStatusLabels,
+} from "./SupportRecordStatusBadge";
+import {
+  getSupportRecordStatus,
+  type SupportRecordStatus,
+} from "./support-record-status";
 
 type RecordResponse = { data: SupportRecord };
+type StatusFilter = "all" | SupportRecordStatus;
+type ConfirmationAction = "withdraw" | "refund";
 
-function SupportRecordItem({ record, onSaved }: { record: SupportRecord; onSaved: (record: SupportRecord) => void }) {
-  const [displayName, setDisplayName] = useState(record.public_display_name ?? "");
-  const [consentMethod, setConsentMethod] = useState(record.public_consent_method ?? "");
-  const [consentConfirmed, setConsentConfirmed] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
+const statusFilterOptions: Array<{ value: StatusFilter; label: string }> = [
+  { value: "all", label: "全部" },
+  ...(
+    [
+      "awaiting-consent",
+      "ready-to-publish",
+      "published",
+      "withdrawn",
+      "refunded",
+    ] as const
+  ).map((value) => ({ value, label: supportRecordStatusLabels[value] })),
+];
 
-  async function update(body: unknown) {
-    setBusy(true);
-    setError("");
-    try {
-      const result = await apiClient<RecordResponse>(`/api/support/manage/${record.id}`, { method: "PATCH", body });
-      onSaved(result.data);
-      setConsentConfirmed(false);
-      if (result.data.withdrawn_at) {
-        setDisplayName("");
-        setConsentMethod("");
-      }
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "更新失敗，請稍後再試");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const isPublic = record.payment_status === "paid" && record.published_at && !record.withdrawn_at;
-
-  return (
-    <li>
-      <Card surface="subtle" className="space-y-3 p-3 sm:p-4">
-        <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="font-semibold text-(--text-primary) wrap-anywhere">{record.provider}</p>
-            <p className="text-xs text-(--text-muted) wrap-anywhere">平台交易參照：{record.provider_transaction_reference}</p>
-            <p className="text-xs text-(--text-muted)">付款時間：{formatDateTime(record.paid_at)}</p>
-          </div>
-          <span className="text-sm font-medium text-(--text-secondary)">
-            {record.payment_status === "refunded" ? "已退款" : isPublic ? "公開中" : record.withdrawn_at ? "已撤下" : "未公開"}
-          </span>
-        </div>
-
-        {record.payment_status === "paid" ? (
-          <div className="space-y-3 border-t border-(--border-default) pt-3">
-            <p className="text-sm text-(--text-secondary)">
-              {record.public_consent_at ? "已另行取得公開同意；更改暱稱需重新紀錄同意。" : "付款已確認；尚未取得公開暱稱的獨立同意。"}
-            </p>
-            <div className="grid min-w-0 gap-3 sm:grid-cols-2">
-              <Field label="同意公開的暱稱" htmlFor={`support-name-${record.id}`}>
-                <Input id={`support-name-${record.id}`} value={displayName} maxLength={40} disabled={busy} onChange={(event) => setDisplayName(event.target.value)} />
-              </Field>
-              <Field label="同意取得方式" htmlFor={`support-method-${record.id}`}>
-                <Input id={`support-method-${record.id}`} value={consentMethod} maxLength={80} placeholder="例如：平台私訊" disabled={busy} onChange={(event) => setConsentMethod(event.target.value)} />
-              </Field>
-            </div>
-            <label className="flex items-start gap-2 text-sm text-(--text-secondary)">
-              <input type="checkbox" checked={consentConfirmed} disabled={busy} onChange={(event) => setConsentConfirmed(event.target.checked)} className="mt-1" />
-              <span>我已核對此支持者明確同意在本站公開上述暱稱；付款本身不代表同意。</span>
-            </label>
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" disabled={busy || !consentConfirmed || !displayName.trim() || !consentMethod.trim()} onClick={() => update({ action: "recordConsent", displayName, consentMethod })}>紀錄公開同意</Button>
-              {record.public_consent_at && !isPublic && !record.withdrawn_at ? (
-                <Button size="sm" disabled={busy} onClick={() => update({ action: "publish" })}>發布暱稱</Button>
-              ) : null}
-              {isPublic ? <Button size="sm" variant="outline" disabled={busy} onClick={() => update({ action: "withdraw" })}>撤下公開</Button> : null}
-              <Button size="sm" variant="danger" disabled={busy} onClick={() => {
-                if (window.confirm("確認已在付款平台處理退款？這裡只記錄退款狀態，不會執行退款。")) void update({ action: "refund" });
-              }}>標記已退款</Button>
-            </div>
-          </div>
-        ) : null}
-        {error ? <p role="alert" className="text-sm text-(--status-danger)">{error}</p> : null}
-      </Card>
-    </li>
-  );
-}
-
-export function SupportManagePanel({ initialRecords }: { initialRecords: SupportRecord[] }) {
-  const [records, setRecords] = useState(initialRecords);
+function CreateSupportModal({ open, onClose, onCreated }: {
+  open: boolean;
+  onClose: () => void;
+  onCreated: (record: SupportRecord) => void;
+}) {
   const [provider, setProvider] = useState("");
   const [reference, setReference] = useState("");
   const [paidAt, setPaidAt] = useState(() => formatTaipeiDateTimeLocal(new Date()));
@@ -105,8 +71,10 @@ export function SupportManagePanel({ initialRecords }: { initialRecords: Support
         method: "POST",
         body: { provider, providerTransactionReference: reference, paidAt },
       });
-      setRecords((current) => [result.data, ...current].slice(0, 100));
+      onCreated(result.data);
       setReference("");
+      setPaidAt(formatTaipeiDateTimeLocal(new Date()));
+      onClose();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "新增失敗，請稍後再試");
     } finally {
@@ -114,35 +82,280 @@ export function SupportManagePanel({ initialRecords }: { initialRecords: Support
     }
   }
 
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      closeDisabled={busy}
+      title="新增已核對支持"
+      description="請先在第三方付款平台確認交易。新增私人紀錄不代表支持者同意公開名稱。"
+    >
+      <form onSubmit={addRecord} className="space-y-4">
+        <Field label="付款平台" htmlFor="support-provider" required>
+          <Input id="support-provider" required maxLength={40} value={provider} disabled={busy} onChange={(event) => setProvider(event.target.value)} />
+        </Field>
+        <Field label="平台交易參照" htmlFor="support-reference" required>
+          <Input id="support-reference" required maxLength={160} value={reference} disabled={busy} onChange={(event) => setReference(event.target.value)} />
+        </Field>
+        <Field label="付款時間（台灣時間）" htmlFor="support-paid-at" required>
+          <Input id="support-paid-at" type="datetime-local" required value={paidAt} disabled={busy} onChange={(event) => setPaidAt(event.target.value)} />
+        </Field>
+        <FormFeedback error={error} />
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button type="button" variant="outline" disabled={busy} onClick={onClose}>取消</Button>
+          <Button type="submit" isLoading={busy}>新增私人紀錄</Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+export function ManageSupportRecordModal({ record, onClose, onSaved }: {
+  record: SupportRecord;
+  onClose: () => void;
+  onSaved: (record: SupportRecord) => void;
+}) {
+  const [displayName, setDisplayName] = useState(record.public_display_name ?? "");
+  const [consentMethod, setConsentMethod] = useState(record.public_consent_method ?? "");
+  const [consentConfirmed, setConsentConfirmed] = useState(false);
+  const [confirmation, setConfirmation] = useState<ConfirmationAction | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const status = getSupportRecordStatus(record);
+
+  async function update(body: unknown) {
+    setBusy(true);
+    setError("");
+    try {
+      const result = await apiClient<RecordResponse>(`/api/support/manage/${record.id}`, { method: "PATCH", body });
+      onSaved(result.data);
+      setConsentConfirmed(false);
+      setConfirmation(null);
+      if (result.data.withdrawn_at) {
+        setDisplayName("");
+        setConsentMethod("");
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "更新失敗，請稍後再試");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const hasConsent = Boolean(record.public_consent_at);
+  const canPublish = status === "ready-to-publish";
+  const isPublished = status === "published";
+  const isRefunded = status === "refunded";
+
+  return (
+    <>
+      <Modal open onClose={onClose} closeDisabled={busy} title="管理支持紀錄" size="lg">
+        <div className="space-y-6">
+          <section aria-labelledby="support-payment-information" className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <h2 id="support-payment-information" className="font-semibold text-(--text-primary)">付款資訊</h2>
+              <SupportRecordStatusBadge record={record} />
+            </div>
+            <dl className="grid min-w-0 gap-3 rounded-xl bg-(--surface-subtle) p-4 text-sm sm:grid-cols-2">
+              <div className="min-w-0">
+                <dt className="text-(--text-muted)">付款平台</dt>
+                <dd className="mt-1 font-medium wrap-anywhere">{record.provider}</dd>
+              </div>
+              <div className="min-w-0">
+                <dt className="text-(--text-muted)">付款時間</dt>
+                <dd className="mt-1 font-medium">{formatDateTime(record.paid_at)}</dd>
+              </div>
+              <div className="min-w-0 sm:col-span-2">
+                <dt className="text-(--text-muted)">平台交易參照</dt>
+                <dd className="mt-1 font-mono text-xs wrap-anywhere">{record.provider_transaction_reference}</dd>
+              </div>
+            </dl>
+          </section>
+
+          {!isRefunded ? (
+            <section aria-labelledby="support-public-acknowledgement" className="space-y-4 border-t border-(--border-default) pt-5">
+              <div>
+                <h2 id="support-public-acknowledgement" className="font-semibold text-(--text-primary)">公開感謝</h2>
+                <p className="mt-1 text-sm leading-6 text-(--text-muted)">付款不代表同意公開。請另外確認支持者同意本站顯示指定暱稱。</p>
+              </div>
+              <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+                <Field label="同意公開的暱稱" htmlFor={`support-name-${record.id}`}>
+                  <Input id={`support-name-${record.id}`} value={displayName} maxLength={40} disabled={busy} onChange={(event) => setDisplayName(event.target.value)} />
+                </Field>
+                <Field label="同意取得方式" htmlFor={`support-method-${record.id}`}>
+                  <Input id={`support-method-${record.id}`} value={consentMethod} maxLength={80} placeholder="例如：平台訊息" disabled={busy} onChange={(event) => setConsentMethod(event.target.value)} />
+                </Field>
+              </div>
+              <label className="flex items-start gap-2 text-sm leading-6 text-(--text-secondary)">
+                <input type="checkbox" checked={consentConfirmed} disabled={busy} onChange={(event) => setConsentConfirmed(event.target.checked)} className="mt-1.5" />
+                <span>我已核對支持者明確同意在本站公開上述暱稱。</span>
+              </label>
+              {hasConsent ? <p className="text-xs leading-5 text-(--text-muted)">重新紀錄同意會先撤下目前公開狀態，確認後需再次發布。</p> : null}
+              <FormFeedback error={error} />
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={busy || !consentConfirmed || !displayName.trim() || !consentMethod.trim()}
+                  onClick={() => update({ action: "recordConsent", displayName, consentMethod })}
+                >
+                  {hasConsent ? "重新紀錄公開同意" : "紀錄公開同意"}
+                </Button>
+                {canPublish ? <Button size="sm" disabled={busy} onClick={() => update({ action: "publish" })}>公開</Button> : null}
+                {isPublished ? (
+                  <Button size="sm" variant="outline" disabled={busy} onClick={() => setConfirmation("withdraw")}>撤下公開</Button>
+                ) : null}
+                <Button size="sm" variant="danger" disabled={busy} onClick={() => setConfirmation("refund")}>標記已退款</Button>
+              </div>
+            </section>
+          ) : (
+            <p className="border-t border-(--border-default) pt-5 text-sm text-(--text-muted)">此筆紀錄已標記退款，不會顯示在公開支持者名單。</p>
+          )}
+        </div>
+      </Modal>
+
+      <ConfirmDialog
+        open={confirmation === "withdraw"}
+        onClose={() => setConfirmation(null)}
+        onConfirm={() => void update({ action: "withdraw" })}
+        title="撤下公開暱稱？"
+        description="撤下後將立即停止在支持者名單顯示；私人付款核對紀錄仍會保留。"
+        confirmLabel="撤下公開"
+        confirmVariant="primary"
+        isSubmitting={busy}
+      />
+      <ConfirmDialog
+        open={confirmation === "refund"}
+        onClose={() => setConfirmation(null)}
+        onConfirm={() => void update({ action: "refund" })}
+        title="標記為已退款？"
+        description="請先確認已在付款平台完成退款。這裡只記錄退款狀態，不會執行退款。"
+        confirmLabel="標記已退款"
+        confirmVariant="danger"
+        isSubmitting={busy}
+      />
+    </>
+  );
+}
+
+function SupportRecordCollection({ records, onManage }: {
+  records: SupportRecord[];
+  onManage: (record: SupportRecord) => void;
+}) {
+  return (
+    <>
+      <AdminListSection className="hidden lg:block">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>平台</TableHead>
+              <TableHead>付款時間</TableHead>
+              <TableHead>公開暱稱</TableHead>
+              <TableHead>狀態</TableHead>
+              <TableHead className="text-right">操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {records.map((record) => (
+              <TableRow key={record.id}>
+                <TableCell className="max-w-48 font-medium wrap-anywhere">{record.provider}</TableCell>
+                <TableCell className="whitespace-nowrap">{formatDateTime(record.paid_at)}</TableCell>
+                <TableCell className="max-w-56 wrap-anywhere">{record.public_display_name ?? "尚未設定"}</TableCell>
+                <TableCell className="whitespace-nowrap"><SupportRecordStatusBadge record={record} /></TableCell>
+                <TableCell className="text-right"><Button size="sm" variant="outline" onClick={() => onManage(record)}>管理</Button></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </AdminListSection>
+
+      <ul className="grid min-w-0 gap-3 lg:hidden">
+        {records.map((record) => (
+          <li key={record.id}>
+            <Card className="p-4">
+              <div className="flex min-w-0 items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-semibold text-(--text-primary) wrap-anywhere">{record.provider}</p>
+                  <p className="mt-1 text-xs text-(--text-muted)">{formatDateTime(record.paid_at)}</p>
+                </div>
+                <SupportRecordStatusBadge record={record} />
+              </div>
+              <p className="mt-3 text-sm text-(--text-secondary) wrap-anywhere">公開暱稱：{record.public_display_name ?? "尚未設定"}</p>
+              <div className="mt-3 flex justify-end"><Button size="sm" variant="outline" onClick={() => onManage(record)}>管理</Button></div>
+            </Card>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export function SupportManagePanel({ initialRecords }: { initialRecords: SupportRecord[] }) {
+  const [records, setRecords] = useState(initialRecords);
+  const [filter, setFilter] = useState<StatusFilter>("all");
+  const [createOpen, setCreateOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedRecord = records.find((record) => record.id === selectedId) ?? null;
+  const filteredRecords = filter === "all" ? records : records.filter((record) => getSupportRecordStatus(record) === filter);
+
   function replaceRecord(updated: SupportRecord) {
     setRecords((current) => current.map((record) => record.id === updated.id ? updated : record));
   }
 
   return (
     <div className="space-y-6">
-      <Card className="space-y-3 p-4 sm:p-5">
-        <h2 className="text-lg font-semibold text-(--text-primary)">新增已核對的支持</h2>
-        <p className="text-sm text-(--text-muted)">請先在第三方平台確認付款。新增紀錄不會自動公開支持者。</p>
-        <form onSubmit={addRecord} className="space-y-3">
-          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
-            <Field label="付款平台" htmlFor="support-provider" required><Input id="support-provider" required maxLength={40} value={provider} disabled={busy} onChange={(event) => setProvider(event.target.value)} /></Field>
-            <Field label="平台交易參照" htmlFor="support-reference" required><Input id="support-reference" required maxLength={160} value={reference} disabled={busy} onChange={(event) => setReference(event.target.value)} /></Field>
-          </div>
-          <Field label="付款時間（台灣時間）" htmlFor="support-paid-at" required><Input id="support-paid-at" type="datetime-local" required value={paidAt} disabled={busy} onChange={(event) => setPaidAt(event.target.value)} /></Field>
-          <Button type="submit" disabled={busy}>新增私人紀錄</Button>
-          {error ? <p role="alert" className="text-sm text-(--status-danger)">{error}</p> : null}
-        </form>
-      </Card>
+      <PageHeader
+        title="支持紀錄管理"
+        description="僅供網站開發者核對已完成的支持與公開同意；本站不處理付款或退款。"
+        actions={<Button onClick={() => setCreateOpen(true)}>新增已核對支持</Button>}
+      />
 
-      <section aria-labelledby="support-records-title" className="space-y-3">
-        <h2 id="support-records-title" className="text-lg font-semibold text-(--text-primary)">支持紀錄</h2>
-        <p className="text-sm text-(--text-muted)">顯示最近 100 筆。交易參照僅供此私人頁面核對，不會出現在支持者牆。</p>
-        {records.length === 0 ? <p className="text-sm text-(--text-muted)">目前沒有支持紀錄。</p> : (
-          <ul className="space-y-3">
-            {records.map((record) => <SupportRecordItem key={record.id} record={record} onSaved={replaceRecord} />)}
-          </ul>
-        )}
-      </section>
+      {records.length === 0 ? (
+        <EmptyState
+          title="目前沒有支持紀錄"
+          description="請先在第三方付款平台確認交易，再新增私人核對紀錄。"
+          action={<Button onClick={() => setCreateOpen(true)}>新增已核對支持</Button>}
+        />
+      ) : (
+        <section aria-labelledby="support-records-title" className="space-y-4">
+          <div>
+            <h2 id="support-records-title" className="text-lg font-semibold text-(--text-primary)">支持紀錄</h2>
+            <p className="mt-1 text-sm text-(--text-muted)">顯示最近 100 筆私人核對紀錄。</p>
+          </div>
+          <AdminToolbar>
+            <Field label="狀態" htmlFor="support-status-filter" className="max-w-52">
+              <Select id="support-status-filter" value={filter} onChange={(event) => setFilter(event.target.value as StatusFilter)}>
+                {statusFilterOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </Select>
+            </Field>
+          </AdminToolbar>
+
+          {filteredRecords.length === 0 ? (
+            <EmptyState
+              compact
+              title="沒有符合此狀態的紀錄"
+              description="改用其他狀態查看支持紀錄。"
+              action={<Button size="sm" variant="outline" onClick={() => setFilter("all")}>顯示全部</Button>}
+            />
+          ) : (
+            <SupportRecordCollection records={filteredRecords} onManage={(record) => setSelectedId(record.id)} />
+          )}
+        </section>
+      )}
+
+      <CreateSupportModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={(record) => setRecords((current) => [record, ...current].slice(0, 100))}
+      />
+      {selectedRecord ? (
+        <ManageSupportRecordModal
+          key={selectedRecord.id}
+          record={selectedRecord}
+          onClose={() => setSelectedId(null)}
+          onSaved={replaceRecord}
+        />
+      ) : null}
     </div>
   );
 }

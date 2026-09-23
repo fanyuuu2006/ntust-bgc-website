@@ -110,7 +110,7 @@ test("public route follows the public-page hierarchy and keeps clarification sec
   assert.match(html, /關於支持本站/);
   assert.match(html, /不影響網站功能、社員資格或其他社團權益/);
   assert.doesNotMatch(html, /一起讓網站慢慢變得更好|<svg/);
-  assert.doesNotMatch(html, /href="https?:\/\//);
+  assert.doesNotMatch(html, /href="https:\/\/payments\.example\.test\/support"/);
   assert.ok(source("src/components/Footer/Footer.tsx").includes('href: "/support"'));
   assert.ok(source("src/app/sitemap.ts").includes('"/support"'));
 });
@@ -138,6 +138,23 @@ test("public route remains unavailable when payment configuration is invalid or 
     const html = renderToStaticMarkup(await SupportPage());
     assert.match(html, /disabled/);
     assert.match(html, /支持方式準備中/);
-    assert.doesNotMatch(html, /href="https?:\/\//);
+    assert.doesNotMatch(html, /href="https:\/\/payments\.example\.test\/support"/);
   }
+});
+
+test("support policies describe the active hosted provider and acknowledgement controls", () => {
+  const privacy = source("src/app/(public)/privacy/page.tsx");
+  const terms = source("src/app/(public)/terms/page.tsx");
+  const support = source("src/app/(public)/support/page.tsx");
+
+  for (const policy of [privacy, terms]) {
+    assert.match(policy, /Buy Me a Coffee/);
+    assert.match(policy, /網站開發者個人收取/);
+    assert.match(policy, /付款.*不.*同意.*公開|付款不代表同意公開/s);
+    assert.match(policy, /退款.*不再公開|退款後.*不再公開/s);
+  }
+  assert.doesNotMatch(privacy, /確認第三方付款平台後|實際收款平台.*確認後/);
+  assert.doesNotMatch(terms, /目前尚未提供付款連結/);
+  assert.match(support, /https:\/\/fanyu\.vercel\.app/);
+  assert.match(support, /聯絡[\s\S]*網站開發者/);
 });

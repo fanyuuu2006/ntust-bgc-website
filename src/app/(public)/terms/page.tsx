@@ -5,7 +5,7 @@ export default function TermsPage() {
     <article className="container min-w-0 max-w-3xl space-y-8 py-8 wrap-anywhere text-sm leading-7 text-(--text-secondary) sm:py-10 sm:text-base [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-(--text-primary) [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_a]:text-(--interactive-primary) [&_a]:underline [&_a]:underline-offset-4 [&_a]:decoration-(--border-default) [&_a:hover]:decoration-current [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-offset-4">
       <header className="space-y-3">
         <h1 className="text-2xl font-bold text-(--text-primary) sm:text-3xl">使用條款</h1>
-        <p className="text-sm text-(--text-muted)">最後更新：<time dateTime="2026-09-14">2026/09/14</time></p>
+        <p className="text-sm text-(--text-muted)">最後更新：<time dateTime="2026-09-23">2026/09/23</time></p>
         <p>使用網站帳號、社員服務與桌遊借用功能前，請先了解以下規範。</p>
       </header>
       <nav aria-label="本頁內容" className="border-y border-(--border-default) py-4">
@@ -102,7 +102,8 @@ export default function TermsPage() {
       </div>
       <section aria-labelledby="developer-support-terms" className="mt-10 space-y-3">
         <h2 id="developer-support-terms">支持本站</h2>
-        <p>支持本站屬自願支持網站開發者個人持續開發與維護，不是社費、社團收入或購買網站功能。支持與否及金額不影響社員資格、幹部資格、借用、簽到或其他社團權益。付款及退款將依啟用後所選第三方平台的實際規則辦理；本站目前尚未提供付款連結。</p>
+        <p>支持本站屬自願支持網站持續開發與維護，款項由網站開發者個人收取，並透過 Buy Me a Coffee 的第三方頁面處理；不是臺科大或桌遊社的社費、捐款或社團收入。支持與否及金額不影響網站功能、社員資格、幹部資格或其他社團權益。</p>
+        <p>付款不代表同意公開名稱。Supporter Wall 只會在另行取得明確同意後顯示指定暱稱；支持者可要求撤下公開暱稱，退款後也不再公開該筆支持的致謝。付款及退款仍依 Buy Me a Coffee 的實際規則辦理。</p>
       </section>
     </article>
   );

@@ -71,7 +71,16 @@ export default async function SupportPage() {
             支持完全出於自願，由網站開發者個人收取；並非臺科大或桌遊社的社費、捐款或社團收入。不支持也不影響網站功能、社員資格或其他社團權益。
           </p>
           <p>
-            付款不會自動公開姓名。只有另外同意並經確認的公開暱稱會出現在感謝名單，也可以隨時要求撤回。
+            付款不會自動公開姓名。只有另外同意並經確認的公開暱稱會出現在感謝名單，也可以隨時要求撤回。如需撤回公開暱稱，可聯絡
+            <a
+              href="https://fanyu.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-1 text-(--interactive-primary) underline decoration-(--border-default) underline-offset-4 hover:decoration-current"
+            >
+              網站開發者
+            </a>
+            。
           </p>
         </div>
       </section>

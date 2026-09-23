@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { createRequire } from "node:module";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { JSDOM } from "jsdom";
 
 import { load } from "./helpers/load-app-module.mjs";
 
@@ -95,8 +97,8 @@ test("duplicate platform transaction is rejected without leaking its reference i
   );
 });
 
-test("private management UI keeps payment evidence private and separates consent from publishing", () => {
-  const { SupportManagePanel } = load("src/components/(public)/support/SupportManagePanel.tsx", {
+test("private management UI keeps payment evidence inside management and separates consent from publishing", () => {
+  const { ManageSupportRecordModal, SupportManagePanel } = load("src/components/(public)/support/SupportManagePanel.tsx", {
     "@/libs/api/client": { apiClient: async () => { throw new Error("unused"); } },
   });
   const record = {
@@ -106,11 +108,75 @@ test("private management UI keeps payment evidence private and separates consent
     published_at: null, withdrawn_at: null, created_at: "2026-09-01T00:00:00Z",
     updated_at: "2026-09-01T00:00:00Z",
   };
-  const html = renderToStaticMarkup(React.createElement(SupportManagePanel, { initialRecords: [record] }));
-  assert.match(html, /PRIVATE-123/);
-  assert.match(html, /付款本身不代表同意/);
-  assert.match(html, /紀錄公開同意/);
-  assert.doesNotMatch(html, /發布暱稱/);
+  const collection = renderToStaticMarkup(React.createElement(SupportManagePanel, { initialRecords: [record] }));
+  const management = renderToStaticMarkup(React.createElement(ManageSupportRecordModal, {
+    record,
+    onClose: () => {},
+    onSaved: () => {},
+  }));
+  assert.doesNotMatch(collection, /PRIVATE-123/);
+  assert.match(management, /PRIVATE-123/);
+  assert.match(management, /付款不代表同意公開/);
+  assert.match(management, /紀錄公開同意/);
+  const managementDocument = new JSDOM(management).window.document;
+  const managementActions = [...(managementDocument.querySelector("dialog")?.querySelectorAll("button") ?? [])]
+    .map((button) => button.textContent);
+  assert.ok(!managementActions.includes("公開"));
+  assert.ok(!managementActions.includes("撤下公開"));
+});
+
+test("support record presentation derives one deterministic management status", () => {
+  const { getSupportRecordStatus } = load(
+    "src/components/(public)/support/support-record-status.ts",
+  );
+  const base = {
+    payment_status: "paid",
+    public_display_name: null,
+    public_consent_at: null,
+    published_at: null,
+    withdrawn_at: null,
+  };
+
+  assert.equal(getSupportRecordStatus(base), "awaiting-consent");
+  assert.equal(getSupportRecordStatus({ ...base, public_display_name: "小明", public_consent_at: "2026-09-01T00:00:00Z" }), "ready-to-publish");
+  assert.equal(getSupportRecordStatus({ ...base, public_display_name: "小明", public_consent_at: "2026-09-01T00:00:00Z", published_at: "2026-09-02T00:00:00Z" }), "published");
+  assert.equal(getSupportRecordStatus({ ...base, withdrawn_at: "2026-09-03T00:00:00Z" }), "withdrawn");
+  assert.equal(getSupportRecordStatus({ ...base, payment_status: "refunded", withdrawn_at: "2026-09-03T00:00:00Z" }), "refunded");
+});
+
+test("support management follows the existing admin collection and dialog grammar", () => {
+  const { ManageSupportRecordModal, SupportManagePanel } = load("src/components/(public)/support/SupportManagePanel.tsx", {
+    "@/libs/api/client": { apiClient: async () => { throw new Error("unused"); } },
+  });
+  const record = {
+    id: managerId, provider: "buymeacoffee", provider_transaction_reference: "PRIVATE-123",
+    payment_status: "paid", paid_at: "2026-09-01T00:00:00Z",
+    public_display_name: null, public_consent_at: null, public_consent_method: null,
+    published_at: null, withdrawn_at: null, created_at: "2026-09-01T00:00:00Z",
+    updated_at: "2026-09-01T00:00:00Z",
+  };
+  const dom = new JSDOM(renderToStaticMarkup(React.createElement(SupportManagePanel, { initialRecords: [record] })));
+  const document = dom.window.document;
+
+  assert.match(document.querySelector("h1")?.textContent ?? "", /支持紀錄管理/);
+  assert.ok([...document.querySelectorAll("button")].some((button) => button.textContent.includes("新增已核對支持")));
+  assert.deepEqual(
+    [...document.querySelectorAll("select option")].map((option) => option.textContent),
+    ["全部", "待取得同意", "待發布", "已公開", "已撤下", "已退款"],
+  );
+  assert.deepEqual(
+    [...document.querySelectorAll("table th")].map((cell) => cell.textContent),
+    ["平台", "付款時間", "公開暱稱", "狀態", "操作"],
+  );
+  assert.doesNotMatch(document.querySelector("table")?.textContent ?? "", /PRIVATE-123/);
+  const management = new JSDOM(renderToStaticMarkup(React.createElement(ManageSupportRecordModal, {
+    record,
+    onClose: () => {},
+    onSaved: () => {},
+  }))).window.document;
+  assert.match([...management.querySelectorAll("dialog")].map((dialog) => dialog.textContent).join(" "), /PRIVATE-123/);
+  assert.equal(management.querySelectorAll('input[type="checkbox"]').length, 1);
+  assert.doesNotMatch(readFileSync("src/components/(public)/support/SupportManagePanel.tsx", "utf8"), /window\.confirm/);
 });
 
 test("private API denies unauthorized callers before touching records", async () => {
