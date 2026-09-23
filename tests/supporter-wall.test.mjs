@@ -8,6 +8,20 @@ import { load } from "./helpers/load-app-module.mjs";
 
 const source = (path) => readFileSync(path, "utf8");
 
+test("support payment URL accepts only configured absolute HTTPS destinations", () => {
+  const { configuredSupportPaymentUrl } = load("src/libs/support-payment.ts");
+
+  assert.equal(configuredSupportPaymentUrl(), null);
+  assert.equal(configuredSupportPaymentUrl(""), null);
+  assert.equal(configuredSupportPaymentUrl("   "), null);
+  assert.equal(configuredSupportPaymentUrl("not-a-url"), null);
+  assert.equal(configuredSupportPaymentUrl("http://payments.example.test/support"), null);
+  assert.equal(
+    configuredSupportPaymentUrl("  https://payments.example.test/support  "),
+    "https://payments.example.test/support",
+  );
+});
+
 test("public support query selects only names and filters payment, consent, publication and withdrawal", async () => {
   const calls = [];
   const query = {
@@ -80,6 +94,7 @@ test("schema keeps private records inaccessible to browser roles and prevents du
 
 test("public route follows the public-page hierarchy and keeps clarification secondary", async () => {
   const { metadata, default: SupportPage } = load("src/app/(public)/support/page.tsx", {
+    "@/libs/support-payment": { configuredSupportPaymentUrl: () => null },
     "@/services/support/support.service": { supportService: { listPublicSupporters: async () => [] } },
   });
   assert.equal(metadata.alternates.canonical, "/support");
@@ -98,4 +113,31 @@ test("public route follows the public-page hierarchy and keeps clarification sec
   assert.doesNotMatch(html, /href="https?:\/\//);
   assert.ok(source("src/components/Footer/Footer.tsx").includes('href: "/support"'));
   assert.ok(source("src/app/sitemap.ts").includes('"/support"'));
+});
+
+test("public route enables the canonical CTA only for a valid configured payment URL", async () => {
+  const { default: SupportPage } = load("src/app/(public)/support/page.tsx", {
+    "@/libs/support-payment": { configuredSupportPaymentUrl: () => "https://payments.example.test/support" },
+    "@/services/support/support.service": { supportService: { listPublicSupporters: async () => [] } },
+  });
+
+  const html = renderToStaticMarkup(await SupportPage());
+  assert.match(html, /href="https:\/\/payments\.example\.test\/support"/);
+  assert.match(html, /請開發者喝杯飲料 🧋/);
+  assert.doesNotMatch(html, /disabled/);
+  assert.doesNotMatch(html, /支持方式準備中/);
+});
+
+test("public route remains unavailable when payment configuration is invalid or missing", async () => {
+  for (const configuredValue of [null, undefined]) {
+    const { default: SupportPage } = load("src/app/(public)/support/page.tsx", {
+      "@/libs/support-payment": { configuredSupportPaymentUrl: () => configuredValue },
+      "@/services/support/support.service": { supportService: { listPublicSupporters: async () => [] } },
+    });
+
+    const html = renderToStaticMarkup(await SupportPage());
+    assert.match(html, /disabled/);
+    assert.match(html, /支持方式準備中/);
+    assert.doesNotMatch(html, /href="https?:\/\//);
+  }
 });

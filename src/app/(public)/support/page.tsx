@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 
 import { SupporterWall } from "@/components/(public)/support/SupporterWall";
 import { PageHeader } from "@/components/PageHeader";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { createPublicMetadata } from "@/libs/seo";
+import { configuredSupportPaymentUrl } from "@/libs/support-payment";
 import { supportService } from "@/services/support/support.service";
 
 export const metadata: Metadata = createPublicMetadata({
@@ -15,6 +16,7 @@ export const metadata: Metadata = createPublicMetadata({
 
 export default async function SupportPage() {
   const supporters = await supportService.listPublicSupporters();
+  const paymentUrl = configuredSupportPaymentUrl();
 
   return (
     <main className="container min-w-0 max-w-5xl py-8 sm:py-10 lg:py-12">
@@ -35,12 +37,20 @@ export default async function SupportPage() {
           </div>
 
           <div className="shrink-0 sm:text-right">
-            <Button disabled size="lg" className="w-full sm:w-auto" aria-describedby="support-method-status">
-              請開發者喝杯飲料 🧋
-            </Button>
-            <p id="support-method-status" className="mt-2 text-sm text-(--text-muted)">
-              支持方式準備中
-            </p>
+            {paymentUrl ? (
+              <ButtonLink href={paymentUrl} size="lg" className="w-full sm:w-auto">
+                請開發者喝杯飲料 🧋
+              </ButtonLink>
+            ) : (
+              <>
+                <Button disabled size="lg" className="w-full sm:w-auto" aria-describedby="support-method-status">
+                  請開發者喝杯飲料 🧋
+                </Button>
+                <p id="support-method-status" className="mt-2 text-sm text-(--text-muted)">
+                  支持方式準備中
+                </p>
+              </>
+            )}
           </div>
         </div>
       </Card>

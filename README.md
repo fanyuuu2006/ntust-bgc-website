@@ -39,6 +39,8 @@ npm run dev
 | `EMAIL_FROM` | 測試寄信時需要 | 否 | Brevo 已驗證的寄件地址 |
 | `EMAIL_FROM_NAME` | 測試寄信時需要 | 否 | 寄件者顯示名稱 |
 | `REGISTER_KEY_SECRET` | 測試產生社員註冊碼時需要 | 是 | Server 產生註冊碼；至少 16 字元 |
+| `SUPPORT_MANAGER_USER_ID` | 管理支持紀錄時需要 | 否（server-only） | 唯一可管理私人 SupportRecord 的 open、已驗證 User UUID |
+| `SUPPORT_PAYMENT_URL` | 開放外部支持時需要 | 否（server-only） | 第三方 hosted payment page 的 HTTPS URL；留空時 CTA 維持準備中 |
 
 `SUPABASE_URL` 與 `NEXT_PUBLIC_SUPABASE_URL` 在一般開發環境應指向同一個 Supabase
 project origin。`NEXT_PUBLIC_*` 會被打包到瀏覽器，因此只能放公開設定；
@@ -56,6 +58,15 @@ Brevo 設定採延遲讀取：瀏覽首頁或進行不寄信的開發工作不�
 `SITE_URL` 是 canonical production origin 的唯一 deployment 設定來源。Production 必須設定
 完整 HTTP/HTTPS origin，且不可包含 path、query 或 hash；development 與 test 未設定時使用
 `http://localhost:3000`。Vercel Preview 不會自動使用 `VERCEL_URL` 作為 canonical origin。
+
+### 支持款項人工核對
+
+1. 在第三方 payment provider dashboard 確認交易成功並取得 transaction/reference。
+2. 進入 `/support/manage` 建立私人支持紀錄。
+3. 另外取得公開暱稱的明確同意，再記錄 display name 與 consent method 並發布。
+4. 支持者要求取消公開時使用 withdraw；付款已退款時標記 refunded。
+
+Payment does not imply consent to public acknowledgement. 未取得明確同意時不得公開支持者名稱。
 
 ### 協作者安全提醒
 
