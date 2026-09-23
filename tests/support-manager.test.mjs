@@ -100,6 +100,7 @@ test("duplicate platform transaction is rejected without leaking its reference i
 test("private management UI keeps payment evidence inside management and separates consent from publishing", () => {
   const { ManageSupportRecordModal, SupportManagePanel } = load("src/components/(public)/support/SupportManagePanel.tsx", {
     "@/libs/api/client": { apiClient: async () => { throw new Error("unused"); } },
+    "next/navigation": { useRouter: () => ({ replace: () => {} }) },
   });
   const record = {
     id: managerId, provider: "qa", provider_transaction_reference: "PRIVATE-123",
@@ -144,9 +145,75 @@ test("support record presentation derives one deterministic management status", 
   assert.equal(getSupportRecordStatus({ ...base, payment_status: "refunded", withdrawn_at: "2026-09-03T00:00:00Z" }), "refunded");
 });
 
+test("support records compose trimmed local search with status filtering", () => {
+  const { filterAndSortSupportRecords } = load(
+    "src/components/(public)/support/support-record-collection.ts",
+  );
+  const records = [
+    {
+      id: "1", provider: "BuyMeACoffee", provider_transaction_reference: "QA-REF-001",
+      payment_status: "paid", paid_at: "2026-09-03T00:00:00Z",
+      public_display_name: "桌遊夥伴", public_consent_at: "2026-09-01T00:00:00Z",
+      published_at: "2026-09-02T00:00:00Z", withdrawn_at: null,
+    },
+    {
+      id: "2", provider: "qa", provider_transaction_reference: "PRIVATE-XYZ",
+      payment_status: "paid", paid_at: "2026-09-02T00:00:00Z",
+      public_display_name: null, public_consent_at: null, published_at: null, withdrawn_at: null,
+    },
+    {
+      id: "3", provider: "other", provider_transaction_reference: "REF-003",
+      payment_status: "refunded", paid_at: "2026-09-01T00:00:00Z",
+      public_display_name: "QA Supporter", public_consent_at: "2026-09-01T00:00:00Z",
+      published_at: null, withdrawn_at: "2026-09-04T00:00:00Z",
+    },
+  ];
+
+  assert.deepEqual(filterAndSortSupportRecords(records, { query: "  buymeacoffee  ", status: "all", sort: "paid-desc" }).map(({ id }) => id), ["1"]);
+  assert.deepEqual(filterAndSortSupportRecords(records, { query: "qa-ref", status: "all", sort: "paid-desc" }).map(({ id }) => id), ["1"]);
+  assert.deepEqual(filterAndSortSupportRecords(records, { query: "桌遊夥伴", status: "all", sort: "paid-desc" }).map(({ id }) => id), ["1"]);
+  assert.deepEqual(filterAndSortSupportRecords(records, { query: "QA", status: "published", sort: "paid-desc" }).map(({ id }) => id), ["1"]);
+  assert.deepEqual(filterAndSortSupportRecords(records, { query: "QA", status: "refunded", sort: "paid-desc" }).map(({ id }) => id), ["3"]);
+  assert.deepEqual(filterAndSortSupportRecords(records, { query: "missing", status: "all", sort: "paid-desc" }), []);
+});
+
+test("support record sorting is newest, oldest, or deterministic workflow status", () => {
+  const { filterAndSortSupportRecords } = load(
+    "src/components/(public)/support/support-record-collection.ts",
+  );
+  const base = {
+    provider: "qa", provider_transaction_reference: "ref", payment_status: "paid",
+    public_display_name: null, public_consent_at: null, published_at: null, withdrawn_at: null,
+  };
+  const records = [
+    { ...base, id: "new", paid_at: "2026-09-03T00:00:00Z" },
+    { ...base, id: "old", paid_at: "2026-09-01T00:00:00Z" },
+    { ...base, id: "ready", paid_at: "2026-09-02T00:00:00Z", public_display_name: "A", public_consent_at: "2026-09-01T00:00:00Z" },
+    { ...base, id: "public", paid_at: "2026-09-02T00:00:00Z", public_display_name: "B", public_consent_at: "2026-09-01T00:00:00Z", published_at: "2026-09-02T00:00:00Z" },
+    { ...base, id: "withdrawn", paid_at: "2026-09-02T00:00:00Z", withdrawn_at: "2026-09-03T00:00:00Z" },
+    { ...base, id: "refunded", paid_at: "2026-09-02T00:00:00Z", payment_status: "refunded" },
+  ];
+  const run = (sort) => filterAndSortSupportRecords(records, { query: "", status: "all", sort }).map(({ id }) => id);
+
+  assert.deepEqual(run("paid-desc"), ["new", "public", "ready", "refunded", "withdrawn", "old"]);
+  assert.deepEqual(run("paid-asc"), ["old", "public", "ready", "refunded", "withdrawn", "new"]);
+  assert.deepEqual(run("status"), ["new", "old", "ready", "public", "withdrawn", "refunded"]);
+});
+
+test("support result summary distinguishes complete and bounded collections", () => {
+  const { getSupportRecordSummary } = load(
+    "src/components/(public)/support/support-record-collection.ts",
+  );
+  assert.equal(getSupportRecordSummary({ loadedCount: 5, resultCount: 5, filtered: false }), "共 5 筆支持紀錄");
+  assert.equal(getSupportRecordSummary({ loadedCount: 5, resultCount: 2, filtered: true }), "顯示 2 / 5 筆支持紀錄");
+  assert.equal(getSupportRecordSummary({ loadedCount: 100, resultCount: 100, filtered: false }), "顯示最近 100 筆支持紀錄");
+  assert.equal(getSupportRecordSummary({ loadedCount: 100, resultCount: 3, filtered: true }), "最近 100 筆中顯示 3 筆支持紀錄");
+});
+
 test("support management follows the existing admin collection and dialog grammar", () => {
   const { ManageSupportRecordModal, SupportManagePanel } = load("src/components/(public)/support/SupportManagePanel.tsx", {
     "@/libs/api/client": { apiClient: async () => { throw new Error("unused"); } },
+    "next/navigation": { useRouter: () => ({ replace: () => {} }) },
   });
   const record = {
     id: managerId, provider: "buymeacoffee", provider_transaction_reference: "PRIVATE-123",
@@ -162,8 +229,13 @@ test("support management follows the existing admin collection and dialog gramma
   assert.ok([...document.querySelectorAll("button")].some((button) => button.textContent.includes("新增已核對支持")));
   assert.deepEqual(
     [...document.querySelectorAll("select option")].map((option) => option.textContent),
-    ["全部", "待取得同意", "待發布", "已公開", "已撤下", "已退款"],
+    [
+      "全部", "待取得同意", "待發布", "已公開", "已撤下", "已退款",
+      "付款時間：新到舊", "付款時間：舊到新", "狀態",
+    ],
   );
+  assert.equal(document.querySelector('input[type="search"]')?.getAttribute("placeholder"), "搜尋平台、交易參照或公開暱稱");
+  assert.match(document.body.textContent, /共 1 筆支持紀錄/);
   assert.deepEqual(
     [...document.querySelectorAll("table th")].map((cell) => cell.textContent),
     ["平台", "付款時間", "公開暱稱", "狀態", "操作"],

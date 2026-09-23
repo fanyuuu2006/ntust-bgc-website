@@ -8,6 +8,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Modal } from "@/components/Modal";
 import { PageHeader } from "@/components/PageHeader";
+import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -33,6 +34,11 @@ import {
   getSupportRecordStatus,
   type SupportRecordStatus,
 } from "./support-record-status";
+import {
+  filterAndSortSupportRecords,
+  getSupportRecordSummary,
+  type SupportRecordSort,
+} from "./support-record-collection";
 
 type RecordResponse = { data: SupportRecord };
 type StatusFilter = "all" | SupportRecordStatus;
@@ -49,6 +55,12 @@ const statusFilterOptions: Array<{ value: StatusFilter; label: string }> = [
       "refunded",
     ] as const
   ).map((value) => ({ value, label: supportRecordStatusLabels[value] })),
+];
+
+const sortOptions: Array<{ value: SupportRecordSort; label: string }> = [
+  { value: "paid-desc", label: "付款時間：新到舊" },
+  { value: "paid-asc", label: "付款時間：舊到新" },
+  { value: "status", label: "狀態" },
 ];
 
 function CreateSupportModal({ open, onClose, onCreated }: {
@@ -281,7 +293,9 @@ function SupportRecordCollection({ records, onManage }: {
                 <SupportRecordStatusBadge record={record} />
               </div>
               <p className="mt-3 text-sm text-(--text-secondary) wrap-anywhere">公開暱稱：{record.public_display_name ?? "尚未設定"}</p>
-              <div className="mt-3 flex justify-end"><Button size="sm" variant="outline" onClick={() => onManage(record)}>管理</Button></div>
+              <div className="mt-3 flex justify-end border-t border-(--border-muted) pt-3">
+                <Button size="sm" variant="outline" onClick={() => onManage(record)}>管理</Button>
+              </div>
             </Card>
           </li>
         ))}
@@ -292,11 +306,19 @@ function SupportRecordCollection({ records, onManage }: {
 
 export function SupportManagePanel({ initialRecords }: { initialRecords: SupportRecord[] }) {
   const [records, setRecords] = useState(initialRecords);
+  const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<StatusFilter>("all");
+  const [sort, setSort] = useState<SupportRecordSort>("paid-desc");
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selectedRecord = records.find((record) => record.id === selectedId) ?? null;
-  const filteredRecords = filter === "all" ? records : records.filter((record) => getSupportRecordStatus(record) === filter);
+  const filteredRecords = filterAndSortSupportRecords(records, { query, status: filter, sort });
+  const hasCollectionFilter = query.trim().length > 0 || filter !== "all";
+  const summary = getSupportRecordSummary({
+    loadedCount: records.length,
+    resultCount: filteredRecords.length,
+    filtered: hasCollectionFilter,
+  });
 
   function replaceRecord(updated: SupportRecord) {
     setRecords((current) => current.map((record) => record.id === updated.id ? updated : record));
@@ -320,22 +342,44 @@ export function SupportManagePanel({ initialRecords }: { initialRecords: Support
         <section aria-labelledby="support-records-title" className="space-y-4">
           <div>
             <h2 id="support-records-title" className="text-lg font-semibold text-(--text-primary)">支持紀錄</h2>
-            <p className="mt-1 text-sm text-(--text-muted)">顯示最近 100 筆私人核對紀錄。</p>
           </div>
-          <AdminToolbar>
-            <Field label="狀態" htmlFor="support-status-filter" className="max-w-52">
+          <AdminToolbar
+            aria-label="支持紀錄搜尋、篩選與排序"
+            className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_11rem_13rem] lg:items-end"
+          >
+            <div className="sm:col-span-2 lg:col-span-1">
+              <ClearableSearchInput
+                value={query}
+                onValueChange={setQuery}
+                onClear={() => setQuery("")}
+                placeholder="搜尋平台、交易參照或公開暱稱"
+                aria-label="搜尋支持紀錄"
+              />
+            </div>
+            <Field label="狀態" htmlFor="support-status-filter">
               <Select id="support-status-filter" value={filter} onChange={(event) => setFilter(event.target.value as StatusFilter)}>
                 {statusFilterOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
               </Select>
             </Field>
+            <Field label="排序" htmlFor="support-sort">
+              <Select id="support-sort" value={sort} onChange={(event) => setSort(event.target.value as SupportRecordSort)}>
+                {sortOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </Select>
+            </Field>
           </AdminToolbar>
+          <p aria-live="polite" className="text-sm tabular-nums text-(--text-muted)">{summary}</p>
 
           {filteredRecords.length === 0 ? (
             <EmptyState
               compact
-              title="沒有符合此狀態的紀錄"
-              description="改用其他狀態查看支持紀錄。"
-              action={<Button size="sm" variant="outline" onClick={() => setFilter("all")}>顯示全部</Button>}
+              title="找不到符合條件的支持紀錄"
+              description="請調整搜尋文字或狀態篩選。"
+              action={
+                <div className="flex flex-wrap justify-center gap-2">
+                  {query.trim() ? <Button size="sm" variant="outline" onClick={() => setQuery("")}>清除搜尋</Button> : null}
+                  {filter !== "all" ? <Button size="sm" variant="outline" onClick={() => setFilter("all")}>顯示全部狀態</Button> : null}
+                </div>
+              }
             />
           ) : (
             <SupportRecordCollection records={filteredRecords} onManage={(record) => setSelectedId(record.id)} />
