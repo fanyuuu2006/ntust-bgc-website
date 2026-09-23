@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Modal } from "@/components/Modal";
@@ -12,6 +13,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
 import type { BoardGameLocation } from "@/types/database";
 
@@ -128,25 +130,25 @@ export function LocationRecords({ items, hasQuery = false }: { items: LocationRe
             ))}
           </div>
 
-          <Card className="hidden overflow-x-auto p-0 md:block">
-            <table className="min-w-[640px] w-full text-left text-sm">
-              <thead>
-                <tr>
-                  <th className="px-4 py-3">名稱</th>
-                  <th className="px-4 py-3">說明</th>
-                  <th className="px-4 py-3">使用中的桌遊</th>
-                  <th className="px-4 py-3 text-right">操作</th>
-                </tr>
-              </thead>
-              <tbody>
+          <AdminListSection className="hidden md:block">
+            <Table className="min-w-160">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>名稱</TableHead>
+                  <TableHead>說明</TableHead>
+                  <TableHead>使用中的桌遊</TableHead>
+                  <TableHead className="text-right">操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {items.map((location) => (
-                  <tr key={location.id} className="border-t border-(--border)">
-                    <td className="px-4 py-3 font-medium">{location.name}</td>
-                    <td className="max-w-md px-4 py-3 break-words text-(--muted)">
+                  <TableRow key={location.id}>
+                    <TableCell className="font-medium">{location.name}</TableCell>
+                    <TableCell className="max-w-md break-words text-(--muted)">
                       {location.description || "未填寫說明"}
-                    </td>
-                    <td className="px-4 py-3">{location.count} 款</td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>{location.count} 款</TableCell>
+                    <TableCell>
                       <div className="flex justify-end gap-2">
                         <Button type="button" size="sm" variant="outline" onClick={() => openEdit(location)}>
                           編輯
@@ -155,12 +157,12 @@ export function LocationRecords({ items, hasQuery = false }: { items: LocationRe
                           刪除
                         </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </Card>
+              </TableBody>
+            </Table>
+          </AdminListSection>
         </>
       )}
 

@@ -2,6 +2,7 @@ import { withServerErrorReference } from "@/libs/observability/server-render";
 import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
 import Link from "next/link";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
+import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
 import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
@@ -183,7 +184,7 @@ async function AdminAnnouncementsPage({
               ))}
             </div>
 
-            <Card className="hidden rounded-xl p-0 lg:block">
+            <AdminListSection className="hidden lg:block">
               <Table className="table-fixed">
                 <TableHeader>
                   <TableRow>
@@ -247,7 +248,7 @@ async function AdminAnnouncementsPage({
                   ))}
                 </TableBody>
               </Table>
-            </Card>
+            </AdminListSection>
           </>
         )}
 

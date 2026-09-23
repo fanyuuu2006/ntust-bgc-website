@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { AdminUserIdentity } from "@/components/(admin)/admin/users/AdminUserIdentity";
+import { AdminBoardGameLink } from "@/components/(admin)/admin/AdminBoardGameLink";
+import { AdminUserLink } from "@/components/(admin)/admin/users/AdminUserLink";
+import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { RatingStars } from "@/components/(public)/board-games/RatingStars";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -66,7 +67,7 @@ export function AdminReviewRecords({
 
   return (
     <>
-      <Card className="hidden overflow-x-auto p-0 lg:block">
+      <AdminListSection className="hidden lg:block">
         <Table className="min-w-[1080px] table-fixed">
           <TableHeader>
             <TableRow>
@@ -96,18 +97,16 @@ export function AdminReviewRecords({
             {reviews.map((review) => (
               <TableRow key={review.id}>
                 <TableCell className="min-w-0 align-top">
-                  <AdminUserIdentity
-                    identity={review.author}
-                  />
+                  <AdminUserLink userId={review.author.id} identity={review.author} />
                 </TableCell>
                 <TableCell className="min-w-0 align-top">
-                  <Link
-                    href={`/board-games/${review.boardGame.id}`}
+                  <AdminBoardGameLink
+                    boardGameId={review.boardGame.id}
                     className="block truncate font-medium hover:underline"
                     title={review.boardGame.name}
                   >
                     {review.boardGame.name}
-                  </Link>
+                  </AdminBoardGameLink>
                 </TableCell>
                 <TableCell className="align-middle">
                   <RatingStars rating={review.rating} size="sm" label={`評分 ${review.rating} 分`} />
@@ -130,13 +129,14 @@ export function AdminReviewRecords({
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </AdminListSection>
 
       <div className="grid min-w-0 gap-3 lg:hidden">
         {reviews.map((review) => (
           <Card key={review.id} className="min-w-0 overflow-hidden p-4">
             <div className="flex min-w-0 items-start gap-3">
-              <AdminUserIdentity
+              <AdminUserLink
+                userId={review.author.id}
                 identity={review.author}
                 variant="mobile"
                 className="min-w-0 flex-1"
@@ -147,13 +147,13 @@ export function AdminReviewRecords({
             </div>
             <div className="mt-3 min-w-0 border-t border-(--border-default) pt-3">
               <p className="text-xs text-(--text-muted)">桌遊</p>
-              <Link
-                href={`/board-games/${review.boardGame.id}`}
+              <AdminBoardGameLink
+                boardGameId={review.boardGame.id}
                 className="mt-0.5 block truncate text-sm font-semibold hover:underline"
                 title={review.boardGame.name}
               >
                 {review.boardGame.name}
-              </Link>
+              </AdminBoardGameLink>
               <div className="mt-3"><ReviewExcerpt review={review} onView={() => setViewing(review)} /></div>
             </div>
             <div className="mt-3 flex min-w-0 items-center justify-between gap-3 border-t border-(--border-default) pt-3">

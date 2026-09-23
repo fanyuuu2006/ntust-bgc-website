@@ -3,8 +3,8 @@
 import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { BASE_PATH } from "@/app/(admin)/admin/board-games/constants";
+import { AdminBoardGameLink } from "@/components/(admin)/admin/AdminBoardGameLink";
 import type { BoardGamesQuery } from "@/app/(admin)/admin/board-games/types";
 import { BoardGameStatusBadge } from "@/components/(admin)/admin/board-games/BoardGameStatusBadge";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
@@ -151,12 +151,9 @@ export function BoardGameTable({
                       boardGame={game}
                       className="size-10 shrink-0 rounded-md border border-(--border) object-cover"
                     />
-                    <Link
-                      href={`/board-games/${game.id}`}
-                      className="min-w-0 wrap-anywhere font-medium text-(--interactive-primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
-                    >
+                    <AdminBoardGameLink boardGameId={game.id} returnTo={returnTo} className="min-w-0">
                       {game.name}
-                    </Link>
+                    </AdminBoardGameLink>
                   </div>
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
@@ -197,12 +194,9 @@ export function BoardGameTable({
                 />
                 <div className="min-w-0 flex-1">
                   <h2 className="wrap-anywhere font-semibold">
-                    <Link
-                      href={`/board-games/${game.id}`}
-                      className="text-(--interactive-primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
-                    >
+                    <AdminBoardGameLink boardGameId={game.id} returnTo={returnTo}>
                       {game.name}
-                    </Link>
+                    </AdminBoardGameLink>
                   </h2>
                   <p className="mt-1 text-sm text-(--muted)">
                     社產編號 #{game.inventory_number}

@@ -109,11 +109,12 @@ test("own and public Profile Reviews share the same paginated collection", async
   assert.match(collection, /pageKey="reviewPage"/);
 });
 
-test("Admin Board Game names link to public details without replacing edit or delete", async () => {
+test("Admin Board Game names use the admin edit destination without replacing row actions", async () => {
   const content = await source(
     "src/components/(admin)/admin/board-games/BoardGameTable.tsx",
   );
-  assert.equal((content.match(/href=\{`\/board-games\/\$\{game\.id\}`\}/g) ?? []).length, 2);
+  assert.equal((content.match(/<AdminBoardGameLink/g) ?? []).length, 2);
+  assert.doesNotMatch(content, /href=\{`\/board-games\/\$\{game\.id\}`\}/);
   assert.match(content, /\/admin\/board-games\/\$\{boardGame\.id\}\/edit/);
   assert.match(content, /variant="danger"/);
   assert.doesNotMatch(content, /<TableRow[^>]*href=/);
