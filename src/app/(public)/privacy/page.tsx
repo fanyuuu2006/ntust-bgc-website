@@ -5,7 +5,7 @@ export default function PrivacyPage() {
     <article className="container min-w-0 max-w-3xl space-y-8 py-8 wrap-anywhere text-sm leading-7 text-(--text-secondary) sm:py-10 sm:text-base [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-(--text-primary) [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_a]:text-(--interactive-primary) [&_a]:underline [&_a]:underline-offset-4 [&_a]:decoration-(--border-default) [&_a:hover]:decoration-current [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-offset-4">
       <header className="space-y-3">
         <h1 className="text-2xl font-bold text-(--text-primary) sm:text-3xl">隱私權政策</h1>
-        <p className="text-sm text-(--text-muted)">最後更新：<time dateTime="2026-09-21">2026/09/21</time></p>
+        <p className="text-sm text-(--text-muted)">最後更新：<time dateTime="2026-09-23">2026/09/23</time></p>
         <p>這裡說明網站與社團服務需要哪些資料、如何使用，以及您可以如何查詢或提出請求。</p>
       </header>
       <nav aria-label="本頁內容" className="border-y border-(--border-default) py-4">
@@ -129,6 +129,12 @@ export default function PrivacyPage() {
           <p><a href="mailto:ntustboardgame@gmail.com">ntustboardgame@gmail.com</a></p>
         </section>
       </div>
+      <section aria-labelledby="developer-support-privacy" className="mt-10 space-y-3">
+        <h2 id="developer-support-privacy">網站開發者個人支持</h2>
+        <p>「支持本站」的自願款項由網站開發者個人收取，不是臺科大或桌遊社的社費、捐款或社團收入。付款由 Buy Me a Coffee 的第三方頁面處理；本站不直接處理或保存卡號、銀行帳號及付款方式明細。</p>
+        <p>為人工核對真實支持並避免重複紀錄，本站僅保存付款平台、私人交易參照、付款與退款狀態及必要時間。付款不代表同意公開。Supporter Wall 只會在另行取得明確同意後顯示指定的公開暱稱，不會公開金額、交易參照或付款者的私人身分；退款後也不再公開該筆支持的致謝。</p>
+        <p>支持者可要求撤下公開暱稱；撤下後本站會停止展示，但為核對交易而保存的最少私人紀錄不會因此自動刪除。</p>
+      </section>
     </article>
   );
 }

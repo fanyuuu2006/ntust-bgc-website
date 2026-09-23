@@ -8,6 +8,7 @@ const STATIC_PATHS = [
   "",
   "/announcements",
   "/board-games",
+  "/support",
   "/privacy",
   "/terms",
 ] as const;

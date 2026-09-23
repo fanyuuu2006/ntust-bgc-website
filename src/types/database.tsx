@@ -21,6 +21,22 @@ export type DateOnly = string;
 
 export type Timestamp = string;
 
+/** Private evidence of verified support for the website developer; never a public DTO. */
+export type SupportRecord = {
+  id: UUID;
+  provider: string;
+  provider_transaction_reference: string;
+  payment_status: "paid" | "refunded";
+  paid_at: Timestamp;
+  public_display_name: string | null;
+  public_consent_at: Timestamp | null;
+  public_consent_method: string | null;
+  published_at: Timestamp | null;
+  withdrawn_at: Timestamp | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
 /* =========================================================
  * Enums
  * ========================================================= */
