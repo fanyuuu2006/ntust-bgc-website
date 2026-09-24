@@ -42,9 +42,14 @@ async function BoardGameEditPage({
         title="編輯桌遊"
         description={`更新「${boardGame.name}」的基本與管理資訊。`}
         actions={
-          <ButtonLink href={returnTo} variant="outline">
-            返回列表
-          </ButtonLink>
+          <div className="flex flex-wrap gap-2">
+            <ButtonLink href={`/board-games/${boardGame.id}`} variant="text">
+              查看公開頁面
+            </ButtonLink>
+            <ButtonLink href={returnTo} variant="outline">
+              返回列表
+            </ButtonLink>
+          </div>
         }
       />
 
