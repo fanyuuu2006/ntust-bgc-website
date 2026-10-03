@@ -14,6 +14,7 @@ export const memberMenuNavigation = [
   { label: "儀表板", href: "/dashboard" },
   { label: "社員資格", href: "/memberships" },
   { label: "借用紀錄", href: "/borrowings" },
+  { label: "我的桌遊推薦", href: "/purchase-suggestions/mine", activePaths: ["/purchase-suggestions"] },
   { label: "設定", href: "/settings" },
 ] as const satisfies readonly NavigationItem[];
 
@@ -42,6 +43,7 @@ export const adminSidebarGroups: readonly AdminNavigationGroup[] = [
     items: [
       { label: "桌遊管理", href: "/admin/board-games" },
       { label: "桌遊借用管理", href: "/admin/board-games/borrowings" },
+      { label: "桌遊購入建議", href: "/admin/purchase-suggestions" },
       { label: "評價與評論管理", href: "/admin/reviews" },
       { label: "桌遊種類管理", href: "/admin/board-games/categories" },
       { label: "桌遊位置管理", href: "/admin/board-games/locations" },

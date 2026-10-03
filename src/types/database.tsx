@@ -21,6 +21,27 @@ export type DateOnly = string;
 
 export type Timestamp = string;
 
+export type BoardGamePurchaseSuggestion = {
+  id: UUID;
+  user_id: UUID;
+  game_name: string;
+  normalized_name: string;
+  reason: string;
+  reference_url: string | null;
+  status: "pending" | "purchased" | "rejected";
+  request_id: UUID;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+  reviewed_by_user_id: UUID | null;
+  reviewed_at: Timestamp | null;
+  version: number;
+  deleted_at: Timestamp | null;
+  deleted_by_user_id: UUID | null;
+  purchase_notice_version: number;
+  purchase_notice_read_version: number;
+  purchase_notice_unread: boolean;
+};
+
 /** Private evidence of verified support for the website developer; never a public DTO. */
 export type SupportRecord = {
   id: UUID;

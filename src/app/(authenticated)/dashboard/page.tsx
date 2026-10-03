@@ -16,6 +16,7 @@ import { membershipService } from "@/services/memberships/memberships.service";
 import { formatDate } from "@/utils/date";
 import { getCurrentAcademicYear } from "@/services/academic-years/current-academic-year";
 import { getDashboardBorrowingPriority } from "@/services/board-games/dashboard-borrowing-priority";
+import { PurchaseNotices } from "@/components/(authenticated)/purchase-suggestions/PurchaseNotices";
 import { cn } from "@/utils/className";
 
 async function DashboardPage() {
@@ -47,6 +48,7 @@ async function DashboardPage() {
   return (
     <section className="container py-8">
       <div className="space-y-5 lg:space-y-6">
+        <PurchaseNotices />
         <PageHeader title={`歡迎回來，${user.name}`} />
 
         <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-5">

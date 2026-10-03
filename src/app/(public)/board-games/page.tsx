@@ -4,6 +4,7 @@ import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection
 import { BoardGameSearchForm } from "@/components/(public)/board-games/BoardGameSearchForm";
 import { BoardGameGrid } from "@/components/(public)/board-games/BoardGameGrid";
 import { PageHeader } from "@/components/PageHeader";
+import { ButtonLink } from "@/components/ui/Button";
 import { classifyQuerySeo } from "@/libs/query-seo";
 import type { Metadata } from "next";
 import {
@@ -102,13 +103,19 @@ async function BoardGamesPage({
           description="探索社團桌遊，找到下一款想玩的遊戲。"
         />
 
-        <div className="mt-6">
+        <div className="mt-6 grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
           <BoardGameSearchForm
             categories={categories}
             locations={locations}
             query={query}
             pageSize={pageSize}
           />
+          <div className="flex flex-wrap items-center gap-3 lg:flex-nowrap">
+            <p className="text-sm text-(--text-muted)">找不到想玩的桌遊？</p>
+            <ButtonLink href="/purchase-suggestions" variant="outline">
+              推薦社團購入
+            </ButtonLink>
+          </div>
         </div>
 
         <PaginatedCollection
