@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
 import { purchaseSuggestionsRepository as repository } from "@/repositories/purchase-suggestions.repository";
-import { createPurchaseSuggestionSchema, managePurchaseSuggestionSchema, purchaseSuggestionQuerySchema, readPurchaseNoticeSchema } from "./purchase-suggestions.schema";
+import { createPurchaseSuggestionSchema, managePurchaseSuggestionSchema, purchaseSuggestionQuerySchema } from "./purchase-suggestions.schema";
 import { PurchaseSuggestionError } from "./purchase-suggestions.errors";
 import { getPurchaseSuggestionWeek } from "@/utils/purchase-suggestions";
 
@@ -29,7 +29,7 @@ function result(raw: unknown) {
   };
   const error = errors[value.outcome];
   if (error) throw new PurchaseSuggestionError(...error, value.retry_after);
-  if (!["received", "updated", "read"].includes(value.outcome)) throw new Error("Unexpected purchase suggestion result");
+  if (!["received", "updated"].includes(value.outcome)) throw new Error("Unexpected purchase suggestion result");
   return value;
 }
 
@@ -46,10 +46,6 @@ export const purchaseSuggestionsService = {
     const used = await repository.countForWeek(user.id, week.start, week.end);
     return { remaining: Math.max(0, 3 - used), resetsAt: week.end };
   },
-  listOwn: async (input: unknown = {}) => {
-    const user = await requireUser();
-    return repository.listOwn(user.id, purchaseSuggestionQuerySchema.parse(input));
-  },
   listAdmin: async (input: unknown = {}) => {
     await requireUser(true);
     return repository.listAdmin(purchaseSuggestionQuerySchema.parse(input));
@@ -59,15 +55,5 @@ export const purchaseSuggestionsService = {
     const payload = managePurchaseSuggestionSchema.parse(input);
     result(await repository.manage(user.id, z.uuid().parse(id), payload.version, payload.action));
     return { updated: true };
-  },
-  notices: async () => {
-    const user = await requireUser();
-    return repository.notices(user.id);
-  },
-  readNotice: async (id: unknown, input: unknown) => {
-    const user = await requireUser();
-    const payload = readPurchaseNoticeSchema.parse(input);
-    result(await repository.readNotice(user.id, z.uuid().parse(id), payload.notice_version));
-    return { read: true };
   },
 };

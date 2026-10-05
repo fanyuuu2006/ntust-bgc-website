@@ -1,5 +1,7 @@
 # 共用測試資料庫試用
 
+> **目前功能更新：** 已移除購入提醒、已讀 API 及本人紀錄頁；使用者端僅有表單及送出結果。下方本人紀錄相關描述是歷史狀態。既有資料庫通知欄位保留相容，本次未變更遠端資料庫。
+
 2026-10-03，功能工作目錄 `.temp/purchase-suggestions` 的網站已切換到共用測試專案 `mrsyfssstigartmhofuz`。不是正式資料庫，也不是先前的 Docker 本機資料庫。
 
 ## 連線與啟動
@@ -16,9 +18,9 @@ npm.cmd run dev -- --port 3107 --hostname 127.0.0.1
 
 - `/login`：使用共用測試庫的既有網站帳號，與 Supabase Dashboard／CLI 登入是不同帳號系統。
 - `/board-games`：既有桌遊資料。
-- `/purchase-suggestions`：推薦表單。
-- `/purchase-suggestions/mine`：本人紀錄與購入提醒。
-- `/admin/purchase-suggestions`：具既有管理權限的幹部後台。
+- `/board-games/suggest`：推薦表單。
+- `/board-games/suggest/mine`：本人紀錄與購入提醒。
+- `/admin/board-games/suggests`：具既有管理權限的幹部後台。
 
 先前 `.temp/local-test-accounts.json` 的合成帳号不適用於此環境，未匯入共用資料庫。先前本機連線備份在 Git 忽略的 `.temp/local-env.before-shared.env`，不要公開、提交或直接印出內容。
 

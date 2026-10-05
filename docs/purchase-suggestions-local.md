@@ -1,5 +1,7 @@
 # 本機購入建議試用環境
 
+> **目前功能更新：** 購入提醒、已讀 API 與本人紀錄頁均已移除。使用者端僅有表單及送出結果；下方本人紀錄與提醒的描述僅記錄舊版測試結果，並非現有功能。
+
 > **2026-10-03 狀態更新：** `localhost:3107` 已切換到共用測試專案 `mrsyfssstigartmhofuz`。下方 Docker 與合成帳號說明保留作歷史環境參考，目前不能用這些帳號登入 3107。請使用共用測試庫的既有帳號；目前設定與驗證結果見 `purchase-suggestions-shared-test.md`。Docker 資料仍保留，但網站現在不依賴它。
 
 此文件只適用於 `.temp/purchase-suggestions` 功能工作目錄，不能在原工作目錄或遠端環境照做。
@@ -7,9 +9,9 @@
 ## 入口與帳號
 
 - 登入：`http://localhost:3107/login`
-- 推薦表單：`http://localhost:3107/purchase-suggestions`
-- 本人紀錄／購入提醒：`http://localhost:3107/purchase-suggestions/mine`
-- 幹部後台：`http://localhost:3107/admin/purchase-suggestions`
+- 推薦表單：`http://localhost:3107/board-games/suggest`
+- 本人紀錄／購入提醒：`http://localhost:3107/board-games/suggest/mine`
+- 幹部後台：`http://localhost:3107/admin/board-games/suggests`
 
 帳號與各自隨機密碼儲存在功能工作目錄的 `.temp/local-test-accounts.json`。此檔與 `.env.local` 均已由 Git 忽略，請勿分享或提交。
 

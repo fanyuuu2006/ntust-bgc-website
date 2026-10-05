@@ -11,5 +11,5 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (authorization.response) return authorization.response;
     const data = await purchaseSuggestionsService.manage((await params).id, await readPurchaseSuggestionBody(request));
     return NextResponse.json({ data });
-  } catch (error) { return purchaseSuggestionErrorResponse(error, "[PATCH /api/admin/purchase-suggestions/[id]]"); }
+  } catch (error) { return purchaseSuggestionErrorResponse(error, "[PATCH /api/admin/board-games/suggests/[id]]"); }
 }

@@ -55,7 +55,7 @@ export async function readPurchaseSuggestionBody(request: Request): Promise<unkn
 
 export function purchaseSuggestionErrorResponse(error: unknown, context: string) {
   if (error instanceof PurchaseRequestBodyError) return NextResponse.json({ message: error.message }, { status: error.status });
-  if (error instanceof ZodError) return NextResponse.json({ message: "請檢查輸入內容", errors: z.treeifyError(error) }, { status: 400 });
+  if (error instanceof ZodError) return NextResponse.json({ message: "請檢查輸入內容", errors: z.flattenError(error).fieldErrors }, { status: 400 });
   if (error instanceof PurchaseSuggestionError) return NextResponse.json({ message: error.message }, {
     status: error.status,
     ...(error.retryAfter ? { headers: { "Retry-After": String(error.retryAfter) } } : {}),

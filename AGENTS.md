@@ -652,6 +652,14 @@ AI 必須：
 
 ## Working rules
 
+### 功能修改前的一致性檢查
+
+- 修改前先閱讀最相近的既有頁面，主動比較路由、layout、元件、資料流、搜尋／篩選／分頁、空白狀態、錯誤提示與手機排版；不能只檢查使用者逐項提到的部分。
+- 新增或移動桌遊功能時，前台頁面置於 `/board-games/`，後台頁面置於 `/admin/board-games/`；推薦表單使用 `src/app/(authenticated)/board-games/suggest/page.tsx`，推薦管理使用 `src/app/(admin)/admin/board-games/suggests/page.tsx`。對應 API 也歸入 `board-games`；不順帶遷移無關既有功能。
+- 基礎 UI 優先使用 `src/components/ui` 的 Button、Input、Textarea、Field、Select、Card、Badge、Table、EmptyState；頁面組裝沿用既有 HeadingSection、AdminToolbar、AdminListSection、PaginatedCollection 與查詢元件，不另造相同樣式。
+- 路由調整須同步檢查選單、作用中項目、表單 action、分頁、清除篩選、API 呼叫、測試及文件；確認登入與管理授權不變。
+- 完成後如實區分程式檢查與實際瀏覽器驗收，不能將共用元件或建置通過視為已完成視覺驗收。
+
 - 優先驗證再擴大修改
 - 不順手重構無關模組
 - 不要為了統一而大量改副檔名

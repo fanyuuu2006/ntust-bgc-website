@@ -16,12 +16,24 @@ const schema = load("src/services/purchase-suggestions/purchase-suggestions.sche
 test("suggestion schema trims, counts Unicode characters and rejects injected fields", () => {
   assert.equal(schema.createPurchaseSuggestionSchema.parse({ ...input, game_name: "  中文桌遊  " }).game_name, "中文桌遊");
   assert.equal(schema.createPurchaseSuggestionSchema.parse(input).reference_url, null);
-  assert.equal(schema.createPurchaseSuggestionSchema.parse({ ...input, game_name: "🎲".repeat(120) }).game_name.length, 240);
-  for (const change of [{ game_name: " " }, { game_name: "🎲".repeat(121) }, { reason: "短理由" }, { reason: "文".repeat(1001) }, { reason: " ".repeat(30) }, { game_name: "桌遊\n名稱" }, { reason: "合法文字長度足夠但含\u0000控制字" }, { user_id: userId }, { status: "purchased" }, { reviewed_by_user_id: userId }]) {
+  assert.equal(schema.createPurchaseSuggestionSchema.parse({ ...input, game_name: "🎲".repeat(50) }).game_name.length, 100);
+  for (const change of [{ game_name: " " }, { game_name: "🎲".repeat(51) }, { reason: "短理由" }, { reason: "文".repeat(201) }, { reason: " ".repeat(30) }, { game_name: "桌遊\n名稱" }, { reason: "合法文字長度足夠但含\u0000控制字" }, { user_id: userId }, { status: "purchased" }, { reviewed_by_user_id: userId }]) {
     assert.equal(schema.createPurchaseSuggestionSchema.safeParse({ ...input, ...change }).success, false, JSON.stringify(change));
   }
   assert.equal(schema.managePurchaseSuggestionSchema.safeParse({ action: "pending", version: 1 }).success, false);
   assert.equal(schema.managePurchaseSuggestionSchema.safeParse({ action: "delete", version: 1, user_id: userId }).success, false);
+});
+
+test("new submissions enforce 50/200/100 limits while historical links remain readable", () => {
+  const url = "https://example.test/";
+  const atLimit = { ...input, game_name: "🎲".repeat(50), reason: "文".repeat(200), reference_url: url + "x".repeat(100 - url.length) };
+  assert.equal(schema.createPurchaseSuggestionSchema.safeParse(atLimit).success, true);
+  for (const [field, value] of [["game_name", "文".repeat(51)], ["reason", "文".repeat(201)], ["reference_url", atLimit.reference_url + "x"]]) {
+    const result = schema.createPurchaseSuggestionSchema.safeParse({ ...atLimit, [field]: value });
+    assert.equal(result.success, false);
+    assert.equal(result.error.issues[0].path[0], field);
+  }
+  assert.equal(schema.referenceUrlSchema.safeParse(url + "x".repeat(150)).success, true);
 });
 
 test("reference URL accepts HTTP(S) only and never permits credentials/control characters", () => {
@@ -46,7 +58,7 @@ const http = load("src/libs/api/purchase-suggestion-request.ts", {
   "@/libs/api/server-response": { unexpectedErrorResponse: () => new Response(JSON.stringify({ message: "safe" }), { status: 500 }) },
 });
 function request(body = "{}", headers = {}) {
-  return new NextRequest("https://preview.example.test/api/purchase-suggestions", {
+  return new NextRequest("https://preview.example.test/api/board-games/suggest", {
     method: "POST", headers: { origin: "https://preview.example.test", "content-type": "application/json", ...headers }, body,
   });
 }
@@ -60,7 +72,7 @@ test("mutation origin guard works for preview, rejects cross-origin and exact no
   assert.equal(http.rejectUnsafePurchaseSuggestionRequest(noOrigin).status, 403);
 });
 test("origin guard preserves actual loopback Host and ignores forwarded hosts", () => {
-  const local = new NextRequest("http://127.0.0.1:3107/api/purchase-suggestions", {
+  const local = new NextRequest("http://127.0.0.1:3107/api/board-games/suggest", {
     method: "POST", headers: { host: "127.0.0.1:3107", origin: "http://127.0.0.1:3107", "content-type": "application/json" }, body: "{}",
   });
   assert.equal(http.rejectUnsafePurchaseSuggestionRequest(local), null);
@@ -90,7 +102,7 @@ function serviceHarness() {
   let outcome = { outcome: "received", id: otherId, replayed: false };
   const calls = [];
   const repository = {};
-  for (const name of ["submit", "manage", "readNotice", "countForWeek", "listOwn", "listAdmin", "notices"]) repository[name] = async (...args) => { calls.push([name, ...args]); return name === "countForWeek" ? 3 : outcome; };
+  for (const name of ["submit", "manage", "countForWeek", "listAdmin"]) repository[name] = async (...args) => { calls.push([name, ...args]); return name === "countForWeek" ? 3 : outcome; };
   const { purchaseSuggestionsService: service } = load("src/services/purchase-suggestions/purchase-suggestions.service.ts", {
     "@/libs/auth": { getCurrentUser: async () => user, isAdminByUserId: async () => admin },
     "@/repositories/purchase-suggestions.repository": { purchaseSuggestionsRepository: repository },
@@ -101,13 +113,13 @@ test("service obtains identity from Session and blocks missing/unverified/closed
   for (const user of [null, { id: userId, email_verified_at: null }, { id: userId, email_verified_at: "yes", closed_at: "closed" }]) {
     const h = serviceHarness(); h.setUser(user);
     await assert.rejects(h.service.submit(input), (error) => error.status === 403);
-    await assert.rejects(h.service.listOwn({}), (error) => error.status === 403);
+    await assert.rejects(h.service.quota(), (error) => error.status === 403);
     assert.equal(h.calls.length, 0);
   }
   const h = serviceHarness(); await h.service.submit(input);
   assert.equal(h.calls[0][1], userId);
   assert.equal(h.calls[0][2].reference_url, null);
-  await h.service.listOwn({ user_id: otherId });
+  await h.service.quota();
   assert.equal(h.calls[1][1], userId);
 });
 test("admin service uses existing authorization and strict action schema", async () => {
@@ -128,18 +140,11 @@ test("business outcomes preserve quota and conflict semantics without database d
   await assert.rejects(h.service.submit(input), /Invalid purchase suggestion database response/);
   assert.equal((await h.service.quota()).remaining, 0);
 });
-test("notice acknowledgements supply Session owner and the observed version", async () => {
-  const h = serviceHarness(); h.setOutcome({ outcome: "read" });
-  await h.service.readNotice(otherId, { notice_version: 2 });
-  assert.deepEqual(h.calls[0], ["readNotice", userId, otherId, 2]);
-  await assert.rejects(h.service.readNotice(otherId, { notice_version: 2, user_id: otherId }));
-});
-
 test("POST auth rejects before service/body work and supports replay receipt", async () => {
   let response = new Response("{}", { status: 401 });
   let calls = 0;
   let replayed = false;
-  const { POST } = load("src/app/api/purchase-suggestions/route.ts", {
+  const { POST } = load("src/app/api/board-games/suggest/route.ts", {
     "@/libs/api/verified-authorization": { authorizeVerifiedRequest: async () => ({ response }) },
     "@/libs/api/purchase-suggestion-request": http,
     "@/services/purchase-suggestions/purchase-suggestions.service": { purchaseSuggestionsService: { submit: async () => { calls++; return { id: otherId, replayed }; } } },
@@ -153,7 +158,54 @@ test("POST auth rejects before service/body work and supports replay receipt", a
   assert.equal((await POST(request(JSON.stringify(input)))).status, 200);
 });
 
-test("repository isolates owner, hides deleted records, counts deleted quota and bounds pages", async () => {
+test("PATCH enforces authorization and preserves validation, conflict and safe-error contracts", async () => {
+  const { PurchaseSuggestionError } = load("src/services/purchase-suggestions/purchase-suggestions.errors.ts");
+  const handlerHttp = load("src/libs/api/purchase-suggestion-request.ts", {
+    "@/services/purchase-suggestions/purchase-suggestions.errors": { PurchaseSuggestionError },
+    "@/libs/api/server-response": { unexpectedErrorResponse: () => new Response(JSON.stringify({ message: "safe", errorId: otherId }), { status: 500 }) },
+  });
+  let response = new Response("{}", { status: 401 });
+  let failure = null;
+  const calls = [];
+  const { PATCH } = load("src/app/api/admin/board-games/suggests/[id]/route.ts", {
+    "@/libs/api/admin-authorization": { authorizeAdminRequest: async () => ({ response }) },
+    "@/libs/api/purchase-suggestion-request": handlerHttp,
+    "@/services/purchase-suggestions/purchase-suggestions.service": { purchaseSuggestionsService: { manage: async (id, body) => {
+      calls.push([id, body]);
+      schema.managePurchaseSuggestionSchema.parse(body);
+      if (failure) throw failure;
+      return { updated: true };
+    } } },
+  });
+  const send = (body = { action: "purchased", version: 1 }) => PATCH(new NextRequest(`https://preview.example.test/api/admin/board-games/suggests/${otherId}`, {
+    method: "PATCH", headers: { origin: "https://preview.example.test", "content-type": "application/json" }, body: JSON.stringify(body),
+  }), { params: Promise.resolve({ id: otherId }) });
+  for (const status of [401, 403]) {
+    response = new Response("{}", { status });
+    assert.equal((await send()).status, status);
+    assert.equal(calls.length, 0);
+  }
+  response = null;
+  const success = await send();
+  assert.equal(success.status, 200);
+  assert.deepEqual(await success.json(), { data: { updated: true } });
+  assert.deepEqual(calls[0], [otherId, { action: "purchased", version: 1 }]);
+  const invalid = await send({ action: "pending", version: 0 });
+  assert.equal(invalid.status, 400);
+  const invalidBody = await invalid.json();
+  assert.ok(Array.isArray(invalidBody.errors.action));
+  assert.ok(Array.isArray(invalidBody.errors.version));
+  failure = new PurchaseSuggestionError("紀錄已變更", 409);
+  const conflict = await send();
+  assert.equal(conflict.status, 409);
+  assert.equal((await conflict.json()).message, "紀錄已變更");
+  failure = new Error("private SQL detail");
+  const unexpected = await send();
+  assert.equal(unexpected.status, 500);
+  assert.deepEqual(await unexpected.json(), { message: "safe", errorId: otherId });
+});
+
+test("repository hides deleted records, counts deleted quota and bounds admin pages", async () => {
   const calls = [];
   const chain = new Proxy({}, { get: (_, method) => method === "then"
     ? (resolve) => resolve({ data: [], count: 0, error: null })
@@ -161,26 +213,21 @@ test("repository isolates owner, hides deleted records, counts deleted quota and
   const { purchaseSuggestionsRepository: repository } = load("src/repositories/purchase-suggestions.repository.ts", {
     "@/libs/supabase/server": { supabase: { from: (table) => { calls.push(["from", table]); return chain; } } },
   });
-  await repository.listOwn(userId, { page: 1, pageSize: 9999 });
-  assert.ok(calls.some((call) => call[0] === "eq" && call[1] === "user_id" && call[2] === userId));
+  await repository.listAdmin({ page: 1, pageSize: 9999, status: "all" });
   assert.ok(calls.some((call) => call[0] === "is" && call[1] === "deleted_at" && call[2] === null));
   assert.ok(calls.some((call) => call[0] === "range" && call[1] === 0 && call[2] === 49));
   calls.length = 0;
   await repository.countForWeek(userId, "start", "end");
   assert.equal(calls.some((call) => call[1] === "deleted_at" || call[1] === "status"), false);
-  calls.length = 0;
-  await repository.notices(userId);
-  assert.ok(calls.some((call) => call[0] === "limit" && call[1] === 5));
-  assert.ok(calls.some((call) => call[1] === "user_id" && call[2] === userId));
 });
 
 test("plain-text rendering escapes HTML and refuses malicious stored reference URLs", () => {
-  const { PurchaseSuggestionContent } = load("src/components/(authenticated)/purchase-suggestions/PurchaseSuggestionContent.tsx");
+  const { PurchaseSuggestionList } = load("src/components/(admin)/admin/purchase-suggestions/PurchaseSuggestionList.tsx", { "@/components/(admin)/admin/purchase-suggestions/PurchaseSuggestionActions": { PurchaseSuggestionActions: () => null }, "next/navigation": { useRouter: () => ({ refresh() {} }) } });
   const item = { id: otherId, game_name: "<img src=x onerror=alert(1)>", reason: "<script>alert(1)</script>", reference_url: "javascript:alert(1)", created_at: "2026-09-30T00:00:00Z", status: "pending" };
-  const html = renderToStaticMarkup(createElement(PurchaseSuggestionContent, { item }));
+  const html = renderToStaticMarkup(createElement(PurchaseSuggestionList, { items: [item] }));
   assert.doesNotMatch(html, /<script|<img|javascript:/);
   assert.match(html, /&lt;script&gt;/);
-  const linked = renderToStaticMarkup(createElement(PurchaseSuggestionContent, { item: { ...item, reference_url: "https://example.test/game" } }));
+  const linked = renderToStaticMarkup(createElement(PurchaseSuggestionList, { items: [{ ...item, reference_url: "https://example.test/game" }] }));
   assert.match(linked, /noopener noreferrer/);
 });
 

@@ -131,7 +131,7 @@ export default function PrivacyPage() {
       </div>
       <section aria-labelledby="purchase-suggestions-privacy" className="mt-10 space-y-3">
         <h2 id="purchase-suggestions-privacy">桌遊購入建議</h2>
-        <p>已登入且完成信箱驗證的使用者可提交桌遊名稱、推薦理由與選填參考連結。建議與帳號關聯，僅供本人及具現行管理權限的幹部查看，用於評估採購、防止濫用與顯示站內購入提醒；不會公開或自動寄送通知信。</p>
+        <p>已登入且完成信箱驗證的使用者可提交桌遊名稱、推薦理由與選填參考連結。建議與帳號關聯，僅供具現行管理權限的幹部查看，用於評估採購及防止濫用；不會公開或自動寄送通知信，也不提供本人推薦紀錄查詢。</p>
         <p>幹部移除不當推薦時，紀錄從操作畫面隱藏，但仍保留內容與必要操作紀錄，以維持推薦額度及重複提交防護。帳號註銷後，作者改以已註銷身分處理，內容不會因此自動清除；請勿填寫敏感個資。如需更正或刪除資料，可依本政策的聯絡方式提出。保存範圍與必要性應定期檢視，目前沒有自動清除排程。</p>
       </section>
       <section aria-labelledby="developer-support-privacy" className="mt-10 space-y-3">

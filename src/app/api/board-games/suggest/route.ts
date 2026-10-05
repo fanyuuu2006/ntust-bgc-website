@@ -11,5 +11,5 @@ export async function POST(request: NextRequest) {
     if (authorization.response) return authorization.response;
     const data = await purchaseSuggestionsService.submit(await readPurchaseSuggestionBody(request));
     return NextResponse.json({ data }, { status: data.replayed ? 200 : 201, headers: { "Cache-Control": "no-store" } });
-  } catch (error) { return purchaseSuggestionErrorResponse(error, "[POST /api/purchase-suggestions]"); }
+  } catch (error) { return purchaseSuggestionErrorResponse(error, "[POST /api/board-games/suggest]"); }
 }
