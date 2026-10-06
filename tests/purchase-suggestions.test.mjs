@@ -106,6 +106,14 @@ function serviceHarness() {
   const { purchaseSuggestionsService: service } = load("src/services/purchase-suggestions/purchase-suggestions.service.ts", {
     "@/libs/auth": { getCurrentUser: async () => user, isAdminByUserId: async () => admin },
     "@/repositories/purchase-suggestions.repository": { purchaseSuggestionsRepository: repository },
+    "@/repositories/users.repository": { usersRepository: { findAdminIdentitiesByIds: async (ids) => {
+      calls.push(["reviewers", ids]);
+      return [{ id: userId, name: "暱稱", email: "private@example.test" }, { id: otherId, name: "另一位幹部" }];
+    } } },
+    "@/repositories/user-profiles.repository": { userProfilesRepository: { findAdminIdentitiesByUserIds: async (ids) => {
+      calls.push(["profiles", ids]);
+      return [{ user_id: userId, real_name: "真實姓名", student_id: "private" }];
+    } } },
   });
   return { service, calls, setUser: (value) => { user = value; }, setAdmin: (value) => { admin = value; }, setOutcome: (value) => { outcome = value; } };
 }
@@ -139,6 +147,20 @@ test("business outcomes preserve quota and conflict semantics without database d
   const h = serviceHarness(); h.setOutcome({ unexpected: "SQL internals" });
   await assert.rejects(h.service.submit(input), /Invalid purchase suggestion database response/);
   assert.equal((await h.service.quota()).remaining, 0);
+});
+
+test("admin list batches reviewer names, prefers real names and exposes no extra identity fields", async () => {
+  const h = serviceHarness(); h.setAdmin(true);
+  h.setOutcome({ data: [userId, userId, otherId, "missing", null].map((id) => ({ reviewed_by_user_id: id })), total: 5 });
+  const page = await h.service.listAdmin();
+  assert.deepEqual(page.data.map((item) => item.reviewed_by_name), ["真實姓名", "真實姓名", "另一位幹部", null, null]);
+  assert.deepEqual(h.calls.filter(([name]) => name === "reviewers" || name === "profiles"), [
+    ["reviewers", [userId, otherId, "missing"]], ["profiles", [userId, otherId, "missing"]],
+  ]);
+  assert.doesNotMatch(JSON.stringify(page), /private|email|student_id/);
+  h.calls.length = 0; h.setOutcome({ data: [], total: 0 });
+  await h.service.listAdmin();
+  assert.equal(h.calls.length, 1);
 });
 test("POST auth rejects before service/body work and supports replay receipt", async () => {
   let response = new Response("{}", { status: 401 });
@@ -229,6 +251,9 @@ test("plain-text rendering escapes HTML and refuses malicious stored reference U
   assert.match(html, /&lt;script&gt;/);
   const linked = renderToStaticMarkup(createElement(PurchaseSuggestionList, { items: [{ ...item, reference_url: "https://example.test/game" }] }));
   assert.match(linked, /noopener noreferrer/);
+  const reviewed = renderToStaticMarkup(createElement(PurchaseSuggestionList, { items: [{ ...item, reviewed_by_user_id: userId, reviewed_by_name: "測試處理人" }] }));
+  assert.match(reviewed, /測試處理人/);
+  assert.doesNotMatch(reviewed, /\/admin\/users\/|查看處理者/);
 });
 
 test("migration declares DB-backed writes; only SQL integration proves runtime concurrency", () => {

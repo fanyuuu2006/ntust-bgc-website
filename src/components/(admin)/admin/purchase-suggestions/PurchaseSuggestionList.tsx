@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -13,15 +12,16 @@ import { formatAdminDateTime } from "@/utils/date";
 function Status({ item }: {
   item: AdminPurchaseSuggestionItem;
 }) {
-  return <Badge tone={item.status === "purchased" ? "success" : item.status === "pending" ? "warning" : "neutral"}>{PURCHASE_SUGGESTION_STATUS_LABELS[item.status]}</Badge>;
+  return <Badge tone={item.status === "purchased" ? "info" : item.status === "pending" ? "warning" : "neutral"}>{PURCHASE_SUGGESTION_STATUS_LABELS[item.status]}</Badge>;
 }
-function Content({ item }: {
+function Content({ item, showName = true }: {
   item: AdminPurchaseSuggestionItem;
+  showName?: boolean;
 }) {
   const parsed = referenceUrlSchema.safeParse(item.reference_url ?? "");
   const url = parsed.success ? parsed.data : null;
   return <div className="min-w-0 max-w-full space-y-1 wrap-anywhere">
-    <p className="min-w-0 font-semibold text-(--text-primary)">{item.game_name}</p>
+    {showName ? <p className="min-w-0 font-semibold text-(--text-primary)">{item.game_name}</p> : null}
     <p className="min-w-0 whitespace-pre-wrap text-xs leading-5 text-(--text-muted)">{item.reason}</p>
     {url ? <a
       href={url}
@@ -38,7 +38,7 @@ function Time({ item }: {
     <p className="text-xs text-(--text-muted)">提交時間</p>
     <p>{formatAdminDateTime(item.created_at)}</p>
     {item.reviewed_at ? <p className="text-xs text-(--text-muted)">處理：{formatAdminDateTime(item.reviewed_at)}</p> : null}
-    {item.reviewed_by_user_id ? <Link href={`/admin/users/${item.reviewed_by_user_id}`} className="text-xs text-(--action) underline">查看處理者</Link> : null}
+    {item.reviewed_by_user_id ? <p className="wrap-anywhere text-xs text-(--text-muted)">處理：{item.reviewed_by_name || "尚未記錄處理人"}</p> : null}
   </div>;
 }
 export function PurchaseSuggestionList({ items, hasQuery = false }: {
@@ -72,7 +72,11 @@ export function PurchaseSuggestionList({ items, hasQuery = false }: {
       </Table>
     </AdminListSection>
     <div className="grid min-w-0 max-w-full gap-3 lg:hidden">{items.map((item) => <Card key={item.id} className="w-full min-w-0 max-w-full space-y-3 p-4">
-      <Status item={item} /><Content item={item} /><Time item={item} />
+      <div className="flex min-w-0 items-start justify-between gap-3">
+        <p className="min-w-0 flex-1 wrap-anywhere font-semibold text-(--text-primary)">{item.game_name}</p>
+        <Status item={item} />
+      </div>
+      <Content item={item} showName={false} /><Time item={item} />
       <PurchaseSuggestionActions
         id={item.id}
         version={item.version}

@@ -101,18 +101,20 @@ async function BoardGamesPage({
           eyebrow="桌遊探索"
           title="桌遊"
           description="探索社團桌遊，找到下一款想玩的遊戲。"
+          actions={
+            <Link href="/board-games/suggest" className="inline-flex min-h-11 items-center text-sm text-(--action) underline underline-offset-4">
+              找不到想玩的桌遊？
+            </Link>
+          }
         />
 
-        <div className="mt-6 grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+        <div className="mt-6 min-w-0">
           <BoardGameSearchForm
             categories={categories}
             locations={locations}
             query={query}
             pageSize={pageSize}
           />
-          <Link href="/board-games/suggest" className="inline-flex min-h-11 items-center text-sm text-(--action) underline underline-offset-4">
-            找不到想玩的桌遊？
-          </Link>
         </div>
 
         <PaginatedCollection

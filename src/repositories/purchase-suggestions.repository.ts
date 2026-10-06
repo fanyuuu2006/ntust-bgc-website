@@ -3,7 +3,7 @@ import { supabase } from "@/libs/supabase/server";
 import { throwRepositoryError } from "@/repositories/shared/errors";
 import { buildPaginationResult, normalizePaginationOptions } from "@/repositories/shared/pagination";
 import type { CreatePurchaseSuggestionInput, PurchaseSuggestionQuery } from "@/services/purchase-suggestions/purchase-suggestions.schema";
-import type { AdminPurchaseSuggestionItem } from "@/services/purchase-suggestions/purchase-suggestions.types";
+import type { AdminPurchaseSuggestionRecord } from "@/services/purchase-suggestions/purchase-suggestions.types";
 
 const TABLE = "board_game_purchase_suggestions";
 const OWN_FIELDS = "id,game_name,reason,reference_url,status,created_at";
@@ -36,6 +36,6 @@ export const purchaseSuggestionsRepository = {
     const { data, error, count } = await query.order("created_at", { ascending: options.status === "pending" })
       .order("id", { ascending: options.status === "pending" }).range(from, to);
     if (error) throwRepositoryError("讀取管理端推薦失敗", error);
-    return buildPaginationResult<AdminPurchaseSuggestionItem>(data ?? [], count, page, pageSize);
+    return buildPaginationResult<AdminPurchaseSuggestionRecord>(data ?? [], count, page, pageSize);
   },
 };

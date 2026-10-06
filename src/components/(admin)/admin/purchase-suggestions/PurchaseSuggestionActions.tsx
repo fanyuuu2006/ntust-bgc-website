@@ -8,7 +8,7 @@ import { FormFeedback } from "@/components/FormFeedback";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 type Action = "purchased" | "rejected" | "delete";
-const labels: Record<Action, string> = { purchased: "標記已購入", rejected: "標記不採納", delete: "刪除推薦" };
+const labels: Record<Action, string> = { purchased: "已購入", rejected: "不採納", delete: "刪除" };
 export function PurchaseSuggestionActions({ id, version, status }: {
   id: string;
   version: number;
@@ -34,12 +34,14 @@ export function PurchaseSuggestionActions({ id, version, status }: {
     }
   }
   return <div className="space-y-2">
-    <div className="flex flex-wrap justify-end gap-2">{(["purchased", "rejected", "delete"] as const).filter((value) => value !== status).map((value) => <Button
-      key={value}
-      size="sm"
-      variant={value === "delete" ? "danger" : value === "purchased" ? "primary" : "outline"}
-      onClick={() => { setAction(value); setError(null); }}
-    >{labels[value]}</Button>)}</div>
+    <div className="flex flex-wrap justify-end gap-2">
+      {(["purchased", "rejected", "delete"] as const).filter((value) => value !== status).map((value) => <Button
+        key={value}
+        size="sm"
+        variant={value === "delete" ? "danger" : value === "purchased" ? "primary" : "outline"}
+        onClick={() => { setAction(value); setError(null); }}
+      >{labels[value]}</Button>)}
+    </div>
     <ConfirmDialog
       open={action !== null}
       onClose={() => {

@@ -2,6 +2,8 @@ import "server-only";
 import { z } from "zod";
 import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
 import { purchaseSuggestionsRepository as repository } from "@/repositories/purchase-suggestions.repository";
+import { usersRepository } from "@/repositories/users.repository";
+import { userProfilesRepository } from "@/repositories/user-profiles.repository";
 import { createPurchaseSuggestionSchema, managePurchaseSuggestionSchema, purchaseSuggestionQuerySchema } from "./purchase-suggestions.schema";
 import { PurchaseSuggestionError } from "./purchase-suggestions.errors";
 import { getPurchaseSuggestionWeek } from "@/utils/purchase-suggestions";
@@ -48,7 +50,23 @@ export const purchaseSuggestionsService = {
   },
   listAdmin: async (input: unknown = {}) => {
     await requireUser(true);
-    return repository.listAdmin(purchaseSuggestionQuerySchema.parse(input));
+    const page = await repository.listAdmin(purchaseSuggestionQuerySchema.parse(input));
+    const reviewerIds = [...new Set(page.data.flatMap((item) => item.reviewed_by_user_id ? [item.reviewed_by_user_id] : []))];
+    const [users, profiles] = reviewerIds.length ? await Promise.all([
+      usersRepository.findAdminIdentitiesByIds(reviewerIds),
+      userProfilesRepository.findAdminIdentitiesByUserIds(reviewerIds),
+    ]) : [[], []];
+    const names = new Map(users.map((user) => [user.id, user.name]));
+    const realNames = new Map(profiles.map((profile) => [profile.user_id, profile.real_name]));
+    return {
+      ...page,
+      data: page.data.map((item) => ({
+        ...item,
+        reviewed_by_name: item.reviewed_by_user_id
+          ? realNames.get(item.reviewed_by_user_id) || names.get(item.reviewed_by_user_id) || null
+          : null,
+      })),
+    };
   },
   manage: async (id: unknown, input: unknown) => {
     const user = await requireUser(true);

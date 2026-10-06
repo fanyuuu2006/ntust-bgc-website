@@ -2,6 +2,8 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Info } from "lucide-react";
+import { Modal } from "@/components/Modal";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
@@ -20,6 +22,7 @@ export function PurchaseSuggestionForm({ remaining }: {
   } | null>(null);
   const submitting = useRef(false);
   const [busy, setBusy] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -83,12 +86,17 @@ export function PurchaseSuggestionForm({ remaining }: {
       setBusy(false);
     }
   }
-  return (<form
+  return (<><form
     onSubmit={submit}
     noValidate
     className="space-y-4"
   >
-    <p className="text-sm text-(--text-muted)">本週還可推薦 {remaining} 款。每週一臺北時間 00:00 重置；送出後不能自行修改或取消。</p>
+    <div className="flex items-center justify-between gap-3">
+      <p className="text-sm text-(--text-muted)">本週還可推薦 {remaining} 款</p>
+      <Button type="button" variant="ghost" size="sm" iconOnly aria-label="查看推薦規則" title="推薦規則" aria-haspopup="dialog" onClick={() => setRulesOpen(true)}>
+        <Info aria-hidden="true" className="size-4" />
+      </Button>
+    </div>
     <Field
       label="桌遊名稱"
       htmlFor="suggest-game-name"
@@ -126,7 +134,7 @@ export function PurchaseSuggestionForm({ remaining }: {
         maxLength={400}
         disabled={busy}
         rows={5}
-        placeholder="例如遊戲特色，以及適合社團的原因。請勿填寫敏感個資。"
+        placeholder="例如遊戲特色、適合社團的原因。"
         invalid={Boolean(fieldErrors.reason)}
         aria-describedby={getFieldDescribedBy("suggest-reason", "10–200 字", fieldErrors.reason)}
         onBlur={(event) => validateField("reason", event.currentTarget.value)}
@@ -158,8 +166,17 @@ export function PurchaseSuggestionForm({ remaining }: {
         }}
       />
     </Field>
-    <p className="text-sm leading-6 text-(--text-muted)">推薦僅供具管理權限的幹部查看，不代表社團承諾購入。垃圾或不當內容可能被移除，仍計入推薦額度。</p>
     <div aria-live="polite"><FormFeedback error={error} success={success} /></div>
     <Button type="submit" isLoading={busy}>送出推薦</Button>
-  </form>);
+  </form>
+    <Modal open={rulesOpen} onClose={() => setRulesOpen(false)} title="推薦規則" size="md">
+      <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-(--text-muted)">
+        <li>已登入並完成信箱驗證即可推薦，不限社員資格。</li>
+        <li>每週最多推薦 3 款，每週一臺北時間 00:00 重置；兩次推薦至少間隔 60 秒。</li>
+        <li>同名桌遊仍待評估，或你在最近 30 天內已推薦過，不能重複提交。</li>
+        <li>送出後不能自行修改或取消；僅供具管理權限的幹部查看，不代表社團承諾購入。</li>
+        <li>請勿填寫敏感個資或不當內容。被移除或已處理的推薦仍計入本週額度。</li>
+      </ul>
+    </Modal>
+  </>);
 }
