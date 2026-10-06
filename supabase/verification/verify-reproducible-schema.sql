@@ -81,6 +81,34 @@ begin
   ) then raise exception 'Storage bucket configuration mismatch'; end if;
 end $$;
 
+do $$
+declare signature text;
+begin
+  if to_regclass('public.board_game_purchase_suggestions') is null then
+    raise exception 'Purchase suggestion table missing';
+  end if;
+  if not (select relrowsecurity from pg_class where oid='public.board_game_purchase_suggestions'::regclass)
+    or has_table_privilege('anon','public.board_game_purchase_suggestions','SELECT')
+    or has_table_privilege('authenticated','public.board_game_purchase_suggestions','SELECT')
+    or has_table_privilege('service_role','public.board_game_purchase_suggestions','INSERT')
+    or has_table_privilege('service_role','public.board_game_purchase_suggestions','UPDATE')
+    or has_table_privilege('service_role','public.board_game_purchase_suggestions','DELETE') then
+    raise exception 'Purchase suggestion table ACL invariant missing';
+  end if;
+  foreach signature in array array[
+    'public.submit_board_game_purchase_suggestion(uuid,uuid,text,text,text)',
+    'public.manage_board_game_purchase_suggestion(uuid,uuid,integer,text)',
+    'public.read_board_game_purchase_notice(uuid,uuid,integer)'
+  ] loop
+    if to_regprocedure(signature) is null then raise exception 'Purchase suggestion RPC missing'; end if;
+    if not has_function_privilege('service_role',signature,'EXECUTE')
+      or has_function_privilege('anon',signature,'EXECUTE')
+      or has_function_privilege('authenticated',signature,'EXECUTE') then
+      raise exception 'Purchase suggestion RPC ACL invariant missing';
+    end if;
+  end loop;
+end $$;
+
 select version, name
 from supabase_migrations.schema_migrations
 order by version desc

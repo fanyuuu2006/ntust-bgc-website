@@ -4,6 +4,7 @@ import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection
 import { BoardGameSearchForm } from "@/components/(public)/board-games/BoardGameSearchForm";
 import { BoardGameGrid } from "@/components/(public)/board-games/BoardGameGrid";
 import { PageHeader } from "@/components/PageHeader";
+import Link from "next/link";
 import { classifyQuerySeo } from "@/libs/query-seo";
 import type { Metadata } from "next";
 import {
@@ -100,9 +101,14 @@ async function BoardGamesPage({
           eyebrow="桌遊探索"
           title="桌遊"
           description="探索社團桌遊，找到下一款想玩的遊戲。"
+          actions={
+            <Link href="/board-games/suggest" className="inline-flex min-h-11 items-center text-sm text-(--action) underline underline-offset-4">
+              找不到想玩的桌遊？
+            </Link>
+          }
         />
 
-        <div className="mt-6">
+        <div className="mt-6 min-w-0">
           <BoardGameSearchForm
             categories={categories}
             locations={locations}

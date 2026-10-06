@@ -129,6 +129,11 @@ export default function PrivacyPage() {
           <p><a href="mailto:ntustboardgame@gmail.com">ntustboardgame@gmail.com</a></p>
         </section>
       </div>
+      <section aria-labelledby="purchase-suggestions-privacy" className="mt-10 space-y-3">
+        <h2 id="purchase-suggestions-privacy">桌遊購入建議</h2>
+        <p>已登入且完成信箱驗證的使用者可提交桌遊名稱、推薦理由與選填參考連結。建議與帳號關聯，僅供具現行管理權限的幹部查看，用於評估採購及防止濫用；不會公開或自動寄送通知信，也不提供本人推薦紀錄查詢。</p>
+        <p>幹部移除不當推薦時，紀錄從操作畫面隱藏，但仍保留內容與必要操作紀錄，以維持推薦額度及重複提交防護。帳號註銷後，作者改以已註銷身分處理，內容不會因此自動清除；請勿填寫敏感個資。如需更正或刪除資料，可依本政策的聯絡方式提出。保存範圍與必要性應定期檢視，目前沒有自動清除排程。</p>
+      </section>
       <section aria-labelledby="developer-support-privacy" className="mt-10 space-y-3">
         <h2 id="developer-support-privacy">網站開發者個人支持</h2>
         <p>「支持本站」的自願款項由網站開發者個人收取，不是臺科大或桌遊社的社費、捐款或社團收入。付款由 Buy Me a Coffee 的第三方頁面處理；本站不直接處理或保存卡號、銀行帳號及付款方式明細。</p>
