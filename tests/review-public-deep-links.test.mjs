@@ -126,7 +126,9 @@ test("Admin desktop and mobile expose explicit public actions without replacing 
   const source = await read("src/components/(admin)/admin/reviews/AdminReviewRecords.tsx");
   const page = await read("src/app/(public)/board-games/[id]/page.tsx");
   assert.match(source, /AdminBoardGameLink/);
-  assert.equal((source.match(/查看公開評論/g) ?? []).length, 2);
+  assert.equal((source.match(/aria-label=\{publicReviewLabel\(review\)\}/g) ?? []).length, 2);
+  assert.equal((source.match(/>\s*查看\s*</g) ?? []).length, 2);
+  assert.match(source, /`前往「\$\{review\.boardGame\.name\}」的指定公開評論`/);
   assert.match(source, /`\/board-games\/\$\{review\.boardGame\.id\}\?review=\$\{review\.id\}&reviewSort=newest#review-\$\{review\.id\}`/);
   assert.match(page, /reviewPage: targetLocation\.page/);
   assert.match(page, /#review-\$\{targetLocation\.reviewId\}/);

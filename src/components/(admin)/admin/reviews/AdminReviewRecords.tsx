@@ -122,8 +122,13 @@ export function AdminReviewRecords({
                 </TableCell>
                 <TableCell className="align-middle text-right">
                   <div className="flex justify-end gap-2">
-                    <ButtonLink href={publicReviewHref(review)} size="sm" variant="outline">
-                      查看公開評論
+                    <ButtonLink
+                      href={publicReviewHref(review)}
+                      size="sm"
+                      variant="outline"
+                      aria-label={publicReviewLabel(review)}
+                    >
+                      查看
                     </ButtonLink>
                     <Button type="button" size="sm" variant="danger" onClick={() => { setDeleting(review); setError(null); }}>
                       刪除
@@ -164,8 +169,13 @@ export function AdminReviewRecords({
             <div className="mt-3 flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-(--border-default) pt-3">
               <TimeMetadata review={review} compact />
               <div className="flex shrink-0 flex-wrap justify-end gap-2">
-                <ButtonLink href={publicReviewHref(review)} size="sm" variant="outline">
-                  查看公開評論
+                <ButtonLink
+                  href={publicReviewHref(review)}
+                  size="sm"
+                  variant="outline"
+                  aria-label={publicReviewLabel(review)}
+                >
+                  查看
                 </ButtonLink>
                 <Button type="button" size="sm" variant="danger" onClick={() => { setDeleting(review); setError(null); }}>
                   刪除
@@ -245,4 +255,8 @@ function getAuthorLabel(review: AdminReview) {
 
 function publicReviewHref(review: AdminReview) {
   return `/board-games/${review.boardGame.id}?review=${review.id}&reviewSort=newest#review-${review.id}`;
+}
+
+function publicReviewLabel(review: AdminReview) {
+  return `前往「${review.boardGame.name}」的指定公開評論`;
 }
