@@ -44,11 +44,12 @@ test("the user-only cancellation route owns authentication and maps ownership an
 });
 
 test("borrowing history, filters, dashboard, and admin all understand cancelled without invalid workflow actions", async () => {
-  const [record, action, page, badge, admin, dashboardService] = await Promise.all([
+  const [record, action, page, badge, adminFilters, admin, dashboardService] = await Promise.all([
     readSource("src/components/(authenticated)/borrowings/BorrowingRecord.tsx"),
     readSource("src/components/(authenticated)/borrowings/CancelBorrowingAction.tsx"),
     readSource("src/app/(authenticated)/borrowings/page.tsx"),
     readSource("src/components/BorrowingStatusBadge.tsx"),
+    readSource("src/components/(admin)/admin/borrowings/AdminBorrowingFilters.tsx"),
     readSource("src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx"),
     readSource("src/services/board-games/board-games.service.ts"),
   ]);
@@ -63,7 +64,7 @@ test("borrowing history, filters, dashboard, and admin all understand cancelled 
   assert.match(page, /value: "cancelled"/);
   assert.match(badge, /cancelled: "已取消"/);
   assert.match(badge, /cancelled: "neutral"/);
-  assert.match(admin, /option value="cancelled"/);
+  assert.match(adminFilters, /option value="cancelled"/);
   assert.match(admin, /borrowing\.status === "cancelled"/);
   assert.match(admin, /if \(borrowing\.status === "cancelled"\) return null/);
   assert.match(dashboardService, /status: "borrowed"[\s\S]*?status: "approved"[\s\S]*?status: "pending"/);

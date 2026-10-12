@@ -1,5 +1,6 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBorrowingFilters } from "@/components/(admin)/admin/borrowings/AdminBorrowingFilters";
 import { AdminBorrowingList } from "@/components/(admin)/admin/borrowings/AdminBorrowingList";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { listBorrowingsQuerySchema } from "@/services/board-games/board-games.schema";
@@ -31,8 +32,19 @@ async function AdminBorrowingsPage({ searchParams }: Props) {
         actions={<AdminExportMenu domain="borrowings" query={query} />}
       />
       <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+        <AdminBorrowingFilters query={query} />
         <PaginatedCollection page={page} pageSize={pageSize} total={borrowings.total} totalPages={borrowings.totalPages} basePath={BASE_PATH} pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
-        <AdminBorrowingList borrowings={borrowings.data} query={query} />
+        <AdminBorrowingList
+          borrowings={borrowings.data}
+          hasQuery={Boolean(
+            query.overdue ||
+              query.search ||
+              query.status ||
+              query.board_game_id ||
+              query.user_id ||
+              page > 1,
+          )}
+        />
         </PaginatedCollection>
       </section>
     </>

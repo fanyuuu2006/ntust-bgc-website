@@ -287,7 +287,7 @@ test("Admin standalone scalar controls navigate immediately without joining the 
 test("Admin Borrowings Search, status, and compound sort mutate only their owned keys", async () => {
   const source = await readFile(
     new URL(
-      "src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx",
+      "src/components/(admin)/admin/borrowings/AdminBorrowingFilters.tsx",
       root,
     ),
     "utf8",

@@ -124,7 +124,7 @@ test("Admin query pages remain server-rendered and client filter islands do not 
   const clientFilterIslands = await Promise.all([
     readSource("src/components/(admin)/admin/board-games/BoardGameSearchForm.tsx"),
     readSource("src/components/(admin)/admin/memberships/MembershipFilterBar.tsx"),
-    readSource("src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx"),
+    readSource("src/components/(admin)/admin/borrowings/AdminBorrowingFilters.tsx"),
   ]);
 
   for (const page of serverPages) {

@@ -19,11 +19,10 @@ test("dashboard server counts and operational CTA ordering", async () => {
 });
 test("operational status selection preserves list context and removes stale overdue filter", () => {
  const paths=[];
- const {AdminBorrowingList}=load("src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx", {
-   react: {...React, useState: initial => [initial, () => {}]},
+ const {AdminBorrowingFilters}=load("src/components/(admin)/admin/borrowings/AdminBorrowingFilters.tsx", {
    "next/navigation": {useRouter: () => ({push: path => paths.push(path)})},
  });
- const tree=AdminBorrowingList({borrowings:[],query:{status:"borrowed",overdue:"true",search:"game",page:4,pageSize:50,orderBy:"due_at",orderDirection:"asc"}});
+ const tree=AdminBorrowingFilters({query:{status:"borrowed",overdue:"true",search:"game",page:4,pageSize:50,orderBy:"due_at",orderDirection:"asc"}});
  const select=nodes(tree).find(n=>n.props?.["aria-label"]==="借用狀態");
  for(const value of ["pending","approved","borrowed","overdue",""]) select.props.onChange({target:{value}});
  for(const [i,path] of paths.entries()) {

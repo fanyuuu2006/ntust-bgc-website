@@ -129,7 +129,7 @@ test("every admin search form exposes a primary text-only submit while Clearable
     "src/app/(admin)/admin/board-games/categories/page.tsx",
     "src/app/(admin)/admin/board-games/locations/page.tsx",
     "src/components/(admin)/admin/board-games/BoardGameSearchForm.tsx",
-    "src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx",
+    "src/components/(admin)/admin/borrowings/AdminBorrowingFilters.tsx",
     "src/components/(admin)/admin/memberships/MembershipFilterBar.tsx",
     "src/components/(admin)/admin/memberships/RegisterKeyFilterBar.tsx",
     "src/app/(admin)/admin/officers/page.tsx",
