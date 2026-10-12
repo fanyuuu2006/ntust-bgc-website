@@ -95,8 +95,8 @@ test("Next redirects and expected notFound control flow do not become incidents"
 }));
 test("API catches infrastructure failures before authorization completes",async()=>{
  const {GET}=load("src/app/api/admin/board-games/route.ts",{
-  "@/libs/api/verified-authorization":{authorizeVerifiedRequest:async()=>{throw new Error("private auth database");}},
-  "@/libs/auth":{isAdminByUserId:async()=>true},"@/services/board-games/board-games.service":{boardGamesService:{}}
+  "@/libs/api/admin-authorization":{authorizeAdminRequest:async()=>{throw new Error("private auth database");}},
+  "@/services/board-games/board-games.service":{boardGamesService:{}}
  });let response;capture(()=>{response=GET(new Request("http://localhost/api/admin/board-games"));});const body=await(await response).json();assert.match(body.errorId,uuid);assert.doesNotMatch(JSON.stringify(body),/database|private/);
 });
 test("real login validation and invalid credentials retain 400 and 401 without incidents",async()=>{

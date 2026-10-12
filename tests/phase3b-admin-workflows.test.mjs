@@ -290,8 +290,7 @@ test("inventory safe integer boundary never produces a rounded default", async (
 test("inventory duplicate domain conflict preserves safe HTTP 409 contract", async () => {
   const errors = load("src/services/board-games/board-games.errors.tsx");
   const { POST } = load("src/app/api/admin/board-games/route.ts", {
-    "@/libs/auth": { isAdminByUserId: async () => true },
-    "@/libs/api/verified-authorization": { authorizeVerifiedRequest: async () => ({ user: { id: "admin" }, response: null }) },
+    "@/libs/api/admin-authorization": { authorizeAdminRequest: async () => ({ user: { id: "admin" }, response: null }) },
     "@/services/board-games/board-games.errors": errors,
     "@/services/board-games/board-games.service": { boardGamesService: { createBoardGame: async () => { throw new errors.DuplicateInventoryNumberError(); } } },
   });

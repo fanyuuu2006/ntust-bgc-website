@@ -2,22 +2,13 @@ import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextResponse } from "next/server";
 import { ZodError, z } from "zod";
 
-import { isAdminByUserId } from "@/libs/auth";
-import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
+import { authorizeAdminRequest } from "@/libs/api/admin-authorization";
 import { usersService } from "@/services/users/users.service";
 
 export async function GET(request: Request) {
   try {
-  const authorization = await authorizeVerifiedRequest();
+  const authorization = await authorizeAdminRequest("沒有管理權限");
   if (authorization.response) return authorization.response;
-  const { user } = authorization;
-  if (!user) {
-    return NextResponse.json({ message: "請先登入" }, { status: 401 });
-  }
-
-  if (!(await isAdminByUserId(user.id))) {
-    return NextResponse.json({ message: "沒有管理權限" }, { status: 403 });
-  }
 
   try {
     const search = new URL(request.url).searchParams.get("search") ?? "";
