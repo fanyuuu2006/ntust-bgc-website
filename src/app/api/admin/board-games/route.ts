@@ -1,8 +1,7 @@
 import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
-import { isAdminByUserId } from "@/libs/auth";
-import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
+import { authorizeAdminRequest } from "@/libs/api/admin-authorization";
 import { queryRecordFromSearchParams } from "@/libs/query-params";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { listBoardGamesQuerySchema } from "@/services/board-games/board-games.schema";
@@ -14,17 +13,8 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
-  const authorization = await authorizeVerifiedRequest();
+  const authorization = await authorizeAdminRequest("權限不足");
   if (authorization.response) return authorization.response;
-  const { user } = authorization;
-  if (!user) {
-    return NextResponse.json({ message: "請先登入" }, { status: 401 });
-  }
-
-  const isAdmin = await isAdminByUserId(user.id);
-  if (!isAdmin) {
-    return NextResponse.json({ message: "權限不足" }, { status: 403 });
-  }
 
   try {
     const query = listBoardGamesQuerySchema.parse(
@@ -53,17 +43,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-  const authorization = await authorizeVerifiedRequest();
+  const authorization = await authorizeAdminRequest("權限不足");
   if (authorization.response) return authorization.response;
-  const { user } = authorization;
-  if (!user) {
-    return NextResponse.json({ message: "請先登入" }, { status: 401 });
-  }
-
-  const isAdmin = await isAdminByUserId(user.id);
-  if (!isAdmin) {
-    return NextResponse.json({ message: "權限不足" }, { status: 403 });
-  }
 
   try {
     const body = await request.json();

@@ -2,8 +2,7 @@ import { unexpectedErrorResponse } from "@/libs/api/server-response";
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
-import { isAdminByUserId } from "@/libs/auth";
-import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
+import { authorizeAdminRequest } from "@/libs/api/admin-authorization";
 import { queryRecordFromSearchParams } from "@/libs/query-params";
 import {
   AcademicYearNotFoundError,
@@ -11,33 +10,9 @@ import {
 } from "@/services/memberships/memberships.errors";
 import { membershipService } from "@/services/memberships/memberships.service";
 
-async function requireAdmin() {
-  const authorization = await authorizeVerifiedRequest();
-  if (authorization.response) return authorization;
-  const { user } = authorization;
-
-  if (!user) {
-    return {
-      user: null,
-      response: NextResponse.json({ message: "請先登入" }, { status: 401 }),
-    };
-  }
-
-  const isAdmin = await isAdminByUserId(user.id);
-
-  if (!isAdmin) {
-    return {
-      user: null,
-      response: NextResponse.json({ message: "權限不足" }, { status: 403 }),
-    };
-  }
-
-  return { user, response: null };
-}
-
 export async function GET(request: NextRequest) {
   try {
-  const { response } = await requireAdmin();
+  const { response } = await authorizeAdminRequest("權限不足");
 
   if (response) {
     return response;
@@ -67,7 +42,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: Request) {
   try {
-  const { user, response } = await requireAdmin();
+  const { user, response } = await authorizeAdminRequest("權限不足");
 
   if (response || !user) {
     return response;
