@@ -135,7 +135,7 @@ test("review presentation distinguishes no ratings from rating-only activity", (
 test("public detail keeps canonical metadata and noindexes review variants", async () => {
   const page = await read("src/app/(public)/board-games/[id]/page.tsx");
   assert.match(page, /reviewsService\.getAggregate\(boardGame\.id\)/);
-  assert.match(page, /reviewsService\.listPublic\(boardGame\.id, reviewQuery\)/);
+  assert.match(page, /reviewsService\.listPublic\(boardGame\.id, effectiveReviewQuery\)/);
   assert.match(page, /Promise\.all/);
   assert.match(page, /createPublicMetadata\(\{[\s\S]*?canonical/);
   assert.match(page, /reviewQuery\.page > 1 \|\| reviewQuery\.sort !== "newest"/);
@@ -171,6 +171,8 @@ test("review metadata follows normalized query semantics", async () => {
   for (const query of [{ reviewPage: "2" }, { reviewSort: "oldest" }, { reviewSort: "highest" }]) {
     assert.deepEqual((await metadata(query)).robots, { index: false, follow: true });
   }
+  assert.deepEqual((await metadata({ review: "11111111-1111-4111-8111-111111111111" })).robots, { index: false, follow: true });
+  assert.deepEqual((await metadata({ review: "invalid" })).robots, { index: false, follow: true });
 });
 
 test("board-game review FK deletion maps narrowly to a safe 409", async () => {
