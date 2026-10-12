@@ -53,6 +53,25 @@ test("admin cross-domain references use admin entity links", async () => {
   assert.match(officers, /AdminUserLink/);
 });
 
+test("Board Game ownership keeps management navigation primary and exposes public preview only on edit", async () => {
+  const [collection, editPage, reviews, borrowings] = await Promise.all([
+    read("src/components/(admin)/admin/board-games/BoardGameTable.tsx"),
+    read("src/app/(admin)/admin/board-games/[id]/edit/page.tsx"),
+    read("src/components/(admin)/admin/reviews/AdminReviewRecords.tsx"),
+    read("src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx"),
+  ]);
+
+  assert.match(collection, /AdminBoardGameLink/);
+  assert.doesNotMatch(collection, /href=\{`\/board-games\//);
+  assert.match(editPage, /href=\{`\/board-games\/\$\{boardGame\.id\}`\}/);
+  assert.match(editPage, /查看公開頁面/);
+  assert.match(editPage, /variant="text"/);
+  assert.match(reviews, /AdminBoardGameLink/);
+  assert.doesNotMatch(reviews, /href=\{`\/board-games\//);
+  assert.match(borrowings, /AdminBoardGameLink/);
+  assert.doesNotMatch(borrowings, /buildBoardGameDetailHref/);
+});
+
 test("desktop admin tables share AdminListSection while retaining responsive cards", async () => {
   const paths = [
     "src/components/(admin)/admin/board-games/BoardGameTable.tsx",
