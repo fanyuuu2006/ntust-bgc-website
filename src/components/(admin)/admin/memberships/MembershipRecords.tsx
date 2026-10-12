@@ -167,22 +167,40 @@ export function MembershipRecords({
   return (
     <>
       <AdminListSection className="hidden lg:block">
-        <Table className="min-w-[820px]">
+        <Table className="min-w-[1120px]">
           <TableHeader>
             <TableRow>
-              <TableHead>使用者</TableHead>
-              <TableHead>類型</TableHead>
-              <TableHead>學年度</TableHead>
-              <SortableTableHeader label="狀態" column="status" basePath="/admin/memberships" query={headerQuery} />
-              <SortableTableHeader label="加入時間" column="joined_at" basePath="/admin/memberships" query={headerQuery} />
-              <SortableTableHeader label="建立時間" column="created_at" basePath="/admin/memberships" query={headerQuery} />
-              <TableHead className="text-right">操作</TableHead>
+              <TableHead className="w-64">使用者</TableHead>
+              <TableHead className="w-24 whitespace-nowrap">類型</TableHead>
+              <TableHead className="w-28 whitespace-nowrap">學年度</TableHead>
+              <SortableTableHeader
+                label="狀態"
+                column="status"
+                basePath="/admin/memberships"
+                query={headerQuery}
+                className="w-28 whitespace-nowrap"
+              />
+              <SortableTableHeader
+                label="加入時間"
+                column="joined_at"
+                basePath="/admin/memberships"
+                query={headerQuery}
+                className="w-44 whitespace-nowrap"
+              />
+              <SortableTableHeader
+                label="建立時間"
+                column="created_at"
+                basePath="/admin/memberships"
+                query={headerQuery}
+                className="w-44 whitespace-nowrap"
+              />
+              <TableHead className="w-36 whitespace-nowrap text-right">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {memberships.map((membership) => (
               <TableRow key={membership.id}>
-                <TableCell>
+                <TableCell className="w-64 max-w-64 min-w-0">
                   <AdminUserLink
                     userId={membership.user.id}
                     identity={{
@@ -193,16 +211,16 @@ export function MembershipRecords({
                     disambiguation={membership.user_profile?.student_id ? "studentId" : "email"}
                   />
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   <MembershipTypeLabel type={membership.type} />
                 </TableCell>
-                <TableCell>{membership.academic_year?.year ?? "—"}</TableCell>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">{membership.academic_year?.year ?? "—"}</TableCell>
+                <TableCell className="whitespace-nowrap">
                   <MemberStatusBadge status={membership.status} />
                 </TableCell>
                 <TableCell className="whitespace-nowrap">{formatAdminDateTime(membership.joined_at)}</TableCell>
                 <TableCell className="whitespace-nowrap">{formatAdminDateTime(membership.created_at)}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="whitespace-nowrap text-right">
                   <MembershipRowActions
                     membership={membership}
                     onEdit={openEditDialog}
@@ -343,7 +361,7 @@ function MembershipRowActions({
   onDelete: (membership: AdminMembership) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-nowrap justify-end gap-2">
       <Button type="button" variant="outline" size="sm" onClick={() => onEdit(membership)}>
         編輯
       </Button>
