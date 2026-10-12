@@ -158,7 +158,7 @@ test("page-size controls remain only where the audited product task benefits", a
 });
 
 test("Admin Borrowings exposes only established sort fields and resets page", async () => {
-  const source = await readSource("src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx");
+  const source = await readSource("src/components/(admin)/admin/borrowings/AdminBorrowingFilters.tsx");
 
   assert.match(source, /aria-label="排序"/);
   assert.match(source, /created_at:desc/);

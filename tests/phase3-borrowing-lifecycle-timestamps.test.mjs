@@ -98,7 +98,7 @@ test("Admin borrowing presentation uses authoritative transition timestamps", ()
     approved_by_user: { id: "admin", name: "幹部", email: "admin@example.test" },
     approved_by_user_profile: null, is_current_academic_year_member: true,
   };
-  const html = renderToStaticMarkup(createElement(AdminBorrowingList, { borrowings: [borrowing], query: {} }));
+  const html = renderToStaticMarkup(createElement(AdminBorrowingList, { borrowings: [borrowing], hasQuery: false }));
   assert.match(html, /核准時間/);
   assert.match(html, /2026\/09\/15 10:00/);
 });

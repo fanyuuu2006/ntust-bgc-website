@@ -91,3 +91,20 @@ test("desktop admin tables share AdminListSection while retaining responsive car
     assert.match(source, /hidden (?:xl|lg):block/);
   }
 });
+
+test("Admin Borrowings separates URL controls from lifecycle collection actions", async () => {
+  const [page, filters, records] = await Promise.all([
+    read("src/app/(admin)/admin/board-games/borrowings/page.tsx"),
+    read("src/components/(admin)/admin/borrowings/AdminBorrowingFilters.tsx"),
+    read("src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx"),
+  ]);
+
+  assert.match(page, /<AdminBorrowingFilters query=\{query\} \/>/);
+  assert.match(page, /<PaginatedCollection[\s\S]*?<AdminBorrowingList/);
+  assert.match(filters, /AdminToolbar/);
+  assert.match(filters, /buildOwnedQueryHref/);
+  assert.doesNotMatch(filters, /apiClient|@\/repositories\//);
+  assert.match(records, /apiClient/);
+  assert.match(records, /AdminListSection/);
+  assert.doesNotMatch(records, /AdminToolbar|buildOwnedQueryHref/);
+});
