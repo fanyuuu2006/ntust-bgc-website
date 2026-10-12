@@ -36,6 +36,23 @@ test("admin user list delegates desktop and mobile identity overflow to the shar
   assert.doesNotMatch(usersPage, /<div className="min-w-0 wrap-anywhere">\s*<p className="font-medium">\{user\.name\}/);
 });
 
+test("membership table bounds long user identity without compressing semantic columns", async () => {
+  const memberships = await source(
+    "src/components/(admin)/admin/memberships/MembershipRecords.tsx",
+  );
+
+  assert.match(memberships, /<AdminListSection className="hidden lg:block">/);
+  assert.match(memberships, /<Table className="min-w-\[1120px\]">/);
+  assert.match(memberships, /<TableCell className="w-64 max-w-64 min-w-0">\s*<AdminUserLink/);
+  assert.match(memberships, /<TableHead className="w-24 whitespace-nowrap">類型<\/TableHead>/);
+  assert.match(memberships, /<TableHead className="w-28 whitespace-nowrap">學年度<\/TableHead>/);
+  assert.match(memberships, /className="w-28 whitespace-nowrap"/);
+  assert.equal((memberships.match(/className="w-44 whitespace-nowrap"/g) ?? []).length, 2);
+  assert.match(memberships, /<TableHead className="w-36 whitespace-nowrap text-right">操作<\/TableHead>/);
+  assert.match(memberships, /<TableCell className="whitespace-nowrap text-right">/);
+  assert.match(memberships, /<div className="grid gap-3 lg:hidden">/);
+});
+
 test("officer titles are bounded independently from year and action columns", async () => {
   const officers = await source("src/components/(admin)/admin/officers/OfficerRecords.tsx");
 
