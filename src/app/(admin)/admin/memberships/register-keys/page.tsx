@@ -43,6 +43,7 @@ async function MembershipRegisterKeysPage({ searchParams }: Props) {
         <RegisterKeyFilterBar academicYears={academicYears} query={query} />
         <PaginatedCollection page={page} pageSize={pageSize} total={registerKeys.total} totalPages={registerKeys.totalPages} basePath="/admin/memberships/register-keys" pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
         <RegisterKeyTable
+          key={JSON.stringify({ ...query, page, pageSize })}
           registerKeys={registerKeys.data}
           hasFilters={Boolean(
             query.search || query.academic_year_id || query.status || page > 1,
