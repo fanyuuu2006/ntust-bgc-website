@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/Table";
+import { apiClient } from "@/libs/api/client";
 import type { MembershipRegisterKeyWithAcademicYear } from "@/services/memberships/memberships.types";
 import { formatAdminDateTime } from "@/utils/date";
 import { RegisterKeyStatusBadge } from "./RegisterKeyStatusBadge";
@@ -34,9 +35,18 @@ export function RegisterKeyTable({
   const [pendingRevocation, setPendingRevocation] =
     useState<MembershipRegisterKeyWithAcademicYear | null>(null);
   const [isRevoking, setIsRevoking] = useState(false);
+  const [isBulkRevokeDialogOpen, setIsBulkRevokeDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
 
   const selectedCount = selectedIds.size;
+  const selectedRegisterKeys = registerKeys.filter((registerKey) =>
+    selectedIds.has(registerKey.id),
+  );
+  const selectedAvailableCount = selectedRegisterKeys.filter(
+    (registerKey) => registerKey.status === "available",
+  ).length;
+  const canBulkRevoke =
+    selectedCount > 0 && selectedAvailableCount === selectedCount;
   const allSelected =
     registerKeys.length > 0 && selectedCount === registerKeys.length;
   const partiallySelected = selectedCount > 0 && !allSelected;
@@ -52,7 +62,9 @@ export function RegisterKeyTable({
 
   function setCurrentPageSelected(selected: boolean) {
     setSelectedIds(
-      selected ? new Set(registerKeys.map((registerKey) => registerKey.id)) : new Set(),
+      selected
+        ? new Set(registerKeys.map((registerKey) => registerKey.id))
+        : new Set(),
     );
   }
 
@@ -104,6 +116,11 @@ export function RegisterKeyTable({
       }
 
       setFeedback("社員註冊序號已撤銷。");
+      setSelectedIds((current) => {
+        const next = new Set(current);
+        next.delete(pendingRevocation.id);
+        return next;
+      });
       setPendingRevocation(null);
       router.refresh();
     } catch (error) {
@@ -111,6 +128,39 @@ export function RegisterKeyTable({
         error instanceof Error
           ? error.message
           : "撤銷社員註冊序號失敗，請稍後再試。",
+      );
+    } finally {
+      setIsRevoking(false);
+    }
+  }
+
+  async function bulkRevokeRegisterKeys() {
+    if (!canBulkRevoke) return;
+
+    setIsRevoking(true);
+    setFeedback(null);
+
+    try {
+      const response = await apiClient<{ data: { revokedCount: number } }>(
+        "/api/admin/members/register-keys/batch",
+        {
+          method: "PATCH",
+          body: {
+            action: "revoke",
+            ids: selectedRegisterKeys.map(({ id }) => id),
+          },
+        },
+      );
+      setSelectedIds(new Set());
+      setIsBulkRevokeDialogOpen(false);
+      setFeedback(`已撤銷 ${response.data.revokedCount} 組社員註冊序號。`);
+      router.refresh();
+    } catch (error) {
+      setIsBulkRevokeDialogOpen(false);
+      setFeedback(
+        error instanceof Error
+          ? error.message
+          : "批次撤銷社員註冊序號失敗，請稍後再試。",
       );
     } finally {
       setIsRevoking(false);
@@ -150,27 +200,40 @@ export function RegisterKeyTable({
           <CurrentPageSelectionCheckbox
             checked={allSelected}
             indeterminate={partiallySelected}
+            disabled={isRevoking}
             onChange={setCurrentPageSelected}
           />
           選取目前頁面
         </label>
         <p className="mr-auto text-sm text-(--text-secondary)" aria-live="polite">
           已選取 {selectedCount} 筆
+          {selectedCount > selectedAvailableCount
+            ? `，其中 ${selectedAvailableCount} 筆可撤銷`
+            : ""}
         </p>
         <Button
           type="button"
           variant="outline"
           size="sm"
-          disabled={selectedCount === 0}
+          disabled={selectedCount === 0 || isRevoking}
           onClick={copySelectedRegisterKeys}
         >
           複製已選序號
         </Button>
         <Button
           type="button"
+          variant="danger"
+          size="sm"
+          disabled={!canBulkRevoke || isRevoking}
+          onClick={() => setIsBulkRevokeDialogOpen(true)}
+        >
+          批次撤銷
+        </Button>
+        <Button
+          type="button"
           variant="text"
           size="sm"
-          disabled={selectedCount === 0}
+          disabled={selectedCount === 0 || isRevoking}
           onClick={() => setSelectedIds(new Set())}
         >
           清除選取
@@ -185,6 +248,7 @@ export function RegisterKeyTable({
                 <input
                   type="checkbox"
                   checked={selectedIds.has(registerKey.id)}
+                  disabled={isRevoking}
                   onChange={(event) =>
                     setRegisterKeySelected(registerKey.id, event.target.checked)
                   }
@@ -225,6 +289,7 @@ export function RegisterKeyTable({
                 <CurrentPageSelectionCheckbox
                   checked={allSelected}
                   indeterminate={partiallySelected}
+                  disabled={isRevoking}
                   onChange={setCurrentPageSelected}
                 />
               </TableHead>
@@ -243,6 +308,7 @@ export function RegisterKeyTable({
                   <input
                     type="checkbox"
                     checked={selectedIds.has(registerKey.id)}
+                    disabled={isRevoking}
                     onChange={(event) =>
                       setRegisterKeySelected(registerKey.id, event.target.checked)
                     }
@@ -298,6 +364,15 @@ export function RegisterKeyTable({
         }
         confirmLabel="撤銷序號"
       />
+      <ConfirmDialog
+        open={isBulkRevokeDialogOpen}
+        onClose={() => !isRevoking && setIsBulkRevokeDialogOpen(false)}
+        onConfirm={bulkRevokeRegisterKeys}
+        isSubmitting={isRevoking}
+        title="批次撤銷社員註冊序號"
+        description={`確定要撤銷已選取的 ${selectedCount} 組社員註冊序號嗎？撤銷後無法再用於建立社員資格。`}
+        confirmLabel="撤銷已選序號"
+      />
     </div>
   );
 }
@@ -305,10 +380,12 @@ export function RegisterKeyTable({
 function CurrentPageSelectionCheckbox({
   checked,
   indeterminate,
+  disabled,
   onChange,
 }: {
   checked: boolean;
   indeterminate: boolean;
+  disabled: boolean;
   onChange: (checked: boolean) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -322,6 +399,7 @@ function CurrentPageSelectionCheckbox({
       ref={inputRef}
       type="checkbox"
       checked={checked}
+      disabled={disabled}
       onChange={(event) => onChange(event.target.checked)}
       aria-label="選取目前頁面的所有社員註冊序號"
       className="size-4 rounded border-(--border-default) accent-(--interactive-primary)"
@@ -348,6 +426,7 @@ function RegisterKeyActions({
         type="button"
         variant="outline"
         size="sm"
+        disabled={isRevoking}
         onClick={() => onCopy(registerKey.register_key)}
       >
         複製

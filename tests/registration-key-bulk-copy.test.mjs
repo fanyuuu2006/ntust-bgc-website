@@ -34,9 +34,18 @@ const registerKeys = [
   },
 ];
 
-async function withTable(run, { copyFails = false } = {}) {
+async function withTable(
+  run,
+  {
+    copyFails = false,
+    mutationStatus = 200,
+    mutationBody = { data: { revokedCount: 2 } },
+  } = {},
+) {
   const dom = new JSDOM('<div id="app"></div>', { url: "https://example.test" });
   const writes = [];
+  const requests = [];
+  const refreshes = [];
   Object.defineProperty(dom.window.navigator, "clipboard", {
     configurable: true,
     value: {
@@ -51,6 +60,7 @@ async function withTable(run, { copyFails = false } = {}) {
     document: globalThis.document,
     HTMLElement: globalThis.HTMLElement,
     IS_REACT_ACT_ENVIRONMENT: globalThis.IS_REACT_ACT_ENVIRONMENT,
+    fetch: globalThis.fetch,
   };
   const navigatorDescriptor = Object.getOwnPropertyDescriptor(
     globalThis,
@@ -66,19 +76,50 @@ async function withTable(run, { copyFails = false } = {}) {
     configurable: true,
     value: dom.window.navigator,
   });
+  globalThis.fetch = async (url, options) => {
+    requests.push({ url, options });
+    return new Response(JSON.stringify(mutationBody), {
+      status: mutationStatus,
+      headers: { "Content-Type": "application/json" },
+    });
+  };
   const { createRoot } = await import("react-dom/client");
   const host = document.getElementById("app");
   const root = createRoot(host);
   const { RegisterKeyTable } = load(
     "src/components/(admin)/admin/memberships/RegisterKeyTable.tsx",
     {
-      "next/navigation": { useRouter: () => ({ refresh() {} }) },
-      "@/components/ConfirmDialog": { ConfirmDialog: () => null },
+      "next/navigation": {
+        useRouter: () => ({ refresh: () => refreshes.push(true) }),
+      },
+      "@/components/ConfirmDialog": {
+        ConfirmDialog: ({ open, onConfirm, title, description }) =>
+          open
+            ? createElement(
+                "section",
+                { "aria-label": title },
+                createElement("p", null, description),
+                createElement(
+                  "button",
+                  { type: "button", onClick: onConfirm },
+                  "確認",
+                ),
+              )
+            : null,
+      },
     },
   );
 
   try {
-    await run({ dom, host, root, writes, RegisterKeyTable });
+    await run({
+      dom,
+      host,
+      root,
+      writes,
+      requests,
+      refreshes,
+      RegisterKeyTable,
+    });
   } finally {
     await act(async () => root.unmount());
     Object.assign(globalThis, previous);
@@ -190,6 +231,96 @@ test("clipboard failure keeps the selection and reports a recoverable error", as
     assert.match(host.textContent, /無法複製已選取的社員註冊序號/);
     assert.match(host.textContent, /已選取 1 筆/);
   }, { copyFails: true });
+});
+
+test("bulk revoke accepts only an all-available selection and preserves visible order", async () => {
+  await withTable(
+    async ({ host, root, requests, refreshes, RegisterKeyTable }) => {
+      await act(async () =>
+        root.render(createElement(RegisterKeyTable, { registerKeys })),
+      );
+
+      const bulkButton = [...host.querySelectorAll("button")].find(
+        (button) => button.textContent === "批次撤銷",
+      );
+      const alphaCheckboxes = host.querySelectorAll(
+        'input[aria-label="選取社員註冊序號 KEY-ALPHA"]',
+      );
+      await click(alphaCheckboxes[0]);
+      await click(alphaCheckboxes[1]);
+      assert.equal(bulkButton.disabled, false);
+
+      await click(bulkButton);
+      const dialog = host.querySelector(
+        'section[aria-label="批次撤銷社員註冊序號"]',
+      );
+      assert.match(dialog.textContent, /已選取的 2 組/);
+      assert.match(dialog.textContent, /撤銷後無法再用於建立社員資格/);
+      await click(dialog.querySelector("button"));
+
+      assert.equal(requests.length, 1);
+      assert.equal(requests[0].url, "/api/admin/members/register-keys/batch");
+      assert.equal(requests[0].options.method, "PATCH");
+      assert.deepEqual(JSON.parse(requests[0].options.body), {
+        action: "revoke",
+        ids: ["key-1", "key-2"],
+      });
+      assert.match(host.textContent, /已撤銷 2 組社員註冊序號/);
+      assert.match(host.textContent, /已選取 0 筆/);
+      assert.equal(refreshes.length, 1);
+    },
+  );
+});
+
+test("bulk revoke rejects mixed-state selection and retains selection after conflict", async () => {
+  await withTable(
+    async ({ host, root, RegisterKeyTable }) => {
+      await act(async () =>
+        root.render(createElement(RegisterKeyTable, { registerKeys })),
+      );
+      await click(
+        host.querySelector(
+          'input[aria-label="選取目前頁面的所有社員註冊序號"]',
+        ),
+      );
+      const bulkButton = [...host.querySelectorAll("button")].find(
+        (button) => button.textContent === "批次撤銷",
+      );
+      assert.equal(bulkButton.disabled, true);
+      assert.match(host.textContent, /已選取 3 筆，其中 2 筆可撤銷/);
+    },
+  );
+
+  await withTable(
+    async ({ host, root, requests, refreshes, RegisterKeyTable }) => {
+      await act(async () =>
+        root.render(createElement(RegisterKeyTable, { registerKeys })),
+      );
+      const alphaCheckboxes = host.querySelectorAll(
+        'input[aria-label="選取社員註冊序號 KEY-ALPHA"]',
+      );
+      await click(alphaCheckboxes[0]);
+      await click(alphaCheckboxes[1]);
+      const bulkButton = [...host.querySelectorAll("button")].find(
+        (button) => button.textContent === "批次撤銷",
+      );
+      await click(bulkButton);
+      await click(
+        host.querySelector(
+          'section[aria-label="批次撤銷社員註冊序號"] button',
+        ),
+      );
+
+      assert.equal(requests.length, 1);
+      assert.equal(refreshes.length, 0);
+      assert.match(host.textContent, /序號狀態已變更/);
+      assert.match(host.textContent, /已選取 2 筆/);
+    },
+    {
+      mutationStatus: 409,
+      mutationBody: { message: "序號狀態已變更，未撤銷任何序號" },
+    },
+  );
 });
 
 test("register-key page keys the collection by normalized query state", async () => {

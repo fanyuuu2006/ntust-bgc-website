@@ -19,6 +19,7 @@ import type { Membership } from "@/types/database";
 import { matchesMembershipRecordSearch } from "@/utils/membership";
 import {
   activateMembershipSchema,
+  bulkRevokeMembershipRegisterKeysSchema,
   generateMembershipRegisterKeysSchema,
   createAdminMembershipSchema,
   updateAdminMembershipSchema,
@@ -32,6 +33,7 @@ import {
   MembershipRegisterKeyNotCurrentYearError,
   MembershipRegisterKeyNotFoundError,
   MembershipRegisterKeyCannotBeRevokedError,
+  MembershipRegisterKeysBatchConflictError,
   MembershipAlreadyExistsForAcademicYearError,
   MembershipNotFoundError,
   MembershipStatusTransitionError,
@@ -447,6 +449,17 @@ export const membershipService = {
     const revoked = await membershipRegisterKeysRepository.revokeAvailableById(id);
     if (!revoked) throw new MembershipRegisterKeyCannotBeRevokedError();
     return revoked;
+  },
+
+  bulkRevokeRegisterKeys: async (input: unknown) => {
+    const payload = bulkRevokeMembershipRegisterKeysSchema.parse(input);
+    const result = await membershipRegisterKeysRepository.revokeAvailableByIds(
+      payload.ids,
+    );
+    if (result.outcome === "conflict") {
+      throw new MembershipRegisterKeysBatchConflictError();
+    }
+    return { revokedCount: result.revokedCount };
   },
 
   activateByRegisterKey: async (

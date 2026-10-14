@@ -19,6 +19,13 @@ export class MembershipRegisterKeyCannotBeRevokedError extends Error {
   }
 }
 
+export class MembershipRegisterKeysBatchConflictError extends Error {
+  constructor() {
+    super("部分社員註冊序號不存在或已非可用狀態，未撤銷任何序號");
+    this.name = "MembershipRegisterKeysBatchConflictError";
+  }
+}
+
 export class MembershipRegisterKeyInactiveError extends Error {
   constructor() {
     super("此社員註冊序號目前無法使用");

@@ -96,6 +96,7 @@ test("selected Admin handlers use the shared boundary without changing their rou
     "src/app/api/admin/borrowings/[id]/route.ts",
     "src/app/api/admin/members/register-keys/route.ts",
     "src/app/api/admin/members/register-keys/[id]/route.ts",
+    "src/app/api/admin/members/register-keys/batch/route.ts",
     "src/app/api/admin/users/search/route.ts",
   ];
 

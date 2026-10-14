@@ -76,6 +76,17 @@ export const generateMembershipRegisterKeysSchema = z.object({
     .max(100, "一次最多產生 100 組序號"),
 });
 
+export const bulkRevokeMembershipRegisterKeysSchema = z.object({
+  action: z.literal("revoke"),
+  ids: z
+    .array(z.uuid("社員註冊序號 ID 格式不正確"))
+    .min(1, "請至少選取一筆社員註冊序號")
+    .max(100, "一次最多撤銷 100 筆社員註冊序號")
+    .refine((ids) => new Set(ids).size === ids.length, {
+      message: "社員註冊序號 ID 不可重複",
+    }),
+});
+
 export const createAdminMembershipSchema = z.object({
   user_id: z.uuid(),
   academic_year_id: z.uuid(),

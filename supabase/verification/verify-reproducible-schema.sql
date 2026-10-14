@@ -38,7 +38,8 @@ begin
   end if;
 
   if to_regprocedure('public.claim_membership_register_key(text,uuid)') is null
-     or to_regprocedure('public.generate_membership_register_keys(uuid,integer,text,uuid)') is null then
+     or to_regprocedure('public.generate_membership_register_keys(uuid,integer,text,uuid)') is null
+     or to_regprocedure('public.revoke_membership_register_keys(uuid[])') is null then
     raise exception 'Required register-key RPC missing';
   end if;
 
@@ -56,7 +57,10 @@ begin
   end if;
 
   if not has_function_privilege('service_role', 'public.claim_membership_register_key(text,uuid)', 'EXECUTE')
-     or has_function_privilege('anon', 'public.claim_membership_register_key(text,uuid)', 'EXECUTE') then
+     or has_function_privilege('anon', 'public.claim_membership_register_key(text,uuid)', 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.revoke_membership_register_keys(uuid[])', 'EXECUTE')
+     or has_function_privilege('anon', 'public.revoke_membership_register_keys(uuid[])', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.revoke_membership_register_keys(uuid[])', 'EXECUTE') then
     raise exception 'Register-key RPC execute ACL invariant missing';
   end if;
 
