@@ -46,7 +46,7 @@ async function BoardGameCategoriesPage({
   return (
     <>
       <HeadingSection
-        compactOnMobile
+        collection
         title="桌遊分類管理"
         description="維護桌遊分類；仍有桌遊使用的分類不可刪除。"
         actions={<CategoryCreateAction />}

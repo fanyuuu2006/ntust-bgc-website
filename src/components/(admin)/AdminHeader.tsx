@@ -52,7 +52,7 @@ export function AdminHeader({
           </Button>
 
           <p
-            className="truncate text-lg font-bold text-(--text-primary) lg:hidden"
+            className="truncate text-lg font-bold text-(--text-primary)"
             aria-current="page"
           >
             {currentSectionLabel ?? DEFAULT_SECTION_LABEL}

@@ -101,10 +101,10 @@ async function AdminUsersPage({ searchParams }: Props) {
   return (
     <>
       <HeadingSection
-        compactOnMobile
+        collection
         title="使用者管理"
         description="管理網站帳號與個人基本資料。"
-        secondaryActions={<AdminExportMenu domain="users" query={query} />}
+        actions={<AdminExportMenu domain="users" query={query} />}
       />
 
       <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">

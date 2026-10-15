@@ -27,7 +27,7 @@ async function AdminReviewsPage({
   return (
     <>
       <HeadingSection
-        compactOnMobile
+        collection
         title="評價與評論管理"
         description="管理使用者留下的桌遊評價與評論。"
       />

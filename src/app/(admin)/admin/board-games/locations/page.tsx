@@ -46,7 +46,7 @@ async function BoardGameLocationsPage({
   return (
     <>
       <HeadingSection
-        compactOnMobile
+        collection
         title="桌遊位置管理"
         description="維護社產存放位置；仍有社產使用的位置不可刪除。"
         actions={<LocationCreateAction />}

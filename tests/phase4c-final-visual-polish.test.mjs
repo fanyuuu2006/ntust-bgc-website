@@ -5,14 +5,15 @@ import test from "node:test";
 const root = new URL("../", import.meta.url);
 const source = (path) => readFile(new URL(path, root), "utf8");
 
-test("register-key generation remains primary while cross-page navigation is secondary", async () => {
+test("register-key generation and cross-page navigation remain directly visible", async () => {
   const [page, form] = await Promise.all([
     source("src/app/(admin)/admin/memberships/register-keys/page.tsx"),
     source("src/components/(admin)/admin/memberships/RegisterKeyGenerateForm.tsx"),
   ]);
 
   assert.match(page, /actions=\{[\s\S]*?<RegisterKeyGenerateForm/);
-  assert.match(page, /secondaryActions=\{[\s\S]*?<ButtonLink[\s\S]*?返回社員資格管理/);
+  assert.match(page, /actions=\{[\s\S]*?<ButtonLink[\s\S]*?返回社員資格管理/);
+  assert.doesNotMatch(page, /secondaryActions/);
   assert.ok(page.indexOf("<RegisterKeyGenerateForm") < page.indexOf("<RegisterKeyFilterBar"));
   assert.equal((page.match(/<RegisterKeyGenerateForm/g) ?? []).length, 1);
   assert.match(form, /已產生 \{generatedKeys\.length\} 組社員註冊序號/);

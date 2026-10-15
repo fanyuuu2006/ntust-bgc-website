@@ -5,15 +5,15 @@ import test from "node:test";
 const root = new URL("../", import.meta.url);
 const readSource = (path) => readFile(new URL(path, root), "utf8");
 
-test("Admin HeadingSection owns compact mobile typography and preserves desktop scale", async () => {
+test("Admin HeadingSection keeps semantic collection headings without duplicating visible chrome", async () => {
   const source = await readSource("src/components/(admin)/admin/HeadingSection.tsx");
   assert.match(source, /text-lg font-semibold[^\n]+sm:text-2xl/);
   assert.match(source, /text-xs text-\(--text-muted\) sm:text-sm/);
   assert.match(source, /flex flex-col[^\n]+sm:flex-row/);
-  assert.match(source, /compactOnMobile && "sr-only sm:not-sr-only"/);
-  assert.match(source, /compactOnMobile && "hidden sm:block"/);
-  assert.match(source, /secondaryActions/);
-  assert.match(source, /aria-label="更多頁面操作"/);
+  assert.match(source, /collection && "sr-only"/);
+  assert.match(source, /collection && \(actions \? "gap-0 py-2" : "p-0"\)/);
+  assert.match(source, /flex w-full shrink-0 flex-wrap/);
+  assert.doesNotMatch(source, /secondaryActions|更多頁面操作|MoreHorizontal/);
   assert.doesNotMatch(source, /md:text|lg:text/);
 });
 
@@ -21,7 +21,7 @@ test("Admin header labels the mobile location without competing with the page h1
   const source = await readSource("src/components/(admin)/AdminHeader.tsx");
 
   assert.match(source, /<p[\s\S]*?aria-current="page"/);
-  assert.match(source, /lg:hidden/);
+  assert.doesNotMatch(source, /text-\(--text-primary\) lg:hidden/);
   assert.doesNotMatch(source, /<h1/);
 });
 
@@ -48,7 +48,7 @@ test("collection pages opt into mobile heading compaction without changing detai
   ]);
 
   for (const source of [memberships, boardGames, events]) {
-    assert.match(source, /<HeadingSection[\s\S]*?compactOnMobile/);
+    assert.match(source, /<HeadingSection[\s\S]*?collection/);
   }
-  assert.doesNotMatch(eventDetail, /compactOnMobile/);
+  assert.doesNotMatch(eventDetail, /<HeadingSection[\s\S]*?collection/);
 });
