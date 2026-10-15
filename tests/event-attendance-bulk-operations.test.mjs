@@ -191,17 +191,19 @@ test("attendance RPC enforces same-event locks, stale-state checks, and atomic r
 });
 
 test("attendance UI shares selection across desktop and mobile and retains single-record actions", async () => {
-  const [recordsSource, page, singleRoute] = await Promise.all([
+  const [recordsSource, page, singleRoute, bulkBar] = await Promise.all([
     readSource("src/components/(admin)/admin/events/AttendanceRecords.tsx"),
     readSource("src/app/(admin)/admin/events/[id]/page.tsx"),
     readSource(
       "src/app/api/admin/events/[id]/attendances/[attendanceId]/route.ts",
     ),
+    readSource("src/components/(admin)/admin/AdminBulkActionBar.tsx"),
   ]);
 
   assert.match(recordsSource, /selectedIds\.has\(record\.id\)/g);
   assert.match(recordsSource, /選取目前頁面的所有簽到紀錄/);
-  assert.match(recordsSource, /已選取 \{selectedCount\} 筆/);
+  assert.match(recordsSource, /selectedCount=\{selectedCount\}/);
+  assert.match(bulkBar, /已選取 \{selectedCount\} 筆/);
   assert.match(recordsSource, /selectedCount > 0 \? \(/);
   assert.match(recordsSource, /批次更新簽到狀態/);
   assert.match(recordsSource, /expected_status: record\.status/);

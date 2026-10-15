@@ -2,6 +2,7 @@
 
 import { buildAdminReturnHref } from "@/utils/admin-return";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
+import { AdminBulkActionBar } from "@/components/(admin)/admin/AdminBulkActionBar";
 import { AdminUserLink } from "@/components/(admin)/admin/users/AdminUserLink";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -230,19 +231,20 @@ export function AttendanceRecords({
       ) : null}
 
       {selectedCount > 0 ? (
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
-        <label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
+        <AdminBulkActionBar
+          selectedCount={selectedCount}
+          disabled={isMutating}
+          onClear={() => setSelectedIds(new Set())}
+          selectionControl={<label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
           <CurrentPageSelectionCheckbox
             checked={allSelected}
             indeterminate={partiallySelected}
             disabled={isMutating}
             onChange={setCurrentPageSelected}
           />
-          選取目前頁面
-        </label>
-        <p className="mr-auto text-sm text-(--text-secondary)" aria-live="polite">
-          已選取 {selectedCount} 筆
-        </p>
+          本頁全選
+        </label>}
+        >
         <label className="flex items-center gap-2 text-sm text-(--text-secondary)">
           批次狀態
           <Select
@@ -267,16 +269,7 @@ export function AttendanceRecords({
         >
           批次更新
         </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="text"
-          disabled={isMutating}
-          onClick={() => setSelectedIds(new Set())}
-        >
-          清除選取
-        </Button>
-        </div>
+        </AdminBulkActionBar>
       ) : null}
 
       <AdminListSection className="hidden lg:block">

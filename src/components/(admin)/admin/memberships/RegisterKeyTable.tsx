@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { AdminBulkActionBar } from "@/components/(admin)/admin/AdminBulkActionBar";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { Button } from "@/components/ui/Button";
@@ -210,22 +211,21 @@ export function RegisterKeyTable({
       ) : null}
 
       {selectedCount > 0 ? (
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
-        <label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
+        <AdminBulkActionBar
+          selectedCount={selectedCount}
+          disabled={isRevoking}
+          onClear={() => setSelectedIds(new Set())}
+          selectionControl={<label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
           <CurrentPageSelectionCheckbox
             checked={allSelected}
             indeterminate={partiallySelected}
             disabled={isRevoking}
             onChange={setCurrentPageSelected}
           />
-          選取目前頁面
-        </label>
-        <p className="mr-auto text-sm text-(--text-secondary)" aria-live="polite">
-          已選取 {selectedCount} 筆
-          {selectedCount > selectedAvailableCount
-            ? `，其中 ${selectedAvailableCount} 筆可撤銷`
-            : ""}
-        </p>
+          本頁全選
+        </label>}
+          notice={selectedCount > selectedAvailableCount ? `已選取 ${selectedCount} 筆，其中 ${selectedAvailableCount} 筆可撤銷；請取消不可撤銷的項目後再試。` : undefined}
+        >
         <Button
           type="button"
           variant="outline"
@@ -244,16 +244,7 @@ export function RegisterKeyTable({
         >
           批次撤銷
         </Button>
-        <Button
-          type="button"
-          variant="text"
-          size="sm"
-          disabled={isRevoking}
-          onClick={() => setSelectedIds(new Set())}
-        >
-          清除選取
-        </Button>
-        </div>
+        </AdminBulkActionBar>
       ) : null}
 
       <div className="grid gap-2.5 lg:hidden">

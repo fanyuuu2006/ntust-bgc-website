@@ -217,14 +217,16 @@ test("membership RPC locks, validates and updates as one transaction", async () 
 });
 
 test("membership UI shares current-page selection across desktop and mobile", async () => {
-  const [records, page] = await Promise.all([
+  const [records, page, bulkBar] = await Promise.all([
     readSource("src/components/(admin)/admin/memberships/MembershipRecords.tsx"),
     readSource("src/app/(admin)/admin/memberships/page.tsx"),
+    readSource("src/components/(admin)/admin/AdminBulkActionBar.tsx"),
   ]);
 
   assert.ok((records.match(/selectedIds\.has\(membership\.id\)/g) ?? []).length >= 2);
   assert.match(records, /aria-label="選取本頁全部社員資格"/);
-  assert.match(records, /已選取 \{selectedCount\} 筆/);
+  assert.match(records, /selectedCount=\{selectedCount\}/);
+  assert.match(bulkBar, /已選取 \{selectedCount\} 筆/);
   assert.match(records, /selectedCount > 0 \? \(/);
   assert.doesNotMatch(records, /無合法狀態/);
   assert.match(records, /批次更新社員資格狀態/);

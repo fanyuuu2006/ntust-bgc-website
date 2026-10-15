@@ -8,6 +8,7 @@ import { AdminBoardGameLink } from "@/components/(admin)/admin/AdminBoardGameLin
 import type { BoardGamesQuery } from "@/app/(admin)/admin/board-games/types";
 import { BoardGameStatusBadge } from "@/components/(admin)/admin/board-games/BoardGameStatusBadge";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
+import { AdminBulkActionBar } from "@/components/(admin)/admin/AdminBulkActionBar";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -159,14 +160,17 @@ export function BoardGameTable({
           選取本頁
         </label>
       ) : (
-        <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
-          <label className="flex items-center gap-2 text-sm xl:hidden"><CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} />選取本頁全部</label>
-          <p className="mr-auto text-sm text-(--text-secondary)" aria-live="polite">已選取 {selectedCount} 筆</p>
+        <AdminBulkActionBar
+          className="mb-3"
+          selectedCount={selectedCount}
+          disabled={isMutating}
+          onClear={() => setSelectedIds(new Set())}
+          selectionControl={<label className="flex items-center gap-2 text-sm xl:hidden"><CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} />本頁全選</label>}
+        >
           <Select aria-label="批次操作" value={bulkAction} disabled={isMutating} onChange={(event) => changeBulkAction(event.target.value as "set-category" | "set-location")} className="w-auto"><option value="set-category">變更種類</option><option value="set-location">變更位置</option></Select>
           <Select aria-label={bulkAction === "set-category" ? "目標桌遊種類" : "目標桌遊位置"} value={bulkTargetId} disabled={isMutating} onChange={(event) => setBulkTargetId(event.target.value)} className="max-w-48"><option value="">請選擇</option>{targets.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
           <Button size="sm" disabled={isMutating || !bulkTargetId} onClick={() => setIsBulkDialogOpen(true)}>套用</Button>
-          <Button size="sm" variant="text" disabled={isMutating} onClick={() => setSelectedIds(new Set())}>清除選取</Button>
-        </div>
+        </AdminBulkActionBar>
       )}
       <AdminListSection className="hidden xl:block">
         <Table className="min-w-250">

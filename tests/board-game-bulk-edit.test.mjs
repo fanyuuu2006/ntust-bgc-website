@@ -51,12 +51,14 @@ test("board-game batch RPC locks targets and rows before one all-or-nothing upda
 
 test("board-game collection exposes shared current-page selection on desktop and mobile", async () => {
   const table = await read("src/components/(admin)/admin/board-games/BoardGameTable.tsx");
+  const bulkBar = await read("src/components/(admin)/admin/AdminBulkActionBar.tsx");
   const page = await read("src/app/(admin)/admin/board-games/page.tsx");
   assert.match(page, /categories=\{category\}[\s\S]*locations=\{location\}/);
   assert.ok((table.match(/selectedIds\.has\(game\.id\)/g) ?? []).length >= 2);
   assert.match(table, /aria-label="選取目前頁面的所有桌遊"/);
   assert.match(table, /selectedCount === 0[\s\S]*選取本頁/);
-  assert.match(table, /已選取 \{selectedCount\} 筆/);
+  assert.match(table, /selectedCount=\{selectedCount\}/);
+  assert.match(bulkBar, /已選取 \{selectedCount\} 筆/);
   assert.match(table, /set-category/);
   assert.match(table, /set-location/);
   assert.match(table, /<ConfirmDialog[\s\S]*confirmLabel="套用變更"/);

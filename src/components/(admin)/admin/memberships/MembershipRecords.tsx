@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
+import { AdminBulkActionBar } from "@/components/(admin)/admin/AdminBulkActionBar";
 import { AdminUserLink } from "@/components/(admin)/admin/users/AdminUserLink";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
@@ -284,19 +285,21 @@ export function MembershipRecords({
       ) : null}
 
       {selectedCount > 0 ? (
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
-          <label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
+        <AdminBulkActionBar
+          selectedCount={selectedCount}
+          disabled={isMutating}
+          onClear={() => setSelectedIds(new Set())}
+          selectionControl={<label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
             <CurrentPageSelectionCheckbox
               checked={allSelected}
               indeterminate={partiallySelected}
               disabled={isMutating}
               onChange={setCurrentPageSelected}
             />
-            選取本頁全部
-          </label>
-          <p className="mr-auto text-sm text-(--text-secondary)" aria-live="polite">
-            已選取 {selectedCount} 筆
-          </p>
+            本頁全選
+          </label>}
+          notice={selectedAcademicYearCount > 1 ? "需先將清單篩選為單一學年度，再重新選取要更新的紀錄。" : undefined}
+        >
           {canBulkUpdate ? (
             <>
               <label className="flex items-center gap-2 text-sm text-(--text-secondary)">
@@ -322,15 +325,21 @@ export function MembershipRecords({
               </Button>
             </>
           ) : null}
-          <Button type="button" size="sm" variant="text" disabled={isMutating} onClick={() => setSelectedIds(new Set())}>
-            清除選取
-          </Button>
           {selectedAcademicYearCount > 1 ? (
-            <p className="basis-full text-sm text-(--danger)" role="alert">
-              批次更新僅能處理同一學年度的社員資格。
-            </p>
+            <Button type="button" size="sm" variant="outline" disabled={isMutating} onClick={() => {
+              const firstYear = selectedMemberships[0]?.academic_year_id;
+              if (!firstYear) return;
+              const params = new URLSearchParams();
+              Object.entries(query).forEach(([key, value]) => {
+                if (value !== undefined && key !== "page" && key !== "academic_year_id") params.set(key, String(value));
+              });
+              params.set("academic_year_id", firstYear);
+              router.push(`/admin/memberships?${params.toString()}`);
+            }}>
+              依第一筆學年度篩選
+            </Button>
           ) : null}
-        </div>
+        </AdminBulkActionBar>
       ) : null}
 
       <AdminListSection className="hidden lg:block">
