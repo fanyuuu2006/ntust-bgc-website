@@ -59,7 +59,7 @@ export function PurchaseSuggestionList({ items, hasQuery = false }: {
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [mobileBulkMode, setMobileBulkMode] = useState(false);
-  const [bulkAction, setBulkAction] = useState<"purchased" | "rejected">("purchased");
+  const [bulkAction, setBulkAction] = useState<"purchased" | "rejected" | "delete">("purchased");
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [feedback, setFeedback] = useState<{ tone: "success" | "error"; message: string } | null>(null);
@@ -67,7 +67,7 @@ export function PurchaseSuggestionList({ items, hasQuery = false }: {
   const selectedCount = selectedItems.length;
   const allSelected = items.length > 0 && selectedCount === items.length;
   const partiallySelected = selectedCount > 0 && !allSelected;
-  const canApply = selectedCount > 0 && selectedItems.every((item) => item.status !== bulkAction);
+  const canApply = selectedCount > 0 && (bulkAction === "delete" || selectedItems.every((item) => item.status !== bulkAction));
 
   const setSelected = (id: string, selected: boolean) => setSelectedIds((current) => {
     const next = new Set(current);
@@ -115,8 +115,8 @@ export function PurchaseSuggestionList({ items, hasQuery = false }: {
       selectionControl={<label className="flex items-center gap-2 text-sm lg:hidden"><SelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isUpdating} onChange={setCurrentPageSelected} label="選取本頁全部推薦" />本頁全選</label>}
       notice={!canApply ? "選取內容包含已是目標狀態的推薦；請取消該項目或改選另一個動作。" : undefined}
     >
-      <Select aria-label="批次處理推薦" value={bulkAction} disabled={isUpdating} onChange={(event) => setBulkAction(event.target.value as "purchased" | "rejected")} className="w-auto"><option value="purchased">標記已購入</option><option value="rejected">標記不採納</option></Select>
-      <Button size="sm" disabled={isUpdating || !canApply} onClick={() => setIsConfirmOpen(true)}>套用</Button>
+      <Select aria-label="批次處理推薦" value={bulkAction} disabled={isUpdating} onChange={(event) => setBulkAction(event.target.value as "purchased" | "rejected" | "delete")} className="w-auto"><option value="purchased">標記已購入</option><option value="rejected">標記不採納</option><option value="delete">刪除推薦</option></Select>
+      <Button size="sm" variant={bulkAction === "delete" ? "danger" : "primary"} disabled={isUpdating || !canApply} onClick={() => setIsConfirmOpen(true)}>套用</Button>
     </AdminBulkActionBar>
     <AdminListSection className="hidden lg:block">
       <Table className="min-w-190">
@@ -148,7 +148,7 @@ export function PurchaseSuggestionList({ items, hasQuery = false }: {
         status={item.status}
       />
     </Card>)}</div>
-    <ConfirmDialog open={isConfirmOpen} onClose={() => !isUpdating && setIsConfirmOpen(false)} onConfirm={applyBulkAction} isSubmitting={isUpdating} title={bulkAction === "purchased" ? "批次標記已購入" : "批次標記不採納"} description={`確定要將已選取的 ${selectedCount} 筆推薦標記為「${bulkAction === "purchased" ? "已購入" : "不採納"}」嗎？系統會重新檢查每筆版本，任一筆已變更時將不會更新任何資料。`} confirmLabel="確認更新" />
+    <ConfirmDialog open={isConfirmOpen} onClose={() => !isUpdating && setIsConfirmOpen(false)} onConfirm={applyBulkAction} isSubmitting={isUpdating} title={bulkAction === "delete" ? "批次刪除推薦" : bulkAction === "purchased" ? "批次標記已購入" : "批次標記不採納"} description={bulkAction === "delete" ? `確定要刪除已選取的 ${selectedCount} 筆推薦嗎？推薦會從管理清單隱藏，介面無法復原；系統仍保留必要紀錄以維持額度與重複提交防護。` : `確定要將已選取的 ${selectedCount} 筆推薦標記為「${bulkAction === "purchased" ? "已購入" : "不採納"}」嗎？系統會重新檢查每筆版本，任一筆已變更時將不會更新任何資料。`} confirmLabel={bulkAction === "delete" ? "確認刪除" : "確認更新"} confirmVariant={bulkAction === "delete" ? "danger" : "primary"} />
   </>;
 }
 

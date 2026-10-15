@@ -32,7 +32,7 @@ export const managePurchaseSuggestionSchema = z.object({
 }).strict();
 
 export const bulkManagePurchaseSuggestionsSchema = z.object({
-  action: z.enum(["purchased", "rejected"]),
+  action: z.enum(["purchased", "rejected", "delete"]),
   records: z.array(z.object({
     id: z.uuid(),
     version: z.number().int().positive().max(2147483647),

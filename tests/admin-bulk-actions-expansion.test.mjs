@@ -58,17 +58,19 @@ test("purchase suggestion batch API keeps authorization, validation, and one ato
     read("src/services/purchase-suggestions/purchase-suggestions.schema.ts"),
     read("src/services/purchase-suggestions/purchase-suggestions.service.ts"),
     read("src/repositories/purchase-suggestions.repository.ts"),
-    read("supabase/migrations/202610150004_manage_board_game_purchase_suggestions_atomically.sql"),
+    read("supabase/migrations/202610150005_bulk_delete_board_game_purchase_suggestions.sql"),
   ]);
   assert.match(route, /authorizeAdminRequest/);
   assert.match(route, /authorization\.user\.id/);
   assert.match(schema, /bulkManagePurchaseSuggestionsSchema/);
+  assert.match(schema, /"delete"/);
   assert.match(schema, /\.min\(1\)\.max\(100\)/);
   assert.match(schema, /new Set/);
   assert.match(service, /bulkManagePurchaseSuggestionsSchema\.parse/);
   assert.match(repository, /manage_board_game_purchase_suggestions/);
   assert.match(migration, /order by suggestion\.id[\s\S]*for update of suggestion/);
   assert.match(migration, /v_updated_count <> v_expected_count/);
+  assert.match(migration, /set deleted_at = clock_timestamp\(\)/);
   assert.match(migration, /grant execute[\s\S]*to service_role/);
   assert.doesNotMatch(migration, /grant execute[\s\S]*to authenticated/);
 });
