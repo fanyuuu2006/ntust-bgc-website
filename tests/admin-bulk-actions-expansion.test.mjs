@@ -23,6 +23,24 @@ test("existing bulk collections share a compact contextual action bar", async ()
   assert.match(memberships, /academic_year_id/);
 });
 
+test("bulk-enabled mobile collections enter an explicit management mode", async () => {
+  const [toggle, boardGames, memberships, keys, attendances, suggestions] = await Promise.all([
+    read("src/components/(admin)/admin/AdminMobileBulkModeButton.tsx"),
+    read("src/components/(admin)/admin/board-games/BoardGameTable.tsx"),
+    read("src/components/(admin)/admin/memberships/MembershipRecords.tsx"),
+    read("src/components/(admin)/admin/memberships/RegisterKeyTable.tsx"),
+    read("src/components/(admin)/admin/events/AttendanceRecords.tsx"),
+    read("src/components/(admin)/admin/purchase-suggestions/PurchaseSuggestionList.tsx"),
+  ]);
+  assert.match(toggle, /aria-pressed=\{active\}/);
+  assert.match(toggle, /批次管理/);
+  assert.match(toggle, /結束批次管理/);
+  for (const source of [boardGames, memberships, keys, attendances, suggestions]) {
+    assert.match(source, /mobileBulkMode/);
+    assert.match(source, /<AdminMobileBulkModeButton/);
+  }
+});
+
 test("purchase suggestions expose page-scoped accessible bulk review controls", async () => {
   const source = await read("src/components/(admin)/admin/purchase-suggestions/PurchaseSuggestionList.tsx");
   assert.match(source, /<AdminBulkActionBar/);

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminBulkActionBar } from "@/components/(admin)/admin/AdminBulkActionBar";
+import { AdminMobileBulkModeButton } from "@/components/(admin)/admin/AdminMobileBulkModeButton";
 import { AdminUserLink } from "@/components/(admin)/admin/users/AdminUserLink";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
@@ -67,6 +68,7 @@ export function MembershipRecords({
   const [editError, setEditError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [mobileBulkMode, setMobileBulkMode] = useState(false);
   const [bulkStatus, setBulkStatus] = useState<MembershipStatus>("active");
   const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
@@ -270,25 +272,13 @@ export function MembershipRecords({
         />
       ) : null}
 
-      {selectedCount === 0 ? (
-        <div className="flex lg:hidden">
-          <label className="flex min-h-8 items-center gap-2 text-sm text-(--text-secondary)">
-            <CurrentPageSelectionCheckbox
-              checked={allSelected}
-              indeterminate={partiallySelected}
-              disabled={isMutating}
-              onChange={setCurrentPageSelected}
-            />
-            選取本頁
-          </label>
-        </div>
-      ) : null}
+      {selectedCount === 0 ? <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isMutating} onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} /> : null}
 
       {selectedCount > 0 ? (
         <AdminBulkActionBar
           selectedCount={selectedCount}
           disabled={isMutating}
-          onClear={() => setSelectedIds(new Set())}
+          onClear={() => { setSelectedIds(new Set()); setMobileBulkMode(false); }}
           selectionControl={<label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
             <CurrentPageSelectionCheckbox
               checked={allSelected}
@@ -435,7 +425,7 @@ export function MembershipRecords({
           <Card key={membership.id} className="space-y-2.5 p-3 sm:p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 items-start gap-3">
-                <input
+                {mobileBulkMode ? <input
                   type="checkbox"
                   checked={selectedIds.has(membership.id)}
                   disabled={isMutating}
@@ -444,7 +434,7 @@ export function MembershipRecords({
                   }
                   aria-label={`選取 ${membership.user.name} 的社員資格`}
                   className="mt-0.5 size-4 shrink-0 rounded border-(--border-default) accent-(--interactive-primary)"
-                />
+                /> : null}
                 <AdminUserLink
                   userId={membership.user.id}
                   identity={{

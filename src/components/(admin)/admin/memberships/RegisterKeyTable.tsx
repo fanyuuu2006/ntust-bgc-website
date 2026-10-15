@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { AdminBulkActionBar } from "@/components/(admin)/admin/AdminBulkActionBar";
+import { AdminMobileBulkModeButton } from "@/components/(admin)/admin/AdminMobileBulkModeButton";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { Button } from "@/components/ui/Button";
@@ -38,6 +39,7 @@ export function RegisterKeyTable({
   const [isRevoking, setIsRevoking] = useState(false);
   const [isBulkRevokeDialogOpen, setIsBulkRevokeDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [mobileBulkMode, setMobileBulkMode] = useState(false);
 
   const selectedCount = selectedIds.size;
   const selectedRegisterKeys = registerKeys.filter((registerKey) =>
@@ -196,25 +198,13 @@ export function RegisterKeyTable({
         </p>
       ) : null}
 
-      {selectedCount === 0 ? (
-        <div className="flex lg:hidden">
-          <label className="flex min-h-8 items-center gap-2 text-sm text-(--text-secondary)">
-            <CurrentPageSelectionCheckbox
-              checked={allSelected}
-              indeterminate={partiallySelected}
-              disabled={isRevoking}
-              onChange={setCurrentPageSelected}
-            />
-            選取本頁
-          </label>
-        </div>
-      ) : null}
+      {selectedCount === 0 ? <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isRevoking} onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} /> : null}
 
       {selectedCount > 0 ? (
         <AdminBulkActionBar
           selectedCount={selectedCount}
           disabled={isRevoking}
-          onClear={() => setSelectedIds(new Set())}
+          onClear={() => { setSelectedIds(new Set()); setMobileBulkMode(false); }}
           selectionControl={<label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
           <CurrentPageSelectionCheckbox
             checked={allSelected}
@@ -312,7 +302,7 @@ export function RegisterKeyTable({
             {registerKeys.map((registerKey) => (
               <TableRow key={registerKey.id}>
                 <TableCell className="w-12">
-                  <input
+                  {mobileBulkMode ? <input
                     type="checkbox"
                     checked={selectedIds.has(registerKey.id)}
                     disabled={isRevoking}
@@ -321,7 +311,7 @@ export function RegisterKeyTable({
                     }
                     aria-label={`選取社員註冊序號 ${registerKey.register_key}`}
                     className="size-4 rounded border-(--border-default) accent-(--interactive-primary)"
-                  />
+                  /> : null}
                 </TableCell>
                 <TableCell className="min-w-64">
                   <p className="break-all font-mono text-xs text-(--text-primary)">

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminBulkActionBar } from "@/components/(admin)/admin/AdminBulkActionBar";
+import { AdminMobileBulkModeButton } from "@/components/(admin)/admin/AdminMobileBulkModeButton";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Button } from "@/components/ui/Button";
@@ -57,6 +58,7 @@ export function PurchaseSuggestionList({ items, hasQuery = false }: {
 }) {
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [mobileBulkMode, setMobileBulkMode] = useState(false);
   const [bulkAction, setBulkAction] = useState<"purchased" | "rejected">("purchased");
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -105,11 +107,11 @@ export function PurchaseSuggestionList({ items, hasQuery = false }: {
       : <EmptyState title="目前沒有桌遊推薦" />;
   return <>
     {feedback ? <FormFeedback error={feedback.tone === "error" ? feedback.message : null} success={feedback.tone === "success" ? feedback.message : null} /> : null}
-    {selectedCount === 0 ? <label className="flex min-h-8 items-center gap-2 text-sm text-(--text-secondary) lg:hidden"><SelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isUpdating} onChange={setCurrentPageSelected} label="選取本頁全部推薦" />選取本頁</label> : null}
+    {selectedCount === 0 ? <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isUpdating} onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} /> : null}
     <AdminBulkActionBar
       selectedCount={selectedCount}
       disabled={isUpdating}
-      onClear={() => setSelectedIds(new Set())}
+      onClear={() => { setSelectedIds(new Set()); setMobileBulkMode(false); }}
       selectionControl={<label className="flex items-center gap-2 text-sm lg:hidden"><SelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isUpdating} onChange={setCurrentPageSelected} label="選取本頁全部推薦" />本頁全選</label>}
       notice={!canApply ? "選取內容包含已是目標狀態的推薦；請取消該項目或改選另一個動作。" : undefined}
     >
@@ -136,7 +138,7 @@ export function PurchaseSuggestionList({ items, hasQuery = false }: {
     </AdminListSection>
     <div className="grid min-w-0 max-w-full gap-2.5 lg:hidden">{items.map((item) => <Card key={item.id} className="w-full min-w-0 max-w-full space-y-2.5 p-3 sm:p-4">
       <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-1 items-start gap-2"><SelectionCheckbox checked={selectedIds.has(item.id)} indeterminate={false} disabled={isUpdating} onChange={(checked) => setSelected(item.id, checked)} label={`選取桌遊推薦 ${item.game_name}`} /><p className="min-w-0 flex-1 wrap-anywhere font-semibold text-(--text-primary)">{item.game_name}</p></div>
+        <div className="flex min-w-0 flex-1 items-start gap-2">{mobileBulkMode ? <SelectionCheckbox checked={selectedIds.has(item.id)} indeterminate={false} disabled={isUpdating} onChange={(checked) => setSelected(item.id, checked)} label={`選取桌遊推薦 ${item.game_name}`} /> : null}<p className="min-w-0 flex-1 wrap-anywhere font-semibold text-(--text-primary)">{item.game_name}</p></div>
         <Status item={item} />
       </div>
       <Content item={item} showName={false} /><Time item={item} />

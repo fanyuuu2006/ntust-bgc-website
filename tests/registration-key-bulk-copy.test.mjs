@@ -191,6 +191,10 @@ test("selection is shared by desktop and mobile controls and resets with collect
       ),
     );
 
+    const enterBulkMode = [...host.querySelectorAll("button")].find(
+      (button) => button.textContent === "批次管理",
+    );
+    await click(enterBulkMode);
     const betaCheckboxes = host.querySelectorAll(
       'input[aria-label="選取社員註冊序號 KEY-BETA"]',
     );

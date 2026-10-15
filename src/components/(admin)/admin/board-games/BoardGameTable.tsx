@@ -9,6 +9,7 @@ import type { BoardGamesQuery } from "@/app/(admin)/admin/board-games/types";
 import { BoardGameStatusBadge } from "@/components/(admin)/admin/board-games/BoardGameStatusBadge";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminBulkActionBar } from "@/components/(admin)/admin/AdminBulkActionBar";
+import { AdminMobileBulkModeButton } from "@/components/(admin)/admin/AdminMobileBulkModeButton";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -55,6 +56,7 @@ export function BoardGameTable({
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [mobileBulkMode, setMobileBulkMode] = useState(false);
   const [bulkAction, setBulkAction] = useState<"set-category" | "set-location">("set-category");
   const [bulkTargetId, setBulkTargetId] = useState(categories[0]?.id ?? "");
   const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
@@ -154,17 +156,12 @@ export function BoardGameTable({
   return (
     <div className={className} {...props}>
       {bulkFeedback ? <FormFeedback error={bulkFeedback.tone === "error" ? bulkFeedback.message : null} success={bulkFeedback.tone === "success" ? bulkFeedback.message : null} className="mb-3" /> : null}
-      {selectedCount === 0 ? (
-        <label className="mb-3 flex min-h-8 items-center gap-2 text-sm text-(--text-secondary) xl:hidden">
-          <CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} />
-          選取本頁
-        </label>
-      ) : (
+      {selectedCount === 0 ? <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isMutating} className="mb-3 xl:hidden" onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} /> : (
         <AdminBulkActionBar
           className="mb-3"
           selectedCount={selectedCount}
           disabled={isMutating}
-          onClear={() => setSelectedIds(new Set())}
+          onClear={() => { setSelectedIds(new Set()); setMobileBulkMode(false); }}
           selectionControl={<label className="flex items-center gap-2 text-sm xl:hidden"><CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} />本頁全選</label>}
         >
           <Select aria-label="批次操作" value={bulkAction} disabled={isMutating} onChange={(event) => changeBulkAction(event.target.value as "set-category" | "set-location")} className="w-auto"><option value="set-category">變更種類</option><option value="set-location">變更位置</option></Select>
@@ -255,7 +252,7 @@ export function BoardGameTable({
           >
             <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 items-start gap-3">
-                <input type="checkbox" checked={selectedIds.has(game.id)} disabled={isMutating} onChange={(event) => setGameSelected(game.id, event.target.checked)} aria-label={`選取桌遊 ${game.name}`} className="mt-0.5 size-4 shrink-0 rounded border-(--border-default) accent-(--interactive-primary)" />
+                {mobileBulkMode ? <input type="checkbox" checked={selectedIds.has(game.id)} disabled={isMutating} onChange={(event) => setGameSelected(game.id, event.target.checked)} aria-label={`選取桌遊 ${game.name}`} className="mt-0.5 size-4 shrink-0 rounded border-(--border-default) accent-(--interactive-primary)" /> : null}
                 <BoardGameImage
                   boardGame={game}
                   className="size-12 shrink-0 rounded-md border border-(--border) object-cover"

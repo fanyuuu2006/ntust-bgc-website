@@ -3,6 +3,7 @@
 import { buildAdminReturnHref } from "@/utils/admin-return";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminBulkActionBar } from "@/components/(admin)/admin/AdminBulkActionBar";
+import { AdminMobileBulkModeButton } from "@/components/(admin)/admin/AdminMobileBulkModeButton";
 import { AdminUserLink } from "@/components/(admin)/admin/users/AdminUserLink";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -62,6 +63,7 @@ export function AttendanceRecords({
   const [selectedIds, setSelectedIds] = useState<Set<EventAttendanceId>>(
     () => new Set(),
   );
+  const [mobileBulkMode, setMobileBulkMode] = useState(false);
   const [bulkStatus, setBulkStatus] =
     useState<AttendanceRecord["status"]>("present");
   const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
@@ -221,20 +223,13 @@ export function AttendanceRecords({
         />
       ) : null}
 
-      {selectedCount === 0 ? (
-        <div className="flex lg:hidden">
-          <label className="flex min-h-8 items-center gap-2 text-sm text-(--text-secondary)">
-            <CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} />
-            選取本頁
-          </label>
-        </div>
-      ) : null}
+      {selectedCount === 0 ? <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isMutating} onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} /> : null}
 
       {selectedCount > 0 ? (
         <AdminBulkActionBar
           selectedCount={selectedCount}
           disabled={isMutating}
-          onClear={() => setSelectedIds(new Set())}
+          onClear={() => { setSelectedIds(new Set()); setMobileBulkMode(false); }}
           selectionControl={<label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
           <CurrentPageSelectionCheckbox
             checked={allSelected}
@@ -333,7 +328,7 @@ export function AttendanceRecords({
           <Card key={record.id} className="w-full min-w-0 max-w-full p-3 sm:p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 items-start gap-3">
-                <input
+                {mobileBulkMode ? <input
                   type="checkbox"
                   checked={selectedIds.has(record.id)}
                   disabled={isMutating}
@@ -342,7 +337,7 @@ export function AttendanceRecords({
                   }
                   aria-label={`選取 ${record.user.name} 的簽到紀錄`}
                   className="mt-0.5 size-4 shrink-0 rounded border-(--border-default) accent-(--interactive-primary)"
-                />
+                /> : null}
                 <AdminUserLink
                   userId={record.user.id}
                   identity={{
