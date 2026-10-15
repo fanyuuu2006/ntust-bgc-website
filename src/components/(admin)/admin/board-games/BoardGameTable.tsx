@@ -184,7 +184,7 @@ export function BoardGameTable({
         {boardGames.map((game) => (
           <Card
             key={game.id}
-            className="w-full min-w-0 max-w-full space-y-3 p-4"
+            className="w-full min-w-0 max-w-full space-y-2.5 p-3 sm:p-4"
           >
             <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 items-start gap-3">

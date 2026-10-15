@@ -112,7 +112,7 @@ async function BoardGamesAdminPage({
         }
       />
 
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <BoardGameSearchForm
           categories={category}
           locations={location}

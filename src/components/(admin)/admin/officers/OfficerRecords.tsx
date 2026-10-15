@@ -164,7 +164,7 @@ export function OfficerRecords({
         </Table>
       </AdminListSection>
 
-      <div className="grid gap-3 lg:hidden">
+      <div className="grid gap-2.5 lg:hidden">
         {officers.map((officer) => (
           <Card key={officer.id} className="w-full min-w-0 max-w-full p-4">
             <div className="min-w-0">

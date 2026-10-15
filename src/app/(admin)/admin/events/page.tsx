@@ -75,7 +75,7 @@ async function AdminEventsPage({
         description="建立、編輯與管理社團活動，可進入活動詳情管理簽到。"
         actions={<EventActions />}
       />
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_10rem_10rem] md:items-center">
           <form className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]" aria-label="搜尋活動">
             <PreservedQueryFields query={{ search: params.search, status, orderBy, orderDirection, pageSize }} ownedKeys={["search"]} />

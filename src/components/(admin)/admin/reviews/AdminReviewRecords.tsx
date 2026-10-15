@@ -131,7 +131,7 @@ export function AdminReviewRecords({
         </Table>
       </AdminListSection>
 
-      <div className="grid min-w-0 gap-3 lg:hidden">
+      <div className="grid min-w-0 gap-2.5 lg:hidden">
         {reviews.map((review) => (
           <Card key={review.id} className="min-w-0 overflow-hidden p-4">
             <div className="flex min-w-0 items-start gap-3">

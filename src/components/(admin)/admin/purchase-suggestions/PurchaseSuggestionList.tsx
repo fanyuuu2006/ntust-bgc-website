@@ -71,7 +71,7 @@ export function PurchaseSuggestionList({ items, hasQuery = false }: {
         </TableRow>)}</TableBody>
       </Table>
     </AdminListSection>
-    <div className="grid min-w-0 max-w-full gap-3 lg:hidden">{items.map((item) => <Card key={item.id} className="w-full min-w-0 max-w-full space-y-3 p-4">
+    <div className="grid min-w-0 max-w-full gap-2.5 lg:hidden">{items.map((item) => <Card key={item.id} className="w-full min-w-0 max-w-full space-y-2.5 p-3 sm:p-4">
       <div className="flex min-w-0 items-start justify-between gap-3">
         <p className="min-w-0 flex-1 wrap-anywhere font-semibold text-(--text-primary)">{item.game_name}</p>
         <Status item={item} />

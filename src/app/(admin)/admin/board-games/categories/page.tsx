@@ -50,7 +50,7 @@ async function BoardGameCategoriesPage({
         description="維護桌遊分類；仍有桌遊使用的分類不可刪除。"
         actions={<CategoryCreateAction />}
       />
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
           <input type="hidden" name="page" value="1" />
           <input type="hidden" name="pageSize" value={pageSize} />

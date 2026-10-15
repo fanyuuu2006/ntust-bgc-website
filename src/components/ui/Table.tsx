@@ -33,11 +33,11 @@ export function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   return (
     <th
       scope="col"
-      className={cn("px-4 py-3 text-xs font-semibold", className)}
+      className={cn("px-3 py-2.5 text-xs font-semibold", className)}
       {...props}
     />
   );
 }
 export function TableCell({ className, ...props }: React.ComponentProps<"td">) {
-  return <td className={cn("px-4 py-3", className)} {...props} />;
+  return <td className={cn("px-3 py-2.5", className)} {...props} />;
 }

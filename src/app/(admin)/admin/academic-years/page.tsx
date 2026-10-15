@@ -41,7 +41,7 @@ async function AcademicYearsPage({
         description="建立、編輯與設定目前學年度。"
         actions={<AcademicYearActions />}
       />
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
           <input type="hidden" name="page" value="1" />
           <input type="hidden" name="pageSize" value={pageSize} />

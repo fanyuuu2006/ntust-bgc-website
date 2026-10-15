@@ -18,7 +18,7 @@ async function AdminPurchaseSuggestionsPage({ searchParams }: {
   const clearSearchHref = buildOwnedQueryHref({ basePath: BASE_PATH, appliedQuery: query, ownedKeys: ["search"], changes: { search: undefined } });
   return <>
     <HeadingSection title="桌遊購入建議" description="管理桌遊購入推薦，並更新處理狀態。" />
-    <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+    <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
       <PaginatedCollection
         {...result}
         basePath={BASE_PATH}

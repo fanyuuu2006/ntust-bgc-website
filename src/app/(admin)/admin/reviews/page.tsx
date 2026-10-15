@@ -30,7 +30,7 @@ async function AdminReviewsPage({
         title="評價與評論管理"
         description="管理使用者留下的桌遊評價與評論。"
       />
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <AdminReviewFilters query={filterQuery} selectedBoardGame={selectedBoardGame} />
         <PaginatedCollection page={query.page} pageSize={query.pageSize} total={reviews.total} totalPages={reviews.totalPages} basePath="/admin/reviews" pageSizeOptions={[10, 20, 50, 100]} query={filterQuery} paginationClassName="p-4">
         <AdminReviewRecords

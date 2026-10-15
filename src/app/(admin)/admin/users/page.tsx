@@ -106,7 +106,7 @@ async function AdminUsersPage({ searchParams }: Props) {
         actions={<AdminExportMenu domain="users" query={query} />}
       />
 
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_11rem] md:items-center">
           <form
             className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"

@@ -31,7 +31,7 @@ async function AdminBorrowingsPage({ searchParams }: Props) {
         description="管理社員借用申請，並確認借出與歸還。"
         actions={<AdminExportMenu domain="borrowings" query={query} />}
       />
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <AdminBorrowingFilters query={query} />
         <PaginatedCollection page={page} pageSize={pageSize} total={borrowings.total} totalPages={borrowings.totalPages} basePath={BASE_PATH} pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
         <AdminBorrowingList
