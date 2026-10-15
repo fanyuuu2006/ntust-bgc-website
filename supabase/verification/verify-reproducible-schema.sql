@@ -43,6 +43,10 @@ begin
     raise exception 'Required register-key RPC missing';
   end if;
 
+  if to_regprocedure('public.update_event_attendances_status(uuid,jsonb,public.attendance_status)') is null then
+    raise exception 'Required attendance batch RPC missing';
+  end if;
+
   if to_regprocedure('public.issue_password_recovery_token(uuid,text,timestamp with time zone)') is null
      or to_regprocedure('public.activate_password_recovery_token(text)') is null
      or to_regprocedure('public.inspect_password_recovery_token(text)') is null
@@ -62,6 +66,12 @@ begin
      or has_function_privilege('anon', 'public.revoke_membership_register_keys(uuid[])', 'EXECUTE')
      or has_function_privilege('authenticated', 'public.revoke_membership_register_keys(uuid[])', 'EXECUTE') then
     raise exception 'Register-key RPC execute ACL invariant missing';
+  end if;
+
+  if not has_function_privilege('service_role', 'public.update_event_attendances_status(uuid,jsonb,public.attendance_status)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.update_event_attendances_status(uuid,jsonb,public.attendance_status)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.update_event_attendances_status(uuid,jsonb,public.attendance_status)', 'EXECUTE') then
+    raise exception 'Attendance batch RPC privilege invariant missing';
   end if;
 
   if to_regclass('public.board_games_with_statistics') is null

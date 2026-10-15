@@ -91,6 +91,7 @@ async function AdminEventDetailPage({
         </AdminToolbar>
         <PaginatedCollection page={page} pageSize={pageSize} total={records.total} totalPages={records.totalPages} basePath={`/admin/events/${event.id}`} pageSizeOptions={[10, 20, 50]} query={{ returnTo, search: query.search, orderDirection }}>
         <AttendanceRecords
+          key={JSON.stringify({ search: query.search, orderDirection, page, pageSize })}
           returnTo={returnTo}
           eventId={event.id}
           eventName={event.name}

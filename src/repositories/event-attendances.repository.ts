@@ -29,6 +29,16 @@ type UpdateEventAttendanceInput = Partial<
   Pick<EventAttendance, "attended_at" | "status">
 >;
 
+export type BulkUpdateEventAttendanceItem = Pick<
+  EventAttendance,
+  "id" | "status" | "attended_at"
+>;
+
+type BulkUpdateEventAttendancesRpcResult = {
+  outcome: "updated" | "conflict";
+  updated_count?: number;
+};
+
 export type FindManyEventAttendancesOptions = PaginationQuery &
   OrderOptions<"attended_at"> & {
     status?: AttendanceStatus | AttendanceStatus[];
@@ -246,6 +256,36 @@ export const eventAttendancesRepository = {
       .maybeSingle();
     if (error) throwRepositoryError("更新簽到紀錄失敗", error);
     return data;
+  },
+
+  updateManyStatusForEvent: async (
+    eventId: string,
+    records: BulkUpdateEventAttendanceItem[],
+    status: AttendanceStatus,
+  ): Promise<
+    | { outcome: "updated"; updatedCount: number }
+    | { outcome: "conflict" }
+  > => {
+    const { data, error } = await supabase.rpc(
+      "update_event_attendances_status",
+      {
+        p_event_id: eventId,
+        p_items: records.map((record) => ({
+          id: record.id,
+          expected_status: record.status,
+          expected_attended_at: record.attended_at,
+        })),
+        p_status: status,
+      },
+    );
+    if (error) throwRepositoryError("批次更新活動簽到狀態失敗", error);
+
+    const result = data as BulkUpdateEventAttendancesRpcResult | null;
+    if (result?.outcome !== "updated") return { outcome: "conflict" };
+    return {
+      outcome: "updated",
+      updatedCount: result.updated_count ?? 0,
+    };
   },
 
   deleteById: async (id: EventAttendanceId): Promise<void> => {

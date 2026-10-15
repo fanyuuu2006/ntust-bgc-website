@@ -3,7 +3,7 @@
 import { buildAdminReturnHref } from "@/utils/admin-return";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminUserLink } from "@/components/(admin)/admin/users/AdminUserLink";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -58,9 +58,40 @@ export function AttendanceRecords({
   const [isDeleting, setIsDeleting] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<EventAttendanceId>>(
+    () => new Set(),
+  );
+  const [bulkStatus, setBulkStatus] =
+    useState<AttendanceRecord["status"]>("present");
+  const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  const [bulkFeedback, setBulkFeedback] = useState<{
+    tone: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const editingAttendance = selectedAttendance?.action === "edit" ? selectedAttendance.record : null;
   const deletingAttendance = selectedAttendance?.action === "delete" ? selectedAttendance.record : null;
+  const selectedRecords = records.filter((record) => selectedIds.has(record.id));
+  const selectedCount = selectedRecords.length;
+  const allSelected = records.length > 0 && selectedCount === records.length;
+  const partiallySelected = selectedCount > 0 && !allSelected;
+  const isMutating = isSaving || isDeleting || isBulkUpdating;
+
+  const setAttendanceSelected = (id: EventAttendanceId, selected: boolean) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (selected) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const setCurrentPageSelected = (selected: boolean) => {
+    setSelectedIds(
+      selected ? new Set(records.map((record) => record.id)) : new Set(),
+    );
+  };
 
   const openEditDialog = (record: AttendanceRecord) => {
     setSelectedAttendance({ record, action: "edit" });
@@ -127,6 +158,48 @@ export function AttendanceRecords({
     }
   };
 
+  const bulkUpdateAttendances = async () => {
+    if (!selectedRecords.length) return;
+
+    setIsBulkUpdating(true);
+    setBulkFeedback(null);
+    try {
+      const response = await apiClient<{ data: { updatedCount: number } }>(
+        `/api/admin/events/${eventId}/attendances/batch`,
+        {
+          method: "PATCH",
+          body: {
+            action: "set-status",
+            status: bulkStatus,
+            records: selectedRecords.map((record) => ({
+              id: record.id,
+              expected_status: record.status,
+              expected_attended_at: record.attended_at,
+            })),
+          },
+        },
+      );
+      setSelectedIds(new Set());
+      setIsBulkDialogOpen(false);
+      setBulkFeedback({
+        tone: "success",
+        message: `已更新 ${response.data.updatedCount} 筆簽到紀錄。`,
+      });
+      router.refresh();
+    } catch (caught) {
+      setIsBulkDialogOpen(false);
+      setBulkFeedback({
+        tone: "error",
+        message:
+          caught instanceof Error
+            ? caught.message
+            : "批次更新簽到紀錄失敗，請稍後再試。",
+      });
+    } finally {
+      setIsBulkUpdating(false);
+    }
+  };
+
   if (!records.length) {
     return hasQuery ? (
       <QueryEmptyState
@@ -140,10 +213,71 @@ export function AttendanceRecords({
 
   return (
     <>
+      <FormFeedback
+        error={bulkFeedback?.tone === "error" ? bulkFeedback.message : null}
+        success={bulkFeedback?.tone === "success" ? bulkFeedback.message : null}
+      />
+
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
+        <label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
+          <CurrentPageSelectionCheckbox
+            checked={allSelected}
+            indeterminate={partiallySelected}
+            disabled={isMutating}
+            onChange={setCurrentPageSelected}
+          />
+          選取目前頁面
+        </label>
+        <p className="mr-auto text-sm text-(--text-secondary)" aria-live="polite">
+          已選取 {selectedCount} 筆
+        </p>
+        <label className="flex items-center gap-2 text-sm text-(--text-secondary)">
+          批次狀態
+          <Select
+            aria-label="批次更新簽到狀態"
+            value={bulkStatus}
+            disabled={isMutating}
+            onChange={(event) =>
+              setBulkStatus(event.target.value as AttendanceRecord["status"])
+            }
+            className="w-auto"
+          >
+            {Object.entries(ATTENDANCE_STATUS_LABEL).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </Select>
+        </label>
+        <Button
+          type="button"
+          size="sm"
+          disabled={selectedCount === 0 || isMutating}
+          onClick={() => setIsBulkDialogOpen(true)}
+        >
+          批次更新
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="text"
+          disabled={selectedCount === 0 || isMutating}
+          onClick={() => setSelectedIds(new Set())}
+        >
+          清除選取
+        </Button>
+      </div>
+
       <AdminListSection className="hidden lg:block">
         <Table className="min-w-[960px]">
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12">
+                <CurrentPageSelectionCheckbox
+                  checked={allSelected}
+                  indeterminate={partiallySelected}
+                  disabled={isMutating}
+                  onChange={setCurrentPageSelected}
+                />
+              </TableHead>
               <TableHead>使用者名稱</TableHead>
               <TableHead>真實姓名</TableHead>
               <TableHead>Email</TableHead>
@@ -156,6 +290,18 @@ export function AttendanceRecords({
           <TableBody>
             {records.map((record) => (
               <TableRow key={record.id}>
+                <TableCell className="w-12">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(record.id)}
+                    disabled={isMutating}
+                    onChange={(event) =>
+                      setAttendanceSelected(record.id, event.target.checked)
+                    }
+                    aria-label={`選取 ${record.user.name} 的簽到紀錄`}
+                    className="size-4 rounded border-(--border-default) accent-(--interactive-primary)"
+                  />
+                </TableCell>
                 <TableCell className="min-w-32 font-medium">
                   <Link
                     href={`/admin/users/${record.user.id}`}
@@ -169,7 +315,7 @@ export function AttendanceRecords({
                 <TableCell className="min-w-28">{emptyValue(record.profile?.student_id)}</TableCell>
                 <TableCell className="whitespace-nowrap"><AttendanceStatusBadge status={record.status} /></TableCell>
                 <TableCell className="whitespace-nowrap">{formatDateTime(record.attended_at)}</TableCell>
-                <TableCell className="whitespace-nowrap text-right"><AttendanceRowActions record={record} onEdit={openEditDialog} onDelete={openDeleteDialog} /></TableCell>
+                <TableCell className="whitespace-nowrap text-right"><AttendanceRowActions record={record} disabled={isMutating} onEdit={openEditDialog} onDelete={openDeleteDialog} /></TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -180,24 +326,36 @@ export function AttendanceRecords({
         {records.map((record) => (
           <Card key={record.id} className="w-full min-w-0 max-w-full p-4">
             <div className="flex items-start justify-between gap-3">
-              <AdminUserLink
-                userId={record.user.id}
-                identity={{
-                  ...record.user,
-                  real_name: record.profile?.real_name ?? null,
-                  student_id: record.profile?.student_id ?? null,
-                }}
-                disambiguation="email"
-                variant="mobile"
-                className="min-w-0 flex-1"
-              />
+              <div className="flex min-w-0 flex-1 items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(record.id)}
+                  disabled={isMutating}
+                  onChange={(event) =>
+                    setAttendanceSelected(record.id, event.target.checked)
+                  }
+                  aria-label={`選取 ${record.user.name} 的簽到紀錄`}
+                  className="mt-0.5 size-4 shrink-0 rounded border-(--border-default) accent-(--interactive-primary)"
+                />
+                <AdminUserLink
+                  userId={record.user.id}
+                  identity={{
+                    ...record.user,
+                    real_name: record.profile?.real_name ?? null,
+                    student_id: record.profile?.student_id ?? null,
+                  }}
+                  disambiguation="email"
+                  variant="mobile"
+                  className="min-w-0 flex-1"
+                />
+              </div>
               <span className="shrink-0"><AttendanceStatusBadge status={record.status} /></span>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
               <p className="min-w-0"><span className="block text-(--muted)">學號</span>{emptyValue(record.profile?.student_id)}</p>
               <p className="min-w-0"><span className="block text-(--muted)">簽到時間</span>{formatDateTime(record.attended_at)}</p>
             </div>
-            <div className="mt-3 flex flex-wrap gap-2"><AttendanceRowActions record={record} onEdit={openEditDialog} onDelete={openDeleteDialog} /></div>
+            <div className="mt-3 flex flex-wrap gap-2"><AttendanceRowActions record={record} disabled={isMutating} onEdit={openEditDialog} onDelete={openDeleteDialog} /></div>
           </Card>
         ))}
       </div>
@@ -219,10 +377,27 @@ export function AttendanceRecords({
       </Modal>
 
       <ConfirmDialog open={deletingAttendance !== null} onClose={closeDeleteDialog} onConfirm={removeAttendance} isSubmitting={isDeleting} title="刪除簽到紀錄" description={deletingAttendance ? `確定要刪除這筆簽到紀錄嗎？\n使用者名稱：${deletingAttendance.user.name}\n真實姓名：${emptyValue(deletingAttendance.profile?.real_name)}\n活動：${eventName}\n刪除後將無法復原。${deleteError ? ` ${deleteError}` : ""}` : ""} />
+      <ConfirmDialog
+        open={isBulkDialogOpen}
+        onClose={() => !isBulkUpdating && setIsBulkDialogOpen(false)}
+        onConfirm={bulkUpdateAttendances}
+        isSubmitting={isBulkUpdating}
+        title="批次更新簽到狀態"
+        description={`確定要將已選取的 ${selectedCount} 筆簽到紀錄更新為「${ATTENDANCE_STATUS_LABEL[bulkStatus]}」嗎？`}
+        confirmLabel="更新已選紀錄"
+      />
     </>
   );
 }
 
-function AttendanceRowActions({ record, onEdit, onDelete }: { record: AttendanceRecord; onEdit: (record: AttendanceRecord) => void; onDelete: (record: AttendanceRecord) => void; }) {
-  return <div className="flex shrink-0 gap-2"><Button type="button" size="sm" variant="outline" onClick={() => onEdit(record)}>編輯</Button><Button type="button" size="sm" variant="danger" onClick={() => onDelete(record)}>刪除</Button></div>;
+function CurrentPageSelectionCheckbox({ checked, indeterminate, disabled, onChange }: { checked: boolean; indeterminate: boolean; disabled: boolean; onChange: (checked: boolean) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (inputRef.current) inputRef.current.indeterminate = indeterminate;
+  }, [indeterminate]);
+  return <input ref={inputRef} type="checkbox" checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)} aria-label="選取目前頁面的所有簽到紀錄" className="size-4 rounded border-(--border-default) accent-(--interactive-primary)" />;
+}
+
+function AttendanceRowActions({ record, disabled, onEdit, onDelete }: { record: AttendanceRecord; disabled: boolean; onEdit: (record: AttendanceRecord) => void; onDelete: (record: AttendanceRecord) => void; }) {
+  return <div className="flex shrink-0 gap-2"><Button type="button" size="sm" variant="outline" disabled={disabled} onClick={() => onEdit(record)}>編輯</Button><Button type="button" size="sm" variant="danger" disabled={disabled} onClick={() => onDelete(record)}>刪除</Button></div>;
 }
