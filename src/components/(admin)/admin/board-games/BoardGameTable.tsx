@@ -1,7 +1,7 @@
 "use client";
 
 import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BASE_PATH } from "@/app/(admin)/admin/board-games/constants";
 import { AdminBoardGameLink } from "@/components/(admin)/admin/AdminBoardGameLink";
@@ -11,10 +11,12 @@ import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { FormFeedback } from "@/components/FormFeedback";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Select } from "@/components/ui/Select";
 import {
   Table,
   TableBody,
@@ -25,16 +27,21 @@ import {
 } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
 import type { BoardGameWithCategoryAndLocation } from "@/services/board-games/board-games.types";
+import type { BoardGameCategory, BoardGameLocation } from "@/types/database";
 import { formatDateTime } from "@/utils/date";
 
 type Props = React.HTMLAttributes<HTMLDivElement> & {
   boardGames: BoardGameWithCategoryAndLocation[];
+  categories: BoardGameCategory[];
+  locations: BoardGameLocation[];
   query: BoardGamesQuery;
   hasFilters?: boolean;
 };
 
 export function BoardGameTable({
   boardGames,
+  categories,
+  locations,
   query,
   hasFilters = false,
   className,
@@ -46,6 +53,44 @@ export function BoardGameTable({
     useState<BoardGameWithCategoryAndLocation | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [bulkAction, setBulkAction] = useState<"set-category" | "set-location">("set-category");
+  const [bulkTargetId, setBulkTargetId] = useState(categories[0]?.id ?? "");
+  const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  const [bulkFeedback, setBulkFeedback] = useState<{ tone: "success" | "error"; message: string } | null>(null);
+  const selectedGames = boardGames.filter((game) => selectedIds.has(game.id));
+  const selectedCount = selectedGames.length;
+  const allSelected = boardGames.length > 0 && selectedCount === boardGames.length;
+  const partiallySelected = selectedCount > 0 && !allSelected;
+  const isMutating = isDeleting || isBulkUpdating;
+  const targets = bulkAction === "set-category" ? categories : locations;
+  const target = targets.find((item) => item.id === bulkTargetId);
+
+  const setCurrentPageSelected = (selected: boolean) => setSelectedIds(selected ? new Set(boardGames.map((game) => game.id)) : new Set());
+  const setGameSelected = (id: string, selected: boolean) => setSelectedIds((current) => {
+    const next = new Set(current); if (selected) next.add(id); else next.delete(id); return next;
+  });
+  const changeBulkAction = (action: "set-category" | "set-location") => {
+    setBulkAction(action);
+    setBulkTargetId((action === "set-category" ? categories : locations)[0]?.id ?? "");
+  };
+  const bulkUpdate = async () => {
+    if (!selectedCount || !bulkTargetId) return;
+    setIsBulkUpdating(true); setBulkFeedback(null);
+    try {
+      const response = await apiClient<{ data: { updatedCount: number } }>("/api/admin/board-games/batch", {
+        method: "PATCH",
+        body: { action: bulkAction, target_id: bulkTargetId, records: selectedGames.map((game) => ({ id: game.id, expected_updated_at: game.updated_at })) },
+      });
+      setSelectedIds(new Set()); setIsBulkDialogOpen(false);
+      setBulkFeedback({ tone: "success", message: `已更新 ${response.data.updatedCount} 筆桌遊` });
+      router.refresh();
+    } catch (error) {
+      setIsBulkDialogOpen(false);
+      setBulkFeedback({ tone: "error", message: error instanceof Error ? error.message : "批次更新桌遊失敗，請稍後再試" });
+    } finally { setIsBulkUpdating(false); }
+  };
 
   const closeDeleteDialog = () => {
     if (isDeleting) return;
@@ -107,10 +152,27 @@ export function BoardGameTable({
 
   return (
     <div className={className} {...props}>
+      {bulkFeedback ? <FormFeedback error={bulkFeedback.tone === "error" ? bulkFeedback.message : null} success={bulkFeedback.tone === "success" ? bulkFeedback.message : null} className="mb-3" /> : null}
+      {selectedCount === 0 ? (
+        <label className="mb-3 flex min-h-8 items-center gap-2 text-sm text-(--text-secondary) xl:hidden">
+          <CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} />
+          選取本頁
+        </label>
+      ) : (
+        <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
+          <label className="flex items-center gap-2 text-sm xl:hidden"><CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} />選取本頁全部</label>
+          <p className="mr-auto text-sm text-(--text-secondary)" aria-live="polite">已選取 {selectedCount} 筆</p>
+          <Select aria-label="批次操作" value={bulkAction} disabled={isMutating} onChange={(event) => changeBulkAction(event.target.value as "set-category" | "set-location")} className="w-auto"><option value="set-category">變更種類</option><option value="set-location">變更位置</option></Select>
+          <Select aria-label={bulkAction === "set-category" ? "目標桌遊種類" : "目標桌遊位置"} value={bulkTargetId} disabled={isMutating} onChange={(event) => setBulkTargetId(event.target.value)} className="max-w-48"><option value="">請選擇</option>{targets.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
+          <Button size="sm" disabled={isMutating || !bulkTargetId} onClick={() => setIsBulkDialogOpen(true)}>套用</Button>
+          <Button size="sm" variant="text" disabled={isMutating} onClick={() => setSelectedIds(new Set())}>清除選取</Button>
+        </div>
+      )}
       <AdminListSection className="hidden xl:block">
         <Table className="min-w-250">
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12"><CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} /></TableHead>
               <SortableTableHeader
                 label="編號"
                 column="inventory_number"
@@ -142,6 +204,7 @@ export function BoardGameTable({
           <TableBody>
             {boardGames.map((game) => (
               <TableRow key={game.id}>
+                <TableCell className="w-12"><input type="checkbox" checked={selectedIds.has(game.id)} disabled={isMutating} onChange={(event) => setGameSelected(game.id, event.target.checked)} aria-label={`選取桌遊 ${game.name}`} className="size-4 rounded border-(--border-default) accent-(--interactive-primary)" /></TableCell>
                 <TableCell className="whitespace-nowrap text-center font-mono">
                   {game.inventory_number}
                 </TableCell>
@@ -188,6 +251,7 @@ export function BoardGameTable({
           >
             <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 items-start gap-3">
+                <input type="checkbox" checked={selectedIds.has(game.id)} disabled={isMutating} onChange={(event) => setGameSelected(game.id, event.target.checked)} aria-label={`選取桌遊 ${game.name}`} className="mt-0.5 size-4 shrink-0 rounded border-(--border-default) accent-(--interactive-primary)" />
                 <BoardGameImage
                   boardGame={game}
                   className="size-12 shrink-0 rounded-md border border-(--border) object-cover"
@@ -230,8 +294,15 @@ export function BoardGameTable({
             : ""
         }
       />
+      <ConfirmDialog open={isBulkDialogOpen} onClose={() => !isBulkUpdating && setIsBulkDialogOpen(false)} onConfirm={bulkUpdate} isSubmitting={isBulkUpdating} title={bulkAction === "set-category" ? "批次變更桌遊種類" : "批次變更桌遊位置"} description={`確定要將已選取的 ${selectedCount} 筆桌遊${bulkAction === "set-category" ? "種類" : "位置"}變更為「${target?.name ?? "未選擇"}」嗎？`} confirmLabel="套用變更" />
     </div>
   );
+}
+
+function CurrentPageSelectionCheckbox({ checked, indeterminate, disabled, onChange }: { checked: boolean; indeterminate: boolean; disabled: boolean; onChange: (checked: boolean) => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (ref.current) ref.current.indeterminate = indeterminate; }, [indeterminate]);
+  return <input ref={ref} type="checkbox" checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)} aria-label="選取目前頁面的所有桌遊" className="size-4 rounded border-(--border-default) accent-(--interactive-primary)" />;
 }
 
 function BoardGameRowActions({

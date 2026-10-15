@@ -54,6 +54,7 @@ import {
   BoardGameLocationInUseError,
   BoardGameHasOpenBorrowingError,
   BoardGameHasReviewsError,
+  BoardGameBatchConflictError,
   BoardGameNotAvailableForBorrowingError,
   BoardGameBorrowingConflictError,
   BorrowingStatusTransitionError,
@@ -66,6 +67,7 @@ import { removeOwnedBoardGameImageObject } from "@/services/board-game-images/bo
 import {
   createBoardGameSchema,
   updateBoardGameSchema,
+  bulkUpdateBoardGamesSchema,
 } from "./board-games.schema";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { usersRepository } from "@/repositories/users.repository";
@@ -457,6 +459,20 @@ export const boardGamesService = {
     if (!updated) throw new BoardNotFoundError();
     invalidatePublicData("popularGames");
     return updated;
+  },
+
+  bulkUpdateClassificationForAdmin: async (input: unknown) => {
+    const data = bulkUpdateBoardGamesSchema.parse(input);
+    if (data.action === "set-category") await boardGamesService.getCategoryById(data.target_id);
+    else await boardGamesService.getLocationById(data.target_id);
+    const result = await boardGamesRepository.updateManyClassificationForAdmin(
+      data.records.map((record) => ({ id: record.id, updated_at: record.expected_updated_at })),
+      data.action,
+      data.target_id,
+    );
+    if (result.outcome === "conflict") throw new BoardGameBatchConflictError();
+    invalidatePublicData("popularGames");
+    return result;
   },
 
   deleteBoardGame: async (id: string): Promise<void> => {

@@ -123,6 +123,8 @@ async function BoardGamesAdminPage({
         <PaginatedCollection page={page} pageSize={pageSize} total={boardGames.total} totalPages={boardGames.totalPages} basePath={BASE_PATH} pageSizeOptions={PAGE_SIZE_OPTIONS} query={query} paginationClassName="p-4">
         <BoardGameTable
           boardGames={boardGames.data}
+          categories={category}
+          locations={location}
           query={query}
           hasFilters={Boolean(query.search || query.status || query.category || query.location || page > 1)}
         />

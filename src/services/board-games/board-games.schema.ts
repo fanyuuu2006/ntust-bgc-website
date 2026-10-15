@@ -48,6 +48,16 @@ const boardGameInputSchema = z.object({
 export const createBoardGameSchema = boardGameInputSchema.superRefine(validateDescription).transform(canonicalizeDescription);
 export const updateBoardGameSchema = boardGameInputSchema.partial().superRefine(validateDescription).transform(canonicalizeDescription);
 
+const bulkBoardGameRecordSchema = z.object({ id: z.uuid(), expected_updated_at: z.string().datetime() });
+export const bulkUpdateBoardGamesSchema = z.object({
+  action: z.enum(["set-category", "set-location"]),
+  target_id: z.uuid("請選擇有效的種類或位置"),
+  records: z.array(bulkBoardGameRecordSchema).min(1).max(100).refine(
+    (records) => new Set(records.map((record) => record.id)).size === records.length,
+    { message: "桌遊 ID 不可重複" },
+  ),
+}).strict();
+
 export const listBoardGamesQuerySchema = z.object({
   page: optionalQueryField(z.coerce.number().int().min(1)),
   pageSize: optionalQueryField(z.coerce.number().int().min(1).max(100)),
