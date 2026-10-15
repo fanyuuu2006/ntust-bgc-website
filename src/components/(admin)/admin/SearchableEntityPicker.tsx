@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { X } from "lucide-react";
 
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
@@ -48,17 +48,32 @@ export function SearchableEntityPicker<T>({
 }: Props<T>) {
   const generatedInputId = useId();
   const inputId = id ?? generatedInputId;
+  const listboxId = `${generatedInputId}-listbox`;
+  const rootRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<T | null>(initialValue);
   const [searchText, setSearchText] = useState("");
   const [results, setResults] = useState<T[]>([]);
   const [open, setOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeIndex, setActiveIndex] = useState(-1);
+
+  const optionId = (index: number) => `${generatedInputId}-option-${index}`;
+
+  useEffect(() => {
+    if (!open) return;
+    function handleOutsidePointer(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) dismissResults();
+    }
+    document.addEventListener("pointerdown", handleOutsidePointer);
+    return () => document.removeEventListener("pointerdown", handleOutsidePointer);
+  }, [open]);
 
   function dismissResults() {
     setResults([]);
     setOpen(false);
     setError(null);
+    setActiveIndex(-1);
   }
 
   function updateSearchText(nextValue: string) {
@@ -73,7 +88,9 @@ export function SearchableEntityPicker<T>({
     setOpen(false);
     setError(null);
     try {
-      setResults(await search(query));
+      const nextResults = await search(query);
+      setResults(nextResults);
+      setActiveIndex(nextResults.length ? 0 : -1);
       setOpen(true);
     } catch {
       setResults([]);
@@ -93,6 +110,7 @@ export function SearchableEntityPicker<T>({
 
   return (
     <div
+      ref={rootRef}
       className={cn("relative min-w-0 max-w-full", className)}
       onKeyDown={(event) => {
         if (event.key === "Escape" && open) {
@@ -125,9 +143,35 @@ export function SearchableEntityPicker<T>({
               placeholder={searchPlaceholder}
               className="min-w-0 flex-1"
               aria-label={searchLabel}
+              role="combobox"
+              aria-expanded={open}
+              aria-controls={listboxId}
+              aria-autocomplete="list"
+              aria-activedescendant={open && activeIndex >= 0 ? optionId(activeIndex) : undefined}
               onValueChange={updateSearchText}
               onClear={dismissResults}
               onKeyDown={(event) => {
+                if (event.key === "ArrowDown" && open && results.length) {
+                  event.preventDefault();
+                  setActiveIndex((current) => current < 0 ? 0 : Math.min(current + 1, results.length - 1));
+                  return;
+                }
+                if (event.key === "ArrowUp" && open && results.length) {
+                  event.preventDefault();
+                  setActiveIndex((current) => current < 0 ? results.length - 1 : Math.max(current - 1, 0));
+                  return;
+                }
+                if (event.key === "Enter" && open && activeIndex >= 0) {
+                  event.preventDefault();
+                  changeSelection(results[activeIndex]);
+                  return;
+                }
+                if (event.key === "Escape" && open) {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  dismissResults();
+                  return;
+                }
                 if (event.key === "Enter") {
                   event.preventDefault();
                   void runSearch();
@@ -139,21 +183,37 @@ export function SearchableEntityPicker<T>({
             </Button>
           </div>
           {open ? (
-            <div className="absolute inset-x-0 top-full z-20 mt-1 max-h-56 max-w-full overflow-y-auto rounded-lg border border-(--border-default) bg-(--surface-elevated) shadow-(--shadow-card)">
+            <div
+              id={listboxId}
+              className="absolute inset-x-0 top-full z-20 mt-1 max-h-56 max-w-full overflow-y-auto rounded-lg border border-(--border-default) bg-(--surface-elevated) shadow-(--shadow-card)"
+            >
               {error ? (
                 <p role="alert" className="px-3 py-2 text-sm text-(--status-danger)">{error}</p>
               ) : results.length ? (
                 <ul role="listbox" aria-label={resultsLabel} className="divide-y divide-(--border-default)">
-                  {results.map((result) => (
+                  {results.map((result, index) => (
                     <li key={getKey(result)} role="none">
-                      <button type="button" role="option" aria-selected="false" disabled={disabled} className="min-h-11 w-full min-w-0 px-3 py-2 text-left transition-colors hover:bg-(--surface-subtle) focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--focus-ring)" onClick={() => changeSelection(result)}>
+                      <button
+                        id={optionId(index)}
+                        type="button"
+                        role="option"
+                        tabIndex={-1}
+                        aria-selected={activeIndex === index}
+                        disabled={disabled}
+                        className={cn(
+                          "min-h-11 w-full min-w-0 px-3 py-2 text-left transition-colors hover:bg-(--surface-subtle)",
+                          activeIndex === index && "bg-(--surface-subtle)",
+                        )}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => changeSelection(result)}
+                      >
                         {renderResult(result)}
                       </button>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="px-3 py-2 text-sm text-(--text-muted)">{emptyMessage}</p>
+                <p role="status" className="px-3 py-2 text-sm text-(--text-muted)">{emptyMessage}</p>
               )}
             </div>
           ) : null}

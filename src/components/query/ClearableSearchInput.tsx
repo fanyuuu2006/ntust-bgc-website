@@ -21,7 +21,12 @@ type ClearableSearchInputProps = {
   disabled?: boolean;
   required?: boolean;
   onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
+  role?: React.AriaRole;
   "aria-label"?: string;
+  "aria-expanded"?: React.AriaAttributes["aria-expanded"];
+  "aria-controls"?: string;
+  "aria-autocomplete"?: React.AriaAttributes["aria-autocomplete"];
+  "aria-activedescendant"?: string;
 };
 
 export function ClearableSearchInput({
@@ -45,7 +50,12 @@ function ClearableSearchInputControl({
   disabled,
   required,
   onKeyDown,
+  role,
   "aria-label": ariaLabel,
+  "aria-expanded": ariaExpanded,
+  "aria-controls": ariaControls,
+  "aria-autocomplete": ariaAutocomplete,
+  "aria-activedescendant": ariaActiveDescendant,
 }: ClearableSearchInputProps) {
   const router = useRouter();
   const [localValue, setLocalValue] = useState(initialValue);
@@ -75,6 +85,11 @@ function ClearableSearchInputControl({
         required={required}
         placeholder={placeholder}
         aria-label={ariaLabel}
+        role={role}
+        aria-expanded={ariaExpanded}
+        aria-controls={ariaControls}
+        aria-autocomplete={ariaAutocomplete}
+        aria-activedescendant={ariaActiveDescendant}
         className={cn("pl-9", hasValue && "pr-10", inputClassName)}
       />
       {hasValue && (
