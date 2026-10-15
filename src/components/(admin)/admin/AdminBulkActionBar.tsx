@@ -26,7 +26,7 @@ export function AdminBulkActionBar({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-x-2 gap-y-2 border-y border-(--border-default) bg-(--surface-subtle) px-1 py-2 sm:px-2",
+        "flex min-w-0 flex-nowrap items-center gap-2 overflow-x-auto border-y border-(--border-default) bg-(--surface-subtle) px-1 py-2 sm:px-2 lg:flex-wrap lg:overflow-visible",
         className,
       )}
       role="region"
@@ -36,7 +36,7 @@ export function AdminBulkActionBar({
       <p className="shrink-0 text-sm font-medium text-(--text-primary)" aria-live="polite">
         已選取 {selectedCount} 筆
       </p>
-      <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2">
+      <div className="flex min-w-max flex-1 flex-nowrap items-center justify-end gap-2 lg:min-w-0 lg:flex-wrap">
         {children}
         <Button type="button" size="sm" variant="text" disabled={disabled} onClick={onClear}>
           清除選取

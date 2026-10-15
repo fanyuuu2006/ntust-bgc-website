@@ -107,12 +107,11 @@ export function PurchaseSuggestionList({ items, hasQuery = false }: {
       : <EmptyState title="目前沒有桌遊推薦" />;
   return <>
     {feedback ? <FormFeedback error={feedback.tone === "error" ? feedback.message : null} success={feedback.tone === "success" ? feedback.message : null} /> : null}
-    {selectedCount === 0 ? <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isUpdating} onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} /> : null}
+    <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isUpdating} selectedCount={selectedCount} selectionControl={<label className="flex items-center gap-2 text-sm"><SelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isUpdating} onChange={setCurrentPageSelected} label="選取本頁全部推薦" />全選本頁</label>} onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} />
     <AdminBulkActionBar
       selectedCount={selectedCount}
       disabled={isUpdating}
       onClear={() => { setSelectedIds(new Set()); setMobileBulkMode(false); }}
-      selectionControl={<label className="flex items-center gap-2 text-sm lg:hidden"><SelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isUpdating} onChange={setCurrentPageSelected} label="選取本頁全部推薦" />本頁全選</label>}
       notice={!canApply ? "選取內容包含已是目標狀態的推薦；請取消該項目或改選另一個動作。" : undefined}
     >
       <Select aria-label="批次處理推薦" value={bulkAction} disabled={isUpdating} onChange={(event) => setBulkAction(event.target.value as "purchased" | "rejected" | "delete")} className="w-auto"><option value="purchased">標記已購入</option><option value="rejected">標記不採納</option><option value="delete">刪除推薦</option></Select>

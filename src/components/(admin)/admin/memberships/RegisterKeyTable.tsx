@@ -198,22 +198,13 @@ export function RegisterKeyTable({
         </p>
       ) : null}
 
-      {selectedCount === 0 ? <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isRevoking} onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} /> : null}
+      <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isRevoking} selectedCount={selectedCount} selectionControl={<label className="flex items-center gap-2 text-sm"><CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isRevoking} onChange={setCurrentPageSelected} />全選本頁</label>} onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} />
 
       {selectedCount > 0 ? (
         <AdminBulkActionBar
           selectedCount={selectedCount}
           disabled={isRevoking}
           onClear={() => { setSelectedIds(new Set()); setMobileBulkMode(false); }}
-          selectionControl={<label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
-          <CurrentPageSelectionCheckbox
-            checked={allSelected}
-            indeterminate={partiallySelected}
-            disabled={isRevoking}
-            onChange={setCurrentPageSelected}
-          />
-          本頁全選
-        </label>}
           notice={selectedCount > selectedAvailableCount ? `已選取 ${selectedCount} 筆，其中 ${selectedAvailableCount} 筆可撤銷；請取消不可撤銷的項目後再試。` : undefined}
         >
         <Button
@@ -242,7 +233,7 @@ export function RegisterKeyTable({
           <Card key={registerKey.id} className="min-w-0 p-3 sm:p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 items-start gap-3">
-                <input
+                {mobileBulkMode ? <input
                   type="checkbox"
                   checked={selectedIds.has(registerKey.id)}
                   disabled={isRevoking}
@@ -251,7 +242,7 @@ export function RegisterKeyTable({
                   }
                   aria-label={`選取社員註冊序號 ${registerKey.register_key}`}
                   className="mt-0.5 size-4 shrink-0 rounded border-(--border-default) accent-(--interactive-primary)"
-                />
+                /> : null}
                 <span className="min-w-0">
                 <p className="break-all font-mono text-xs text-(--text-primary)">
                   {registerKey.register_key}
@@ -302,7 +293,7 @@ export function RegisterKeyTable({
             {registerKeys.map((registerKey) => (
               <TableRow key={registerKey.id}>
                 <TableCell className="w-12">
-                  {mobileBulkMode ? <input
+                  <input
                     type="checkbox"
                     checked={selectedIds.has(registerKey.id)}
                     disabled={isRevoking}
@@ -311,7 +302,7 @@ export function RegisterKeyTable({
                     }
                     aria-label={`選取社員註冊序號 ${registerKey.register_key}`}
                     className="size-4 rounded border-(--border-default) accent-(--interactive-primary)"
-                  /> : null}
+                  />
                 </TableCell>
                 <TableCell className="min-w-64">
                   <p className="break-all font-mono text-xs text-(--text-primary)">

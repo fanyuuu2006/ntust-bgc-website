@@ -56,7 +56,8 @@ test("board-game collection exposes shared current-page selection on desktop and
   assert.match(page, /categories=\{category\}[\s\S]*locations=\{location\}/);
   assert.ok((table.match(/selectedIds\.has\(game\.id\)/g) ?? []).length >= 2);
   assert.match(table, /aria-label="選取目前頁面的所有桌遊"/);
-  assert.match(table, /selectedCount === 0[\s\S]*AdminMobileBulkModeButton/);
+  assert.match(table, /AdminMobileBulkModeButton[\s\S]*selectedCount=\{selectedCount\}/);
+  assert.match(table, /mobileBulkMode \? <input/);
   assert.match(table, /selectedCount=\{selectedCount\}/);
   assert.match(bulkBar, /已選取 \{selectedCount\} 筆/);
   assert.match(table, /set-category/);

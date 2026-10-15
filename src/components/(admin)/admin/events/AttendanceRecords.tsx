@@ -230,22 +230,13 @@ export function AttendanceRecords({
         />
       ) : null}
 
-      {selectedCount === 0 ? <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isMutating} onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} /> : null}
+      <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isMutating} selectedCount={selectedCount} selectionControl={<label className="flex items-center gap-2 text-sm"><CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} />全選本頁</label>} onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} />
 
       {selectedCount > 0 ? (
         <AdminBulkActionBar
           selectedCount={selectedCount}
           disabled={isMutating}
           onClear={() => { setSelectedIds(new Set()); setMobileBulkMode(false); }}
-          selectionControl={<label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
-          <CurrentPageSelectionCheckbox
-            checked={allSelected}
-            indeterminate={partiallySelected}
-            disabled={isMutating}
-            onChange={setCurrentPageSelected}
-          />
-          本頁全選
-        </label>}
         >
         <Select
           aria-label="批次處理簽到紀錄"

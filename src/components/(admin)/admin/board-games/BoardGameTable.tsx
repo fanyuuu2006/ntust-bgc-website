@@ -156,19 +156,19 @@ export function BoardGameTable({
   return (
     <div className={className} {...props}>
       {bulkFeedback ? <FormFeedback error={bulkFeedback.tone === "error" ? bulkFeedback.message : null} success={bulkFeedback.tone === "success" ? bulkFeedback.message : null} className="mb-3" /> : null}
-      {selectedCount === 0 ? <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isMutating} className="mb-3 xl:hidden" onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} /> : (
+      <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isMutating} selectedCount={selectedCount} selectionControl={<label className="flex items-center gap-2 text-sm"><CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} />全選本頁</label>} className="mb-2 xl:hidden" onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} />
+      {selectedCount > 0 ? (
         <AdminBulkActionBar
           className="mb-3"
           selectedCount={selectedCount}
           disabled={isMutating}
           onClear={() => { setSelectedIds(new Set()); setMobileBulkMode(false); }}
-          selectionControl={<label className="flex items-center gap-2 text-sm xl:hidden"><CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} />本頁全選</label>}
         >
           <Select aria-label="批次操作" value={bulkAction} disabled={isMutating} onChange={(event) => changeBulkAction(event.target.value as "set-category" | "set-location")} className="w-auto"><option value="set-category">變更種類</option><option value="set-location">變更位置</option></Select>
           <Select aria-label={bulkAction === "set-category" ? "目標桌遊種類" : "目標桌遊位置"} value={bulkTargetId} disabled={isMutating} onChange={(event) => setBulkTargetId(event.target.value)} className="max-w-48"><option value="">請選擇</option>{targets.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
           <Button size="sm" disabled={isMutating || !bulkTargetId} onClick={() => setIsBulkDialogOpen(true)}>套用</Button>
         </AdminBulkActionBar>
-      )}
+      ) : null}
       <AdminListSection className="hidden xl:block">
         <Table className="min-w-250">
           <TableHeader>

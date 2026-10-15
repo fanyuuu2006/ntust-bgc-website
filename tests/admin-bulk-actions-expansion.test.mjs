@@ -33,12 +33,15 @@ test("bulk-enabled mobile collections enter an explicit management mode", async 
     read("src/components/(admin)/admin/purchase-suggestions/PurchaseSuggestionList.tsx"),
   ]);
   assert.match(toggle, /aria-pressed=\{active\}/);
-  assert.match(toggle, /批次管理/);
-  assert.match(toggle, /結束批次管理/);
+  assert.match(toggle, /"選取"/);
+  assert.match(toggle, /"完成"/);
+  assert.match(toggle, /已選 \{selectedCount\} 筆/);
   for (const source of [boardGames, memberships, keys, attendances, suggestions]) {
     assert.match(source, /mobileBulkMode/);
     assert.match(source, /<AdminMobileBulkModeButton/);
   }
+  assert.match(keys, /<TableCell className="w-12">[\s\S]*?<input/);
+  assert.doesNotMatch(keys, /<TableCell className="w-12">[\s\S]*?mobileBulkMode \? <input/);
 });
 
 test("purchase suggestions expose page-scoped accessible bulk review controls", async () => {
