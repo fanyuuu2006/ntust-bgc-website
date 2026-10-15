@@ -1,9 +1,8 @@
 "use client";
 
 import { ChevronDown, Download } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { useOutsideDismiss } from "@/hooks/useOutsideDismiss";
 import { cn } from "@/utils/className";
 import type { AdminExportDomain } from "@/services/admin-exports/admin-exports.service";
 
@@ -21,7 +20,35 @@ const formats = [
 
 export function AdminExportMenu({ domain, query = {}, className }: Props) {
   const [open, setOpen] = useState(false);
-  const menuRef = useOutsideDismiss<HTMLDivElement>(open, () => setOpen(false));
+  const panelId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+
+      event.preventDefault();
+      setOpen(false);
+      triggerRef.current?.focus();
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
 
   function href(format: string) {
     const params = new URLSearchParams({ format });
@@ -33,16 +60,26 @@ export function AdminExportMenu({ domain, query = {}, className }: Props) {
   }
 
   return (
-    <div ref={menuRef} className={cn("relative", className)}>
-      <Button type="button" variant="outline" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+    <div ref={rootRef} className={cn("relative", className)}>
+      <Button
+        ref={triggerRef}
+        type="button"
+        variant="outline"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((value) => !value)}
+      >
         <Download aria-hidden="true" className="size-4" />
-        匯出目前篩選結果
+        匯出
         <ChevronDown aria-hidden="true" className="size-4" />
       </Button>
       {open ? (
-        <div role="menu" aria-label="選擇匯出格式" className="absolute right-0 z-30 mt-2 w-44 overflow-hidden rounded-xl border border-(--border) bg-(--background) p-1 shadow-(--shadow-card)">
+        <div
+          id={panelId}
+          className="absolute right-0 z-30 mt-2 w-44 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-(--border) bg-(--background) p-1 shadow-(--shadow-card)"
+        >
           {formats.map(([format, label]) => (
-            <a key={format} role="menuitem" href={href(format)} target="_blank" rel="noreferrer" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-(--secondary-background) focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-(--primary)">
+            <a key={format} href={href(format)} target="_blank" rel="noreferrer" onClick={() => setOpen(false)} className="block min-h-11 rounded-lg px-3 py-2.5 text-sm hover:bg-(--secondary-background) focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-(--primary)">
               {label}
             </a>
           ))}
