@@ -199,7 +199,9 @@ test("Admin Review route, responsive records and navigation preserve moderation 
   assert.match(filters, /QueryFilterForm/);
   assert.match(filters, /PreservedQueryFields/);
   assert.match(filters, /lg:hidden/);
-  assert.doesNotMatch(filters, /grid-cols-2|ImmediateQuerySelect/);
+  assert.match(filters, /grid grid-cols-2 gap-2/);
+  assert.match(filters, /form="admin-review-search-form"/);
+  assert.doesNotMatch(filters, /ImmediateQuerySelect/);
   assert.match(filters, /<Field label="排序"[^>]*className="lg:hidden"/);
   assert.match(picker, /搜尋桌遊名稱或社產編號/);
   assert.doesNotMatch(filters, /館藏/);

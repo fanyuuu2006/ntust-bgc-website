@@ -46,12 +46,13 @@ export function BoardGameSearchForm({
   });
 
   return (
-    <AdminToolbar className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+    <AdminToolbar className="grid grid-cols-2 gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
       <form
+        id="admin-board-game-search-form"
         method="GET"
         action={BASE_PATH}
         aria-label="搜尋桌遊"
-        className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]"
+        className="col-span-2 min-w-0 lg:col-span-1"
       >
           <PreservedQueryFields query={query} ownedKeys={["search"]} />
           <ClearableSearchInput
@@ -63,8 +64,8 @@ export function BoardGameSearchForm({
             aria-label="搜尋桌遊名稱、社產編號或描述"
             className="w-full"
           />
-          <Button type="submit" variant="primary" className="hidden w-auto sm:inline-flex">搜尋</Button>
       </form>
+      <Button type="submit" form="admin-board-game-search-form" variant="primary" className="w-full lg:w-auto">搜尋</Button>
       <QueryFilterDisclosure
         label={activeFilterCount ? `篩選 (${activeFilterCount})` : "篩選"}
         panelClassName="lg:min-w-80"
