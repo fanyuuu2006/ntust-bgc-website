@@ -50,7 +50,7 @@ test("membership table bounds long user identity without compressing semantic co
   assert.equal((memberships.match(/className="w-44 whitespace-nowrap"/g) ?? []).length, 2);
   assert.match(memberships, /<TableHead className="w-36 whitespace-nowrap text-right">操作<\/TableHead>/);
   assert.match(memberships, /<TableCell className="whitespace-nowrap text-right">/);
-  assert.match(memberships, /<div className="grid gap-3 lg:hidden">/);
+  assert.match(memberships, /<div className="grid gap-2\.5 lg:hidden">/);
 });
 
 test("officer titles are bounded independently from year and action columns", async () => {

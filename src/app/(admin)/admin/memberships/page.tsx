@@ -37,12 +37,12 @@ async function MembershipsPage({ searchParams }: Props) {
           </>
         }
       />
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <MemberFilterBar
           academicYears={years}
           query={query}
         />
-        <PaginatedCollection page={page} pageSize={pageSize} total={memberships.total} totalPages={memberships.totalPages} basePath="/admin/memberships" pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
+        <PaginatedCollection className="space-y-3" page={page} pageSize={pageSize} total={memberships.total} totalPages={memberships.totalPages} basePath="/admin/memberships" pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
         <MembershipRecords
           key={JSON.stringify({ ...query, page, pageSize })}
           memberships={memberships.data}

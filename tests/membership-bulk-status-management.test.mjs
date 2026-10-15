@@ -225,6 +225,8 @@ test("membership UI shares current-page selection across desktop and mobile", as
   assert.ok((records.match(/selectedIds\.has\(membership\.id\)/g) ?? []).length >= 2);
   assert.match(records, /aria-label="選取本頁全部社員資格"/);
   assert.match(records, /已選取 \{selectedCount\} 筆/);
+  assert.match(records, /selectedCount > 0 \? \(/);
+  assert.doesNotMatch(records, /無合法狀態/);
   assert.match(records, /批次更新社員資格狀態/);
   assert.match(records, /expected_status: membership\.status/);
   assert.match(records, /expected_academic_year_id: membership\.academic_year_id/);

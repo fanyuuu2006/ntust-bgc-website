@@ -213,12 +213,24 @@ export function AttendanceRecords({
 
   return (
     <>
-      <FormFeedback
-        error={bulkFeedback?.tone === "error" ? bulkFeedback.message : null}
-        success={bulkFeedback?.tone === "success" ? bulkFeedback.message : null}
-      />
+      {bulkFeedback ? (
+        <FormFeedback
+          error={bulkFeedback.tone === "error" ? bulkFeedback.message : null}
+          success={bulkFeedback.tone === "success" ? bulkFeedback.message : null}
+        />
+      ) : null}
 
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
+      {selectedCount === 0 ? (
+        <div className="flex lg:hidden">
+          <label className="flex min-h-8 items-center gap-2 text-sm text-(--text-secondary)">
+            <CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} />
+            選取本頁
+          </label>
+        </div>
+      ) : null}
+
+      {selectedCount > 0 ? (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
         <label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
           <CurrentPageSelectionCheckbox
             checked={allSelected}
@@ -250,7 +262,7 @@ export function AttendanceRecords({
         <Button
           type="button"
           size="sm"
-          disabled={selectedCount === 0 || isMutating}
+          disabled={isMutating}
           onClick={() => setIsBulkDialogOpen(true)}
         >
           批次更新
@@ -259,12 +271,13 @@ export function AttendanceRecords({
           type="button"
           size="sm"
           variant="text"
-          disabled={selectedCount === 0 || isMutating}
+          disabled={isMutating}
           onClick={() => setSelectedIds(new Set())}
         >
           清除選取
         </Button>
-      </div>
+        </div>
+      ) : null}
 
       <AdminListSection className="hidden lg:block">
         <Table className="min-w-[960px]">
@@ -322,9 +335,9 @@ export function AttendanceRecords({
         </Table>
       </AdminListSection>
 
-      <div className="grid gap-3 lg:hidden">
+      <div className="grid gap-2.5 lg:hidden">
         {records.map((record) => (
-          <Card key={record.id} className="w-full min-w-0 max-w-full p-4">
+          <Card key={record.id} className="w-full min-w-0 max-w-full p-3 sm:p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 items-start gap-3">
                 <input
@@ -351,7 +364,7 @@ export function AttendanceRecords({
               </div>
               <span className="shrink-0"><AttendanceStatusBadge status={record.status} /></span>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <div className="mt-2.5 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
               <p className="min-w-0"><span className="block text-(--muted)">學號</span>{emptyValue(record.profile?.student_id)}</p>
               <p className="min-w-0"><span className="block text-(--muted)">簽到時間</span>{formatDateTime(record.attended_at)}</p>
             </div>

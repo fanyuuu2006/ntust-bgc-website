@@ -195,7 +195,22 @@ export function RegisterKeyTable({
         </p>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
+      {selectedCount === 0 ? (
+        <div className="flex lg:hidden">
+          <label className="flex min-h-8 items-center gap-2 text-sm text-(--text-secondary)">
+            <CurrentPageSelectionCheckbox
+              checked={allSelected}
+              indeterminate={partiallySelected}
+              disabled={isRevoking}
+              onChange={setCurrentPageSelected}
+            />
+            選取本頁
+          </label>
+        </div>
+      ) : null}
+
+      {selectedCount > 0 ? (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
         <label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
           <CurrentPageSelectionCheckbox
             checked={allSelected}
@@ -215,7 +230,7 @@ export function RegisterKeyTable({
           type="button"
           variant="outline"
           size="sm"
-          disabled={selectedCount === 0 || isRevoking}
+          disabled={isRevoking}
           onClick={copySelectedRegisterKeys}
         >
           複製已選序號
@@ -233,16 +248,17 @@ export function RegisterKeyTable({
           type="button"
           variant="text"
           size="sm"
-          disabled={selectedCount === 0 || isRevoking}
+          disabled={isRevoking}
           onClick={() => setSelectedIds(new Set())}
         >
           清除選取
         </Button>
-      </div>
+        </div>
+      ) : null}
 
-      <div className="grid gap-3 lg:hidden">
+      <div className="grid gap-2.5 lg:hidden">
         {registerKeys.map((registerKey) => (
-          <Card key={registerKey.id} className="min-w-0 p-4">
+          <Card key={registerKey.id} className="min-w-0 p-3 sm:p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 items-start gap-3">
                 <input
@@ -275,7 +291,7 @@ export function RegisterKeyTable({
               isRevoking={isRevoking}
               onCopy={copyRegisterKey}
               onRevoke={setPendingRevocation}
-              className="mt-4"
+              className="mt-3"
             />
           </Card>
         ))}

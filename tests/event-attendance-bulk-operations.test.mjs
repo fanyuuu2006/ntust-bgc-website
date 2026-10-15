@@ -202,6 +202,7 @@ test("attendance UI shares selection across desktop and mobile and retains singl
   assert.match(recordsSource, /selectedIds\.has\(record\.id\)/g);
   assert.match(recordsSource, /選取目前頁面的所有簽到紀錄/);
   assert.match(recordsSource, /已選取 \{selectedCount\} 筆/);
+  assert.match(recordsSource, /selectedCount > 0 \? \(/);
   assert.match(recordsSource, /批次更新簽到狀態/);
   assert.match(recordsSource, /expected_status: record\.status/);
   assert.match(recordsSource, /expected_attended_at: record\.attended_at/);

@@ -262,68 +262,76 @@ export function MembershipRecords({
 
   return (
     <>
-      <FormFeedback
-        error={bulkFeedback?.tone === "error" ? bulkFeedback.message : null}
-        success={bulkFeedback?.tone === "success" ? bulkFeedback.message : null}
-      />
+      {bulkFeedback ? (
+        <FormFeedback
+          error={bulkFeedback.tone === "error" ? bulkFeedback.message : null}
+          success={bulkFeedback.tone === "success" ? bulkFeedback.message : null}
+        />
+      ) : null}
 
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
-        <label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
-          <CurrentPageSelectionCheckbox
-            checked={allSelected}
-            indeterminate={partiallySelected}
-            disabled={isMutating}
-            onChange={setCurrentPageSelected}
-          />
-          選取本頁全部
-        </label>
-        <p className="mr-auto text-sm text-(--text-secondary)" aria-live="polite">
-          已選取 {selectedCount} 筆
-        </p>
-        <label className="flex items-center gap-2 text-sm text-(--text-secondary)">
-          批次狀態
-          <Select
-            aria-label="批次更新社員資格狀態"
-            value={effectiveBulkStatus}
-            disabled={isMutating || availableBulkStatuses.length === 0}
-            onChange={(event) =>
-              setBulkStatus(event.target.value as MembershipStatus)
-            }
-            className="w-auto"
-          >
-            {availableBulkStatuses.length === 0 ? (
-              <option value="active">無合法狀態</option>
-            ) : null}
-            {availableBulkStatuses.map((status) => (
-              <option key={status} value={status}>
-                {MEMBERSHIP_STATUS_LABEL[status]}
-              </option>
-            ))}
-          </Select>
-        </label>
-        <Button
-          type="button"
-          size="sm"
-          disabled={!canBulkUpdate || isMutating}
-          onClick={() => setIsBulkDialogOpen(true)}
-        >
-          批次更新
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="text"
-          disabled={selectedCount === 0 || isMutating}
-          onClick={() => setSelectedIds(new Set())}
-        >
-          清除選取
-        </Button>
-        {selectedAcademicYearCount > 1 ? (
-          <p className="basis-full text-sm text-(--danger)" role="alert">
-            批次更新僅能處理同一學年度的社員資格。
+      {selectedCount === 0 ? (
+        <div className="flex lg:hidden">
+          <label className="flex min-h-8 items-center gap-2 text-sm text-(--text-secondary)">
+            <CurrentPageSelectionCheckbox
+              checked={allSelected}
+              indeterminate={partiallySelected}
+              disabled={isMutating}
+              onChange={setCurrentPageSelected}
+            />
+            選取本頁
+          </label>
+        </div>
+      ) : null}
+
+      {selectedCount > 0 ? (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
+          <label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
+            <CurrentPageSelectionCheckbox
+              checked={allSelected}
+              indeterminate={partiallySelected}
+              disabled={isMutating}
+              onChange={setCurrentPageSelected}
+            />
+            選取本頁全部
+          </label>
+          <p className="mr-auto text-sm text-(--text-secondary)" aria-live="polite">
+            已選取 {selectedCount} 筆
           </p>
-        ) : null}
-      </div>
+          {canBulkUpdate ? (
+            <>
+              <label className="flex items-center gap-2 text-sm text-(--text-secondary)">
+                批次狀態
+                <Select
+                  aria-label="批次更新社員資格狀態"
+                  value={effectiveBulkStatus}
+                  disabled={isMutating}
+                  onChange={(event) =>
+                    setBulkStatus(event.target.value as MembershipStatus)
+                  }
+                  className="w-auto"
+                >
+                  {availableBulkStatuses.map((status) => (
+                    <option key={status} value={status}>
+                      {MEMBERSHIP_STATUS_LABEL[status]}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <Button type="button" size="sm" disabled={isMutating} onClick={() => setIsBulkDialogOpen(true)}>
+                批次更新
+              </Button>
+            </>
+          ) : null}
+          <Button type="button" size="sm" variant="text" disabled={isMutating} onClick={() => setSelectedIds(new Set())}>
+            清除選取
+          </Button>
+          {selectedAcademicYearCount > 1 ? (
+            <p className="basis-full text-sm text-(--danger)" role="alert">
+              批次更新僅能處理同一學年度的社員資格。
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       <AdminListSection className="hidden lg:block">
         <Table className="min-w-[1168px]">
@@ -413,9 +421,9 @@ export function MembershipRecords({
         </Table>
       </AdminListSection>
 
-      <div className="grid gap-3 lg:hidden">
+      <div className="grid gap-2.5 lg:hidden">
         {memberships.map((membership) => (
-          <Card key={membership.id} className="space-y-3 p-4">
+          <Card key={membership.id} className="space-y-2.5 p-3 sm:p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 items-start gap-3">
                 <input
@@ -444,7 +452,7 @@ export function MembershipRecords({
                 <MemberStatusBadge status={membership.status} />
               </span>
             </div>
-            <dl className="grid grid-cols-2 gap-3 text-sm">
+            <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
               <div>
                 <dt>類型</dt>
                 <dd>

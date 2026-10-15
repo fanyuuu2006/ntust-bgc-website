@@ -140,30 +140,34 @@ test("current-page selection exposes mixed state and copies unique keys in visib
       root.render(createElement(RegisterKeyTable, { registerKeys })),
     );
 
+    const findSelectAll = () => host.querySelector(
+      'input[aria-label="選取目前頁面的所有社員註冊序號"]',
+    );
+
+    assert.doesNotMatch(host.textContent, /已選取 0 筆/);
+    assert.equal(
+      [...host.querySelectorAll("button")].some(
+        (button) => button.textContent === "複製已選序號",
+      ),
+      false,
+    );
+
+    const alphaCheckboxes = host.querySelectorAll(
+      'input[aria-label="選取社員註冊序號 KEY-ALPHA"]',
+    );
+    await click(alphaCheckboxes[0]);
+    assert.equal(findSelectAll().indeterminate, true);
+    assert.match(host.textContent, /已選取 1 筆/);
     const copyButton = [...host.querySelectorAll("button")].find(
       (button) => button.textContent === "複製已選序號",
     );
     const clearButton = [...host.querySelectorAll("button")].find(
       (button) => button.textContent === "清除選取",
     );
-    const selectAll = host.querySelector(
-      'input[aria-label="選取目前頁面的所有社員註冊序號"]',
-    );
 
-    assert.equal(copyButton.disabled, true);
-    assert.equal(clearButton.disabled, true);
-    assert.match(host.textContent, /已選取 0 筆/);
-
-    const alphaCheckboxes = host.querySelectorAll(
-      'input[aria-label="選取社員註冊序號 KEY-ALPHA"]',
-    );
-    await click(alphaCheckboxes[0]);
-    assert.equal(selectAll.indeterminate, true);
-    assert.match(host.textContent, /已選取 1 筆/);
-
-    await click(selectAll);
-    assert.equal(selectAll.checked, true);
-    assert.equal(selectAll.indeterminate, false);
+    await click(findSelectAll());
+    assert.equal(findSelectAll().checked, true);
+    assert.equal(findSelectAll().indeterminate, false);
     assert.match(host.textContent, /已選取 3 筆/);
 
     await click(copyButton);
@@ -171,8 +175,8 @@ test("current-page selection exposes mixed state and copies unique keys in visib
     assert.match(host.textContent, /已複製 2 組社員註冊序號/);
 
     await click(clearButton);
-    assert.match(host.textContent, /已選取 0 筆/);
-    assert.equal(copyButton.disabled, true);
+    assert.doesNotMatch(host.textContent, /已選取 0 筆/);
+    assert.equal(host.contains(copyButton), false);
   });
 });
 
@@ -203,10 +207,12 @@ test("selection is shared by desktop and mobile controls and resets with collect
         }),
       ),
     );
-    assert.match(host.textContent, /已選取 0 筆/);
+    assert.doesNotMatch(host.textContent, /已選取 0 筆/);
     assert.equal(
-      host.querySelector('button:nth-of-type(1)')?.disabled ?? true,
-      true,
+      [...host.querySelectorAll("button")].some(
+        (button) => button.textContent === "複製已選序號",
+      ),
+      false,
     );
   });
 });
@@ -240,14 +246,14 @@ test("bulk revoke accepts only an all-available selection and preserves visible 
         root.render(createElement(RegisterKeyTable, { registerKeys })),
       );
 
-      const bulkButton = [...host.querySelectorAll("button")].find(
-        (button) => button.textContent === "批次撤銷",
-      );
       const alphaCheckboxes = host.querySelectorAll(
         'input[aria-label="選取社員註冊序號 KEY-ALPHA"]',
       );
       await click(alphaCheckboxes[0]);
       await click(alphaCheckboxes[1]);
+      const bulkButton = [...host.querySelectorAll("button")].find(
+        (button) => button.textContent === "批次撤銷",
+      );
       assert.equal(bulkButton.disabled, false);
 
       await click(bulkButton);
@@ -266,7 +272,7 @@ test("bulk revoke accepts only an all-available selection and preserves visible 
         ids: ["key-1", "key-2"],
       });
       assert.match(host.textContent, /已撤銷 2 組社員註冊序號/);
-      assert.match(host.textContent, /已選取 0 筆/);
+      assert.doesNotMatch(host.textContent, /已選取 0 筆/);
       assert.equal(refreshes.length, 1);
     },
   );

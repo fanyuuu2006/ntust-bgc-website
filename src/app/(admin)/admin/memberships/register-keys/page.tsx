@@ -35,13 +35,13 @@ async function MembershipRegisterKeysPage({ searchParams }: Props) {
           </ButtonLink>
         }
       />
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <RegisterKeyGenerateForm
           academicYears={academicYears}
           defaultAcademicYearId={academicYears.find((year) => year.is_current)?.id}
         />
         <RegisterKeyFilterBar academicYears={academicYears} query={query} />
-        <PaginatedCollection page={page} pageSize={pageSize} total={registerKeys.total} totalPages={registerKeys.totalPages} basePath="/admin/memberships/register-keys" pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
+        <PaginatedCollection className="space-y-3" page={page} pageSize={pageSize} total={registerKeys.total} totalPages={registerKeys.totalPages} basePath="/admin/memberships/register-keys" pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
         <RegisterKeyTable
           key={JSON.stringify({ ...query, page, pageSize })}
           registerKeys={registerKeys.data}
