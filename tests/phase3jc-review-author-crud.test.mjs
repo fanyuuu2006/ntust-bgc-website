@@ -85,7 +85,7 @@ test("own PATCH/DELETE route uses session author, never body author, and handles
   assert.equal((await DELETE(new Request("https://example.test", { method: "DELETE" }), context)).status, 404);
 });
 
-test("author UI treats rating-only as existing review and exposes an accessible action menu", async () => {
+test("author UI treats rating-only as existing review and exposes an accessible action disclosure", async () => {
   const source = await read("src/components/(public)/board-games/ReviewAuthorAction.tsx");
   const ratingInputSource = await read("src/components/(public)/board-games/RatingInput.tsx");
   assert.match(source, /<ConfirmDialog/);
@@ -99,7 +99,8 @@ test("author UI treats rating-only as existing review and exposes an accessible 
   assert.match(html, /你的評分/);
   assert.match(html, /只有評分/);
   assert.match(html, /aria-label="評論操作"/);
-  assert.match(html, /aria-haspopup="menu"/);
+  assert.match(html, /aria-controls=/);
+  assert.doesNotMatch(html, /aria-haspopup="menu"/);
   assert.doesNotMatch(html, />編輯評論<|>刪除評論</);
   assert.doesNotMatch(html, /登入後評分/);
   const anonymous = renderToStaticMarkup(createElement(ReviewAuthorAction, { boardGameId: gameId, eligibility: "anonymous", ownReview: null }));
@@ -131,17 +132,23 @@ test("own review ellipsis opens edit and delete actions while retaining confirma
     assert.equal(menuButton.getAttribute("aria-expanded"), "false");
     await act(async () => menuButton.click());
     assert.equal(menuButton.getAttribute("aria-expanded"), "true");
-    assert.equal(dom.window.document.querySelectorAll('[role="menuitem"]').length, 2);
-    const [editButton] = dom.window.document.querySelectorAll('[role="menuitem"]');
+    const panelId = menuButton.getAttribute("aria-controls");
+    const panel = dom.window.document.getElementById(panelId);
+    const actionButtons = panel.querySelectorAll("button");
+    assert.equal(actionButtons.length, 2);
+    assert.equal(panel.querySelector('[role="menuitem"]'), null);
+    const [editButton] = actionButtons;
     await act(async () => editButton.click());
-    assert.equal(dom.window.document.querySelector('[role="menu"]'), null);
+    assert.equal(dom.window.document.getElementById(panelId), null);
+    assert.equal(dom.window.document.activeElement, menuButton);
     assert.ok(dom.window.document.querySelector('[data-modal="編輯我的評分"]'));
     const cancelButton = [...dom.window.document.querySelectorAll("button")].find((button) => button.textContent === "取消");
     await act(async () => cancelButton.click());
     await act(async () => menuButton.click());
-    const deleteButton = [...dom.window.document.querySelectorAll('[role="menuitem"]')].find((button) => button.textContent === "刪除評論");
+    const deleteButton = [...dom.window.document.getElementById(panelId).querySelectorAll("button")].find((button) => button.textContent === "刪除評論");
     await act(async () => deleteButton.click());
-    assert.equal(dom.window.document.querySelector('[role="menu"]'), null);
+    assert.equal(dom.window.document.getElementById(panelId), null);
+    assert.equal(dom.window.document.activeElement, menuButton);
     assert.equal(confirmOpen, true);
     assert.ok(dom.window.document.querySelector('[data-confirm="delete"]'));
   } finally {
