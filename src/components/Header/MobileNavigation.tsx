@@ -21,8 +21,12 @@ export function MobileNavigation({
   className,
   ...props
 }: MobileNavigationProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const [navigationState, setNavigationState] = useState({ pathname, isOpen: false });
+  if (navigationState.pathname !== pathname) {
+    setNavigationState({ pathname, isOpen: false });
+  }
+  const isOpen = navigationState.pathname === pathname && navigationState.isOpen;
   const panelId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -32,14 +36,14 @@ export function MobileNavigation({
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        setIsOpen(false);
+        setNavigationState({ pathname, isOpen: false });
         triggerRef.current?.focus();
       }
     }
 
     function handlePointerDown(event: PointerEvent) {
       if (!containerRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
+        setNavigationState({ pathname, isOpen: false });
       }
     }
 
@@ -52,10 +56,26 @@ export function MobileNavigation({
     };
   }, [isOpen]);
 
-  const closeNavigation = () => setIsOpen(false);
+  useEffect(() => {
+    const desktopQuery = window.matchMedia("(min-width: 768px)");
+    const closeAtDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) setNavigationState({ pathname, isOpen: false });
+    };
+    desktopQuery.addEventListener("change", closeAtDesktop);
+    return () => desktopQuery.removeEventListener("change", closeAtDesktop);
+  }, []);
+
+  const closeNavigation = () => setNavigationState({ pathname, isOpen: false });
 
   return (
-    <div ref={containerRef} className={cn("relative md:hidden", className)} {...props}>
+    <div
+      ref={containerRef}
+      className={cn("relative md:hidden", className)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) closeNavigation();
+      }}
+      {...props}
+    >
       <Button
         ref={triggerRef}
         type="button"
@@ -64,7 +84,10 @@ export function MobileNavigation({
         aria-label={isOpen ? "關閉導覽選單" : "開啟導覽選單"}
         aria-expanded={isOpen}
         aria-controls={panelId}
-        onClick={() => setIsOpen((open) => !open)}
+        onClick={() => setNavigationState((current) => ({
+          pathname,
+          isOpen: current.pathname !== pathname || !current.isOpen,
+        }))}
         className="size-11 rounded-xl"
       >
         {isOpen ? (

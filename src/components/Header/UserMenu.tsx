@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 import { adminNavigation, memberMenuNavigation, type NavigationItem } from "@/libs/navigation";
 import type { User } from "@/types/database";
@@ -43,7 +44,12 @@ export function UserMenu({
   className,
   ...props
 }: UserMenuProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+  const [menuState, setMenuState] = useState({ pathname, isOpen: false });
+  if (menuState.pathname !== pathname) {
+    setMenuState({ pathname, isOpen: false });
+  }
+  const isOpen = menuState.pathname === pathname && menuState.isOpen;
   const panelId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -58,13 +64,13 @@ export function UserMenu({
         return;
       }
 
-      setIsOpen(false);
+      setMenuState({ pathname, isOpen: false });
       triggerRef.current?.focus();
     }
 
     function handlePointerDown(event: PointerEvent) {
       if (!containerRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
+        setMenuState({ pathname, isOpen: false });
       }
     }
 
@@ -77,10 +83,17 @@ export function UserMenu({
     };
   }, [isOpen]);
 
-  const closeMenu = () => setIsOpen(false);
+  const closeMenu = () => setMenuState({ pathname, isOpen: false });
 
   return (
-    <div ref={containerRef} className={cn("relative", className)} {...props}>
+    <div
+      ref={containerRef}
+      className={cn("relative", className)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) closeMenu();
+      }}
+      {...props}
+    >
       <Button
         ref={triggerRef}
         type="button"
@@ -90,7 +103,10 @@ export function UserMenu({
         aria-expanded={isOpen}
         aria-controls={panelId}
         aria-label={`帳號選單，${user.name}`}
-        onClick={() => setIsOpen((open) => !open)}
+        onClick={() => setMenuState((current) => ({
+          pathname,
+          isOpen: current.pathname !== pathname || !current.isOpen,
+        }))}
         className="size-11 rounded-full p-0.5"
       >
         <UserAvatar
