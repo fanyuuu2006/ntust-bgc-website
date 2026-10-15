@@ -20,6 +20,7 @@ import { matchesMembershipRecordSearch } from "@/utils/membership";
 import {
   activateMembershipSchema,
   bulkRevokeMembershipRegisterKeysSchema,
+  bulkUpdateMembershipStatusSchema,
   generateMembershipRegisterKeysSchema,
   createAdminMembershipSchema,
   updateAdminMembershipSchema,
@@ -35,12 +36,14 @@ import {
   MembershipRegisterKeyCannotBeRevokedError,
   MembershipRegisterKeysBatchConflictError,
   MembershipAlreadyExistsForAcademicYearError,
+  MembershipBatchConflictError,
   MembershipNotFoundError,
   MembershipStatusTransitionError,
   MembershipUserNotFoundError,
   RegisterKeySecretNotConfiguredError,
   UserAlreadyCurrentMemberError,
 } from "./memberships.errors";
+import { canTransitionMembershipStatus } from "@/utils/membership-status";
 import type {
   AdminMembership,
   MembershipRegisterKeyWithAcademicYear,
@@ -196,6 +199,30 @@ export const membershipService = {
     }
     if (!updated) throw new MembershipNotFoundError();
     return updated;
+  },
+  bulkUpdateStatusForAdmin: async (input: unknown) => {
+    const data = bulkUpdateMembershipStatusSchema.parse(input);
+    if (
+      data.records.some((record) =>
+        !canTransitionMembershipStatus(record.expected_status, data.status),
+      )
+    ) {
+      throw new MembershipStatusTransitionError();
+    }
+
+    const result = await membershipsRepository.updateManyStatusForAdmin(
+      data.records.map((record) => ({
+        id: record.id,
+        status: record.expected_status,
+        academic_year_id: record.expected_academic_year_id,
+        updated_at: record.expected_updated_at,
+      })),
+      data.status,
+    );
+    if (result.outcome === "conflict") {
+      throw new MembershipBatchConflictError();
+    }
+    return { updatedCount: result.updatedCount };
   },
   listAcademicYears: async () => {
     return academicYearsRepository.findMany();
@@ -515,14 +542,6 @@ export const membershipService = {
     return academicYear?.year ?? null;
   },
 };
-
-function canTransitionMembershipStatus(from: Membership["status"], to: Membership["status"]) {
-  if (from === to) return true;
-  const transitions: Record<Membership["status"], Membership["status"][]> = {
-    pending: ["active", "cancelled"], active: ["suspended", "cancelled", "expired"], suspended: ["active", "cancelled"], expired: [], cancelled: [],
-  };
-  return transitions[from].includes(to);
-}
 
 function isMembershipOpenConflict(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;

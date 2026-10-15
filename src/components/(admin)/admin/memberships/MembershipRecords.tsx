@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
@@ -19,6 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { apiClient } from "@/libs/api/client";
 import type { AdminMembership } from "@/services/memberships/memberships.types";
 import type { AcademicYear, MembershipStatus } from "@/types/database";
+import { canTransitionMembershipStatus } from "@/utils/membership-status";
 import {
   formatAdminDateTime,
   formatTaipeiDateTimeLocal,
@@ -64,14 +65,66 @@ export function MembershipRecords({
   const [isDeleting, setIsDeleting] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [bulkStatus, setBulkStatus] = useState<MembershipStatus>("active");
+  const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  const [bulkFeedback, setBulkFeedback] = useState<{
+    tone: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const editingMembership = selectedMembership?.action === "edit" ? selectedMembership.membership : null;
   const deletingMembership = selectedMembership?.action === "delete" ? selectedMembership.membership : null;
+  const selectedMemberships = memberships.filter((membership) =>
+    selectedIds.has(membership.id),
+  );
+  const selectedCount = selectedMemberships.length;
+  const allSelected = memberships.length > 0 && selectedCount === memberships.length;
+  const partiallySelected = selectedCount > 0 && !allSelected;
+  const selectedAcademicYearCount = new Set(
+    selectedMemberships.map((membership) => membership.academic_year_id),
+  ).size;
+  const availableBulkStatuses = (
+    Object.keys(MEMBERSHIP_STATUS_LABEL) as MembershipStatus[]
+  ).filter(
+    (status) =>
+      selectedMemberships.length > 0 &&
+      selectedMemberships.every((membership) =>
+        canTransitionMembershipStatus(membership.status, status),
+      ) &&
+      selectedMemberships.some((membership) => membership.status !== status),
+  );
+  const canBulkUpdate =
+    selectedCount > 0 &&
+    selectedAcademicYearCount === 1 &&
+    availableBulkStatuses.length > 0;
+  const effectiveBulkStatus = availableBulkStatuses.includes(bulkStatus)
+    ? bulkStatus
+    : (availableBulkStatuses[0] ?? "active");
+  const isMutating = isSaving || isDeleting || isBulkUpdating;
   const headerQuery = Object.fromEntries(
     Object.entries(query)
       .filter(([, value]) => value !== undefined)
       .map(([key, value]) => [key, String(value)]),
   );
+
+  const setMembershipSelected = (id: string, selected: boolean) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (selected) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+    setBulkFeedback(null);
+  };
+
+  const setCurrentPageSelected = (selected: boolean) => {
+    setSelectedIds(
+      selected ? new Set(memberships.map((membership) => membership.id)) : new Set(),
+    );
+    setBulkFeedback(null);
+  };
 
   const openEditDialog = (membership: AdminMembership) => {
     setSelectedMembership({ membership, action: "edit" });
@@ -151,6 +204,49 @@ export function MembershipRecords({
     }
   };
 
+  const bulkUpdateMemberships = async () => {
+    if (!canBulkUpdate) return;
+
+    setIsBulkUpdating(true);
+    setBulkFeedback(null);
+    try {
+      const response = await apiClient<{ data: { updatedCount: number } }>(
+        "/api/admin/memberships/batch",
+        {
+          method: "PATCH",
+          body: {
+            action: "set-status",
+            status: effectiveBulkStatus,
+            records: selectedMemberships.map((membership) => ({
+              id: membership.id,
+              expected_status: membership.status,
+              expected_academic_year_id: membership.academic_year_id,
+              expected_updated_at: membership.updated_at,
+            })),
+          },
+        },
+      );
+      setSelectedIds(new Set());
+      setIsBulkDialogOpen(false);
+      setBulkFeedback({
+        tone: "success",
+        message: `已更新 ${response.data.updatedCount} 筆社員資格`,
+      });
+      router.refresh();
+    } catch (caught) {
+      setIsBulkDialogOpen(false);
+      setBulkFeedback({
+        tone: "error",
+        message:
+          caught instanceof Error
+            ? caught.message
+            : "批次更新社員資格失敗，請稍後再試",
+      });
+    } finally {
+      setIsBulkUpdating(false);
+    }
+  };
+
   if (!memberships.length) {
     const hasQuery = Boolean(query.search || query.academic_year_id || query.status || query.page && query.page > 1);
     return hasQuery ? (
@@ -166,10 +262,81 @@ export function MembershipRecords({
 
   return (
     <>
+      <FormFeedback
+        error={bulkFeedback?.tone === "error" ? bulkFeedback.message : null}
+        success={bulkFeedback?.tone === "success" ? bulkFeedback.message : null}
+      />
+
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-(--border-default) bg-(--surface-subtle) px-3 py-2">
+        <label className="flex items-center gap-2 text-sm text-(--text-primary) lg:hidden">
+          <CurrentPageSelectionCheckbox
+            checked={allSelected}
+            indeterminate={partiallySelected}
+            disabled={isMutating}
+            onChange={setCurrentPageSelected}
+          />
+          選取本頁全部
+        </label>
+        <p className="mr-auto text-sm text-(--text-secondary)" aria-live="polite">
+          已選取 {selectedCount} 筆
+        </p>
+        <label className="flex items-center gap-2 text-sm text-(--text-secondary)">
+          批次狀態
+          <Select
+            aria-label="批次更新社員資格狀態"
+            value={effectiveBulkStatus}
+            disabled={isMutating || availableBulkStatuses.length === 0}
+            onChange={(event) =>
+              setBulkStatus(event.target.value as MembershipStatus)
+            }
+            className="w-auto"
+          >
+            {availableBulkStatuses.length === 0 ? (
+              <option value="active">無合法狀態</option>
+            ) : null}
+            {availableBulkStatuses.map((status) => (
+              <option key={status} value={status}>
+                {MEMBERSHIP_STATUS_LABEL[status]}
+              </option>
+            ))}
+          </Select>
+        </label>
+        <Button
+          type="button"
+          size="sm"
+          disabled={!canBulkUpdate || isMutating}
+          onClick={() => setIsBulkDialogOpen(true)}
+        >
+          批次更新
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="text"
+          disabled={selectedCount === 0 || isMutating}
+          onClick={() => setSelectedIds(new Set())}
+        >
+          清除選取
+        </Button>
+        {selectedAcademicYearCount > 1 ? (
+          <p className="basis-full text-sm text-(--danger)" role="alert">
+            批次更新僅能處理同一學年度的社員資格。
+          </p>
+        ) : null}
+      </div>
+
       <AdminListSection className="hidden lg:block">
-        <Table className="min-w-[1120px]">
+        <Table className="min-w-[1168px]">
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12">
+                <CurrentPageSelectionCheckbox
+                  checked={allSelected}
+                  indeterminate={partiallySelected}
+                  disabled={isMutating}
+                  onChange={setCurrentPageSelected}
+                />
+              </TableHead>
               <TableHead className="w-64">使用者</TableHead>
               <TableHead className="w-24 whitespace-nowrap">類型</TableHead>
               <TableHead className="w-28 whitespace-nowrap">學年度</TableHead>
@@ -200,6 +367,18 @@ export function MembershipRecords({
           <TableBody>
             {memberships.map((membership) => (
               <TableRow key={membership.id}>
+                <TableCell className="w-12">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(membership.id)}
+                    disabled={isMutating}
+                    onChange={(event) =>
+                      setMembershipSelected(membership.id, event.target.checked)
+                    }
+                    aria-label={`選取 ${membership.user.name} 的社員資格`}
+                    className="size-4 rounded border-(--border-default) accent-(--interactive-primary)"
+                  />
+                </TableCell>
                 <TableCell className="w-64 max-w-64 min-w-0">
                   <AdminUserLink
                     userId={membership.user.id}
@@ -223,6 +402,7 @@ export function MembershipRecords({
                 <TableCell className="whitespace-nowrap text-right">
                   <MembershipRowActions
                     membership={membership}
+                    disabled={isMutating}
                     onEdit={openEditDialog}
                     onDelete={openDeleteDialog}
                   />
@@ -237,17 +417,29 @@ export function MembershipRecords({
         {memberships.map((membership) => (
           <Card key={membership.id} className="space-y-3 p-4">
             <div className="flex items-start justify-between gap-3">
-              <AdminUserLink
-                userId={membership.user.id}
-                identity={{
-                  ...membership.user,
-                  real_name: membership.user_profile?.real_name ?? null,
-                  student_id: membership.user_profile?.student_id ?? null,
-                }}
-                disambiguation={membership.user_profile?.student_id ? "studentId" : "email"}
-                variant="mobile"
-                className="min-w-0"
-              />
+              <div className="flex min-w-0 flex-1 items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(membership.id)}
+                  disabled={isMutating}
+                  onChange={(event) =>
+                    setMembershipSelected(membership.id, event.target.checked)
+                  }
+                  aria-label={`選取 ${membership.user.name} 的社員資格`}
+                  className="mt-0.5 size-4 shrink-0 rounded border-(--border-default) accent-(--interactive-primary)"
+                />
+                <AdminUserLink
+                  userId={membership.user.id}
+                  identity={{
+                    ...membership.user,
+                    real_name: membership.user_profile?.real_name ?? null,
+                    student_id: membership.user_profile?.student_id ?? null,
+                  }}
+                  disambiguation={membership.user_profile?.student_id ? "studentId" : "email"}
+                  variant="mobile"
+                  className="min-w-0 flex-1"
+                />
+              </div>
               <span className="shrink-0">
                 <MemberStatusBadge status={membership.status} />
               </span>
@@ -271,6 +463,7 @@ export function MembershipRecords({
             <div className="flex flex-wrap gap-2">
               <MembershipRowActions
                 membership={membership}
+                disabled={isMutating}
                 onEdit={openEditDialog}
                 onDelete={openDeleteDialog}
               />
@@ -347,27 +540,68 @@ export function MembershipRecords({
         }
         confirmLabel="確認刪除"
       />
+      <ConfirmDialog
+        open={isBulkDialogOpen}
+        onClose={() => !isBulkUpdating && setIsBulkDialogOpen(false)}
+        onConfirm={bulkUpdateMemberships}
+        isSubmitting={isBulkUpdating}
+        title="批次更新社員資格狀態"
+        description={`確定要將已選取的 ${selectedCount} 筆社員資格更新為「${MEMBERSHIP_STATUS_LABEL[effectiveBulkStatus]}」嗎？這可能立即影響借用與活動簽到資格。`}
+        confirmLabel="確認批次更新"
+      />
     </>
   );
 }
 
 function MembershipRowActions({
   membership,
+  disabled,
   onEdit,
   onDelete,
 }: {
   membership: AdminMembership;
+  disabled: boolean;
   onEdit: (membership: AdminMembership) => void;
   onDelete: (membership: AdminMembership) => void;
 }) {
   return (
     <div className="flex flex-nowrap justify-end gap-2">
-      <Button type="button" variant="outline" size="sm" onClick={() => onEdit(membership)}>
+      <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => onEdit(membership)}>
         編輯
       </Button>
-      <Button type="button" size="sm" variant="danger" onClick={() => onDelete(membership)}>
+      <Button type="button" size="sm" variant="danger" disabled={disabled} onClick={() => onDelete(membership)}>
         刪除
       </Button>
     </div>
+  );
+}
+
+function CurrentPageSelectionCheckbox({
+  checked,
+  indeterminate,
+  disabled,
+  onChange,
+}: {
+  checked: boolean;
+  indeterminate: boolean;
+  disabled: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (inputRef.current) inputRef.current.indeterminate = indeterminate;
+  }, [indeterminate]);
+
+  return (
+    <input
+      ref={inputRef}
+      type="checkbox"
+      checked={checked}
+      disabled={disabled}
+      onChange={(event) => onChange(event.target.checked)}
+      aria-label="選取本頁全部社員資格"
+      className="size-4 rounded border-(--border-default) accent-(--interactive-primary)"
+    />
   );
 }

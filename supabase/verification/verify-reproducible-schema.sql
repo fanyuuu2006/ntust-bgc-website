@@ -47,6 +47,10 @@ begin
     raise exception 'Required attendance batch RPC missing';
   end if;
 
+  if to_regprocedure('public.update_admin_memberships_status(jsonb,public.merbership_status)') is null then
+    raise exception 'Required membership batch RPC missing';
+  end if;
+
   if to_regprocedure('public.issue_password_recovery_token(uuid,text,timestamp with time zone)') is null
      or to_regprocedure('public.activate_password_recovery_token(text)') is null
      or to_regprocedure('public.inspect_password_recovery_token(text)') is null
@@ -72,6 +76,12 @@ begin
      or has_function_privilege('anon', 'public.update_event_attendances_status(uuid,jsonb,public.attendance_status)', 'EXECUTE')
      or has_function_privilege('authenticated', 'public.update_event_attendances_status(uuid,jsonb,public.attendance_status)', 'EXECUTE') then
     raise exception 'Attendance batch RPC privilege invariant missing';
+  end if;
+
+  if not has_function_privilege('service_role', 'public.update_admin_memberships_status(jsonb,public.merbership_status)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.update_admin_memberships_status(jsonb,public.merbership_status)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.update_admin_memberships_status(jsonb,public.merbership_status)', 'EXECUTE') then
+    raise exception 'Membership batch RPC privilege invariant missing';
   end if;
 
   if to_regclass('public.board_games_with_statistics') is null

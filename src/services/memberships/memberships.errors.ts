@@ -75,6 +75,13 @@ export class MembershipStatusTransitionError extends Error {
   }
 }
 
+export class MembershipBatchConflictError extends Error {
+  constructor() {
+    super("部分社員資格已變更或不符合批次更新條件，請重新整理後再試");
+    this.name = "MembershipBatchConflictError";
+  }
+}
+
 
 export class CurrentAcademicYearNotFoundError extends Error {
   constructor() {

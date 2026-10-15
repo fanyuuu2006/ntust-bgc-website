@@ -99,3 +99,40 @@ export const updateAdminMembershipSchema = z.object({
   status: z.enum(["pending", "active", "expired", "suspended", "cancelled"]),
   joined_at: z.string().datetime().nullable().optional(),
 });
+
+const bulkMembershipRecordSchema = z.object({
+  id: z.uuid(),
+  expected_status: z.enum([
+    "pending",
+    "active",
+    "expired",
+    "suspended",
+    "cancelled",
+  ]),
+  expected_academic_year_id: z.uuid(),
+  expected_updated_at: z.string().datetime(),
+});
+
+export const bulkUpdateMembershipStatusSchema = z.object({
+  action: z.literal("set-status"),
+  status: z.enum([
+    "pending",
+    "active",
+    "expired",
+    "suspended",
+    "cancelled",
+  ]),
+  records: z
+    .array(bulkMembershipRecordSchema)
+    .min(1, "請至少選取一筆社員資格")
+    .max(100, "單次最多更新 100 筆社員資格")
+    .refine(
+      (records) => new Set(records.map((record) => record.id)).size === records.length,
+      { message: "社員資格 ID 不可重複" },
+    )
+    .refine(
+      (records) =>
+        new Set(records.map((record) => record.expected_academic_year_id)).size === 1,
+      { message: "批次更新的社員資格必須屬於同一學年度" },
+    ),
+});

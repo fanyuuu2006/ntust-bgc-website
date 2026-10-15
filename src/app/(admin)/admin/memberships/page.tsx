@@ -44,6 +44,7 @@ async function MembershipsPage({ searchParams }: Props) {
         />
         <PaginatedCollection page={page} pageSize={pageSize} total={memberships.total} totalPages={memberships.totalPages} basePath="/admin/memberships" pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
         <MembershipRecords
+          key={JSON.stringify({ ...query, page, pageSize })}
           memberships={memberships.data}
           years={years}
           query={query}

@@ -42,7 +42,7 @@ test("membership table bounds long user identity without compressing semantic co
   );
 
   assert.match(memberships, /<AdminListSection className="hidden lg:block">/);
-  assert.match(memberships, /<Table className="min-w-\[1120px\]">/);
+  assert.match(memberships, /<Table className="min-w-\[1168px\]">/);
   assert.match(memberships, /<TableCell className="w-64 max-w-64 min-w-0">\s*<AdminUserLink/);
   assert.match(memberships, /<TableHead className="w-24 whitespace-nowrap">類型<\/TableHead>/);
   assert.match(memberships, /<TableHead className="w-28 whitespace-nowrap">學年度<\/TableHead>/);
