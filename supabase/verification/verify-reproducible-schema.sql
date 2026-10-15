@@ -43,7 +43,8 @@ begin
     raise exception 'Required register-key RPC missing';
   end if;
 
-  if to_regprocedure('public.update_event_attendances_status(uuid,jsonb,public.attendance_status)') is null then
+  if to_regprocedure('public.update_event_attendances_status(uuid,jsonb,public.attendance_status)') is null
+     or to_regprocedure('public.delete_event_attendances(uuid,jsonb)') is null then
     raise exception 'Required attendance batch RPC missing';
   end if;
 
@@ -74,7 +75,10 @@ begin
 
   if not has_function_privilege('service_role', 'public.update_event_attendances_status(uuid,jsonb,public.attendance_status)', 'EXECUTE')
      or has_function_privilege('anon', 'public.update_event_attendances_status(uuid,jsonb,public.attendance_status)', 'EXECUTE')
-     or has_function_privilege('authenticated', 'public.update_event_attendances_status(uuid,jsonb,public.attendance_status)', 'EXECUTE') then
+     or has_function_privilege('authenticated', 'public.update_event_attendances_status(uuid,jsonb,public.attendance_status)', 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.delete_event_attendances(uuid,jsonb)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.delete_event_attendances(uuid,jsonb)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.delete_event_attendances(uuid,jsonb)', 'EXECUTE') then
     raise exception 'Attendance batch RPC privilege invariant missing';
   end if;
 

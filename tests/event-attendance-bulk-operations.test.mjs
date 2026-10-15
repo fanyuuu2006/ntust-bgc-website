@@ -37,6 +37,10 @@ test("bulk attendance input uses only the existing statuses and rejects unsafe b
       true,
     );
   }
+  assert.equal(
+    bulkAttendanceUpdateSchema.safeParse({ action: "delete", records }).success,
+    true,
+  );
   for (const input of [
     { action: "set-status", status: "present", records: [] },
     {
@@ -146,11 +150,36 @@ test("service validates expected state and maps atomic conflicts without per-row
 
   assert.match(service, /bulkAttendanceUpdateSchema\.parse\(input\)/);
   assert.match(service, /updateManyStatusForEvent/);
+  assert.match(service, /deleteManyForEvent/);
   assert.match(service, /throw new AttendanceBatchConflictError/);
   assert.match(repository, /\.rpc\(\s*"update_event_attendances_status"/s);
+  assert.match(repository, /\.rpc\(\s*"delete_event_attendances"/s);
   assert.match(repository, /expected_status: record\.status/);
   assert.match(repository, /expected_attended_at: record\.attended_at/);
   assert.doesNotMatch(repository, /Promise\.all/);
+});
+
+test("attendance delete RPC enforces same-event locks, stale-state checks, rollback, and server-only execution", async () => {
+  const [migration, canonical, verification] = await Promise.all([
+    readSource("supabase/migrations/202610150006_delete_event_attendances_atomically.sql"),
+    readSource("supabase/schema/canonical-public-schema.sql"),
+    readSource("supabase/verification/verify-reproducible-schema.sql"),
+  ]);
+
+  assert.match(migration, /v_item_count > 100/);
+  assert.match(migration, /count\(distinct input\.id\)/);
+  assert.match(migration, /attendance\.event_id = p_event_id/);
+  assert.match(migration, /order by attendance\.id\s+for update of attendance/s);
+  assert.match(migration, /v_locked_count <> v_item_count/);
+  assert.match(migration, /attendance\.status is distinct from input\.expected_status/);
+  assert.match(migration, /attendance\.attended_at is distinct from input\.expected_attended_at/);
+  assert.match(migration, /delete from public\.event_attendances/);
+  assert.match(migration, /v_deleted_count <> v_item_count/);
+  assert.match(migration, /raise exception/);
+  assert.match(migration, /grant execute[\s\S]*to service_role/);
+  assert.doesNotMatch(migration, /grant execute[\s\S]*to authenticated/);
+  assert.match(canonical, /create function public\.delete_event_attendances/);
+  assert.match(verification, /delete_event_attendances/);
 });
 
 test("attendance RPC enforces same-event locks, stale-state checks, and atomic rollback", async () => {
@@ -206,6 +235,8 @@ test("attendance UI shares selection across desktop and mobile and retains singl
   assert.match(bulkBar, /已選取 \{selectedCount\} 筆/);
   assert.match(recordsSource, /selectedCount > 0 \? \(/);
   assert.match(recordsSource, /批次更新簽到狀態/);
+  assert.match(recordsSource, /批次刪除簽到紀錄/);
+  assert.match(recordsSource, /action: bulkAction/);
   assert.match(recordsSource, /expected_status: record\.status/);
   assert.match(recordsSource, /expected_attended_at: record\.attended_at/);
   assert.match(recordsSource, /setSelectedIds\(new Set\(\)\)/);

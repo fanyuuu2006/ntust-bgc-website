@@ -278,15 +278,18 @@ export const eventsService = {
 
   bulkUpdateAttendancesForAdmin: async (eventId: string, input: unknown) => {
     const data = bulkAttendanceUpdateSchema.parse(input);
-    const result = await eventAttendancesRepository.updateManyStatusForEvent(
-      eventId,
-      data.records.map((record) => ({
-        id: record.id,
-        status: record.expected_status,
-        attended_at: record.expected_attended_at,
-      })),
-      data.status,
-    );
+    const records = data.records.map((record) => ({
+      id: record.id,
+      status: record.expected_status,
+      attended_at: record.expected_attended_at,
+    }));
+    const result = data.action === "delete"
+      ? await eventAttendancesRepository.deleteManyForEvent(eventId, records)
+      : await eventAttendancesRepository.updateManyStatusForEvent(
+          eventId,
+          records,
+          data.status,
+        );
     if (result.outcome === "conflict") {
       throw new AttendanceBatchConflictError();
     }

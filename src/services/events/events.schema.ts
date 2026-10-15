@@ -46,10 +46,7 @@ export const attendanceUpdateSchema = z.object({
   attended_at: z.iso.datetime().nullable().optional(),
 });
 
-export const bulkAttendanceUpdateSchema = z.object({
-  action: z.literal("set-status"),
-  status: z.enum(["present", "late", "absent"]),
-  records: z
+const bulkAttendanceRecordsSchema = z
     .array(
       z.object({
         id: z.number().int().positive(),
@@ -62,5 +59,16 @@ export const bulkAttendanceUpdateSchema = z.object({
     .refine(
       (records) => new Set(records.map(({ id }) => id)).size === records.length,
       { message: "簽到紀錄 ID 不可重複" },
-    ),
-});
+    );
+
+export const bulkAttendanceUpdateSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("set-status"),
+    status: z.enum(["present", "late", "absent"]),
+    records: bulkAttendanceRecordsSchema,
+  }),
+  z.object({
+    action: z.literal("delete"),
+    records: bulkAttendanceRecordsSchema,
+  }),
+]);

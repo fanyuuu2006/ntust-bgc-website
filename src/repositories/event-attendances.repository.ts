@@ -39,6 +39,11 @@ type BulkUpdateEventAttendancesRpcResult = {
   updated_count?: number;
 };
 
+type BulkDeleteEventAttendancesRpcResult = {
+  outcome: "deleted" | "conflict";
+  deleted_count?: number;
+};
+
 export type FindManyEventAttendancesOptions = PaginationQuery &
   OrderOptions<"attended_at"> & {
     status?: AttendanceStatus | AttendanceStatus[];
@@ -285,6 +290,34 @@ export const eventAttendancesRepository = {
     return {
       outcome: "updated",
       updatedCount: result.updated_count ?? 0,
+    };
+  },
+
+  deleteManyForEvent: async (
+    eventId: string,
+    records: BulkUpdateEventAttendanceItem[],
+  ): Promise<
+    | { outcome: "updated"; updatedCount: number }
+    | { outcome: "conflict" }
+  > => {
+    const { data, error } = await supabase.rpc(
+      "delete_event_attendances",
+      {
+        p_event_id: eventId,
+        p_items: records.map((record) => ({
+          id: record.id,
+          expected_status: record.status,
+          expected_attended_at: record.attended_at,
+        })),
+      },
+    );
+    if (error) throwRepositoryError("批次刪除活動簽到紀錄失敗", error);
+
+    const result = data as BulkDeleteEventAttendancesRpcResult | null;
+    if (result?.outcome !== "deleted") return { outcome: "conflict" };
+    return {
+      outcome: "updated",
+      updatedCount: result.deleted_count ?? 0,
     };
   },
 

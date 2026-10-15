@@ -64,6 +64,9 @@ export function AttendanceRecords({
     () => new Set(),
   );
   const [mobileBulkMode, setMobileBulkMode] = useState(false);
+  const [bulkAction, setBulkAction] = useState<"set-status" | "delete">(
+    "set-status",
+  );
   const [bulkStatus, setBulkStatus] =
     useState<AttendanceRecord["status"]>("present");
   const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
@@ -161,7 +164,7 @@ export function AttendanceRecords({
     }
   };
 
-  const bulkUpdateAttendances = async () => {
+  const applyBulkAttendanceAction = async () => {
     if (!selectedRecords.length) return;
 
     setIsBulkUpdating(true);
@@ -172,8 +175,8 @@ export function AttendanceRecords({
         {
           method: "PATCH",
           body: {
-            action: "set-status",
-            status: bulkStatus,
+            action: bulkAction,
+            ...(bulkAction === "set-status" ? { status: bulkStatus } : {}),
             records: selectedRecords.map((record) => ({
               id: record.id,
               expected_status: record.status,
@@ -186,7 +189,9 @@ export function AttendanceRecords({
       setIsBulkDialogOpen(false);
       setBulkFeedback({
         tone: "success",
-        message: `已更新 ${response.data.updatedCount} 筆簽到紀錄。`,
+        message: bulkAction === "delete"
+          ? `已刪除 ${response.data.updatedCount} 筆簽到紀錄。`
+          : `已更新 ${response.data.updatedCount} 筆簽到紀錄。`,
       });
       router.refresh();
     } catch (caught) {
@@ -196,7 +201,9 @@ export function AttendanceRecords({
         message:
           caught instanceof Error
             ? caught.message
-            : "批次更新簽到紀錄失敗，請稍後再試。",
+            : bulkAction === "delete"
+              ? "批次刪除簽到紀錄失敗，請稍後再試。"
+              : "批次更新簽到紀錄失敗，請稍後再試。",
       });
     } finally {
       setIsBulkUpdating(false);
@@ -240,8 +247,20 @@ export function AttendanceRecords({
           本頁全選
         </label>}
         >
-        <label className="flex items-center gap-2 text-sm text-(--text-secondary)">
-          批次狀態
+        <Select
+          aria-label="批次處理簽到紀錄"
+          value={bulkAction}
+          disabled={isMutating}
+          onChange={(event) =>
+            setBulkAction(event.target.value as "set-status" | "delete")
+          }
+          className="w-auto"
+        >
+          <option value="set-status">更新狀態</option>
+          <option value="delete">刪除紀錄</option>
+        </Select>
+        {bulkAction === "set-status" ? <label className="flex items-center gap-2 text-sm text-(--text-secondary)">
+          目標狀態
           <Select
             aria-label="批次更新簽到狀態"
             value={bulkStatus}
@@ -255,14 +274,15 @@ export function AttendanceRecords({
               <option key={value} value={value}>{label}</option>
             ))}
           </Select>
-        </label>
+        </label> : null}
         <Button
           type="button"
           size="sm"
+          variant={bulkAction === "delete" ? "danger" : "primary"}
           disabled={isMutating}
           onClick={() => setIsBulkDialogOpen(true)}
         >
-          批次更新
+          {bulkAction === "delete" ? "批次刪除" : "批次更新"}
         </Button>
         </AdminBulkActionBar>
       ) : null}
@@ -381,11 +401,14 @@ export function AttendanceRecords({
       <ConfirmDialog
         open={isBulkDialogOpen}
         onClose={() => !isBulkUpdating && setIsBulkDialogOpen(false)}
-        onConfirm={bulkUpdateAttendances}
+        onConfirm={applyBulkAttendanceAction}
         isSubmitting={isBulkUpdating}
-        title="批次更新簽到狀態"
-        description={`確定要將已選取的 ${selectedCount} 筆簽到紀錄更新為「${ATTENDANCE_STATUS_LABEL[bulkStatus]}」嗎？`}
-        confirmLabel="更新已選紀錄"
+        title={bulkAction === "delete" ? "批次刪除簽到紀錄" : "批次更新簽到狀態"}
+        description={bulkAction === "delete"
+          ? `確定要刪除已選取的 ${selectedCount} 筆簽到紀錄嗎？此操作無法復原；系統會重新檢查每筆狀態，任一筆已變更時不會刪除任何資料。`
+          : `確定要將已選取的 ${selectedCount} 筆簽到紀錄更新為「${ATTENDANCE_STATUS_LABEL[bulkStatus]}」嗎？`}
+        confirmLabel={bulkAction === "delete" ? "刪除已選紀錄" : "更新已選紀錄"}
+        confirmVariant={bulkAction === "delete" ? "danger" : "primary"}
       />
     </>
   );
