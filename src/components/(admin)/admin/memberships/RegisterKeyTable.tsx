@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { AdminBulkActionBar } from "@/components/(admin)/admin/AdminBulkActionBar";
 import { AdminMobileBulkModeButton } from "@/components/(admin)/admin/AdminMobileBulkModeButton";
+import { AdminSelectionCheckbox } from "@/components/(admin)/admin/AdminSelectionCheckbox";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { Button } from "@/components/ui/Button";
@@ -21,6 +22,7 @@ import {
 import { apiClient } from "@/libs/api/client";
 import type { MembershipRegisterKeyWithAcademicYear } from "@/services/memberships/memberships.types";
 import { formatAdminDateTime } from "@/utils/date";
+import { useCurrentPageSelection } from "@/hooks/useCurrentPageSelection";
 import { RegisterKeyStatusBadge } from "./RegisterKeyStatusBadge";
 
 type RegisterKeyTableProps = {
@@ -38,10 +40,16 @@ export function RegisterKeyTable({
     useState<MembershipRegisterKeyWithAcademicYear | null>(null);
   const [isRevoking, setIsRevoking] = useState(false);
   const [isBulkRevokeDialogOpen, setIsBulkRevokeDialogOpen] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [mobileBulkMode, setMobileBulkMode] = useState(false);
-
-  const selectedCount = selectedIds.size;
+  const {
+    selectedIds,
+    selectedCount,
+    allSelected,
+    partiallySelected,
+    setItemSelected: setRegisterKeySelected,
+    setCurrentPageSelected,
+    clearSelection,
+  } = useCurrentPageSelection(registerKeys.map((registerKey) => registerKey.id));
   const selectedRegisterKeys = registerKeys.filter((registerKey) =>
     selectedIds.has(registerKey.id),
   );
@@ -50,26 +58,6 @@ export function RegisterKeyTable({
   ).length;
   const canBulkRevoke =
     selectedCount > 0 && selectedAvailableCount === selectedCount;
-  const allSelected =
-    registerKeys.length > 0 && selectedCount === registerKeys.length;
-  const partiallySelected = selectedCount > 0 && !allSelected;
-
-  function setRegisterKeySelected(id: string, selected: boolean) {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      if (selected) next.add(id);
-      else next.delete(id);
-      return next;
-    });
-  }
-
-  function setCurrentPageSelected(selected: boolean) {
-    setSelectedIds(
-      selected
-        ? new Set(registerKeys.map((registerKey) => registerKey.id))
-        : new Set(),
-    );
-  }
 
   async function copySelectedRegisterKeys() {
     const seen = new Set<string>();
@@ -119,11 +107,7 @@ export function RegisterKeyTable({
       }
 
       setFeedback("社員註冊序號已撤銷。");
-      setSelectedIds((current) => {
-        const next = new Set(current);
-        next.delete(pendingRevocation.id);
-        return next;
-      });
+      setRegisterKeySelected(pendingRevocation.id, false);
       setPendingRevocation(null);
       router.refresh();
     } catch (error) {
@@ -154,7 +138,7 @@ export function RegisterKeyTable({
           },
         },
       );
-      setSelectedIds(new Set());
+      clearSelection();
       setIsBulkRevokeDialogOpen(false);
       setFeedback(`已撤銷 ${response.data.revokedCount} 組社員註冊序號。`);
       router.refresh();
@@ -198,19 +182,21 @@ export function RegisterKeyTable({
         </p>
       ) : null}
 
-      <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isRevoking} selectedCount={selectedCount} selectionControl={<label className="flex items-center gap-2 text-sm"><CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isRevoking} onChange={setCurrentPageSelected} />全選本頁</label>} onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} />
+      <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isRevoking} selectedCount={selectedCount} selectionControl={<div className="flex items-center gap-1 text-sm"><AdminSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isRevoking} onCheckedChange={setCurrentPageSelected} label="選取目前頁面的所有社員註冊序號" />全選本頁</div>} onChange={(active) => { setMobileBulkMode(active); if (!active) clearSelection(); }} />
 
       {selectedCount > 0 ? (
         <AdminBulkActionBar
           selectedCount={selectedCount}
           disabled={isRevoking}
-          onClear={() => { setSelectedIds(new Set()); setMobileBulkMode(false); }}
+          mobilePresentation="inline"
+          onClear={() => { clearSelection(); setMobileBulkMode(false); }}
           notice={selectedCount > selectedAvailableCount ? `已選取 ${selectedCount} 筆，其中 ${selectedAvailableCount} 筆可撤銷；請取消不可撤銷的項目後再試。` : undefined}
         >
         <Button
           type="button"
           variant="outline"
           size="sm"
+          className="min-w-fit flex-1 lg:flex-none"
           disabled={isRevoking}
           onClick={copySelectedRegisterKeys}
         >
@@ -220,6 +206,7 @@ export function RegisterKeyTable({
           type="button"
           variant="danger"
           size="sm"
+          className="min-w-fit flex-1 lg:flex-none"
           disabled={!canBulkRevoke || isRevoking}
           onClick={() => setIsBulkRevokeDialogOpen(true)}
         >
@@ -233,15 +220,12 @@ export function RegisterKeyTable({
           <Card key={registerKey.id} className="min-w-0 p-3 sm:p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 items-start gap-3">
-                {mobileBulkMode ? <input
-                  type="checkbox"
+                {mobileBulkMode ? <AdminSelectionCheckbox
                   checked={selectedIds.has(registerKey.id)}
                   disabled={isRevoking}
-                  onChange={(event) =>
-                    setRegisterKeySelected(registerKey.id, event.target.checked)
-                  }
-                  aria-label={`選取社員註冊序號 ${registerKey.register_key}`}
-                  className="mt-0.5 size-4 shrink-0 rounded border-(--border-default) accent-(--interactive-primary)"
+                  onCheckedChange={(checked) => setRegisterKeySelected(registerKey.id, checked)}
+                  label={`選取社員註冊序號 ${registerKey.register_key}`}
+                  containerClassName="-mt-1 -ml-1"
                 /> : null}
                 <span className="min-w-0">
                 <p className="break-all font-mono text-xs text-(--text-primary)">
@@ -274,11 +258,12 @@ export function RegisterKeyTable({
           <TableHeader>
             <TableRow>
               <TableHead className="w-12">
-                <CurrentPageSelectionCheckbox
+                <AdminSelectionCheckbox
                   checked={allSelected}
                   indeterminate={partiallySelected}
                   disabled={isRevoking}
-                  onChange={setCurrentPageSelected}
+                  onCheckedChange={setCurrentPageSelected}
+                  label="選取目前頁面的所有社員註冊序號"
                 />
               </TableHead>
               <TableHead>社員註冊序號</TableHead>
@@ -293,15 +278,11 @@ export function RegisterKeyTable({
             {registerKeys.map((registerKey) => (
               <TableRow key={registerKey.id}>
                 <TableCell className="w-12">
-                  <input
-                    type="checkbox"
+                  <AdminSelectionCheckbox
                     checked={selectedIds.has(registerKey.id)}
                     disabled={isRevoking}
-                    onChange={(event) =>
-                      setRegisterKeySelected(registerKey.id, event.target.checked)
-                    }
-                    aria-label={`選取社員註冊序號 ${registerKey.register_key}`}
-                    className="size-4 rounded border-(--border-default) accent-(--interactive-primary)"
+                    onCheckedChange={(checked) => setRegisterKeySelected(registerKey.id, checked)}
+                    label={`選取社員註冊序號 ${registerKey.register_key}`}
                   />
                 </TableCell>
                 <TableCell className="min-w-64">
@@ -362,36 +343,6 @@ export function RegisterKeyTable({
         confirmLabel="撤銷已選序號"
       />
     </div>
-  );
-}
-
-function CurrentPageSelectionCheckbox({
-  checked,
-  indeterminate,
-  disabled,
-  onChange,
-}: {
-  checked: boolean;
-  indeterminate: boolean;
-  disabled: boolean;
-  onChange: (checked: boolean) => void;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (inputRef.current) inputRef.current.indeterminate = indeterminate;
-  }, [indeterminate]);
-
-  return (
-    <input
-      ref={inputRef}
-      type="checkbox"
-      checked={checked}
-      disabled={disabled}
-      onChange={(event) => onChange(event.target.checked)}
-      aria-label="選取目前頁面的所有社員註冊序號"
-      className="size-4 rounded border-(--border-default) accent-(--interactive-primary)"
-    />
   );
 }
 

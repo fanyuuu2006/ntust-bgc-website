@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminBulkActionBar } from "@/components/(admin)/admin/AdminBulkActionBar";
 import { AdminMobileBulkModeButton } from "@/components/(admin)/admin/AdminMobileBulkModeButton";
+import { AdminSelectionCheckbox } from "@/components/(admin)/admin/AdminSelectionCheckbox";
 import { AdminUserLink } from "@/components/(admin)/admin/users/AdminUserLink";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
@@ -22,6 +23,7 @@ import { apiClient } from "@/libs/api/client";
 import type { AdminMembership } from "@/services/memberships/memberships.types";
 import type { AcademicYear, MembershipStatus } from "@/types/database";
 import { canTransitionMembershipStatus } from "@/utils/membership-status";
+import { useCurrentPageSelection } from "@/hooks/useCurrentPageSelection";
 import {
   formatAdminDateTime,
   formatTaipeiDateTimeLocal,
@@ -67,7 +69,6 @@ export function MembershipRecords({
   const [isDeleting, setIsDeleting] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [mobileBulkMode, setMobileBulkMode] = useState(false);
   const [bulkStatus, setBulkStatus] = useState<MembershipStatus>("active");
   const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
@@ -79,12 +80,18 @@ export function MembershipRecords({
 
   const editingMembership = selectedMembership?.action === "edit" ? selectedMembership.membership : null;
   const deletingMembership = selectedMembership?.action === "delete" ? selectedMembership.membership : null;
+  const {
+    selectedIds,
+    selectedCount,
+    allSelected,
+    partiallySelected,
+    setItemSelected: setMembershipSelected,
+    setCurrentPageSelected,
+    clearSelection,
+  } = useCurrentPageSelection(memberships.map((membership) => membership.id));
   const selectedMemberships = memberships.filter((membership) =>
     selectedIds.has(membership.id),
   );
-  const selectedCount = selectedMemberships.length;
-  const allSelected = memberships.length > 0 && selectedCount === memberships.length;
-  const partiallySelected = selectedCount > 0 && !allSelected;
   const selectedAcademicYearCount = new Set(
     selectedMemberships.map((membership) => membership.academic_year_id),
   ).size;
@@ -111,23 +118,6 @@ export function MembershipRecords({
       .filter(([, value]) => value !== undefined)
       .map(([key, value]) => [key, String(value)]),
   );
-
-  const setMembershipSelected = (id: string, selected: boolean) => {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      if (selected) next.add(id);
-      else next.delete(id);
-      return next;
-    });
-    setBulkFeedback(null);
-  };
-
-  const setCurrentPageSelected = (selected: boolean) => {
-    setSelectedIds(
-      selected ? new Set(memberships.map((membership) => membership.id)) : new Set(),
-    );
-    setBulkFeedback(null);
-  };
 
   const openEditDialog = (membership: AdminMembership) => {
     setSelectedMembership({ membership, action: "edit" });
@@ -229,7 +219,7 @@ export function MembershipRecords({
           },
         },
       );
-      setSelectedIds(new Set());
+      clearSelection();
       setIsBulkDialogOpen(false);
       setBulkFeedback({
         tone: "success",
@@ -272,19 +262,20 @@ export function MembershipRecords({
         />
       ) : null}
 
-      <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isMutating} selectedCount={selectedCount} selectionControl={<label className="flex items-center gap-2 text-sm"><CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} />全選本頁</label>} onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} />
+      <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isMutating} selectedCount={selectedCount} selectionControl={<div className="flex items-center gap-1 text-sm"><AdminSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onCheckedChange={(checked) => { setCurrentPageSelected(checked); setBulkFeedback(null); }} label="選取本頁全部社員資格" />全選本頁</div>} onChange={(active) => { setMobileBulkMode(active); if (!active) clearSelection(); }} />
 
       {selectedCount > 0 ? (
         <AdminBulkActionBar
           selectedCount={selectedCount}
           disabled={isMutating}
-          onClear={() => { setSelectedIds(new Set()); setMobileBulkMode(false); }}
+          mobilePresentation="panel"
+          onClear={() => { clearSelection(); setMobileBulkMode(false); }}
           notice={selectedAcademicYearCount > 1 ? "需先將清單篩選為單一學年度，再重新選取要更新的紀錄。" : undefined}
         >
           {canBulkUpdate ? (
             <>
-              <label className="flex items-center gap-2 text-sm text-(--text-secondary)">
-                批次狀態
+              <label className="grid min-w-0 gap-1.5 text-sm font-medium text-(--text-primary) lg:flex lg:items-center lg:gap-2 lg:text-(--text-secondary)">
+                <span>批次狀態</span>
                 <Select
                   aria-label="批次更新社員資格狀態"
                   value={effectiveBulkStatus}
@@ -292,7 +283,7 @@ export function MembershipRecords({
                   onChange={(event) =>
                     setBulkStatus(event.target.value as MembershipStatus)
                   }
-                  className="w-auto"
+                  className="w-full lg:w-auto"
                 >
                   {availableBulkStatuses.map((status) => (
                     <option key={status} value={status}>
@@ -301,13 +292,13 @@ export function MembershipRecords({
                   ))}
                 </Select>
               </label>
-              <Button type="button" size="sm" disabled={isMutating} onClick={() => setIsBulkDialogOpen(true)}>
+              <Button type="button" size="sm" className="w-full lg:w-auto" disabled={isMutating} onClick={() => setIsBulkDialogOpen(true)}>
                 批次更新
               </Button>
             </>
           ) : null}
           {selectedAcademicYearCount > 1 ? (
-            <Button type="button" size="sm" variant="outline" disabled={isMutating} onClick={() => {
+            <Button type="button" size="sm" className="w-full lg:w-auto" variant="outline" disabled={isMutating} onClick={() => {
               const firstYear = selectedMemberships[0]?.academic_year_id;
               if (!firstYear) return;
               const params = new URLSearchParams();
@@ -328,11 +319,12 @@ export function MembershipRecords({
           <TableHeader>
             <TableRow>
               <TableHead className="w-12">
-                <CurrentPageSelectionCheckbox
+                <AdminSelectionCheckbox
                   checked={allSelected}
                   indeterminate={partiallySelected}
                   disabled={isMutating}
-                  onChange={setCurrentPageSelected}
+                  onCheckedChange={(checked) => { setCurrentPageSelected(checked); setBulkFeedback(null); }}
+                  label="選取本頁全部社員資格"
                 />
               </TableHead>
               <TableHead className="w-64">使用者</TableHead>
@@ -366,15 +358,11 @@ export function MembershipRecords({
             {memberships.map((membership) => (
               <TableRow key={membership.id}>
                 <TableCell className="w-12">
-                  <input
-                    type="checkbox"
+                  <AdminSelectionCheckbox
                     checked={selectedIds.has(membership.id)}
                     disabled={isMutating}
-                    onChange={(event) =>
-                      setMembershipSelected(membership.id, event.target.checked)
-                    }
-                    aria-label={`選取 ${membership.user.name} 的社員資格`}
-                    className="size-4 rounded border-(--border-default) accent-(--interactive-primary)"
+                    onCheckedChange={(checked) => { setMembershipSelected(membership.id, checked); setBulkFeedback(null); }}
+                    label={`選取 ${membership.user.name} 的社員資格`}
                   />
                 </TableCell>
                 <TableCell className="w-64 max-w-64 min-w-0">
@@ -416,15 +404,12 @@ export function MembershipRecords({
           <Card key={membership.id} className="space-y-2.5 p-3 sm:p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 items-start gap-3">
-                {mobileBulkMode ? <input
-                  type="checkbox"
+                {mobileBulkMode ? <AdminSelectionCheckbox
                   checked={selectedIds.has(membership.id)}
                   disabled={isMutating}
-                  onChange={(event) =>
-                    setMembershipSelected(membership.id, event.target.checked)
-                  }
-                  aria-label={`選取 ${membership.user.name} 的社員資格`}
-                  className="mt-0.5 size-4 shrink-0 rounded border-(--border-default) accent-(--interactive-primary)"
+                  onCheckedChange={(checked) => { setMembershipSelected(membership.id, checked); setBulkFeedback(null); }}
+                  label={`選取 ${membership.user.name} 的社員資格`}
+                  containerClassName="-mt-1 -ml-1"
                 /> : null}
                 <AdminUserLink
                   userId={membership.user.id}
@@ -550,7 +535,6 @@ export function MembershipRecords({
     </>
   );
 }
-
 function MembershipRowActions({
   membership,
   disabled,
@@ -571,35 +555,5 @@ function MembershipRowActions({
         刪除
       </Button>
     </div>
-  );
-}
-
-function CurrentPageSelectionCheckbox({
-  checked,
-  indeterminate,
-  disabled,
-  onChange,
-}: {
-  checked: boolean;
-  indeterminate: boolean;
-  disabled: boolean;
-  onChange: (checked: boolean) => void;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (inputRef.current) inputRef.current.indeterminate = indeterminate;
-  }, [indeterminate]);
-
-  return (
-    <input
-      ref={inputRef}
-      type="checkbox"
-      checked={checked}
-      disabled={disabled}
-      onChange={(event) => onChange(event.target.checked)}
-      aria-label="選取本頁全部社員資格"
-      className="size-4 rounded border-(--border-default) accent-(--interactive-primary)"
-    />
   );
 }

@@ -345,3 +345,18 @@ test("register-key page keys the collection by normalized query state", async ()
 
   assert.match(page, /key=\{JSON\.stringify\(\{ \.\.\.query, page, pageSize \}\)\}/);
 });
+
+test("registration-key bulk controls use wrapping inline actions on mobile", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const source = await readFile(
+    new URL(
+      "../src/components/(admin)/admin/memberships/RegisterKeyTable.tsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+
+  assert.match(source, /mobilePresentation="inline"/);
+  assert.match(source, /min-w-fit flex-1 lg:flex-none/);
+  assert.doesNotMatch(source, /mobilePresentation="panel"/);
+});

@@ -17,7 +17,7 @@ async function AdminPurchaseSuggestionsPage({ searchParams }: {
   const result = await purchaseSuggestionsService.listAdmin(query);
   const clearSearchHref = buildOwnedQueryHref({ basePath: BASE_PATH, appliedQuery: query, ownedKeys: ["search"], changes: { search: undefined } });
   return <>
-    <HeadingSection compactOnMobile title="桌遊購入建議" description="管理桌遊購入推薦，並更新處理狀態。" />
+    <HeadingSection collection title="桌遊購入建議" description="管理桌遊購入推薦，並更新處理狀態。" />
     <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
       <PaginatedCollection
         {...result}
@@ -29,7 +29,7 @@ async function AdminPurchaseSuggestionsPage({ searchParams }: {
       >
         <div className="space-y-4">
           <AdminToolbar aria-label="桌遊購入建議搜尋與篩選">
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
               <form
                 className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
                 action={BASE_PATH}
@@ -70,7 +70,7 @@ async function AdminPurchaseSuggestionsPage({ searchParams }: {
               </ImmediateQuerySelect>
             </div>
           </AdminToolbar>
-          <PurchaseSuggestionList items={result.data} hasQuery={Boolean(query.search || query.status !== "all" || query.page > 1)} />
+          <PurchaseSuggestionList key={JSON.stringify(query)} items={result.data} hasQuery={Boolean(query.search || query.status !== "all" || query.page > 1)} />
         </div>
       </PaginatedCollection>
     </section>

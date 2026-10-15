@@ -232,6 +232,10 @@ test("attendance UI shares selection across desktop and mobile and retains singl
   assert.match(recordsSource, /selectedIds\.has\(record\.id\)/g);
   assert.match(recordsSource, /選取目前頁面的所有簽到紀錄/);
   assert.match(recordsSource, /selectedCount=\{selectedCount\}/);
+  assert.match(recordsSource, /mobilePresentation="panel"/);
+  assert.match(recordsSource, /mobileActions=/);
+  assert.match(recordsSource, /grid-cols-2/);
+  assert.match(recordsSource, /variant="danger"/);
   assert.match(bulkBar, /已選取 \{selectedCount\} 筆/);
   assert.match(recordsSource, /selectedCount > 0 \? \(/);
   assert.match(recordsSource, /批次更新簽到狀態/);
@@ -239,7 +243,7 @@ test("attendance UI shares selection across desktop and mobile and retains singl
   assert.match(recordsSource, /action: bulkAction/);
   assert.match(recordsSource, /expected_status: record\.status/);
   assert.match(recordsSource, /expected_attended_at: record\.attended_at/);
-  assert.match(recordsSource, /setSelectedIds\(new Set\(\)\)/);
+  assert.match(recordsSource, /clearSelection\(\)/);
   assert.match(recordsSource, /tone: "error"[\s\S]*caught instanceof Error/);
   assert.match(recordsSource, /<FormFeedback[\s\S]*bulkFeedback/);
   assert.match(recordsSource, /AttendanceRowActions/);

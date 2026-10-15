@@ -224,8 +224,12 @@ test("membership UI shares current-page selection across desktop and mobile", as
   ]);
 
   assert.ok((records.match(/selectedIds\.has\(membership\.id\)/g) ?? []).length >= 2);
-  assert.match(records, /aria-label="選取本頁全部社員資格"/);
+  assert.match(records, /label="選取本頁全部社員資格"/);
   assert.match(records, /selectedCount=\{selectedCount\}/);
+  assert.match(records, /mobilePresentation="panel"/);
+  assert.match(records, /className="w-full lg:w-auto"/);
+  assert.match(records, /需先將清單篩選為單一學年度/);
+  assert.match(records, /依第一筆學年度篩選/);
   assert.match(bulkBar, /已選取 \{selectedCount\} 筆/);
   assert.match(records, /selectedCount > 0 \? \(/);
   assert.doesNotMatch(records, /無合法狀態/);
@@ -234,7 +238,7 @@ test("membership UI shares current-page selection across desktop and mobile", as
   assert.match(records, /expected_academic_year_id: membership\.academic_year_id/);
   assert.match(records, /expected_updated_at: membership\.updated_at/);
   assert.match(records, /selectedAcademicYearCount === 1/);
-  assert.match(records, /setSelectedIds\(new Set\(\)\)/);
+  assert.match(records, /clearSelection\(\)/);
   assert.match(records, /tone: "error"[\s\S]*caught instanceof Error/);
   assert.match(records, /MembershipRowActions/);
   assert.match(page, /key=\{JSON\.stringify\(\{ \.\.\.query, page, pageSize \}\)\}/);

@@ -4,8 +4,9 @@ import { buildAdminReturnHref } from "@/utils/admin-return";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminBulkActionBar } from "@/components/(admin)/admin/AdminBulkActionBar";
 import { AdminMobileBulkModeButton } from "@/components/(admin)/admin/AdminMobileBulkModeButton";
+import { AdminSelectionCheckbox } from "@/components/(admin)/admin/AdminSelectionCheckbox";
 import { AdminUserLink } from "@/components/(admin)/admin/users/AdminUserLink";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -22,6 +23,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { apiClient } from "@/libs/api/client";
 import type { EventAttendanceId, User, UserProfile } from "@/types/database";
 import { formatDateTime, formatTaipeiDateTimeLocal, parseTaipeiDateTimeLocal } from "@/utils/date";
+import { useCurrentPageSelection } from "@/hooks/useCurrentPageSelection";
 import { AttendanceStatusBadge, ATTENDANCE_STATUS_LABEL } from "./AttendanceStatusBadge";
 
 export type AttendanceRecord = {
@@ -60,9 +62,6 @@ export function AttendanceRecords({
   const [isDeleting, setIsDeleting] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<EventAttendanceId>>(
-    () => new Set(),
-  );
   const [mobileBulkMode, setMobileBulkMode] = useState(false);
   const [bulkAction, setBulkAction] = useState<"set-status" | "delete">(
     "set-status",
@@ -78,26 +77,17 @@ export function AttendanceRecords({
 
   const editingAttendance = selectedAttendance?.action === "edit" ? selectedAttendance.record : null;
   const deletingAttendance = selectedAttendance?.action === "delete" ? selectedAttendance.record : null;
+  const {
+    selectedIds,
+    selectedCount,
+    allSelected,
+    partiallySelected,
+    setItemSelected: setAttendanceSelected,
+    setCurrentPageSelected,
+    clearSelection,
+  } = useCurrentPageSelection(records.map((record) => record.id));
   const selectedRecords = records.filter((record) => selectedIds.has(record.id));
-  const selectedCount = selectedRecords.length;
-  const allSelected = records.length > 0 && selectedCount === records.length;
-  const partiallySelected = selectedCount > 0 && !allSelected;
   const isMutating = isSaving || isDeleting || isBulkUpdating;
-
-  const setAttendanceSelected = (id: EventAttendanceId, selected: boolean) => {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      if (selected) next.add(id);
-      else next.delete(id);
-      return next;
-    });
-  };
-
-  const setCurrentPageSelected = (selected: boolean) => {
-    setSelectedIds(
-      selected ? new Set(records.map((record) => record.id)) : new Set(),
-    );
-  };
 
   const openEditDialog = (record: AttendanceRecord) => {
     setSelectedAttendance({ record, action: "edit" });
@@ -185,7 +175,7 @@ export function AttendanceRecords({
           },
         },
       );
-      setSelectedIds(new Set());
+      clearSelection();
       setIsBulkDialogOpen(false);
       setBulkFeedback({
         tone: "success",
@@ -230,13 +220,53 @@ export function AttendanceRecords({
         />
       ) : null}
 
-      <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isMutating} selectedCount={selectedCount} selectionControl={<label className="flex items-center gap-2 text-sm"><CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} />全選本頁</label>} onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} />
+      <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isMutating} selectedCount={selectedCount} selectionControl={<div className="flex items-center gap-1 text-sm"><AdminSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onCheckedChange={setCurrentPageSelected} label="選取目前頁面的所有簽到紀錄" />全選本頁</div>} onChange={(active) => { setMobileBulkMode(active); if (!active) clearSelection(); }} />
 
       {selectedCount > 0 ? (
         <AdminBulkActionBar
           selectedCount={selectedCount}
           disabled={isMutating}
-          onClear={() => { setSelectedIds(new Set()); setMobileBulkMode(false); }}
+          mobilePresentation="panel"
+          mobileActions={
+            <>
+              <label className="grid min-w-0 gap-1.5 text-sm font-medium text-(--text-primary)">
+                目標狀態
+                <Select
+                  aria-label="批次更新簽到狀態"
+                  value={bulkStatus}
+                  disabled={isMutating}
+                  onChange={(event) =>
+                    setBulkStatus(event.target.value as AttendanceRecord["status"])
+                  }
+                  className="w-full"
+                >
+                  {Object.entries(ATTENDANCE_STATUS_LABEL).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </Select>
+              </label>
+              <div className="grid min-w-0 grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={isMutating}
+                  onClick={() => { setBulkAction("set-status"); setIsBulkDialogOpen(true); }}
+                >
+                  批次更新
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="danger"
+                  disabled={isMutating}
+                  onClick={() => { setBulkAction("delete"); setIsBulkDialogOpen(true); }}
+                >
+                  批次刪除
+                </Button>
+              </div>
+            </>
+          }
+          onClear={() => { clearSelection(); setMobileBulkMode(false); }}
         >
         <Select
           aria-label="批次處理簽到紀錄"
@@ -283,11 +313,12 @@ export function AttendanceRecords({
           <TableHeader>
             <TableRow>
               <TableHead className="w-12">
-                <CurrentPageSelectionCheckbox
+                <AdminSelectionCheckbox
                   checked={allSelected}
                   indeterminate={partiallySelected}
                   disabled={isMutating}
-                  onChange={setCurrentPageSelected}
+                  onCheckedChange={setCurrentPageSelected}
+                  label="選取目前頁面的所有簽到紀錄"
                 />
               </TableHead>
               <TableHead>使用者名稱</TableHead>
@@ -303,15 +334,11 @@ export function AttendanceRecords({
             {records.map((record) => (
               <TableRow key={record.id}>
                 <TableCell className="w-12">
-                  <input
-                    type="checkbox"
+                  <AdminSelectionCheckbox
                     checked={selectedIds.has(record.id)}
                     disabled={isMutating}
-                    onChange={(event) =>
-                      setAttendanceSelected(record.id, event.target.checked)
-                    }
-                    aria-label={`選取 ${record.user.name} 的簽到紀錄`}
-                    className="size-4 rounded border-(--border-default) accent-(--interactive-primary)"
+                    onCheckedChange={(checked) => setAttendanceSelected(record.id, checked)}
+                    label={`選取 ${record.user.name} 的簽到紀錄`}
                   />
                 </TableCell>
                 <TableCell className="min-w-32 font-medium">
@@ -339,15 +366,12 @@ export function AttendanceRecords({
           <Card key={record.id} className="w-full min-w-0 max-w-full p-3 sm:p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 items-start gap-3">
-                {mobileBulkMode ? <input
-                  type="checkbox"
+                {mobileBulkMode ? <AdminSelectionCheckbox
                   checked={selectedIds.has(record.id)}
                   disabled={isMutating}
-                  onChange={(event) =>
-                    setAttendanceSelected(record.id, event.target.checked)
-                  }
-                  aria-label={`選取 ${record.user.name} 的簽到紀錄`}
-                  className="mt-0.5 size-4 shrink-0 rounded border-(--border-default) accent-(--interactive-primary)"
+                  onCheckedChange={(checked) => setAttendanceSelected(record.id, checked)}
+                  label={`選取 ${record.user.name} 的簽到紀錄`}
+                  containerClassName="-mt-1 -ml-1"
                 /> : null}
                 <AdminUserLink
                   userId={record.user.id}
@@ -403,14 +427,6 @@ export function AttendanceRecords({
       />
     </>
   );
-}
-
-function CurrentPageSelectionCheckbox({ checked, indeterminate, disabled, onChange }: { checked: boolean; indeterminate: boolean; disabled: boolean; onChange: (checked: boolean) => void }) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (inputRef.current) inputRef.current.indeterminate = indeterminate;
-  }, [indeterminate]);
-  return <input ref={inputRef} type="checkbox" checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)} aria-label="選取目前頁面的所有簽到紀錄" className="size-4 rounded border-(--border-default) accent-(--interactive-primary)" />;
 }
 
 function AttendanceRowActions({ record, disabled, onEdit, onDelete }: { record: AttendanceRecord; disabled: boolean; onEdit: (record: AttendanceRecord) => void; onDelete: (record: AttendanceRecord) => void; }) {

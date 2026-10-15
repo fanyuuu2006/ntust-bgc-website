@@ -1,7 +1,7 @@
 "use client";
 
 import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BASE_PATH } from "@/app/(admin)/admin/board-games/constants";
 import { AdminBoardGameLink } from "@/components/(admin)/admin/AdminBoardGameLink";
@@ -10,6 +10,7 @@ import { BoardGameStatusBadge } from "@/components/(admin)/admin/board-games/Boa
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import { AdminBulkActionBar } from "@/components/(admin)/admin/AdminBulkActionBar";
 import { AdminMobileBulkModeButton } from "@/components/(admin)/admin/AdminMobileBulkModeButton";
+import { AdminSelectionCheckbox } from "@/components/(admin)/admin/AdminSelectionCheckbox";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -31,6 +32,7 @@ import { apiClient } from "@/libs/api/client";
 import type { BoardGameWithCategoryAndLocation } from "@/services/board-games/board-games.types";
 import type { BoardGameCategory, BoardGameLocation } from "@/types/database";
 import { formatDateTime } from "@/utils/date";
+import { useCurrentPageSelection } from "@/hooks/useCurrentPageSelection";
 
 type Props = React.HTMLAttributes<HTMLDivElement> & {
   boardGames: BoardGameWithCategoryAndLocation[];
@@ -55,25 +57,26 @@ export function BoardGameTable({
     useState<BoardGameWithCategoryAndLocation | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [mobileBulkMode, setMobileBulkMode] = useState(false);
   const [bulkAction, setBulkAction] = useState<"set-category" | "set-location">("set-category");
   const [bulkTargetId, setBulkTargetId] = useState(categories[0]?.id ?? "");
   const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
   const [bulkFeedback, setBulkFeedback] = useState<{ tone: "success" | "error"; message: string } | null>(null);
+  const {
+    selectedIds,
+    selectedCount,
+    allSelected,
+    partiallySelected,
+    setItemSelected: setGameSelected,
+    setCurrentPageSelected,
+    clearSelection,
+  } = useCurrentPageSelection(boardGames.map((game) => game.id));
   const selectedGames = boardGames.filter((game) => selectedIds.has(game.id));
-  const selectedCount = selectedGames.length;
-  const allSelected = boardGames.length > 0 && selectedCount === boardGames.length;
-  const partiallySelected = selectedCount > 0 && !allSelected;
   const isMutating = isDeleting || isBulkUpdating;
   const targets = bulkAction === "set-category" ? categories : locations;
   const target = targets.find((item) => item.id === bulkTargetId);
 
-  const setCurrentPageSelected = (selected: boolean) => setSelectedIds(selected ? new Set(boardGames.map((game) => game.id)) : new Set());
-  const setGameSelected = (id: string, selected: boolean) => setSelectedIds((current) => {
-    const next = new Set(current); if (selected) next.add(id); else next.delete(id); return next;
-  });
   const changeBulkAction = (action: "set-category" | "set-location") => {
     setBulkAction(action);
     setBulkTargetId((action === "set-category" ? categories : locations)[0]?.id ?? "");
@@ -86,7 +89,7 @@ export function BoardGameTable({
         method: "PATCH",
         body: { action: bulkAction, target_id: bulkTargetId, records: selectedGames.map((game) => ({ id: game.id, expected_updated_at: game.updated_at })) },
       });
-      setSelectedIds(new Set()); setIsBulkDialogOpen(false);
+      clearSelection(); setIsBulkDialogOpen(false);
       setBulkFeedback({ tone: "success", message: `已更新 ${response.data.updatedCount} 筆桌遊` });
       router.refresh();
     } catch (error) {
@@ -156,24 +159,32 @@ export function BoardGameTable({
   return (
     <div className={className} {...props}>
       {bulkFeedback ? <FormFeedback error={bulkFeedback.tone === "error" ? bulkFeedback.message : null} success={bulkFeedback.tone === "success" ? bulkFeedback.message : null} className="mb-3" /> : null}
-      <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isMutating} selectedCount={selectedCount} selectionControl={<label className="flex items-center gap-2 text-sm"><CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} />全選本頁</label>} className="mb-2 xl:hidden" onChange={(active) => { setMobileBulkMode(active); if (!active) setSelectedIds(new Set()); }} />
+      <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isMutating} selectedCount={selectedCount} selectionControl={<div className="flex items-center gap-1 text-sm"><AdminSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onCheckedChange={setCurrentPageSelected} label="選取目前頁面的所有桌遊" />全選本頁</div>} className="mb-2 xl:hidden" onChange={(active) => { setMobileBulkMode(active); if (!active) clearSelection(); }} />
       {selectedCount > 0 ? (
         <AdminBulkActionBar
           className="mb-3"
           selectedCount={selectedCount}
           disabled={isMutating}
-          onClear={() => { setSelectedIds(new Set()); setMobileBulkMode(false); }}
+          mobilePresentation="panel"
+          desktopBreakpoint="xl"
+          onClear={() => { clearSelection(); setMobileBulkMode(false); }}
         >
-          <Select aria-label="批次操作" value={bulkAction} disabled={isMutating} onChange={(event) => changeBulkAction(event.target.value as "set-category" | "set-location")} className="w-auto"><option value="set-category">變更種類</option><option value="set-location">變更位置</option></Select>
-          <Select aria-label={bulkAction === "set-category" ? "目標桌遊種類" : "目標桌遊位置"} value={bulkTargetId} disabled={isMutating} onChange={(event) => setBulkTargetId(event.target.value)} className="max-w-48"><option value="">請選擇</option>{targets.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
-          <Button size="sm" disabled={isMutating || !bulkTargetId} onClick={() => setIsBulkDialogOpen(true)}>套用</Button>
+          <label className="grid min-w-0 gap-1.5 text-sm font-medium text-(--text-primary) xl:block">
+            <span className="xl:sr-only">操作</span>
+            <Select aria-label="批次操作" value={bulkAction} disabled={isMutating} onChange={(event) => changeBulkAction(event.target.value as "set-category" | "set-location")} className="w-full xl:w-auto"><option value="set-category">變更種類</option><option value="set-location">變更位置</option></Select>
+          </label>
+          <label className="grid min-w-0 gap-1.5 text-sm font-medium text-(--text-primary) xl:block">
+            <span className="xl:sr-only">目標</span>
+            <Select aria-label={bulkAction === "set-category" ? "目標桌遊種類" : "目標桌遊位置"} value={bulkTargetId} disabled={isMutating} onChange={(event) => setBulkTargetId(event.target.value)} className="w-full xl:max-w-48"><option value="">請選擇</option>{targets.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select>
+          </label>
+          <Button size="sm" className="w-full xl:w-auto" disabled={isMutating || !bulkTargetId} onClick={() => setIsBulkDialogOpen(true)}><span className="xl:hidden">套用變更</span><span className="hidden xl:inline">套用</span></Button>
         </AdminBulkActionBar>
       ) : null}
       <AdminListSection className="hidden xl:block">
         <Table className="min-w-250">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-12"><CurrentPageSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onChange={setCurrentPageSelected} /></TableHead>
+              <TableHead className="w-12"><AdminSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onCheckedChange={setCurrentPageSelected} label="選取目前頁面的所有桌遊" /></TableHead>
               <SortableTableHeader
                 label="編號"
                 column="inventory_number"
@@ -205,7 +216,7 @@ export function BoardGameTable({
           <TableBody>
             {boardGames.map((game) => (
               <TableRow key={game.id}>
-                <TableCell className="w-12"><input type="checkbox" checked={selectedIds.has(game.id)} disabled={isMutating} onChange={(event) => setGameSelected(game.id, event.target.checked)} aria-label={`選取桌遊 ${game.name}`} className="size-4 rounded border-(--border-default) accent-(--interactive-primary)" /></TableCell>
+                <TableCell className="w-12"><AdminSelectionCheckbox checked={selectedIds.has(game.id)} disabled={isMutating} onCheckedChange={(checked) => setGameSelected(game.id, checked)} label={`選取桌遊 ${game.name}`} /></TableCell>
                 <TableCell className="whitespace-nowrap text-center font-mono">
                   {game.inventory_number}
                 </TableCell>
@@ -252,7 +263,7 @@ export function BoardGameTable({
           >
             <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="flex min-w-0 flex-1 items-start gap-3">
-                {mobileBulkMode ? <input type="checkbox" checked={selectedIds.has(game.id)} disabled={isMutating} onChange={(event) => setGameSelected(game.id, event.target.checked)} aria-label={`選取桌遊 ${game.name}`} className="mt-0.5 size-4 shrink-0 rounded border-(--border-default) accent-(--interactive-primary)" /> : null}
+                {mobileBulkMode ? <AdminSelectionCheckbox checked={selectedIds.has(game.id)} disabled={isMutating} onCheckedChange={(checked) => setGameSelected(game.id, checked)} label={`選取桌遊 ${game.name}`} containerClassName="-mt-1 -ml-1" /> : null}
                 <BoardGameImage
                   boardGame={game}
                   className="size-12 shrink-0 rounded-md border border-(--border) object-cover"
@@ -298,12 +309,6 @@ export function BoardGameTable({
       <ConfirmDialog open={isBulkDialogOpen} onClose={() => !isBulkUpdating && setIsBulkDialogOpen(false)} onConfirm={bulkUpdate} isSubmitting={isBulkUpdating} title={bulkAction === "set-category" ? "批次變更桌遊種類" : "批次變更桌遊位置"} description={`確定要將已選取的 ${selectedCount} 筆桌遊${bulkAction === "set-category" ? "種類" : "位置"}變更為「${target?.name ?? "未選擇"}」嗎？`} confirmLabel="套用變更" />
     </div>
   );
-}
-
-function CurrentPageSelectionCheckbox({ checked, indeterminate, disabled, onChange }: { checked: boolean; indeterminate: boolean; disabled: boolean; onChange: (checked: boolean) => void }) {
-  const ref = useRef<HTMLInputElement>(null);
-  useEffect(() => { if (ref.current) ref.current.indeterminate = indeterminate; }, [indeterminate]);
-  return <input ref={ref} type="checkbox" checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)} aria-label="選取目前頁面的所有桌遊" className="size-4 rounded border-(--border-default) accent-(--interactive-primary)" />;
 }
 
 function BoardGameRowActions({

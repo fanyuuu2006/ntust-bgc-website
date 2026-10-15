@@ -5,20 +5,30 @@ import test from "node:test";
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("existing bulk collections share a compact contextual action bar", async () => {
-  const [primitive, boardGames, memberships, keys, attendances] = await Promise.all([
+  const [primitive, boardGames, memberships, keys, attendances, suggestions] = await Promise.all([
     read("src/components/(admin)/admin/AdminBulkActionBar.tsx"),
     read("src/components/(admin)/admin/board-games/BoardGameTable.tsx"),
     read("src/components/(admin)/admin/memberships/MembershipRecords.tsx"),
     read("src/components/(admin)/admin/memberships/RegisterKeyTable.tsx"),
     read("src/components/(admin)/admin/events/AttendanceRecords.tsx"),
+    read("src/components/(admin)/admin/purchase-suggestions/PurchaseSuggestionList.tsx"),
   ]);
   assert.match(primitive, /if \(selectedCount === 0\) return null/);
   assert.match(primitive, /role="region"/);
   assert.match(primitive, /aria-label="批次操作"/);
-  assert.doesNotMatch(primitive, /rounded-(?:lg|xl|2xl)/);
   for (const source of [boardGames, memberships, keys, attendances]) {
     assert.match(source, /<AdminBulkActionBar/);
   }
+  assert.match(boardGames, /mobilePresentation="panel"/);
+  assert.match(boardGames, /desktopBreakpoint="xl"/);
+  for (const source of [memberships, attendances, suggestions]) {
+    assert.match(source, /mobilePresentation="panel"/);
+  }
+  assert.match(keys, /mobilePresentation="inline"/);
+  assert.doesNotMatch(primitive, /overflow-x-auto|flex-nowrap/);
+  assert.match(primitive, /mobileActions/);
+  assert.match(primitive, /mobileNotice/);
+  assert.match(primitive, /desktopBreakpoint/);
   assert.match(memberships, /依第一筆學年度篩選/);
   assert.match(memberships, /academic_year_id/);
 });
@@ -40,8 +50,8 @@ test("bulk-enabled mobile collections enter an explicit management mode", async 
     assert.match(source, /mobileBulkMode/);
     assert.match(source, /<AdminMobileBulkModeButton/);
   }
-  assert.match(keys, /<TableCell className="w-12">[\s\S]*?<input/);
-  assert.doesNotMatch(keys, /<TableCell className="w-12">[\s\S]*?mobileBulkMode \? <input/);
+  assert.match(keys, /<TableCell className="w-12">[\s\S]*?<AdminSelectionCheckbox/);
+  assert.doesNotMatch(keys, /<TableCell className="w-12">[\s\S]*?mobileBulkMode \? <AdminSelectionCheckbox/);
 });
 
 test("purchase suggestions expose page-scoped accessible bulk review controls", async () => {
