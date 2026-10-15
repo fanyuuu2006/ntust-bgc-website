@@ -99,6 +99,7 @@ async function AdminAnnouncementsPage({
   return (
     <>
       <HeadingSection
+        compactOnMobile
         title="公告管理"
         description="管理公告草稿與發布狀態。"
         actions={<ButtonLink href={buildAdminReturnHref("/admin/announcements/new", returnTo, "/admin/announcements")}>新增公告</ButtonLink>}

@@ -60,9 +60,11 @@ async function OfficersPage({
   return (
     <>
       <HeadingSection
+        compactOnMobile
         title="幹部管理"
         description="管理各學年度的幹部紀錄。"
-        actions={<><AdminExportMenu domain="officers" query={{ search: params.search, academicYearId: params.academicYearId }} /><OfficerActions years={years} /></>}
+        actions={<OfficerActions years={years} />}
+        secondaryActions={<AdminExportMenu domain="officers" query={{ search: params.search, academicYearId: params.academicYearId }} />}
       />
       <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_12rem] md:items-center">

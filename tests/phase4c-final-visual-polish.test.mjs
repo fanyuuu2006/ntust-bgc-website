@@ -5,19 +5,20 @@ import test from "node:test";
 const root = new URL("../", import.meta.url);
 const source = (path) => readFile(new URL(path, root), "utf8");
 
-test("generated register keys occupy the content flow instead of the heading action row", async () => {
+test("register-key generation remains primary while cross-page navigation is secondary", async () => {
   const [page, form] = await Promise.all([
     source("src/app/(admin)/admin/memberships/register-keys/page.tsx"),
     source("src/components/(admin)/admin/memberships/RegisterKeyGenerateForm.tsx"),
   ]);
 
-  assert.match(page, /actions=\{\s*<ButtonLink[\s\S]*?<\/ButtonLink>\s*\}/);
-  assert.ok(page.indexOf("<RegisterKeyGenerateForm") > page.indexOf("<section className="));
-  assert.match(page, /<RegisterKeyGenerateForm[\s\S]*<RegisterKeyFilterBar/);
+  assert.match(page, /actions=\{[\s\S]*?<RegisterKeyGenerateForm/);
+  assert.match(page, /secondaryActions=\{[\s\S]*?<ButtonLink[\s\S]*?返回社員資格管理/);
+  assert.ok(page.indexOf("<RegisterKeyGenerateForm") < page.indexOf("<RegisterKeyFilterBar"));
+  assert.equal((page.match(/<RegisterKeyGenerateForm/g) ?? []).length, 1);
   assert.match(form, /已產生 \{generatedKeys\.length\} 組社員註冊序號/);
   assert.match(form, /複製全部/);
   assert.match(form, /max-h-48 overflow-auto/);
-  assert.match(form, /w-full min-w-0/);
+  assert.match(form, /className="min-w-0 space-y-3"/);
 });
 
 test("discovery cards give each metadata field an independent overflow boundary", async () => {

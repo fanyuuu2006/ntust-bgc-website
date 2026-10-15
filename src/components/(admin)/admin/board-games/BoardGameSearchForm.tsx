@@ -46,7 +46,7 @@ export function BoardGameSearchForm({
   });
 
   return (
-    <AdminToolbar className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+    <AdminToolbar className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
       <form
         method="GET"
         action={BASE_PATH}
@@ -63,7 +63,7 @@ export function BoardGameSearchForm({
             aria-label="搜尋桌遊名稱、社產編號或描述"
             className="w-full"
           />
-          <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
+          <Button type="submit" variant="primary" className="hidden w-auto sm:inline-flex">搜尋</Button>
       </form>
       <QueryFilterDisclosure
         label={activeFilterCount ? `篩選 (${activeFilterCount})` : "篩選"}

@@ -41,8 +41,8 @@ export function MemberFilterBar({ academicYears, query }: Props) {
   });
 
   return (
-    <AdminToolbar className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-      <form method="GET" action={BASE_PATH} aria-label="搜尋社員資格" className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-2">
+    <AdminToolbar className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+      <form method="GET" action={BASE_PATH} aria-label="搜尋社員資格" className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
         <PreservedQueryFields query={query} ownedKeys={["search"]} />
         <ClearableSearchInput
           initialValue={query.search}
@@ -52,7 +52,7 @@ export function MemberFilterBar({ academicYears, query }: Props) {
           aria-label="搜尋使用者"
           className="w-full"
         />
-        <Button type="submit" variant="primary" className="w-auto">
+        <Button type="submit" variant="primary" className="hidden w-auto sm:inline-flex">
           搜尋
         </Button>
       </form>

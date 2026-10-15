@@ -65,7 +65,7 @@ export function RegisterKeyGenerateForm({
   }
 
   return (
-    <div className="w-full min-w-0 space-y-3">
+    <div className="min-w-0 space-y-3">
       <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"

@@ -21,7 +21,7 @@ export function PaginatedCollection({
   ...pagination
 }: PaginatedCollectionProps) {
   return (
-    <div className={cn("min-w-0 space-y-4", className)}>
+    <div className={cn("min-w-0 space-y-3", className)}>
       {summary === undefined ? (
         <PaginationSummary
           page={pagination.page}

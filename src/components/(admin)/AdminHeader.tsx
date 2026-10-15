@@ -51,9 +51,12 @@ export function AdminHeader({
             <span className="sr-only">開啟管理選單</span>
           </Button>
 
-          <h1 className="truncate text-lg font-bold text-(--text-primary)">
+          <p
+            className="truncate text-lg font-bold text-(--text-primary) lg:hidden"
+            aria-current="page"
+          >
             {currentSectionLabel ?? DEFAULT_SECTION_LABEL}
-          </h1>
+          </p>
         </div>
 
         {/* 右側：回網站（僅 sm 以上顯示，手機版由 Sidebar Footer 提供） + 分隔線 + 使用者選單 */}

@@ -71,6 +71,7 @@ async function AdminEventsPage({
   return (
     <>
       <HeadingSection
+        compactOnMobile
         title="活動管理"
         description="建立、編輯與管理社團活動，可進入活動詳情管理簽到。"
         actions={<EventActions />}

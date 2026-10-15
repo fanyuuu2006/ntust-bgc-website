@@ -27,9 +27,10 @@ async function AdminBorrowingsPage({ searchParams }: Props) {
   return (
     <>
       <HeadingSection
+        compactOnMobile
         title="桌遊借用管理"
         description="管理社員借用申請，並確認借出與歸還。"
-        actions={<AdminExportMenu domain="borrowings" query={query} />}
+        secondaryActions={<AdminExportMenu domain="borrowings" query={query} />}
       />
       <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <AdminBorrowingFilters query={query} />

@@ -99,17 +99,18 @@ async function BoardGamesAdminPage({
   return (
     <>
       <HeadingSection
+        compactOnMobile
         title="桌遊管理"
         description="管理社團桌遊、社產編號與基本資訊。"
         actions={
           <>
-            <AdminExportMenu domain="board-games" query={query} />
             <ButtonLink href={buildAdminReturnHref("/admin/board-games/new", buildAdminListHref(BASE_PATH, query), BASE_PATH)}>
               <Plus aria-hidden="true" className="size-4" />
               新增桌遊
             </ButtonLink>
           </>
         }
+        secondaryActions={<AdminExportMenu domain="board-games" query={query} />}
       />
 
       <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">

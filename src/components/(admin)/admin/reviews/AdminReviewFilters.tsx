@@ -38,7 +38,7 @@ export function AdminReviewFilters({
   const activeFilterCount = [query.rating, query.boardGameId].filter(Boolean).length;
 
   return (
-    <AdminToolbar className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+    <AdminToolbar className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
       <form
         method="GET"
         action={BASE_PATH}
@@ -53,7 +53,7 @@ export function AdminReviewFilters({
           placeholder="搜尋評論、作者或桌遊"
           aria-label="搜尋評價與評論"
         />
-        <Button type="submit" variant="primary" className="w-full sm:w-auto">
+        <Button type="submit" variant="primary" className="hidden w-auto sm:inline-flex">
           搜尋
         </Button>
       </form>

@@ -111,7 +111,8 @@ test("multi-filter Admin toolbar density is owned by feature composition", async
   ]);
 
   for (const source of sources) {
-    assert.match(source, /grid grid-cols-1 gap-2/);
+    assert.match(source, /grid grid-cols-\[minmax\(0,1fr\)_auto\][^\n]*gap-2/);
+    assert.match(source, /className="hidden w-auto sm:inline-flex"/);
     assert.doesNotMatch(source, /overflow-x-hidden|text-xs/);
   }
 });

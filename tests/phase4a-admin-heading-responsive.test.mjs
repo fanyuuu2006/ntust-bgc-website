@@ -10,7 +10,19 @@ test("Admin HeadingSection owns compact mobile typography and preserves desktop 
   assert.match(source, /text-lg font-semibold[^\n]+sm:text-2xl/);
   assert.match(source, /text-xs text-\(--text-muted\) sm:text-sm/);
   assert.match(source, /flex flex-col[^\n]+sm:flex-row/);
+  assert.match(source, /compactOnMobile && "sr-only sm:not-sr-only"/);
+  assert.match(source, /compactOnMobile && "hidden sm:block"/);
+  assert.match(source, /secondaryActions/);
+  assert.match(source, /aria-label="更多頁面操作"/);
   assert.doesNotMatch(source, /md:text|lg:text/);
+});
+
+test("Admin header labels the mobile location without competing with the page h1", async () => {
+  const source = await readSource("src/components/(admin)/AdminHeader.tsx");
+
+  assert.match(source, /<p[\s\S]*?aria-current="page"/);
+  assert.match(source, /lg:hidden/);
+  assert.doesNotMatch(source, /<h1/);
 });
 
 test("the shared heading remains Admin-scoped and covers representative export pages", async () => {
@@ -25,4 +37,18 @@ test("the shared heading remains Admin-scoped and covers representative export p
     assert.match(source, /components\/\(admin\)\/admin\/HeadingSection/);
     assert.match(source, /<HeadingSection/);
   }
+});
+
+test("collection pages opt into mobile heading compaction without changing detail headings", async () => {
+  const [memberships, boardGames, events, eventDetail] = await Promise.all([
+    readSource("src/app/(admin)/admin/memberships/page.tsx"),
+    readSource("src/app/(admin)/admin/board-games/page.tsx"),
+    readSource("src/app/(admin)/admin/events/page.tsx"),
+    readSource("src/app/(admin)/admin/events/[id]/page.tsx"),
+  ]);
+
+  for (const source of [memberships, boardGames, events]) {
+    assert.match(source, /<HeadingSection[\s\S]*?compactOnMobile/);
+  }
+  assert.doesNotMatch(eventDetail, /compactOnMobile/);
 });

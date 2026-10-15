@@ -37,6 +37,7 @@ async function AcademicYearsPage({
   return (
     <>
       <HeadingSection
+        compactOnMobile
         title="學年度管理"
         description="建立、編輯與設定目前學年度。"
         actions={<AcademicYearActions />}

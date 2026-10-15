@@ -25,15 +25,19 @@ async function MembershipsPage({ searchParams }: Props) {
   return (
     <>
       <HeadingSection
+        compactOnMobile
         title="社員資格管理"
         description="管理使用者各學年度的社員資格。"
-        actions={
+        actions={<MembershipCreateButton years={years} />}
+        secondaryActions={
           <>
             <AdminExportMenu domain="memberships" query={query} />
-            <ButtonLink href="/admin/memberships/register-keys" variant="outline">
+            <ButtonLink
+              href="/admin/memberships/register-keys"
+              variant="outline"
+            >
               社員註冊序號管理
             </ButtonLink>
-            <MembershipCreateButton years={years} />
           </>
         }
       />
