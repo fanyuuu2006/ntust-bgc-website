@@ -4,7 +4,7 @@ import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
 import { purchaseSuggestionsRepository as repository } from "@/repositories/purchase-suggestions.repository";
 import { usersRepository } from "@/repositories/users.repository";
 import { userProfilesRepository } from "@/repositories/user-profiles.repository";
-import { createPurchaseSuggestionSchema, managePurchaseSuggestionSchema, purchaseSuggestionQuerySchema } from "./purchase-suggestions.schema";
+import { bulkManagePurchaseSuggestionsSchema, createPurchaseSuggestionSchema, managePurchaseSuggestionSchema, purchaseSuggestionQuerySchema } from "./purchase-suggestions.schema";
 import { PurchaseSuggestionError } from "./purchase-suggestions.errors";
 import { getPurchaseSuggestionWeek } from "@/utils/purchase-suggestions";
 
@@ -15,7 +15,7 @@ async function requireUser(admin = false) {
   return user;
 }
 
-const resultSchema = z.object({ outcome: z.string(), id: z.uuid().optional(), replayed: z.boolean().optional(), retry_after: z.number().int().positive().optional() });
+const resultSchema = z.object({ outcome: z.string(), id: z.uuid().optional(), replayed: z.boolean().optional(), retry_after: z.number().int().positive().optional(), updated_count: z.number().int().positive().optional() });
 function result(raw: unknown) {
   const parsed = resultSchema.safeParse(raw);
   if (!parsed.success) throw new Error("Invalid purchase suggestion database response");
@@ -73,5 +73,10 @@ export const purchaseSuggestionsService = {
     const payload = managePurchaseSuggestionSchema.parse(input);
     result(await repository.manage(user.id, z.uuid().parse(id), payload.version, payload.action));
     return { updated: true };
+  },
+  manageMany: async (actorId: string, input: unknown) => {
+    const payload = bulkManagePurchaseSuggestionsSchema.parse(input);
+    const receipt = result(await repository.manageMany(actorId, payload.records, payload.action));
+    return { updatedCount: z.number().int().positive().parse(receipt.updated_count) };
   },
 };

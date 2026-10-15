@@ -31,6 +31,17 @@ export const managePurchaseSuggestionSchema = z.object({
   version: z.number().int().positive().max(2147483647),
 }).strict();
 
+export const bulkManagePurchaseSuggestionsSchema = z.object({
+  action: z.enum(["purchased", "rejected"]),
+  records: z.array(z.object({
+    id: z.uuid(),
+    version: z.number().int().positive().max(2147483647),
+  }).strict()).min(1).max(100).refine(
+    (records) => new Set(records.map((record) => record.id)).size === records.length,
+    "不可重複選取同一筆推薦",
+  ),
+}).strict();
+
 // Query strings are untrusted too. Bound offsets and fall back on invalid UI URLs.
 export const purchaseSuggestionQuerySchema = z.object({
   page: z.coerce.number().int().min(1).max(10000).catch(1),
