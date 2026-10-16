@@ -76,7 +76,7 @@ export function PurchaseSuggestionList({ items, hasQuery = false }: {
   const selectedItems = items.filter((item) => selectedIds.has(item.id));
   const canApply = selectedCount > 0 && (bulkAction === "delete" || selectedItems.every((item) => item.status !== bulkAction));
   const mobileReviewAction = bulkAction === "delete" ? "purchased" : bulkAction;
-  const canApplyMobileReview = selectedItems.some(
+  const canApplyMobileReview = selectedItems.length > 0 && selectedItems.every(
     (item) => item.status !== mobileReviewAction,
   );
 

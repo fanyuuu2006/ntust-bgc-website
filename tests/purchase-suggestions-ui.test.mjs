@@ -20,6 +20,14 @@ test("purchase suggestion mobile bulk controls separate review and danger action
   assert.match(source, /grid-cols-2/);
   assert.match(source, /variant="danger"/);
   assert.match(source, /setBulkAction\("delete"\)/);
+  assert.match(
+    source,
+    /selectedItems\.length > 0 && selectedItems\.every\([\s\S]*?item\.status !== mobileReviewAction/,
+  );
+  assert.doesNotMatch(
+    source,
+    /canApplyMobileReview\s*=\s*selectedItems\.some/,
+  );
 });
 
 async function withDom(run) {
