@@ -43,6 +43,7 @@ export function AdminHeader({
             onClick={onOpenMenu}
             aria-expanded={isSidebarOpen}
             aria-controls={sidebarId}
+            aria-label="開啟管理導覽"
             variant="ghost"
             size="none"
             className="size-10 shrink-0 rounded-xl p-0 lg:hidden"

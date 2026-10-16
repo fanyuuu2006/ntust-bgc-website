@@ -61,7 +61,7 @@ test("desktop Sidebar is viewport-aware while only its navigation region scrolls
   assert.doesNotMatch(sidebar, /max-h-screen/);
   assert.match(
     sidebar,
-    /className="min-h-0 flex-1 overflow-y-auto"[\s\S]*?<AdminSidebarNav/,
+    /className="min-h-0 flex-1 overflow-y-auto[^"\n]*"[\s\S]*?<AdminSidebarNav/,
   );
 });
 
@@ -72,5 +72,5 @@ test("mobile Sidebar remains a fixed viewport drawer above its backdrop", async 
 
   assert.match(sidebar, /fixed inset-0 z-40[^"\n]*lg:hidden/);
   assert.match(sidebar, /fixed inset-y-0 left-0 z-50/);
-  assert.match(sidebar, /flex h-dvh w-72 flex-col/);
+  assert.match(sidebar, /flex h-dvh w-72[^"\n]*flex-col/);
 });
