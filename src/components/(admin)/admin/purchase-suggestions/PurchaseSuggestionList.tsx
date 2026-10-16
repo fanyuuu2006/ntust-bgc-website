@@ -183,11 +183,13 @@ export function PurchaseSuggestionList({ items, hasQuery = false }: {
         <Status item={item} />
       </div>
       <Content item={item} showName={false} /><Time item={item} />
-      <PurchaseSuggestionActions
-        id={item.id}
-        version={item.version}
-        status={item.status}
-      />
+      {!mobileBulkMode ? <div className="border-t border-(--border-muted) pt-3">
+        <PurchaseSuggestionActions
+          id={item.id}
+          version={item.version}
+          status={item.status}
+        />
+      </div> : null}
     </Card>)}</div>
     <ConfirmDialog open={isConfirmOpen} onClose={() => !isUpdating && setIsConfirmOpen(false)} onConfirm={applyBulkAction} isSubmitting={isUpdating} title={bulkAction === "delete" ? "批次刪除推薦" : bulkAction === "purchased" ? "批次標記已購入" : "批次標記不採納"} description={bulkAction === "delete" ? `確定要刪除已選取的 ${selectedCount} 筆推薦嗎？推薦會從管理清單隱藏，介面無法復原；系統仍保留必要紀錄以維持額度與重複提交防護。` : `確定要將已選取的 ${selectedCount} 筆推薦標記為「${bulkAction === "purchased" ? "已購入" : "不採納"}」嗎？系統會重新檢查每筆版本，任一筆已變更時將不會更新任何資料。`} confirmLabel={bulkAction === "delete" ? "確認刪除" : "確認更新"} confirmVariant={bulkAction === "delete" ? "danger" : "primary"} />
   </>;

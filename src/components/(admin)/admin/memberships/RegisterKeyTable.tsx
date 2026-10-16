@@ -242,13 +242,15 @@ export function RegisterKeyTable({
             <p className="mt-3 text-xs text-(--text-muted)">
               建立於 {formatAdminDateTime(registerKey.created_at)}
             </p>
-            <RegisterKeyActions
-              registerKey={registerKey}
-              isRevoking={isRevoking}
-              onCopy={copyRegisterKey}
-              onRevoke={setPendingRevocation}
-              className="mt-3"
-            />
+            {!mobileBulkMode ? (
+              <RegisterKeyActions
+                registerKey={registerKey}
+                isRevoking={isRevoking}
+                onCopy={copyRegisterKey}
+                onRevoke={setPendingRevocation}
+                className="mt-3 border-t border-(--border-muted) pt-3"
+              />
+            ) : null}
           </Card>
         ))}
       </div>

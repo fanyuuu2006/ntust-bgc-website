@@ -304,7 +304,11 @@ export function BoardGameTable({
             <p className="text-xs text-(--muted)">
               更新：{formatDateTime(game.updated_at)}
             </p>
-            <BoardGameRowActions boardGame={game} onDelete={openDeleteDialog} returnTo={returnTo} />
+            {!mobileBulkMode ? (
+              <div className="border-t border-(--border-muted) pt-3">
+                <BoardGameRowActions boardGame={game} onDelete={openDeleteDialog} returnTo={returnTo} />
+              </div>
+            ) : null}
           </Card>
         ))}
       </div>

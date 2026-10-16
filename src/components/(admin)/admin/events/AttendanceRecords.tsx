@@ -391,7 +391,7 @@ export function AttendanceRecords({
               <p className="min-w-0"><span className="block text-(--muted)">學號</span>{emptyValue(record.profile?.student_id)}</p>
               <p className="min-w-0"><span className="block text-(--muted)">簽到時間</span>{formatDateTime(record.attended_at)}</p>
             </div>
-            <div className="mt-3 flex flex-wrap gap-2"><AttendanceRowActions record={record} disabled={isMutating} onEdit={openEditDialog} onDelete={openDeleteDialog} /></div>
+            {!mobileBulkMode ? <div className="mt-3 flex flex-wrap gap-2 border-t border-(--border-muted) pt-3"><AttendanceRowActions record={record} disabled={isMutating} onEdit={openEditDialog} onDelete={openDeleteDialog} /></div> : null}
           </Card>
         ))}
       </div>

@@ -443,14 +443,14 @@ export function MembershipRecords({
                 <dd>{formatAdminDateTime(membership.joined_at)}</dd>
               </div>
             </dl>
-            <div className="flex flex-wrap gap-2">
+            {!mobileBulkMode ? <div className="flex flex-wrap gap-2 border-t border-(--border-muted) pt-3">
               <MembershipRowActions
                 membership={membership}
                 disabled={isMutating}
                 onEdit={openEditDialog}
                 onDelete={openDeleteDialog}
               />
-            </div>
+            </div> : null}
           </Card>
         ))}
       </div>

@@ -221,6 +221,44 @@ test("selection is shared by desktop and mobile controls and resets with collect
   });
 });
 
+test("mobile selection mode removes row actions from the DOM and restores them on exit", async () => {
+  await withTable(async ({ host, root, RegisterKeyTable }) => {
+    await act(async () =>
+      root.render(createElement(RegisterKeyTable, { registerKeys })),
+    );
+
+    const actionCount = (label) =>
+      [...host.querySelectorAll("button")].filter(
+        (button) => button.textContent === label,
+      ).length;
+    const modeButton = () =>
+      [...host.querySelectorAll("button")].find((button) =>
+        ["選取", "完成"].includes(button.textContent),
+      );
+
+    const copyCount = actionCount("複製");
+    const revokeCount = actionCount("撤銷");
+    assert.ok(copyCount > 0);
+    assert.ok(revokeCount > 0);
+
+    await click(modeButton());
+    assert.equal(modeButton().textContent, "完成");
+    assert.ok(actionCount("複製") < copyCount);
+    assert.ok(actionCount("撤銷") < revokeCount);
+    assert.equal(
+      host.querySelectorAll(
+        'input[aria-label^="選取社員註冊序號 "]',
+      ).length,
+      registerKeys.length * 2,
+    );
+
+    await click(modeButton());
+    assert.equal(modeButton().textContent, "選取");
+    assert.equal(actionCount("複製"), copyCount);
+    assert.equal(actionCount("撤銷"), revokeCount);
+  });
+});
+
 test("clipboard failure keeps the selection and reports a recoverable error", async () => {
   await withTable(async ({ host, root, writes, RegisterKeyTable }) => {
     await act(async () =>
