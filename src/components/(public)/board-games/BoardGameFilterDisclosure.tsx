@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { ListFilter } from "lucide-react";
 
 import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
@@ -40,10 +40,39 @@ export function BoardGameFilterDisclosure({
 }: BoardGameFilterDisclosureProps) {
   const [isOpen, setIsOpen] = useState(false);
   const panelId = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+
+      event.preventDefault();
+      setIsOpen(false);
+      triggerRef.current?.focus();
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
 
   return (
-    <>
+    <div ref={rootRef} className="contents lg:relative lg:block">
       <Button
+        ref={triggerRef}
         type="button"
         variant="outline"
         aria-expanded={isOpen}
@@ -102,7 +131,7 @@ export function BoardGameFilterDisclosure({
           </FilterGroup>
         </QueryFilterForm>
       </div>
-    </>
+    </div>
   );
 }
 
