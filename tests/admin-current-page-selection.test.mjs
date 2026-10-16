@@ -90,6 +90,17 @@ test("current-page selection supports row, all, mixed, and data-scope pruning", 
     assert.equal(container().dataset.count, "0");
     assert.equal(container().dataset.all, "false");
     assert.equal(container().dataset.partial, "false");
+
+    await act(async () => root.render(createElement(Harness, { itemIds: ["a", "b"] })));
+    assert.equal(container().dataset.count, "0");
+    assert.equal(container().dataset.all, "false");
+    assert.equal(container().dataset.partial, "false");
+
+    await act(async () => root.render(createElement(Harness, { itemIds: ["a", "a"] })));
+    await click(buttons()[1]);
+    assert.equal(container().dataset.count, "1");
+    assert.equal(container().dataset.all, "true");
+    assert.equal(container().dataset.partial, "false");
   });
 });
 
