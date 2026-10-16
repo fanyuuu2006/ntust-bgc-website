@@ -54,7 +54,7 @@ export function MobileNavigation({
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("pointerdown", handlePointerDown);
     };
-  }, [isOpen]);
+  }, [isOpen, pathname]);
 
   useEffect(() => {
     const desktopQuery = window.matchMedia("(min-width: 768px)");
@@ -63,7 +63,7 @@ export function MobileNavigation({
     };
     desktopQuery.addEventListener("change", closeAtDesktop);
     return () => desktopQuery.removeEventListener("change", closeAtDesktop);
-  }, []);
+  }, [pathname]);
 
   const closeNavigation = () => setNavigationState({ pathname, isOpen: false });
 

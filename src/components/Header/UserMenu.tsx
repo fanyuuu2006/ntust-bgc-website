@@ -81,7 +81,7 @@ export function UserMenu({
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("pointerdown", handlePointerDown);
     };
-  }, [isOpen]);
+  }, [isOpen, pathname]);
 
   const closeMenu = () => setMenuState({ pathname, isOpen: false });
 
