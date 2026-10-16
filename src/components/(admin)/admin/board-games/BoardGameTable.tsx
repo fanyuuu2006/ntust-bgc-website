@@ -181,7 +181,17 @@ export function BoardGameTable({
         </AdminBulkActionBar>
       ) : null}
       <AdminListSection className="hidden xl:block">
-        <Table className="min-w-250">
+        <Table className="min-w-[1040px] table-fixed">
+          <colgroup>
+            <col className="w-12" />
+            <col className="w-20" />
+            <col className="w-72" />
+            <col className="w-20" />
+            <col className="w-28" />
+            <col className="w-28" />
+            <col className="w-40" />
+            <col className="w-40" />
+          </colgroup>
           <TableHeader>
             <TableRow>
               <TableHead className="w-12"><AdminSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onCheckedChange={setCurrentPageSelected} label="選取目前頁面的所有桌遊" /></TableHead>
@@ -220,13 +230,18 @@ export function BoardGameTable({
                 <TableCell className="whitespace-nowrap text-center font-mono">
                   {game.inventory_number}
                 </TableCell>
-                <TableCell className="min-w-72">
+                <TableCell className="min-w-0">
                   <div className="flex min-w-0 items-center gap-3">
                     <BoardGameImage
                       boardGame={game}
                       className="size-10 shrink-0 rounded-md border border-(--border) object-cover"
                     />
-                    <AdminBoardGameLink boardGameId={game.id} returnTo={returnTo} className="min-w-0">
+                    <AdminBoardGameLink
+                      boardGameId={game.id}
+                      returnTo={returnTo}
+                      className="min-w-0 line-clamp-2"
+                      title={game.name}
+                    >
                       {game.name}
                     </AdminBoardGameLink>
                   </div>

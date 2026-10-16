@@ -61,3 +61,50 @@ test("officer titles are bounded independently from year and action columns", as
   assert.match(officers, /<TableCell className="whitespace-nowrap">\{officer\.academic_year/);
   assert.match(officers, /<TableCell className="whitespace-nowrap text-right">/);
 });
+
+test("admin board-game table bounds long names without compressing semantic columns", async () => {
+  const boardGames = await source(
+    "src/components/(admin)/admin/board-games/BoardGameTable.tsx",
+  );
+
+  assert.match(boardGames, /<AdminListSection className="hidden xl:block">/);
+  assert.match(boardGames, /<Table className="min-w-\[1040px\] table-fixed">/);
+  assert.match(boardGames, /<col className="w-12" \/>[\s\S]*<col className="w-72" \/>[\s\S]*<col className="w-40" \/>/);
+  assert.match(boardGames, /<BoardGameImage[\s\S]*className="size-10 shrink-0/);
+  assert.match(boardGames, /<AdminBoardGameLink[\s\S]*className="min-w-0 line-clamp-2"[\s\S]*title=\{game\.name\}/);
+  assert.match(boardGames, /<TableCell className="whitespace-nowrap">[\s\S]*<BoardGameStatusBadge/);
+  assert.match(boardGames, /<TableCell className="whitespace-nowrap text-right">[\s\S]*<BoardGameRowActions/);
+  assert.match(boardGames, /<div className="grid min-w-0 max-w-full gap-3 xl:hidden">/);
+  assert.match(boardGames, /<h2 className="wrap-anywhere font-semibold">/);
+});
+
+test("admin board-game name links retain complete long labels and destinations", () => {
+  const { AdminBoardGameLink } = load(
+    "src/components/(admin)/admin/AdminBoardGameLink.tsx",
+  );
+  const names = [
+    "超長中文桌遊名稱".repeat(12),
+    "A very long English board game name ".repeat(10).trim(),
+    "UnbrokenBoardGameName".repeat(20),
+    "一般桌遊",
+  ];
+
+  for (const name of names) {
+    const html = renderToStaticMarkup(
+      createElement(
+        AdminBoardGameLink,
+        {
+          boardGameId: "11111111-1111-4111-8111-111111111111",
+          className: "min-w-0 line-clamp-2",
+          title: name,
+        },
+        name,
+      ),
+    );
+
+    assert.match(html, /href="\/admin\/board-games\/11111111-1111-4111-8111-111111111111\/edit"/);
+    assert.match(html, /class="[^"]*wrap-anywhere[^"]*line-clamp-2/);
+    assert.ok(html.includes(`title="${name}"`));
+    assert.ok(html.includes(name));
+  }
+});
