@@ -44,11 +44,7 @@ export const FieldInput = ({
   const isPasswordField = field.type === "password";
   const inputType = isPasswordField && isPasswordVisible ? "text" : field.type;
 
-  const describedBy = getFieldDescribedBy(
-    field.id,
-    field.hint,
-    field.error,
-  );
+  const describedBy = getFieldDescribedBy(field.id, field.hint, field.error);
 
   function togglePasswordVisibility() {
     setIsPasswordVisible((visible) => !visible);
@@ -89,7 +85,7 @@ export const FieldInput = ({
 
         {isPasswordField && (
           <Button
-            variant='text'
+            variant="text"
             size="none"
             onClick={togglePasswordVisibility}
             aria-label={isPasswordVisible ? "隱藏密碼" : "顯示密碼"}
@@ -97,14 +93,13 @@ export const FieldInput = ({
             className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-2 text-(--text-muted) hover:text-(--text-primary)"
           >
             {isPasswordVisible ? (
-              <EyeOff aria-hidden="true" className="size-4" />
-            ) : (
               <Eye aria-hidden="true" className="size-4" />
+            ) : (
+              <EyeOff aria-hidden="true" className="size-4" />
             )}
           </Button>
         )}
       </div>
-
     </Field>
   );
 };

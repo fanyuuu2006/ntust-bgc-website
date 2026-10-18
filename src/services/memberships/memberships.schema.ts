@@ -76,6 +76,17 @@ export const generateMembershipRegisterKeysSchema = z.object({
     .max(100, "一次最多產生 100 組序號"),
 });
 
+export const bulkRevokeMembershipRegisterKeysSchema = z.object({
+  action: z.literal("revoke"),
+  ids: z
+    .array(z.uuid("社員註冊序號 ID 格式不正確"))
+    .min(1, "請至少選取一筆社員註冊序號")
+    .max(100, "一次最多撤銷 100 筆社員註冊序號")
+    .refine((ids) => new Set(ids).size === ids.length, {
+      message: "社員註冊序號 ID 不可重複",
+    }),
+});
+
 export const createAdminMembershipSchema = z.object({
   user_id: z.uuid(),
   academic_year_id: z.uuid(),
@@ -87,4 +98,41 @@ export const updateAdminMembershipSchema = z.object({
   academic_year_id: z.uuid(),
   status: z.enum(["pending", "active", "expired", "suspended", "cancelled"]),
   joined_at: z.string().datetime().nullable().optional(),
+});
+
+const bulkMembershipRecordSchema = z.object({
+  id: z.uuid(),
+  expected_status: z.enum([
+    "pending",
+    "active",
+    "expired",
+    "suspended",
+    "cancelled",
+  ]),
+  expected_academic_year_id: z.uuid(),
+  expected_updated_at: z.string().datetime(),
+});
+
+export const bulkUpdateMembershipStatusSchema = z.object({
+  action: z.literal("set-status"),
+  status: z.enum([
+    "pending",
+    "active",
+    "expired",
+    "suspended",
+    "cancelled",
+  ]),
+  records: z
+    .array(bulkMembershipRecordSchema)
+    .min(1, "請至少選取一筆社員資格")
+    .max(100, "單次最多更新 100 筆社員資格")
+    .refine(
+      (records) => new Set(records.map((record) => record.id)).size === records.length,
+      { message: "社員資格 ID 不可重複" },
+    )
+    .refine(
+      (records) =>
+        new Set(records.map((record) => record.expected_academic_year_id)).size === 1,
+      { message: "批次更新的社員資格必須屬於同一學年度" },
+    ),
 });

@@ -45,3 +45,30 @@ export const attendanceUpdateSchema = z.object({
   status: z.enum(["present", "late", "absent"]),
   attended_at: z.iso.datetime().nullable().optional(),
 });
+
+const bulkAttendanceRecordsSchema = z
+    .array(
+      z.object({
+        id: z.number().int().positive(),
+        expected_status: z.enum(["present", "late", "absent"]),
+        expected_attended_at: z.iso.datetime().nullable(),
+      }),
+    )
+    .min(1, "請至少選取一筆簽到紀錄")
+    .max(100, "一次最多更新 100 筆簽到紀錄")
+    .refine(
+      (records) => new Set(records.map(({ id }) => id)).size === records.length,
+      { message: "簽到紀錄 ID 不可重複" },
+    );
+
+export const bulkAttendanceUpdateSchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("set-status"),
+    status: z.enum(["present", "late", "absent"]),
+    records: bulkAttendanceRecordsSchema,
+  }),
+  z.object({
+    action: z.literal("delete"),
+    records: bulkAttendanceRecordsSchema,
+  }),
+]);

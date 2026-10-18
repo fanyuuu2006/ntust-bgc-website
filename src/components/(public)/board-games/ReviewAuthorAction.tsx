@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { EllipsisVertical } from "lucide-react";
 
@@ -11,7 +11,6 @@ import { Button, ButtonLink } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
-import { useOutsideDismiss } from "@/hooks/useOutsideDismiss";
 import type { ReviewRating } from "@/services/reviews/reviews.types";
 import { RatingInput } from "./RatingInput";
 import { RatingStars } from "./RatingStars";
@@ -34,7 +33,35 @@ export function ReviewAuthorAction({ boardGameId, eligibility, ownReview, action
   const [content, setContent] = useState(ownReview?.content ?? "");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const actionMenuRef = useOutsideDismiss<HTMLDivElement>(menuOpen, () => setMenuOpen(false));
+  const actionPanelId = useId();
+  const actionRootRef = useRef<HTMLDivElement>(null);
+  const actionTriggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!actionRootRef.current?.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+
+      event.preventDefault();
+      setMenuOpen(false);
+      actionTriggerRef.current?.focus();
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [menuOpen]);
 
   if (eligibility === "anonymous") {
     return <ButtonLink variant="outline" size="sm" href={`/login?returnTo=${encodeURIComponent(`/board-games/${boardGameId}#board-game-reviews`)}`} className="mt-5 min-h-11">登入後評分</ButtonLink>;
@@ -50,6 +77,17 @@ export function ReviewAuthorAction({ boardGameId, eligibility, ownReview, action
     setError(null);
     setSuccess(null);
     setEditing(true);
+  };
+  const openEditorFromActions = () => {
+    setMenuOpen(false);
+    actionTriggerRef.current?.focus();
+    openEditor();
+  };
+  const openDeleteConfirmation = () => {
+    setMenuOpen(false);
+    actionTriggerRef.current?.focus();
+    setError(null);
+    setConfirmingDelete(true);
   };
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -95,21 +133,30 @@ export function ReviewAuthorAction({ boardGameId, eligibility, ownReview, action
           <span className="text-xs text-(--text-muted)">{ownReview.content ? "已留下文字評論" : "只有評分"}</span>
         </div>
       </div> : null}
-      <div ref={actionMenuRef} className={actionsOnly ? "absolute right-0 top-2" : "absolute right-0 top-3"}>
+      <div
+        ref={actionRootRef}
+        className={actionsOnly ? "absolute right-0 top-2" : "absolute right-0 top-3"}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) {
+            setMenuOpen(false);
+          }
+        }}
+      >
         <button
+          ref={actionTriggerRef}
           type="button"
           aria-label="評論操作"
-          aria-haspopup="menu"
           aria-expanded={menuOpen}
+          aria-controls={actionPanelId}
           onClick={() => setMenuOpen((open) => !open)}
           className="inline-flex size-11 items-center justify-center rounded-full text-(--text-muted) transition-colors hover:bg-(--surface-muted) hover:text-(--text-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
         >
           <EllipsisVertical aria-hidden="true" size={19} />
         </button>
         {menuOpen ? (
-          <div role="menu" aria-label="評論操作" className="absolute right-0 z-20 mt-1 w-32 overflow-hidden rounded-lg border border-(--border-default) bg-(--surface-default) py-1 shadow-lg">
-            <button type="button" role="menuitem" className="flex min-h-11 w-full items-center px-3 text-left text-sm hover:bg-(--surface-muted) focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-(--primary)" onClick={() => { setMenuOpen(false); openEditor(); }}>編輯評論</button>
-            <button type="button" role="menuitem" className="flex min-h-11 w-full items-center px-3 text-left text-sm text-(--status-danger) hover:bg-(--surface-muted) focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-(--primary)" onClick={() => { setMenuOpen(false); setError(null); setConfirmingDelete(true); }}>刪除評論</button>
+          <div id={actionPanelId} className="absolute right-0 z-20 mt-1 w-32 max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-(--border-default) bg-(--surface-default) py-1 shadow-lg">
+            <button type="button" className="flex min-h-11 w-full items-center px-3 text-left text-sm hover:bg-(--surface-muted) focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-(--primary)" onClick={openEditorFromActions}>編輯評論</button>
+            <button type="button" className="flex min-h-11 w-full items-center px-3 text-left text-sm text-(--status-danger) hover:bg-(--surface-muted) focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-(--primary)" onClick={openDeleteConfirmation}>刪除評論</button>
           </div>
         ) : null}
       </div>

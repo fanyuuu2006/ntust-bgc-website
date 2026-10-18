@@ -71,9 +71,10 @@ test("public board-game page size accepts only its canonical grid-aligned values
 });
 
 test("public board-game card keeps one vertical composition at every breakpoint", async () => {
-  const card = await readSource(
-    "src/components/(public)/board-games/BoardGameCard.tsx",
-  );
+  const [card, image] = await Promise.all([
+    readSource("src/components/(public)/board-games/BoardGameCard.tsx"),
+    readSource("src/components/BoardGameImage.tsx"),
+  ]);
 
   assert.equal((card.match(/<Link\b/g) ?? []).length, 1);
   assert.match(card, /buildBoardGameDetailHref\(boardGame\.id, returnTo\)/);
@@ -103,8 +104,10 @@ test("public board-game card keeps one vertical composition at every breakpoint"
   assert.match(card, /#\{boardGame\.inventory_number\}/);
   assert.doesNotMatch(card, /boardGame\.description|description\s*\?/);
   assert.doesNotMatch(card, /尚未補充桌遊描述/);
-  assert.match(card, /boardGame\.image\s*\?/);
-  assert.match(card, /opacity-60/);
+  assert.match(card, /<BoardGameImage/);
+  assert.match(card, /className=\{"h-full w-full object-contain"\}/);
+  assert.match(image, /if \(!boardGame\.image \|\| failedImage === boardGame\.image\)/);
+  assert.match(image, /<BoardGameImageFallback/);
   assert.match(card, /mt-auto[^"\n]*pt-3[^>]*>[\s\S]*查看詳情/);
   assert.doesNotMatch(card, /translate-y|scale-\[/);
   assert.doesNotMatch(card, /"use client"|useEffect|fetch\(/);

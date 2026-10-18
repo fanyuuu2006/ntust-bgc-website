@@ -38,8 +38,18 @@ begin
   end if;
 
   if to_regprocedure('public.claim_membership_register_key(text,uuid)') is null
-     or to_regprocedure('public.generate_membership_register_keys(uuid,integer,text,uuid)') is null then
+     or to_regprocedure('public.generate_membership_register_keys(uuid,integer,text,uuid)') is null
+     or to_regprocedure('public.revoke_membership_register_keys(uuid[])') is null then
     raise exception 'Required register-key RPC missing';
+  end if;
+
+  if to_regprocedure('public.update_event_attendances_status(uuid,jsonb,public.attendance_status)') is null
+     or to_regprocedure('public.delete_event_attendances(uuid,jsonb)') is null then
+    raise exception 'Required attendance batch RPC missing';
+  end if;
+
+  if to_regprocedure('public.update_admin_memberships_status(jsonb,public.merbership_status)') is null then
+    raise exception 'Required membership batch RPC missing';
   end if;
 
   if to_regprocedure('public.issue_password_recovery_token(uuid,text,timestamp with time zone)') is null
@@ -56,8 +66,26 @@ begin
   end if;
 
   if not has_function_privilege('service_role', 'public.claim_membership_register_key(text,uuid)', 'EXECUTE')
-     or has_function_privilege('anon', 'public.claim_membership_register_key(text,uuid)', 'EXECUTE') then
+     or has_function_privilege('anon', 'public.claim_membership_register_key(text,uuid)', 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.revoke_membership_register_keys(uuid[])', 'EXECUTE')
+     or has_function_privilege('anon', 'public.revoke_membership_register_keys(uuid[])', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.revoke_membership_register_keys(uuid[])', 'EXECUTE') then
     raise exception 'Register-key RPC execute ACL invariant missing';
+  end if;
+
+  if not has_function_privilege('service_role', 'public.update_event_attendances_status(uuid,jsonb,public.attendance_status)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.update_event_attendances_status(uuid,jsonb,public.attendance_status)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.update_event_attendances_status(uuid,jsonb,public.attendance_status)', 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.delete_event_attendances(uuid,jsonb)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.delete_event_attendances(uuid,jsonb)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.delete_event_attendances(uuid,jsonb)', 'EXECUTE') then
+    raise exception 'Attendance batch RPC privilege invariant missing';
+  end if;
+
+  if not has_function_privilege('service_role', 'public.update_admin_memberships_status(jsonb,public.merbership_status)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.update_admin_memberships_status(jsonb,public.merbership_status)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.update_admin_memberships_status(jsonb,public.merbership_status)', 'EXECUTE') then
+    raise exception 'Membership batch RPC privilege invariant missing';
   end if;
 
   if to_regclass('public.board_games_with_statistics') is null

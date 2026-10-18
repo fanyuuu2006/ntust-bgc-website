@@ -1,47 +1,36 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect } from "react";
+import { X } from "lucide-react";
+
+import { Button } from "@/components/ui/Button";
+import { useModalDrawer } from "@/hooks/useModalDrawer";
 import { siteConfigs } from "@/libs/siteConfigs";
 import { cn } from "@/utils/className";
 import { AdminSidebarNav } from "./AdminSidebarNav";
-import { Button } from "@/components/ui/Button";
-import { X } from "lucide-react";
 
 type AdminSidebarProps = React.HTMLAttributes<HTMLElement> & {
   id: string;
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (restoreFocus?: boolean) => void;
 };
 
-function AdminSidebarHeader({ onClose }: { onClose: () => void }) {
+function AdminSidebarHeader({ onClose, closeButtonRef }: {
+  onClose: (restoreFocus?: boolean) => void;
+  closeButtonRef: React.RefObject<HTMLButtonElement | null>;
+}) {
   return (
     <div className="flex items-center justify-between gap-2 border-b border-(--border-default) px-4 py-2">
-      <Link
-        href="/"
-        onClick={onClose}
-        className="flex min-w-0 items-center gap-2.5"
-        aria-label={`前往${siteConfigs.name}首頁`}
-      >
+      <Link href="/" onClick={() => onClose(false)} className="flex min-w-0 items-center gap-2.5" aria-label={`返回 ${siteConfigs.name} 首頁`}>
         <div className="size-10 shrink-0 overflow-hidden rounded-full">
-          <Image
-            src={siteConfigs.logo}
-            alt={`${siteConfigs.fullName} Logo`}
-            width={64}
-            height={64}
-            className="size-full object-contain"
-          />
+          <Image src={siteConfigs.logo} alt={`${siteConfigs.fullName} Logo`} width={64} height={64} className="size-full object-contain" />
         </div>
         <p className="truncate text-sm font-bold">{siteConfigs.name}</p>
       </Link>
 
-      <Button
-        type="button"
-        onClick={onClose}
-        aria-label="關閉管理選單"
-        variant="ghost"
-        size="sm"
-        iconOnly
-        className="shrink-0 rounded-lg lg:hidden"
-      >
+      <Button ref={closeButtonRef} type="button" onClick={() => onClose(true)} aria-label="關閉管理導覽" variant="ghost" size="sm" iconOnly className="shrink-0 rounded-lg lg:hidden">
         <X aria-hidden="true" className="size-4" />
       </Button>
     </div>
@@ -50,61 +39,53 @@ function AdminSidebarHeader({ onClose }: { onClose: () => void }) {
 
 function AdminSidebarFooter({ onNavigate }: { onNavigate: () => void }) {
   return (
-    // sm 以上 Header 已提供「回網站」，這裡只服務手機 Drawer，避免同一功能出現兩次
     <div className="mt-auto border-t border-(--border-default) p-3 sm:hidden">
-      <Link
-        href="/"
-        onClick={onNavigate}
-        className="block rounded-lg px-3 py-2 text-sm text-(--text-muted) transition-colors hover:bg-(--surface-subtle) hover:text-(--text-primary)"
-      >
-        回網站
+      <Link href="/" onClick={onNavigate} className="block rounded-lg px-3 py-2 text-sm text-(--text-muted) transition-colors hover:bg-(--surface-subtle) hover:text-(--text-primary)">
+        返回網站
       </Link>
     </div>
   );
 }
 
-export function AdminSidebar({
-  id,
-  isOpen,
-  onClose,
-  className,
-  ...rest
-}: AdminSidebarProps) {
+export function AdminSidebar({ id, isOpen, onClose, className, ...rest }: AdminSidebarProps) {
+  const { drawerRef, initialFocusRef } = useModalDrawer({ isOpen, onClose });
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
+    const closeAtDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) onClose(false);
+    };
+    desktopQuery.addEventListener("change", closeAtDesktop);
+    return () => desktopQuery.removeEventListener("change", closeAtDesktop);
+  }, [onClose]);
+
   return (
     <>
-      {/* Mobile 遮罩：僅開啟時渲染，避免常駐的隱形 overlay 影響互動 */}
-      {isOpen && (
-        <div
-          role="button"
-          aria-label="關閉管理選單"
-          onClick={onClose}
-          className="fixed inset-0 z-40 bg-(--foreground)/40 lg:hidden"
-        />
-      )}
+      {isOpen ? <div aria-hidden="true" onPointerDown={() => onClose(true)} className="fixed inset-0 z-40 bg-(--foreground)/40 lg:hidden" /> : null}
 
-      {/* 單一側欄：手機以 fixed + translate 做 Drawer，lg 以上改為 sticky 常駐並讓出 header 高度 */}
       <aside
+        ref={drawerRef}
         id={id}
-        aria-label="管理選單"
+        aria-label="管理導覽"
+        role={isOpen ? "dialog" : undefined}
+        aria-modal={isOpen ? "true" : undefined}
         className={cn(
           "fixed inset-y-0 left-0 z-50",
-          "flex h-dvh w-72 flex-col",
+          "flex h-dvh w-72 max-w-[calc(100vw-2rem)] flex-col",
           "border-r border-(--border-default) bg-(--surface-default)",
           "transition-transform duration-300",
-          isOpen ? "translate-x-0" : "-translate-x-full",
-          "lg:sticky lg:inset-auto lg:top-14 lg:z-30 lg:h-[calc(100dvh-3.5rem)] lg:w-64 lg:shrink-0 lg:self-start",
-          "lg:translate-x-0 lg:transition-none",
+          isOpen ? "visible translate-x-0" : "invisible -translate-x-full",
+          "lg:sticky lg:inset-auto lg:top-14 lg:z-30 lg:h-[calc(100dvh-3.5rem)] lg:w-64 lg:max-w-none lg:shrink-0 lg:self-start",
+          "lg:visible lg:translate-x-0 lg:transition-none",
           className,
         )}
         {...rest}
       >
-        <AdminSidebarHeader onClose={onClose} />
-
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <AdminSidebarNav onNavigate={onClose} />
+        <AdminSidebarHeader onClose={onClose} closeButtonRef={initialFocusRef} />
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <AdminSidebarNav onNavigate={() => onClose(false)} />
         </div>
-
-        <AdminSidebarFooter onNavigate={onClose} />
+        <AdminSidebarFooter onNavigate={() => onClose(false)} />
       </aside>
     </>
   );

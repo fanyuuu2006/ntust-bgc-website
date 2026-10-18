@@ -174,11 +174,11 @@ export function AdminBorrowingList({
             </Table>
           </AdminListSection>
 
-          <div className="grid min-w-0 max-w-full gap-3 lg:hidden">
+          <div className="grid min-w-0 max-w-full gap-2.5 lg:hidden">
             {borrowings.map((borrowing) => (
               <Card
                 key={borrowing.id}
-                className="w-full min-w-0 max-w-full space-y-3 p-4"
+                className="w-full min-w-0 max-w-full space-y-2.5 p-3 sm:p-4"
               >
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <BoardGameSummary

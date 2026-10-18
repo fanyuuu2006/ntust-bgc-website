@@ -144,7 +144,7 @@ test("every admin search form exposes a primary text-only submit while Clearable
   assert.match(input, /<Search/);
 
   for (const source of sources) {
-    assert.match(source, /<Button type="submit" variant="primary"/);
+    assert.match(source, /<Button[^>]*type="submit"[^>]*variant="primary"/);
     assert.match(source, />\s*搜尋\s*<\/Button>/);
     assert.doesNotMatch(source, /type="submit" variant="outline"/);
     assert.doesNotMatch(source, /import \{ Search \} from "lucide-react"/);

@@ -25,25 +25,30 @@ async function MembershipsPage({ searchParams }: Props) {
   return (
     <>
       <HeadingSection
+        collection
         title="社員資格管理"
         description="管理使用者各學年度的社員資格。"
         actions={
           <>
             <AdminExportMenu domain="memberships" query={query} />
-            <ButtonLink href="/admin/memberships/register-keys" variant="outline">
+            <ButtonLink
+              href="/admin/memberships/register-keys"
+              variant="outline"
+            >
               社員註冊序號管理
             </ButtonLink>
             <MembershipCreateButton years={years} />
           </>
         }
       />
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <MemberFilterBar
           academicYears={years}
           query={query}
         />
-        <PaginatedCollection page={page} pageSize={pageSize} total={memberships.total} totalPages={memberships.totalPages} basePath="/admin/memberships" pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
+        <PaginatedCollection className="space-y-3" page={page} pageSize={pageSize} total={memberships.total} totalPages={memberships.totalPages} basePath="/admin/memberships" pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
         <MembershipRecords
+          key={JSON.stringify({ ...query, page, pageSize })}
           memberships={memberships.data}
           years={years}
           query={query}

@@ -69,7 +69,7 @@ async function AdminEventDetailPage({
         description={`${formatDateTime(event.start_time)} 至 ${formatDateTime(event.end_time)}`}
         actions={<><AdminExportMenu domain="event-attendance" query={{ eventId: event.id, search: query.search, orderDirection }} /><AttendanceActions eventId={event.id} /></>}
       />
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-(--border-default) pb-4">
           <div className="flex min-w-0 items-center gap-2">
             <h2 className="text-lg font-semibold">簽到管理</h2>
@@ -78,19 +78,20 @@ async function AdminEventDetailPage({
           <ButtonLink href={returnTo} size="sm" variant="outline">返回活動管理</ButtonLink>
         </div>
         {event.description || event.rich_description ? <RichTextRenderer {...storedDescription(event)} /> : null}
-        <AdminToolbar className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-          <form className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]" aria-label="搜尋簽到名單">
+        <AdminToolbar className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <form className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-2" aria-label="搜尋簽到名單">
             <PreservedQueryFields query={{ returnTo, search: query.search, orderDirection, pageSize }} ownedKeys={["search"]} />
             <ClearableSearchInput initialValue={query.search} clearHref={clearSearchHref} name="search" placeholder="搜尋使用者名稱、姓名、Email 或學號" aria-label="搜尋簽到名單" />
-            <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
+            <Button type="submit" variant="primary" className="w-auto">搜尋</Button>
           </form>
             <ImmediateQuerySelect appliedQuery={{ returnTo, search: query.search, orderDirection, pageSize }} basePath={`/admin/events/${event.id}`} queryKey="orderDirection" value={orderDirection} aria-label="簽到時間排序" className="w-full sm:w-auto">
               <option value="desc">最新簽到</option>
               <option value="asc">最早簽到</option>
             </ImmediateQuerySelect>
         </AdminToolbar>
-        <PaginatedCollection page={page} pageSize={pageSize} total={records.total} totalPages={records.totalPages} basePath={`/admin/events/${event.id}`} pageSizeOptions={[10, 20, 50]} query={{ returnTo, search: query.search, orderDirection }}>
+        <PaginatedCollection className="space-y-3" page={page} pageSize={pageSize} total={records.total} totalPages={records.totalPages} basePath={`/admin/events/${event.id}`} pageSizeOptions={[10, 20, 50]} query={{ returnTo, search: query.search, orderDirection }}>
         <AttendanceRecords
+          key={JSON.stringify({ search: query.search, orderDirection, page, pageSize })}
           returnTo={returnTo}
           eventId={event.id}
           eventName={event.name}

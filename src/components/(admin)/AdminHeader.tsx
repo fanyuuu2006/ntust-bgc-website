@@ -43,6 +43,7 @@ export function AdminHeader({
             onClick={onOpenMenu}
             aria-expanded={isSidebarOpen}
             aria-controls={sidebarId}
+            aria-label="開啟管理導覽"
             variant="ghost"
             size="none"
             className="size-10 shrink-0 rounded-xl p-0 lg:hidden"
@@ -51,9 +52,12 @@ export function AdminHeader({
             <span className="sr-only">開啟管理選單</span>
           </Button>
 
-          <h1 className="truncate text-lg font-bold text-(--text-primary)">
+          <p
+            className="truncate text-lg font-bold text-(--text-primary)"
+            aria-current="page"
+          >
             {currentSectionLabel ?? DEFAULT_SECTION_LABEL}
-          </h1>
+          </p>
         </div>
 
         {/* 右側：回網站（僅 sm 以上顯示，手機版由 Sidebar Footer 提供） + 分隔線 + 使用者選單 */}

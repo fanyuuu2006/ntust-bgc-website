@@ -19,6 +19,16 @@ type UpdateAdminMembershipInput = Pick<
   "academic_year_id" | "status"
 > & { joined_at?: Membership["joined_at"] | undefined };
 
+export type BulkUpdateMembershipStatusItem = Pick<
+  Membership,
+  "id" | "status" | "academic_year_id" | "updated_at"
+>;
+
+type BulkUpdateMembershipStatusRpcResult = {
+  outcome?: "updated" | "conflict" | "invalid_input";
+  updated_count?: number;
+};
+
 export type FindManyMembershipsOptions = PaginationQuery &
   OrderOptions<"joined_at" | "created_at"> & {
     type?: MembershipType;
@@ -222,6 +232,36 @@ export const membershipsRepository = {
 
     if (error) throwRepositoryError("以交易方式更新社員資格失敗", error);
     return (data ?? null) as Membership | null;
+  },
+
+  updateManyStatusForAdmin: async (
+    records: BulkUpdateMembershipStatusItem[],
+    status: MembershipStatus,
+  ): Promise<
+    | { outcome: "updated"; updatedCount: number }
+    | { outcome: "conflict" }
+  > => {
+    const { data, error } = await supabase.rpc(
+      "update_admin_memberships_status",
+      {
+        p_items: records.map((record) => ({
+          id: record.id,
+          expected_status: record.status,
+          expected_academic_year_id: record.academic_year_id,
+          expected_updated_at: record.updated_at,
+        })),
+        p_status: status,
+      },
+    );
+
+    if (error) throwRepositoryError("批次更新社員資格狀態失敗", error);
+
+    const result = data as BulkUpdateMembershipStatusRpcResult | null;
+    if (result?.outcome !== "updated") return { outcome: "conflict" };
+    return {
+      outcome: "updated",
+      updatedCount: result.updated_count ?? 0,
+    };
   },
 
   deleteById: async (id: string): Promise<void> => {

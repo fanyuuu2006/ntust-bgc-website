@@ -60,11 +60,12 @@ async function OfficersPage({
   return (
     <>
       <HeadingSection
+        collection
         title="幹部管理"
         description="管理各學年度的幹部紀錄。"
         actions={<><AdminExportMenu domain="officers" query={{ search: params.search, academicYearId: params.academicYearId }} /><OfficerActions years={years} /></>}
       />
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_12rem] md:items-center">
           <form className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]" aria-label="搜尋幹部職位">
             <PreservedQueryFields query={{ search: params.search, academicYearId: params.academicYearId, pageSize }} ownedKeys={["search"]} />

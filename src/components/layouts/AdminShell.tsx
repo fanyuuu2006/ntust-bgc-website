@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AdminHeader } from "../(admin)/AdminHeader";
 import { AdminSidebar } from "../(admin)/AdminSidebar";
@@ -17,12 +17,19 @@ export function AdminShell({ user, children }: AdminShellProps) {
   const pathname = usePathname();
   const sidebarId = useId();
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarState, setSidebarState] = useState({ pathname, isOpen: false });
+  if (sidebarState.pathname !== pathname) {
+    setSidebarState({ pathname, isOpen: false });
+  }
+  const isSidebarOpen =
+    sidebarState.pathname === pathname && sidebarState.isOpen;
 
-  const closeSidebar = () => {
-    setIsSidebarOpen(false);
-    requestAnimationFrame(() => menuButtonRef.current?.focus());
-  };
+  const closeSidebar = useCallback((restoreFocus = true) => {
+    setSidebarState({ pathname, isOpen: false });
+    if (restoreFocus) {
+      requestAnimationFrame(() => menuButtonRef.current?.focus());
+    }
+  }, [pathname]);
 
   if (!user) return null;
 
@@ -40,7 +47,8 @@ export function AdminShell({ user, children }: AdminShellProps) {
         isSidebarOpen={isSidebarOpen}
         sidebarId={sidebarId}
         menuButtonRef={menuButtonRef}
-        onOpenMenu={() => setIsSidebarOpen(true)}
+        onOpenMenu={() => setSidebarState({ pathname, isOpen: true })}
+        inert={isSidebarOpen ? true : undefined}
       />
       <div className="flex flex-1">
         <AdminSidebar
@@ -48,7 +56,9 @@ export function AdminShell({ user, children }: AdminShellProps) {
           isOpen={isSidebarOpen}
           onClose={closeSidebar}
         />
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1" inert={isSidebarOpen ? true : undefined}>
+          {children}
+        </main>
       </div>
     </div>
   );

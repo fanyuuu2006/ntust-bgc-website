@@ -5,7 +5,7 @@ import {
   eventsRepository,
   FindManyEventsOptions,
 } from "@/repositories/events.repository";
-import { attendanceInputSchema, attendanceUpdateSchema, createEventSchema, updateEventSchema } from "./events.schema";
+import { attendanceInputSchema, attendanceUpdateSchema, bulkAttendanceUpdateSchema, createEventSchema, updateEventSchema } from "./events.schema";
 import { usersRepository } from "@/repositories/users.repository";
 import { userProfilesRepository } from "@/repositories/user-profiles.repository";
 import {
@@ -13,6 +13,7 @@ import {
   EventHasAttendanceRecordsError,
   EventCheckInWindowError,
   AttendanceAlreadyExistsError,
+  AttendanceBatchConflictError,
   AttendanceNotFoundError,
   AttendanceUserNotFoundError,
   SelfCheckInAlreadyCompletedError,
@@ -273,6 +274,26 @@ export const eventsService = {
     const updated = await eventAttendancesRepository.updateById(attendanceId, { status: data.status, attended_at: data.status === "absent" ? null : data.attended_at ?? current.attended_at ?? new Date().toISOString() });
     if (!updated) throw new AttendanceNotFoundError();
     return updated;
+  },
+
+  bulkUpdateAttendancesForAdmin: async (eventId: string, input: unknown) => {
+    const data = bulkAttendanceUpdateSchema.parse(input);
+    const records = data.records.map((record) => ({
+      id: record.id,
+      status: record.expected_status,
+      attended_at: record.expected_attended_at,
+    }));
+    const result = data.action === "delete"
+      ? await eventAttendancesRepository.deleteManyForEvent(eventId, records)
+      : await eventAttendancesRepository.updateManyStatusForEvent(
+          eventId,
+          records,
+          data.status,
+        );
+    if (result.outcome === "conflict") {
+      throw new AttendanceBatchConflictError();
+    }
+    return { updatedCount: result.updatedCount };
   },
 
   deleteAttendanceForAdmin: async (eventId: string, attendanceId: EventAttendanceId) => {

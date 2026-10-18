@@ -22,6 +22,12 @@ export const purchaseSuggestionsRepository = {
   manage: (actorId: string, id: string, version: number, action: string) => rpc("manage_board_game_purchase_suggestion", {
     p_actor_id: actorId, p_id: id, p_version: version, p_action: action,
   }),
+  manageMany: (actorId: string, records: Array<{ id: string; version: number }>, action: "purchased" | "rejected" | "delete") =>
+    rpc("manage_board_game_purchase_suggestions", {
+      p_actor_id: actorId,
+      p_records: records,
+      p_action: action,
+    }),
   countForWeek: async (userId: string, start: string, end: string) => {
     const { count, error } = await supabase.from(TABLE).select("id", { count: "exact", head: true })
       .eq("user_id", userId).gte("created_at", start).lt("created_at", end);

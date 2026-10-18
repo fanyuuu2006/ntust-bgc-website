@@ -5,5 +5,10 @@ export function AdminListSection({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <Card className={cn("overflow-x-auto", className)} {...props} />;
+  return (
+    <Card
+      className={cn("max-w-full overflow-x-auto overscroll-x-contain", className)}
+      {...props}
+    />
+  );
 }

@@ -99,6 +99,7 @@ async function BoardGamesAdminPage({
   return (
     <>
       <HeadingSection
+        collection
         title="桌遊管理"
         description="管理社團桌遊、社產編號與基本資訊。"
         actions={
@@ -112,7 +113,7 @@ async function BoardGamesAdminPage({
         }
       />
 
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <BoardGameSearchForm
           categories={category}
           locations={location}
@@ -122,7 +123,10 @@ async function BoardGamesAdminPage({
 
         <PaginatedCollection page={page} pageSize={pageSize} total={boardGames.total} totalPages={boardGames.totalPages} basePath={BASE_PATH} pageSizeOptions={PAGE_SIZE_OPTIONS} query={query} paginationClassName="p-4">
         <BoardGameTable
+          key={JSON.stringify(query)}
           boardGames={boardGames.data}
+          categories={category}
+          locations={location}
           query={query}
           hasFilters={Boolean(query.search || query.status || query.category || query.location || page > 1)}
         />

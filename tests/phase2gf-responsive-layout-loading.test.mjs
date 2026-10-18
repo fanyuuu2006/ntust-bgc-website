@@ -26,7 +26,7 @@ test("authenticated query toolbars defer the four-control desktop row and keep f
     assert.match(source, /lg:grid-cols-\[minmax\(0,1fr\)_auto_auto\]/);
     assert.match(source, /QueryFilterDisclosure/);
   }
-  assert.match(disclosure, /<summary className="[^"]*shrink-0[^"]*whitespace-nowrap|<summary className="[^"]*whitespace-nowrap[^"]*shrink-0/);
+  assert.match(disclosure, /className="[^"]*shrink-0[^"]*whitespace-nowrap|className="[^"]*whitespace-nowrap[^"]*shrink-0/);
   assert.match(memberships, /QueryFilterForm/);
 });
 

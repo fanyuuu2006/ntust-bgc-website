@@ -5,26 +5,33 @@ import test from "node:test";
 const root = new URL("../", import.meta.url);
 const readSource = (path) => readFile(new URL(path, root), "utf8");
 
-test("shared filter disclosure uses native semantics with mobile flow and desktop floating chrome", async () => {
+test("shared filter disclosure uses a controlled button with mobile flow and desktop floating chrome", async () => {
   const path = "src/components/query/QueryFilterDisclosure.tsx";
   await access(new URL(path, root));
   const source = await readSource(path);
 
-  assert.match(source, /<details/);
-  assert.match(source, /<summary/);
+  assert.match(source, /"use client"/);
+  assert.match(source, /<Button/);
+  assert.match(source, /type="button"/);
+  assert.match(source, /aria-expanded=\{isOpen\}/);
+  assert.match(source, /aria-controls=\{panelId\}/);
+  assert.match(source, /useId\(\)/);
+  assert.match(source, /contents lg:relative lg:block/);
+  assert.match(source, /col-span-full/);
   assert.match(source, /ListFilter[^\n]*aria-hidden="true"|aria-hidden="true"[^\n]*ListFilter/);
   assert.match(source, /shrink-0/);
   assert.match(source, /whitespace-nowrap/);
-  assert.match(source, /marker:content-none/);
-  assert.match(source, /mt-2/);
+  assert.match(source, /lg:mt-2/);
   assert.match(source, /lg:absolute/);
   assert.match(source, /lg:right-0/);
+  assert.match(source, /lg:top-full/);
   assert.match(source, /lg:shadow-/);
   assert.match(source, /max-w-\[calc\(100vw-/);
-  assert.doesNotMatch(source, /"use client"|useState|useEffect|useRouter|fetch\(/);
+  assert.match(source, /useState|useEffect/);
+  assert.doesNotMatch(source, /useRouter|fetch\(/);
 });
 
-test("authenticated Borrowings and Memberships share native disclosure without changing GET query fields", async () => {
+test("authenticated Borrowings and Memberships share the controlled disclosure without changing GET query fields", async () => {
   const [borrowings, memberships] = await Promise.all([
     readSource("src/app/(authenticated)/borrowings/page.tsx"),
     readSource("src/components/(authenticated)/memberships/MembershipRecordsToolbar.tsx"),
@@ -43,7 +50,7 @@ test("authenticated Borrowings and Memberships share native disclosure without c
   assert.match(memberships, /name="status"/);
 });
 
-test("multi-filter Admin toolbars use the shared native disclosure and preserve URL navigation inputs", async () => {
+test("multi-filter Admin toolbars use the shared controlled disclosure and preserve URL navigation inputs", async () => {
   const routes = [
     {
       path: "src/components/(admin)/admin/memberships/MembershipFilterBar.tsx",
@@ -57,6 +64,10 @@ test("multi-filter Admin toolbars use the shared native disclosure and preserve 
       path: "src/components/(admin)/admin/board-games/BoardGameSearchForm.tsx",
       fields: ['name="status"', 'name="category"', 'name="location"'],
     },
+    {
+      path: "src/components/(admin)/admin/reviews/AdminReviewFilters.tsx",
+      fields: ['name="rating"', 'name="sort"'],
+    },
   ];
 
   for (const route of routes) {
@@ -65,7 +76,7 @@ test("multi-filter Admin toolbars use the shared native disclosure and preserve 
     assert.match(source, /QueryFilterForm/);
     assert.equal((source.match(/<form/g) ?? []).length, 1);
     assert.match(source, /PreservedQueryFields/);
-    assert.doesNotMatch(source, /"use client"|preventDefault|useRouter|fetch\(|@\/repositories/);
+    assert.doesNotMatch(source, /preventDefault|useRouter|fetch\(|@\/repositories/);
     for (const field of route.fields) assert.ok(source.includes(field));
   }
 });
@@ -108,10 +119,15 @@ test("multi-filter Admin toolbar density is owned by feature composition", async
     readSource("src/components/(admin)/admin/memberships/MembershipFilterBar.tsx"),
     readSource("src/components/(admin)/admin/memberships/RegisterKeyFilterBar.tsx"),
     readSource("src/components/(admin)/admin/board-games/BoardGameSearchForm.tsx"),
+    readSource("src/components/(admin)/admin/reviews/AdminReviewFilters.tsx"),
   ]);
 
   for (const source of sources) {
-    assert.match(source, /grid grid-cols-1 gap-2/);
+    assert.match(source, /grid grid-cols-2 gap-2/);
+    assert.match(source, /className="col-span-2 min-w-0 lg:col-span-1"/);
+    assert.match(source, /type="submit" form="admin-[^"]+-search-form" variant="primary" className="w-full lg:w-auto"/);
+    assert.doesNotMatch(source, /hidden[^\n]*sm:inline-flex/);
+    assert.doesNotMatch(source, /className="contents/);
     assert.doesNotMatch(source, /overflow-x-hidden|text-xs/);
   }
 });

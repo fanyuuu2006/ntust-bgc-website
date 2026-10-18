@@ -37,6 +37,9 @@ export type BoardGameImageCasResult =
   | { status: "missing" }
   | { status: "conflict" };
 
+export type BulkUpdateBoardGameItem = Pick<BoardGame, "id" | "updated_at">;
+type BulkUpdateBoardGamesRpcResult = { outcome?: "updated" | "conflict" | "invalid_input"; updated_count?: number };
+
 export type FindManyBoardGamesOptions = PaginationQuery &
   OrderOptions<"name" | "created_at" | "updated_at" | "inventory_number"> & {
     search?: string;
@@ -285,6 +288,22 @@ export const boardGamesRepository = {
     status: BoardGameStatus,
   ): Promise<BoardGame | null> => {
     return boardGamesRepository.updateById(id, { status });
+  },
+
+  updateManyClassificationForAdmin: async (
+    records: BulkUpdateBoardGameItem[],
+    action: "set-category" | "set-location",
+    targetId: string,
+  ): Promise<{ outcome: "updated"; updatedCount: number } | { outcome: "conflict" }> => {
+    const { data, error } = await supabase.rpc("update_admin_board_games_classification", {
+      p_items: records.map((record) => ({ id: record.id, expected_updated_at: record.updated_at })),
+      p_action: action,
+      p_target_id: targetId,
+    });
+    if (error) throwRepositoryError("批次更新桌遊分類資訊失敗", error);
+    const result = data as BulkUpdateBoardGamesRpcResult | null;
+    if (result?.outcome !== "updated") return { outcome: "conflict" };
+    return { outcome: "updated", updatedCount: result.updated_count ?? 0 };
   },
 
   compareAndSwapImage: async (

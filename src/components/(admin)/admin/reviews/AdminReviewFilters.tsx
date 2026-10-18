@@ -38,11 +38,12 @@ export function AdminReviewFilters({
   const activeFilterCount = [query.rating, query.boardGameId].filter(Boolean).length;
 
   return (
-    <AdminToolbar className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+    <AdminToolbar className="grid grid-cols-2 gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
       <form
+        id="admin-review-search-form"
         method="GET"
         action={BASE_PATH}
-        className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]"
+        className="col-span-2 min-w-0 lg:col-span-1"
         aria-label="搜尋評價與評論"
       >
         <PreservedQueryFields query={query} ownedKeys={["search"]} />
@@ -52,13 +53,11 @@ export function AdminReviewFilters({
           clearHref={clearSearchQuery ? `${BASE_PATH}?${clearSearchQuery}` : BASE_PATH}
           placeholder="搜尋評論、作者或桌遊"
           aria-label="搜尋評價與評論"
+          className="w-full"
         />
-        <Button type="submit" variant="primary" className="w-full sm:w-auto">
-          搜尋
-        </Button>
       </form>
-      <div className="min-w-0 lg:flex lg:justify-end">
-        <QueryFilterDisclosure
+      <Button type="submit" form="admin-review-search-form" variant="primary" className="w-full lg:w-auto">搜尋</Button>
+      <QueryFilterDisclosure
           label={activeFilterCount ? `篩選 (${activeFilterCount})` : "篩選"}
           panelClassName="lg:min-w-80"
         >
@@ -99,8 +98,7 @@ export function AdminReviewFilters({
               </Select>
             </Field>
           </QueryFilterForm>
-        </QueryFilterDisclosure>
-      </div>
+      </QueryFilterDisclosure>
     </AdminToolbar>
   );
 }

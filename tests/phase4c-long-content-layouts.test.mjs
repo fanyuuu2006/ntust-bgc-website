@@ -42,7 +42,7 @@ test("membership table bounds long user identity without compressing semantic co
   );
 
   assert.match(memberships, /<AdminListSection className="hidden lg:block">/);
-  assert.match(memberships, /<Table className="min-w-\[1120px\]">/);
+  assert.match(memberships, /<Table className="min-w-\[1168px\]">/);
   assert.match(memberships, /<TableCell className="w-64 max-w-64 min-w-0">\s*<AdminUserLink/);
   assert.match(memberships, /<TableHead className="w-24 whitespace-nowrap">類型<\/TableHead>/);
   assert.match(memberships, /<TableHead className="w-28 whitespace-nowrap">學年度<\/TableHead>/);
@@ -50,7 +50,7 @@ test("membership table bounds long user identity without compressing semantic co
   assert.equal((memberships.match(/className="w-44 whitespace-nowrap"/g) ?? []).length, 2);
   assert.match(memberships, /<TableHead className="w-36 whitespace-nowrap text-right">操作<\/TableHead>/);
   assert.match(memberships, /<TableCell className="whitespace-nowrap text-right">/);
-  assert.match(memberships, /<div className="grid gap-3 lg:hidden">/);
+  assert.match(memberships, /<div className="grid gap-2\.5 lg:hidden">/);
 });
 
 test("officer titles are bounded independently from year and action columns", async () => {
@@ -60,4 +60,51 @@ test("officer titles are bounded independently from year and action columns", as
   assert.match(officers, /line-clamp-2 wrap-anywhere/);
   assert.match(officers, /<TableCell className="whitespace-nowrap">\{officer\.academic_year/);
   assert.match(officers, /<TableCell className="whitespace-nowrap text-right">/);
+});
+
+test("admin board-game table bounds long names without compressing semantic columns", async () => {
+  const boardGames = await source(
+    "src/components/(admin)/admin/board-games/BoardGameTable.tsx",
+  );
+
+  assert.match(boardGames, /<AdminListSection className="hidden xl:block">/);
+  assert.match(boardGames, /<Table className="min-w-\[1040px\] table-fixed">/);
+  assert.match(boardGames, /<col className="w-12" \/>[\s\S]*<col className="w-72" \/>[\s\S]*<col className="w-40" \/>/);
+  assert.match(boardGames, /<BoardGameImage[\s\S]*className="size-10 shrink-0/);
+  assert.match(boardGames, /<AdminBoardGameLink[\s\S]*className="min-w-0 line-clamp-2"[\s\S]*title=\{game\.name\}/);
+  assert.match(boardGames, /<TableCell className="whitespace-nowrap">[\s\S]*<BoardGameStatusBadge/);
+  assert.match(boardGames, /<TableCell className="whitespace-nowrap text-right">[\s\S]*<BoardGameRowActions/);
+  assert.match(boardGames, /<div className="grid min-w-0 max-w-full gap-3 xl:hidden">/);
+  assert.match(boardGames, /<h2 className="wrap-anywhere font-semibold">/);
+});
+
+test("admin board-game name links retain complete long labels and destinations", () => {
+  const { AdminBoardGameLink } = load(
+    "src/components/(admin)/admin/AdminBoardGameLink.tsx",
+  );
+  const names = [
+    "超長中文桌遊名稱".repeat(12),
+    "A very long English board game name ".repeat(10).trim(),
+    "UnbrokenBoardGameName".repeat(20),
+    "一般桌遊",
+  ];
+
+  for (const name of names) {
+    const html = renderToStaticMarkup(
+      createElement(
+        AdminBoardGameLink,
+        {
+          boardGameId: "11111111-1111-4111-8111-111111111111",
+          className: "min-w-0 line-clamp-2",
+          title: name,
+        },
+        name,
+      ),
+    );
+
+    assert.match(html, /href="\/admin\/board-games\/11111111-1111-4111-8111-111111111111\/edit"/);
+    assert.match(html, /class="[^"]*wrap-anywhere[^"]*line-clamp-2/);
+    assert.ok(html.includes(`title="${name}"`));
+    assert.ok(html.includes(name));
+  }
 });

@@ -46,11 +46,12 @@ async function BoardGameLocationsPage({
   return (
     <>
       <HeadingSection
+        collection
         title="桌遊位置管理"
         description="維護社產存放位置；仍有社產使用的位置不可刪除。"
         actions={<LocationCreateAction />}
       />
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <form>
           <input type="hidden" name="page" value="1" />
           <input type="hidden" name="pageSize" value={pageSize} />

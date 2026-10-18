@@ -85,8 +85,10 @@ test("workflow confirmations distinguish destructive rejection from normal opera
   assert.match(adminBorrowings, /onAction\(borrowing, "return"\).*?確認歸還/s);
 });
 
-test("admin sidebar uses direct club-management labels without route changes", () => {
+test("admin sidebar keeps management routes under the approved domain groups", () => {
   assert.match(navigation, /label: "桌遊借用管理", href: "\/admin\/board-games\/borrowings"/);
   assert.match(navigation, /label: "社員註冊序號管理", href: "\/admin\/memberships\/register-keys"/);
-  assert.match(navigation, /label: "社團內容"/);
+  assert.match(navigation, /label: "桌遊管理"/);
+  assert.match(navigation, /label: "人員與社員"/);
+  assert.match(navigation, /label: "活動與內容"/);
 });

@@ -3,6 +3,32 @@ import { test } from "node:test";
 import { JSDOM } from "jsdom";
 import { act, createElement } from "react";
 import { load } from "./helpers/load-app-module.mjs";
+import { readFile } from "node:fs/promises";
+
+test("purchase suggestion mobile bulk controls separate review and danger actions", async () => {
+  const source = await readFile(
+    new URL(
+      "../src/components/(admin)/admin/purchase-suggestions/PurchaseSuggestionList.tsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+
+  assert.match(source, /mobilePresentation="panel"/);
+  assert.match(source, /mobileActions=/);
+  assert.match(source, /mobileNotice=/);
+  assert.match(source, /grid-cols-2/);
+  assert.match(source, /variant="danger"/);
+  assert.match(source, /setBulkAction\("delete"\)/);
+  assert.match(
+    source,
+    /selectedItems\.length > 0 && selectedItems\.every\([\s\S]*?item\.status !== mobileReviewAction/,
+  );
+  assert.doesNotMatch(
+    source,
+    /canApplyMobileReview\s*=\s*selectedItems\.some/,
+  );
+});
 
 async function withDom(run) {
   const dom = new JSDOM('<div id="app"></div>', { url: "https://example.test" });

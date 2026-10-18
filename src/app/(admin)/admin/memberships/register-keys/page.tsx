@@ -27,22 +27,28 @@ async function MembershipRegisterKeysPage({ searchParams }: Props) {
   return (
     <>
       <HeadingSection
+        collection
         title="社員註冊序號管理"
         description="產生序號，供已完成入社流程的使用者建立社員資格。"
         actions={
-          <ButtonLink href="/admin/memberships" variant="outline">
-            返回社員資格管理
-          </ButtonLink>
+          <>
+            <ButtonLink href="/admin/memberships" variant="outline">
+              返回社員資格管理
+            </ButtonLink>
+            <RegisterKeyGenerateForm
+              academicYears={academicYears}
+              defaultAcademicYearId={
+                academicYears.find((year) => year.is_current)?.id
+              }
+            />
+          </>
         }
       />
-      <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8">
-        <RegisterKeyGenerateForm
-          academicYears={academicYears}
-          defaultAcademicYearId={academicYears.find((year) => year.is_current)?.id}
-        />
+      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <RegisterKeyFilterBar academicYears={academicYears} query={query} />
-        <PaginatedCollection page={page} pageSize={pageSize} total={registerKeys.total} totalPages={registerKeys.totalPages} basePath="/admin/memberships/register-keys" pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
+        <PaginatedCollection className="space-y-3" page={page} pageSize={pageSize} total={registerKeys.total} totalPages={registerKeys.totalPages} basePath="/admin/memberships/register-keys" pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
         <RegisterKeyTable
+          key={JSON.stringify({ ...query, page, pageSize })}
           registerKeys={registerKeys.data}
           hasFilters={Boolean(
             query.search || query.academic_year_id || query.status || page > 1,

@@ -12,20 +12,24 @@ type BoardGameCardProps = {
   showAction?: boolean;
 };
 
-export function BoardGameCard({ boardGame, returnTo, showAction = true }: BoardGameCardProps) {
+export function BoardGameCard({
+  boardGame,
+  returnTo,
+  showAction = true,
+}: BoardGameCardProps) {
   return (
     <Link
-      href={returnTo ? buildBoardGameDetailHref(boardGame.id, returnTo) : `/board-games/${boardGame.id}`}
+      href={
+        returnTo
+          ? buildBoardGameDetailHref(boardGame.id, returnTo)
+          : `/board-games/${boardGame.id}`
+      }
       className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-(--border-default) bg-(--surface-default) text-left shadow-(--shadow-base) transition-[border-color,box-shadow] hover:border-(--border-strong) hover:shadow-(--shadow-card) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
     >
       <div className="relative aspect-square overflow-hidden border-b border-(--border-default) bg-(--surface-subtle)">
         <BoardGameImage
           boardGame={boardGame}
-          className={
-            boardGame.image
-              ? "h-full w-full object-contain"
-              : "h-full w-full object-contain p-8 opacity-60"
-          }
+          className={"h-full w-full object-contain"}
           loading="lazy"
         />
         <BoardGameStatusBadge
@@ -44,12 +48,18 @@ export function BoardGameCard({ boardGame, returnTo, showAction = true }: BoardG
 
         <div className="mt-2 flex min-h-5 min-w-0 items-center gap-2 text-xs leading-5 text-(--text-secondary) sm:text-sm">
           {boardGame.category ? (
-            <span className="min-w-0 flex-1 truncate" title={boardGame.category.name}>
+            <span
+              className="min-w-0 flex-1 truncate"
+              title={boardGame.category.name}
+            >
               {boardGame.category.name}
             </span>
           ) : null}
           {boardGame.location ? (
-            <span className="min-w-0 flex-1 truncate" title={boardGame.location.name}>
+            <span
+              className="min-w-0 flex-1 truncate"
+              title={boardGame.location.name}
+            >
               {boardGame.location.name}
             </span>
           ) : null}

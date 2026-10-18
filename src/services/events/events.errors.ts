@@ -26,6 +26,13 @@ export class AttendanceNotFoundError extends Error {
   }
 }
 
+export class AttendanceBatchConflictError extends Error {
+  constructor() {
+    super("部分簽到紀錄已變更、不存在或不屬於此活動，未更新任何紀錄");
+    this.name = "AttendanceBatchConflictError";
+  }
+}
+
 export class AttendanceUserNotFoundError extends Error {
   constructor() {
     super("找不到使用者");

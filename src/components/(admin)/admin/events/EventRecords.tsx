@@ -198,7 +198,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
         </Table>
       </AdminListSection>
 
-      <div className="grid gap-3 lg:hidden">
+      <div className="grid gap-2.5 lg:hidden">
         {events.map((event) => (
           <Card key={event.id} className="w-full min-w-0 max-w-full p-4">
             <div className="flex items-start justify-between gap-3">

@@ -151,7 +151,8 @@ test("exact count distinguishes 1000 complete rows from an upstream-truncated re
 test("export UI carries applied query but never pagination", async () => {
   const source = await readSource("src/components/(admin)/admin/exports/AdminExportMenu.tsx");
   assert.match(source, /key === "page" \|\| key === "pageSize"/);
-  assert.match(source, /匯出目前篩選結果/);
+  assert.match(source, />\s*匯出\s*</);
+  assert.doesNotMatch(source, /匯出目前篩選結果/);
   assert.match(source, /CSV/);
   assert.match(source, /Excel \(\.xlsx\)/);
   assert.match(source, /JSON/);

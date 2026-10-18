@@ -51,6 +51,11 @@ type ClaimMembershipRegisterKeyRpcRow = {
   membership_register_key_id: string | null;
 };
 
+type RevokeMembershipRegisterKeysRpcResult = {
+  outcome: "revoked" | "conflict";
+  revoked_count?: number;
+};
+
 export const membershipRegisterKeysRepository = {
   countByAcademicYearId: async (academicYearId: string): Promise<number> => {
     const { count, error } = await supabase
@@ -71,6 +76,27 @@ export const membershipRegisterKeysRepository = {
       .maybeSingle();
     if (error) throwRepositoryError("撤銷社員註冊碼失敗", error);
     return data;
+  },
+
+  revokeAvailableByIds: async (
+    ids: string[],
+  ): Promise<
+    | { outcome: "revoked"; revokedCount: number }
+    | { outcome: "conflict" }
+  > => {
+    const { data, error } = await supabase.rpc(
+      "revoke_membership_register_keys",
+      { p_ids: ids },
+    );
+    if (error) throwRepositoryError("批次撤銷社員註冊序號失敗", error);
+
+    const result = data as RevokeMembershipRegisterKeysRpcResult | null;
+    if (result?.outcome !== "revoked") return { outcome: "conflict" };
+
+    return {
+      outcome: "revoked",
+      revokedCount: result.revoked_count ?? 0,
+    };
   },
   findMany: async (options: FindManyRegisterKeysOptions = {}) => {
     const { page, pageSize, from, to } = normalizePaginationOptions({

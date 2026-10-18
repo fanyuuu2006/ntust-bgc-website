@@ -19,6 +19,13 @@ export class MembershipRegisterKeyCannotBeRevokedError extends Error {
   }
 }
 
+export class MembershipRegisterKeysBatchConflictError extends Error {
+  constructor() {
+    super("部分社員註冊序號不存在或已非可用狀態，未撤銷任何序號");
+    this.name = "MembershipRegisterKeysBatchConflictError";
+  }
+}
+
 export class MembershipRegisterKeyInactiveError extends Error {
   constructor() {
     super("此社員註冊序號目前無法使用");
@@ -65,6 +72,13 @@ export class MembershipStatusTransitionError extends Error {
   constructor() {
     super("目前狀態不允許此社員資格變更，請重新整理後再試");
     this.name = "MembershipStatusTransitionError";
+  }
+}
+
+export class MembershipBatchConflictError extends Error {
+  constructor() {
+    super("部分社員資格已變更或不符合批次更新條件，請重新整理後再試");
+    this.name = "MembershipBatchConflictError";
   }
 }
 

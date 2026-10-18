@@ -45,15 +45,54 @@ test("admin controls use Lucide affordances and keep explicit focus ownership", 
   assert.match(modal, /trigger\.focus\(\)/);
 });
 
-test("sidebar retains the approved IA and keeps long labels readable", async () => {
+test("sidebar retains the approved domain grouping and item order", async () => {
   const [navigation, sidebar] = await Promise.all([
     readSource("src/libs/navigation.tsx"),
     readSource("src/components/(admin)/AdminSidebarNav.tsx"),
   ]);
 
-  assert.match(navigation, /桌遊借用管理/);
-  assert.match(navigation, /社員註冊序號管理/);
-  assert.match(navigation, /社團內容/);
+  const expectedGroups = [
+    ["總覽", [["儀表板", "/admin"]]],
+    ["桌遊管理", [
+      ["桌遊管理", "/admin/board-games"],
+      ["桌遊借用管理", "/admin/board-games/borrowings"],
+      ["評價與評論管理", "/admin/reviews"],
+      ["桌遊購入建議", "/admin/board-games/suggests"],
+      ["桌遊種類管理", "/admin/board-games/categories"],
+      ["桌遊位置管理", "/admin/board-games/locations"],
+    ]],
+    ["人員與社員", [
+      ["使用者管理", "/admin/users"],
+      ["社員資格管理", "/admin/memberships"],
+      ["社員註冊序號管理", "/admin/memberships/register-keys"],
+      ["幹部管理", "/admin/officers"],
+      ["學年度管理", "/admin/academic-years"],
+    ]],
+    ["活動與內容", [
+      ["活動管理", "/admin/events"],
+      ["公告管理", "/admin/announcements"],
+    ]],
+  ];
+
+  let previousGroupIndex = -1;
+  for (const [groupLabel, items] of expectedGroups) {
+    const groupIndex = navigation.indexOf(`label: "${groupLabel}"`, previousGroupIndex + 1);
+    assert.ok(groupIndex > previousGroupIndex, `${groupLabel} group order`);
+    previousGroupIndex = groupIndex;
+
+    let previousItemIndex = groupIndex;
+    for (const [label, href] of items) {
+      const itemIndex = navigation.indexOf(
+        `{ label: "${label}", href: "${href}" }`,
+        previousItemIndex,
+      );
+      assert.ok(itemIndex > previousItemIndex, `${groupLabel}: ${label} order`);
+      previousItemIndex = itemIndex;
+    }
+  }
+  assert.match(sidebar, /adminSidebarGroups\.map/);
+  assert.match(sidebar, /onClick=\{onNavigate\}/);
+  assert.match(sidebar, /aria-current=\{active \? "page" : undefined\}/);
   assert.doesNotMatch(sidebar, /block truncate rounded-lg/);
 });
 
