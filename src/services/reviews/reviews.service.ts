@@ -7,7 +7,7 @@ import { boardGameReviewsRepository } from "@/repositories/board-game-reviews.re
 import { boardGamesRepository } from "@/repositories/board-games.repository";
 import { BoardNotFoundError } from "@/services/board-games/board-games.errors";
 import { toPublicUserIdentity } from "@/services/users/public-identity";
-import { createReviewSchema, listReviewsSchema, profileReviewsQuerySchema, replaceReviewSchema } from "./reviews.schema";
+import { createReviewSchema, listReviewsSchema, profileReviewsQuerySchema, replaceReviewSchema, setReviewLikeSchema } from "./reviews.schema";
 import { DuplicateReviewError, ReviewNotFoundError } from "./reviews.errors";
 import type { BoardGameReviewAggregate, PublicBoardGameReview, PublicBoardGameReviewsPage, PublicProfileReviewsPage, ReviewRating } from "./reviews.types";
 
@@ -43,6 +43,8 @@ function toPublicReview(source: Awaited<ReturnType<typeof boardGameReviewsReposi
     content: source.content,
     createdAt: source.created_at,
     updatedAt: source.updated_at,
+    likeCount: Number(source.like_count),
+    likedByMe: source.liked_by_me,
     author: toPublicUserIdentity(source.author),
   };
 }
@@ -78,11 +80,27 @@ export const reviewsService = {
     return review ? { rating: review.rating as ReviewRating, content: review.content } : null;
   },
 
-  listPublic: async (boardGameId: unknown, input: unknown = {}): Promise<PublicBoardGameReviewsPage> => {
+  listPublic: async (boardGameId: unknown, input: unknown = {}, viewerUserId?: unknown): Promise<PublicBoardGameReviewsPage> => {
     const id = z.uuid().parse(boardGameId);
     const options = listReviewsSchema.parse(input);
-    const result = await boardGameReviewsRepository.findPublicPage(id, options);
+    const viewerId = viewerUserId == null ? undefined : z.uuid().parse(viewerUserId);
+    const result = await boardGameReviewsRepository.findPublicPage(id, { ...options, viewerUserId: viewerId });
     return { ...result, data: result.data.map(toPublicReview) };
+  },
+
+  setLike: async (userId: unknown, boardGameId: unknown, reviewId: unknown, input: unknown) => {
+    const actorId = z.uuid().parse(userId);
+    const gameId = z.uuid().parse(boardGameId);
+    const id = z.uuid().parse(reviewId);
+    const { liked } = setReviewLikeSchema.parse(input);
+    try {
+      const result = await boardGameReviewsRepository.setLike(gameId, id, actorId, liked);
+      return { reviewId: result.review_id, likeCount: Number(result.like_count), likedByMe: result.liked_by_me };
+    } catch (error) {
+      const source = databaseError(error);
+      if (source?.code === "P0002" && source.message?.includes("REVIEW_NOT_FOUND")) throw new ReviewNotFoundError();
+      throw error;
+    }
   },
 
   resolvePublicNewestLocation: async (boardGameId: unknown, reviewId: unknown, pageSize = 10) => {

@@ -289,6 +289,12 @@ export type BoardGameReview = {
   updated_at: Timestamp;
 };
 
+export type BoardGameReviewLike = {
+  review_id: UUID;
+  user_id: UUID;
+  created_at: Timestamp;
+};
+
 /** 熱門桌遊 read model；分數只供伺服器排序，不直接顯示給使用者。 */
 export type BoardGamePopularityStatistics = {
   board_game_id: UUID;

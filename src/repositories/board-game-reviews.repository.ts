@@ -9,10 +9,14 @@ import type { ReviewSort } from "@/services/reviews/reviews.types";
 import { buildIlikeSearch } from "@/repositories/shared/search";
 
 const REVIEW_FIELDS = "id,board_game_id,user_id,rating,content,created_at,updated_at";
-const PUBLIC_REVIEW_FIELDS = `${REVIEW_FIELDS},author:users!board_game_reviews_user_id_fkey(id,name,avatar,closed_at)`;
 
 export type ReviewWriteInput = Pick<BoardGameReview, "rating" | "content">;
-export type PublicReviewSource = BoardGameReview & { author: PublicIdentitySource };
+export type PublicReviewWithLikesSource = Omit<BoardGameReview, "board_game_id" | "user_id"> & {
+  author: PublicIdentitySource;
+  like_count: number | string;
+  liked_by_me: boolean;
+};
+export type ReviewLikeSource = { review_id: string; like_count: number | string; liked_by_me: boolean };
 export type ReviewAggregateSource = {
   average_rating: number | string | null;
   rating_count: number | string;
@@ -56,24 +60,45 @@ export const boardGameReviewsRepository = {
     return data;
   },
 
-  findPublicPage: async (boardGameId: string, options: { page: number; pageSize: number; search?: string; rating?: number; sort: ReviewSort }) => {
-    const { page, pageSize, from, to } = normalizePaginationOptions({ ...options, maxPageSize: 50 });
-    let query = supabase
-      .from("board_game_reviews")
-      .select(PUBLIC_REVIEW_FIELDS, { count: "exact" })
-      .eq("board_game_id", boardGameId);
-
-    if (options.search) query = query.or(buildIlikeSearch(["content"], options.search));
-    if (options.rating) query = query.eq("rating", options.rating);
-    if (options.sort === "highest" || options.sort === "lowest") {
-      query = query.order("rating", { ascending: options.sort === "lowest" });
-    }
-    const ascending = options.sort === "oldest";
-    query = query.order("created_at", { ascending }).order("id", { ascending }).range(from, to);
-
-    const { data, error, count } = await query;
+  findPublicPage: async (boardGameId: string, options: { page: number; pageSize: number; search?: string; rating?: number; sort: ReviewSort; viewerUserId?: string }) => {
+    const { page, pageSize, from } = normalizePaginationOptions({ ...options, maxPageSize: 50 });
+    const { data, error } = await supabase.rpc("list_public_board_game_reviews", {
+      p_board_game_id: boardGameId,
+      p_viewer_user_id: options.viewerUserId ?? null,
+      p_search: options.search ?? null,
+      p_rating: options.rating ?? null,
+      p_sort: options.sort,
+      p_offset: from,
+      p_limit: pageSize,
+    });
     if (error) throwRepositoryError("取得公開桌遊評論失敗", error);
-    return buildPaginationResult((data ?? []) as unknown as PublicReviewSource[], count, page, pageSize);
+    const result = (data ?? { data: [], total: 0 }) as { data?: Array<{
+      id: string; rating: number; content: string | null; created_at: string; updated_at: string;
+      author_id: string; author_name: string; author_avatar: string | null; author_closed_at: string | null;
+      like_count: number | string; liked_by_me: boolean;
+    }>; total?: number | string };
+    const records: PublicReviewWithLikesSource[] = (result.data ?? []).map((review) => ({
+      id: review.id,
+      rating: review.rating,
+      content: review.content,
+      created_at: review.created_at,
+      updated_at: review.updated_at,
+      like_count: review.like_count,
+      liked_by_me: review.liked_by_me,
+      author: { id: review.author_id, name: review.author_name, avatar: review.author_avatar, closed_at: review.author_closed_at },
+    }));
+    return buildPaginationResult(records, Number(result.total ?? 0), page, pageSize);
+  },
+
+  setLike: async (boardGameId: string, reviewId: string, userId: string, liked: boolean): Promise<ReviewLikeSource> => {
+    const { data, error } = await supabase.rpc("set_board_game_review_like", {
+      p_board_game_id: boardGameId,
+      p_review_id: reviewId,
+      p_user_id: userId,
+      p_liked: liked,
+    });
+    if (error) throwRepositoryError("更新評論按讚狀態失敗", error);
+    return data as ReviewLikeSource;
   },
 
   findPublicNewestPosition: async (boardGameId: string, reviewId: string): Promise<number | null> => {

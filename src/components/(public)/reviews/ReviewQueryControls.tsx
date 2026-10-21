@@ -7,29 +7,32 @@ import type { ReviewListQuery } from "@/services/reviews/reviews.types";
 import { buildQueryString, type QueryValue } from "@/utils/url";
 
 const SORT_OPTIONS = [
+  { value: "popular", label: "最多讚" },
   { value: "newest", label: "最新評論" },
   { value: "oldest", label: "最舊評論" },
   { value: "highest", label: "評分最高" },
   { value: "lowest", label: "評分最低" },
 ] as const;
 
-export function ReviewQueryControls({ basePath, query, searchPlaceholder, searchLabel, preservedQuery = {}, anchor = "profile-reviews" }: {
+export function ReviewQueryControls({ basePath, query, searchPlaceholder, searchLabel, preservedQuery = {}, anchor = "profile-reviews", includePopular = false, defaultSort = "newest" }: {
   basePath: string;
   query: ReviewListQuery;
   searchPlaceholder: string;
   searchLabel: string;
   preservedQuery?: Record<string, QueryValue>;
   anchor?: string;
+  includePopular?: boolean;
+  defaultSort?: ReviewListQuery["sort"];
 }) {
   const appliedQuery = reviewAppliedQuery(query, preservedQuery);
   const clearSearchHref = reviewQueryHref(basePath, {
     ...preservedQuery,
     reviewRating: query.rating,
-    reviewSort: query.sort === "newest" ? undefined : query.sort,
+    reviewSort: query.sort === defaultSort ? undefined : query.sort,
   }, anchor);
   const resetHref = reviewQueryHref(basePath, {
     ...preservedQuery,
-    reviewSort: query.sort === "newest" ? undefined : query.sort,
+    reviewSort: query.sort === defaultSort ? undefined : query.sort,
   }, anchor);
   const hasConditions = hasReviewAppliedConditions(query);
 
@@ -40,7 +43,7 @@ export function ReviewQueryControls({ basePath, query, searchPlaceholder, search
           <input type="hidden" name="reviewPage" value="1" />
           {Object.entries(preservedQuery).map(([name, value]) => value == null ? null : <input key={name} type="hidden" name={name} value={String(value)} />)}
           {query.rating ? <input type="hidden" name="reviewRating" value={query.rating} /> : null}
-          {query.sort !== "newest" ? <input type="hidden" name="reviewSort" value={query.sort} /> : null}
+          {query.sort !== defaultSort ? <input type="hidden" name="reviewSort" value={query.sort} /> : null}
           <ClearableSearchInput name="reviewSearch" initialValue={query.search} clearHref={clearSearchHref} placeholder={searchPlaceholder} aria-label={searchLabel} inputClassName="text-base lg:text-sm" />
           <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
         </form>
@@ -54,7 +57,7 @@ export function ReviewQueryControls({ basePath, query, searchPlaceholder, search
           <ArrowUpDown aria-hidden="true" className="size-4 shrink-0 text-(--text-muted)" />
           <span className="sr-only">排序</span>
           <ImmediateQuerySelect appliedQuery={appliedQuery} basePath={basePath} queryKey="reviewSort" pageKey="reviewPage" value={query.sort} focusOwner="parent" className="min-h-0 min-w-0 border-0 bg-transparent px-0 py-0">
-            {SORT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            {SORT_OPTIONS.filter((option) => includePopular || option.value !== "popular").map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
           </ImmediateQuerySelect>
         </label>
       </div>

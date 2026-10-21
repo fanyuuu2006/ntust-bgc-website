@@ -61,7 +61,8 @@ test("public review DTO uses one narrow author projection and canonical tombston
     readSource("src/services/reviews/reviews.service.ts"),
     readSource("src/services/reviews/reviews.types.ts"),
   ]);
-  assert.match(repository, /author:users!board_game_reviews_user_id_fkey\(id,name,avatar,closed_at\)/);
+  assert.match(repository, /author_id: string; author_name: string; author_avatar: string \| null; author_closed_at: string \| null/);
+  assert.match(repository, /list_public_board_game_reviews/);
   assert.doesNotMatch(repository, /select\(["'`]\*["'`]\)/);
   assert.doesNotMatch(repository, /user_profiles|memberships|officer_positions|sessions|auth_credentials/);
   assert.match(service, /toPublicUserIdentity/);
@@ -160,7 +161,7 @@ test("service maps aggregate defaults, public tombstones and ownership-safe miss
   assert.deepEqual(aggregate, { averageRating: 4.5, ratingCount: 2, reviewCount: 1 });
   const page = await reviewsService.listPublic("00000000-0000-4000-8000-000000000002", {});
   assert.deepEqual(page.data[0].author, { id: "u", name: "已註銷使用者", avatar: null });
-  assert.deepEqual(Object.keys(page.data[0]).sort(), ["author", "content", "createdAt", "id", "rating", "updatedAt"]);
+  assert.deepEqual(Object.keys(page.data[0]).sort(), ["author", "content", "createdAt", "id", "likeCount", "likedByMe", "rating", "updatedAt"]);
   await assert.rejects(() => reviewsService.updateOwn("u", "00000000-0000-4000-8000-000000000002", { rating: 2 }), ReviewNotFoundError);
   await assert.rejects(() => reviewsService.deleteOwn("u", "00000000-0000-4000-8000-000000000002"), ReviewNotFoundError);
 });

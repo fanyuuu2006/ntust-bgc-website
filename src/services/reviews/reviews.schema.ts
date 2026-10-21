@@ -38,10 +38,15 @@ export const listReviewsSchema = z.object({
     z.enum(["1", "2", "3", "4", "5"]).transform((value) => Number(value) as 1 | 2 | 3 | 4 | 5),
     rating,
   ]).optional().catch(undefined),
+  sort: z.enum(["popular", "newest", "oldest", "highest", "lowest"]).catch("popular"),
+});
+
+export const profileReviewsQuerySchema = listReviewsSchema.extend({
+  pageSize: z.literal(10).catch(10),
   sort: z.enum(["newest", "oldest", "highest", "lowest"]).catch("newest"),
 });
 
-export const profileReviewsQuerySchema = listReviewsSchema.extend({ pageSize: z.literal(10).catch(10) });
+export const setReviewLikeSchema = z.object({ liked: z.boolean() }).strict();
 
 export const adminReviewsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).catch(1),

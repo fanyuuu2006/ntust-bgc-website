@@ -57,7 +57,7 @@ async function generateMetadataContent({
       canonical,
       image: image ? { url: image, alt: normalizedName } : undefined,
     }),
-    ...(reviewQuery.page > 1 || reviewQuery.sort !== "newest" || reviewQuery.search || reviewQuery.rating || reviewQuery.targetReviewId !== undefined
+    ...(reviewQuery.page > 1 || reviewQuery.sort !== "popular" || reviewQuery.search || reviewQuery.rating || reviewQuery.targetReviewId !== undefined
       ? { robots: { index: false, follow: true } }
       : {}),
   };
@@ -103,14 +103,14 @@ async function BoardGameDetailPage({
     }
   }
 
-  const reviews = await reviewsService.listPublic(boardGame.id, effectiveReviewQuery);
+  const reviews = await reviewsService.listPublic(boardGame.id, effectiveReviewQuery, viewer.user?.id);
 
   if (!targetRequested && reviews.totalPages > 0 && reviewQuery.page > reviews.totalPages) {
     redirect(`/board-games/${boardGame.id}?${buildQueryString({
       reviewPage: reviews.totalPages,
       reviewSearch: reviewQuery.search,
       reviewRating: reviewQuery.rating,
-      reviewSort: reviewQuery.sort === "newest" ? undefined : reviewQuery.sort,
+      reviewSort: reviewQuery.sort === "popular" ? undefined : reviewQuery.sort,
       returnTo: returnTo === "/board-games" ? undefined : returnTo,
     })}`);
   }
@@ -240,6 +240,7 @@ async function BoardGameDetailPage({
             targetReviewId={targetLocation?.reviewId}
             targetUnavailable={targetUnavailable}
             returnTo={returnTo === "/board-games" ? undefined : returnTo}
+            likeEligibility={viewer.status === "unavailable" ? "unavailable" : !user ? "anonymous" : !user.email_verified_at ? "unverified" : "verified"}
             authorAction={<ReviewAuthorAction boardGameId={boardGame.id} ownReview={ownReview} eligibility={viewer.status === "unavailable" ? "unavailable" : !user ? "anonymous" : !user.email_verified_at ? "unverified" : "verified"} />}
           />
         </div>
