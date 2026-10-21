@@ -11,7 +11,7 @@ import { RatingStars } from "@/components/(public)/board-games/RatingStars";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Modal } from "@/components/Modal";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
@@ -90,7 +90,7 @@ export function AdminReviewRecords({
                 sortValues={{ asc: "oldest", desc: "newest" }}
                 className="w-40"
               />
-              <TableHead className="w-24 text-right">操作</TableHead>
+              <TableHead className="w-52 text-right">操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -121,9 +121,19 @@ export function AdminReviewRecords({
                   ) : null}
                 </TableCell>
                 <TableCell className="align-middle text-right">
-                  <Button type="button" size="sm" variant="danger" onClick={() => { setDeleting(review); setError(null); }}>
-                    刪除
-                  </Button>
+                  <div className="flex justify-end gap-2">
+                    <ButtonLink
+                      href={publicReviewHref(review)}
+                      size="sm"
+                      variant="outline"
+                      aria-label={publicReviewLabel(review)}
+                    >
+                      查看
+                    </ButtonLink>
+                    <Button type="button" size="sm" variant="danger" onClick={() => { setDeleting(review); setError(null); }}>
+                      刪除
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -156,11 +166,21 @@ export function AdminReviewRecords({
               </AdminBoardGameLink>
               <div className="mt-3"><ReviewExcerpt review={review} onView={() => setViewing(review)} /></div>
             </div>
-            <div className="mt-3 flex min-w-0 items-center justify-between gap-3 border-t border-(--border-default) pt-3">
+            <div className="mt-3 flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-(--border-default) pt-3">
               <TimeMetadata review={review} compact />
-              <Button type="button" size="sm" variant="danger" className="shrink-0" onClick={() => { setDeleting(review); setError(null); }}>
-                刪除
-              </Button>
+              <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                <ButtonLink
+                  href={publicReviewHref(review)}
+                  size="sm"
+                  variant="outline"
+                  aria-label={publicReviewLabel(review)}
+                >
+                  查看
+                </ButtonLink>
+                <Button type="button" size="sm" variant="danger" onClick={() => { setDeleting(review); setError(null); }}>
+                  刪除
+                </Button>
+              </div>
             </div>
           </Card>
         ))}
@@ -231,4 +251,12 @@ function TimeMetadata({ review, compact = false }: { review: AdminReview; compac
 function getAuthorLabel(review: AdminReview) {
   if (review.author.closed_at) return "已註銷使用者";
   return review.author.real_name?.trim() || review.author.name;
+}
+
+function publicReviewHref(review: AdminReview) {
+  return `/board-games/${review.boardGame.id}?review=${review.id}&reviewSort=newest#review-${review.id}`;
+}
+
+function publicReviewLabel(review: AdminReview) {
+  return `前往「${review.boardGame.name}」的指定公開評論`;
 }

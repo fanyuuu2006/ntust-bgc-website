@@ -45,7 +45,8 @@ test("admin cross-domain references use admin entity links", async () => {
 
   assert.match(reviews, /AdminBoardGameLink/);
   assert.match(reviews, /AdminUserLink/);
-  assert.doesNotMatch(reviews, /href=\{`\/board-games\//);
+  assert.match(reviews, /publicReviewHref\(review\)/);
+  assert.match(reviews, /review=\$\{review\.id\}/);
   assert.match(borrowings, /AdminBoardGameLink/);
   assert.match(borrowings, /AdminUserLink/);
   assert.doesNotMatch(borrowings, /buildBoardGameDetailHref/);
@@ -67,7 +68,8 @@ test("Board Game ownership keeps management navigation primary and exposes publi
   assert.match(editPage, /查看公開頁面/);
   assert.match(editPage, /variant="text"/);
   assert.match(reviews, /AdminBoardGameLink/);
-  assert.doesNotMatch(reviews, /href=\{`\/board-games\//);
+  assert.match(reviews, /publicReviewHref\(review\)/);
+  assert.match(reviews, /前往「\$\{review\.boardGame\.name\}」的指定公開評論/);
   assert.match(borrowings, /AdminBoardGameLink/);
   assert.doesNotMatch(borrowings, /buildBoardGameDetailHref/);
 });

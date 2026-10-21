@@ -76,6 +76,26 @@ export const boardGameReviewsRepository = {
     return buildPaginationResult((data ?? []) as unknown as PublicReviewSource[], count, page, pageSize);
   },
 
+  findPublicNewestPosition: async (boardGameId: string, reviewId: string): Promise<number | null> => {
+    const { data: target, error: targetError } = await supabase
+      .from("board_game_reviews")
+      .select("id,created_at")
+      .eq("board_game_id", boardGameId)
+      .eq("id", reviewId)
+      .maybeSingle();
+    if (targetError) throwRepositoryError("查詢公開評論位置失敗", targetError);
+    if (!target) return null;
+
+    // 公開評論以建立時間與 UUID 倒序排列；計算相同排序下位於目標之前的筆數，才能穩定換算分頁。
+    const { count, error: countError } = await supabase
+      .from("board_game_reviews")
+      .select("id", { count: "exact", head: true })
+      .eq("board_game_id", boardGameId)
+      .or(`created_at.gt.${target.created_at},and(created_at.eq.${target.created_at},id.gt.${target.id})`);
+    if (countError) throwRepositoryError("計算公開評論位置失敗", countError);
+    return count ?? 0;
+  },
+
   findPublicPageByUser: async (userId: string, options: { page: number; pageSize: number; search?: string; rating?: number; sort?: ReviewSort }) => {
     const { page, pageSize, from, to } = normalizePaginationOptions({ ...options, maxPageSize: 12 });
     let matchingBoardGameIds: string[] = [];
