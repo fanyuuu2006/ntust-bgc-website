@@ -6,18 +6,21 @@ const root = new URL("../", import.meta.url);
 const readSource = (path) => readFile(new URL(path, root), "utf8");
 
 test("homepage hero uses a bounded neutral scrim and responsive stage height", async () => {
-  const hero = await readSource(
-    "src/components/(public)/home/HomeHero.tsx",
-  );
+  const [hero, styles] = await Promise.all([
+    readSource("src/components/(public)/home/HomeHero.tsx"),
+    readSource("src/styles/globals.css"),
+  ]);
 
   assert.match(hero, /min-h-104/);
   assert.match(hero, /sm:min-h-110/);
   assert.match(hero, /lg:min-h-124/);
-  assert.match(hero, /bg-black\/45/);
-  assert.match(hero, /lg:from-black\/65/);
-  assert.match(hero, /lg:via-black\/35/);
-  assert.match(hero, /lg:to-black\/10/);
-  assert.doesNotMatch(hero, /from-black\/75|via-black\/55|100vh|min-h-screen/);
+  assert.match(hero, /hero-image-overlay/);
+  assert.match(hero, /text-\(--text-on-image\)/);
+  assert.match(styles, /--overlay-on-image-mobile:/);
+  assert.match(styles, /--overlay-on-image-strong:/);
+  assert.match(styles, /--overlay-on-image-medium:/);
+  assert.match(styles, /--overlay-on-image-light:/);
+  assert.doesNotMatch(hero, /bg-black|from-black|via-black|to-black|100vh|min-h-screen/);
   assert.match(hero, /href="#popular-board-games"/);
   assert.match(hero, /href="#latest-announcements"/);
 });

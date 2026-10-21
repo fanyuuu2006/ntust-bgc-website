@@ -3,6 +3,8 @@ import { GOOGLE_ANALYTICS_ID, isProductionDeployment } from "@/libs/seo";
 import { GoogleAnalytics } from "@next/third-parties/google";
 export { metadata } from "@/libs/metadata";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { THEME_INITIALIZATION_SCRIPT } from "@/libs/theme";
 import "@/styles/globals.css";
 
 const geistSans = Geist({
@@ -24,9 +26,15 @@ function RootLayout({
     <html
       lang="zh-Hant"
       data-scroll-behavior="smooth"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body suppressHydrationWarning={true}>{children}</body>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INITIALIZATION_SCRIPT }} />
+      </head>
+      <body>
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
       {isProductionDeployment() ? (
         <GoogleAnalytics gaId={GOOGLE_ANALYTICS_ID} />
       ) : null}

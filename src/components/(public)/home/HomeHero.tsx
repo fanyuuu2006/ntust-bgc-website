@@ -14,7 +14,7 @@ const hasHeroImage = existsSync(
 
 export function HomeHero() {
   return (
-    <section className="relative isolate flex min-h-104 overflow-hidden bg-(--primary-dark) text-(--text-inverse) sm:min-h-110 lg:min-h-124">
+    <section className="relative isolate flex min-h-104 overflow-hidden bg-(--primary-dark) text-(--text-on-image) sm:min-h-110 lg:min-h-124">
       {hasHeroImage ? (
         <>
           <Image
@@ -27,17 +27,17 @@ export function HomeHero() {
           />
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-black/45 lg:bg-transparent lg:bg-linear-to-r lg:from-black/65 lg:via-black/35 lg:to-black/10"
+            className="hero-image-overlay absolute inset-0"
           />
         </>
       ) : null}
 
       <div className="container relative z-10 flex items-center py-12 sm:py-16 lg:py-20">
         <div className="relative max-w-2xl">
-          <p className="text-base leading-6 font-semibold tracking-wide text-white sm:text-lg">
+          <p className="text-base leading-6 font-semibold tracking-wide text-(--text-on-image) sm:text-lg">
             {siteConfigs.name}
           </p>
-          <p className="mt-1 text-sm leading-6 font-medium text-white/75 sm:text-base">
+          <p className="mt-1 text-sm leading-6 font-medium text-(--text-on-image-muted) sm:text-base">
             {siteConfigs.fullName}
           </p>
           <h1 className="mt-5 max-w-xl text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl lg:text-5xl">

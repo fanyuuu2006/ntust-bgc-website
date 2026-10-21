@@ -133,7 +133,7 @@ export function Modal({
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
       className={cn(
-        "m-auto w-[calc(100%-1rem)] overflow-visible rounded-2xl border border-(--border-default) bg-(--surface-elevated) p-0 text-(--text-primary) shadow-(--shadow-card) backdrop:bg-(--text-primary)/45 sm:w-full",
+        "m-auto w-[calc(100%-1rem)] overflow-visible rounded-2xl border border-(--border-default) bg-(--surface-elevated) p-0 text-(--text-primary) shadow-(--shadow-card) backdrop:bg-(--overlay-backdrop) sm:w-full",
         sizeClassNames[size],
         className,
       )}

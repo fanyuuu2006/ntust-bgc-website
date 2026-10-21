@@ -11,6 +11,7 @@ export default function SettingsLoading() {
           <div className="skeleton h-5 w-full max-w-lg rounded" />
         </div>
         <div className="skeleton h-96 rounded-2xl" />
+        <div className="skeleton h-40 rounded-2xl" />
         <div className="skeleton h-80 rounded-2xl" />
       </div>
     </section>

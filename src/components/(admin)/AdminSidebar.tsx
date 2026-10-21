@@ -61,7 +61,7 @@ export function AdminSidebar({ id, isOpen, onClose, className, ...rest }: AdminS
 
   return (
     <>
-      {isOpen ? <div aria-hidden="true" onPointerDown={() => onClose(true)} className="fixed inset-0 z-40 bg-(--foreground)/40 lg:hidden" /> : null}
+      {isOpen ? <div aria-hidden="true" onPointerDown={() => onClose(true)} className="fixed inset-0 z-40 bg-(--overlay-backdrop) lg:hidden" /> : null}
 
       <aside
         ref={drawerRef}
