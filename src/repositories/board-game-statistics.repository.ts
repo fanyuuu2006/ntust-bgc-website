@@ -8,11 +8,12 @@ import {
 } from "@/repositories/shared/pagination";
 import { isPostgrestRangeNotSatisfiable } from "@/repositories/shared/postgrest";
 import {
+  buildIlikePattern,
   buildIlikeSearch,
   buildNumericSearch,
 } from "@/repositories/shared/search";
 import type { OrderOptions, PaginationQuery } from "@/repositories/shared/types";
-import type { BoardGameDiscoveryItem, HomeBoardGameItem } from "@/services/board-games/board-games.types";
+import type { BoardGameDiscoveryItem, BoardGameRankingItem, HomeBoardGameItem } from "@/services/board-games/board-games.types";
 import type { BoardGameStatus } from "@/types/database";
 
 export type BoardGameDiscoveryOrderBy =
@@ -22,6 +23,12 @@ export type BoardGameDiscoveryOrderBy =
   | "created_at"
   | "updated_at"
   | "inventory_number";
+
+export type BoardGameRanking = "popular" | "rating" | "reviews" | "borrowed";
+
+export type FindRankedBoardGamesOptions = PaginationQuery & {
+  search?: string;
+};
 
 export type FindManyBoardGamesWithStatsOptions = PaginationQuery &
   OrderOptions<BoardGameDiscoveryOrderBy> & {
@@ -42,6 +49,13 @@ type HomeBoardGameStatisticsRow = Omit<HomeBoardGameItem, "stats"> & Pick<
   BoardGameStatisticsRow,
   "completed_borrow_count" | "average_rating" | "rating_count" | "review_count"
 >;
+
+type BoardGameRankingRow = Omit<BoardGameStatisticsRow, "id" | "category" | "location"> & {
+  board_game_id: string;
+  global_rank: number | string;
+  category_name: string | null;
+  location_name: string | null;
+};
 
 function toStats(row: Pick<BoardGameStatisticsRow, "completed_borrow_count" | "average_rating" | "rating_count" | "review_count">) {
   return {
@@ -66,6 +80,20 @@ function toHomeBoardGameWithStats(row: HomeBoardGameStatisticsRow): HomeBoardGam
   return {
     ...boardGame,
     stats: toStats({ completed_borrow_count, average_rating, rating_count, review_count }),
+  };
+}
+
+function toBoardGameRankingItem(row: BoardGameRankingRow): BoardGameRankingItem {
+  return {
+    id: row.board_game_id,
+    name: row.name,
+    image: row.image,
+    status: row.status,
+    inventory_number: row.inventory_number,
+    category: row.category_name === null ? null : { name: row.category_name },
+    location: row.location_name === null ? null : { name: row.location_name },
+    stats: toStats(row),
+    globalRank: Number(row.global_rank),
   };
 }
 
@@ -177,8 +205,53 @@ async function findManyWithStats(
   );
 }
 
+async function findRanked(
+  ranking: BoardGameRanking,
+  options: FindRankedBoardGamesOptions = {},
+) {
+  const { page, pageSize, from, to } = normalizePaginationOptions(options);
+  const keyword = options.search?.trim();
+  let query = supabase
+    .from("board_game_rankings")
+    .select("board_game_id,global_rank,name,image,status,inventory_number,completed_borrow_count,average_rating,rating_count,review_count,category_name,location_name", { count: "exact" })
+    .eq("ranking", ranking);
+
+  if (keyword) {
+    query = query.ilike("name", buildIlikePattern(keyword));
+  }
+
+  const { data, error, count } = await query
+    .order("global_rank", { ascending: true })
+    .range(from, to);
+
+  if (error) {
+    if (!isPostgrestRangeNotSatisfiable(error)) {
+      throwRepositoryError("取得公開桌遊排行榜失敗", error);
+    }
+
+    let countQuery = supabase
+      .from("board_game_rankings")
+      .select("board_game_id", { count: "exact", head: true })
+      .eq("ranking", ranking);
+    if (keyword) {
+      countQuery = countQuery.ilike("name", buildIlikePattern(keyword));
+    }
+    const { count: totalCount, error: countError } = await countQuery;
+    if (countError) throwRepositoryError("計算公開桌遊排行榜筆數失敗", countError);
+    return buildPaginationResult<BoardGameRankingItem>([], totalCount, page, pageSize);
+  }
+
+  return buildPaginationResult<BoardGameRankingItem>(
+    ((data ?? []) as unknown as BoardGameRankingRow[]).map(toBoardGameRankingItem),
+    count,
+    page,
+    pageSize,
+  );
+}
+
 export const boardGameStatisticsRepository = {
   findMany: findManyWithStats,
+  findRanked,
 
   /** 熱門排序由 view 決定；關聯名稱在同一請求取得，首頁不計 pagination total。 */
   findPopular: async ({ limit = 6 }: { limit?: number } = {}): Promise<HomeBoardGameItem[]> => {

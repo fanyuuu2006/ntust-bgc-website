@@ -13,6 +13,7 @@ import {
 } from "@/repositories/board-games.repository";
 import {
   boardGameStatisticsRepository,
+  type BoardGameRanking,
   type FindManyBoardGamesWithStatsOptions,
 } from "@/repositories/board-game-statistics.repository";
 import {
@@ -571,6 +572,13 @@ export const boardGamesService = {
   ): Promise<ReturnType<typeof buildPaginationResult<BoardGameDiscoveryItem>>> => {
     const result = await boardGameStatisticsRepository.findMany(options);
     return result;
+  },
+
+  listBoardGameRankings: async (
+    ranking: BoardGameRanking,
+    options: { page?: number; pageSize?: number; search?: string } = {},
+  ) => {
+    return boardGameStatisticsRepository.findRanked(ranking, options);
   },
 
   listPopularBoardGames: async (
