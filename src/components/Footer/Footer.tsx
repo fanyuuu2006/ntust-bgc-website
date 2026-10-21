@@ -18,7 +18,24 @@ const relatedLinks = [
   { label: "抽獎系統", href: "https://bgc-lottery.vercel.app/" },
 ] as const;
 
-const developerUrl = "https://fanyu.vercel.app";
+const developers = [
+  { name: "飯魚", href: "https://fanyu.vercel.app" },
+  { name: "YBeanAn", href: "https://github.com/YBeanAn" },
+] as const;
+
+function DeveloperCredits() {
+  return developers.map((developer, index) => (
+    <span key={developer.href}>
+      {index > 0 ? "、" : null}
+      <a
+        href={developer.href}
+        className="hover:text-(--interactive-primary)"
+      >
+        {developer.name}
+      </a>
+    </span>
+  ));
+}
 
 export function Footer({ variant = "full" }: FooterProps) {
   if (variant === "legal") {
@@ -43,12 +60,7 @@ export function Footer({ variant = "full" }: FooterProps) {
             <p>{siteConfigs.fullName}｜官方網站</p>
             <p>
               網站開發與維護：
-              <a
-                href={developerUrl}
-                className="hover:text-(--interactive-primary)"
-              >
-                飯魚
-              </a>
+              <DeveloperCredits />
             </p>
           </div>
         </div>
@@ -135,12 +147,7 @@ export function Footer({ variant = "full" }: FooterProps) {
             <p>{siteConfigs.fullName}｜官方網站</p>
             <p>
               網站開發與維護：
-              <a
-                href={developerUrl}
-                className="hover:text-(--interactive-primary)"
-              >
-                飯魚
-              </a>
+              <DeveloperCredits />
             </p>
           </div>
           <nav aria-label="法律資訊">
