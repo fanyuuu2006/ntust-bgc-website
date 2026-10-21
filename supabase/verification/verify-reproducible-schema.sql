@@ -52,6 +52,10 @@ begin
     raise exception 'Required membership batch RPC missing';
   end if;
 
+  if to_regprocedure('public.manage_admin_board_game_borrowings(uuid,jsonb,text,timestamp with time zone)') is null then
+    raise exception 'Required borrowing batch RPC missing';
+  end if;
+
   if to_regprocedure('public.issue_password_recovery_token(uuid,text,timestamp with time zone)') is null
      or to_regprocedure('public.activate_password_recovery_token(text)') is null
      or to_regprocedure('public.inspect_password_recovery_token(text)') is null
@@ -86,6 +90,12 @@ begin
      or has_function_privilege('anon', 'public.update_admin_memberships_status(jsonb,public.merbership_status)', 'EXECUTE')
      or has_function_privilege('authenticated', 'public.update_admin_memberships_status(jsonb,public.merbership_status)', 'EXECUTE') then
     raise exception 'Membership batch RPC privilege invariant missing';
+  end if;
+
+  if not has_function_privilege('service_role', 'public.manage_admin_board_game_borrowings(uuid,jsonb,text,timestamp with time zone)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.manage_admin_board_game_borrowings(uuid,jsonb,text,timestamp with time zone)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.manage_admin_board_game_borrowings(uuid,jsonb,text,timestamp with time zone)', 'EXECUTE') then
+    raise exception 'Borrowing batch RPC privilege invariant missing';
   end if;
 
   if to_regclass('public.board_games_with_statistics') is null

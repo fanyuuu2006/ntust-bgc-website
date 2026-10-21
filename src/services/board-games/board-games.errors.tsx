@@ -16,3 +16,4 @@ export class BorrowingStatusTransitionError extends Error { constructor(expected
 export class BorrowingWorkflowConflictError extends Error { constructor(message: string) { super(message); this.name = "BorrowingWorkflowConflictError"; } }
 export class BoardGameHasReviewsError extends Error { constructor() { super("此桌遊已有評分或評論紀錄，無法直接刪除。"); this.name = "BoardGameHasReviewsError"; } }
 export class BoardGameBatchConflictError extends Error { constructor() { super("部分桌遊已被修改或不存在，請重新整理後再試。"); this.name = "BoardGameBatchConflictError"; } }
+export class BorrowingBatchConflictError extends Error { constructor() { super("部分借用紀錄或關聯桌遊已變更，整批操作未套用，請重新整理後再試。"); this.name = "BorrowingBatchConflictError"; } }

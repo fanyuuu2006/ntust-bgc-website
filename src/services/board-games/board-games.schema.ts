@@ -108,6 +108,67 @@ export const updateBorrowingActionSchema = z.object({
   due_at: z.iso.datetime({ local: false }).optional(),
 }).strict();
 
+const bulkBorrowingRecordSchema = z.object({
+  id: z.number().int().positive(),
+  expected_status: z.enum(["pending", "approved", "borrowed"]),
+  expected_board_game_id: z.uuid(),
+  expected_board_game_status: boardGameStatusSchema,
+}).strict();
+
+export const bulkUpdateBorrowingsSchema = z.object({
+  action: z.enum(["approve", "reject", "borrow", "return"]),
+  due_at: z.iso.datetime({ local: false }).optional(),
+  records: z.array(bulkBorrowingRecordSchema).min(1).max(100).refine(
+    (records) => new Set(records.map((record) => record.id)).size === records.length,
+    { message: "借用紀錄 ID 不可重複" },
+  ),
+}).strict().superRefine((data, context) => {
+  const requiredStatus = data.action === "borrow"
+    ? "approved"
+    : data.action === "return"
+      ? "borrowed"
+      : "pending";
+  data.records.forEach((record, index) => {
+    if (record.expected_status !== requiredStatus) {
+      context.addIssue({
+        code: "custom",
+        path: ["records", index, "expected_status"],
+        message: `此批次操作只接受 ${requiredStatus} 狀態`,
+      });
+    }
+    if (data.action === "return" && record.expected_board_game_status !== "borrowed") {
+      context.addIssue({
+        code: "custom",
+        path: ["records", index, "expected_board_game_status"],
+        message: "批次歸還只接受借出中的桌遊",
+      });
+    }
+    if (data.action === "borrow" && record.expected_board_game_status !== "available") {
+      context.addIssue({
+        code: "custom",
+        path: ["records", index, "expected_board_game_status"],
+        message: "批次確認借出只接受可借用的桌遊",
+      });
+    }
+  });
+  if (data.action === "borrow") {
+    const dueAt = data.due_at ? new Date(data.due_at) : null;
+    if (!dueAt || Number.isNaN(dueAt.getTime()) || dueAt <= new Date()) {
+      context.addIssue({
+        code: "custom",
+        path: ["due_at"],
+        message: "預計歸還時間必須晚於目前時間",
+      });
+    }
+  } else if (data.due_at !== undefined) {
+    context.addIssue({
+      code: "custom",
+      path: ["due_at"],
+      message: "此批次操作不接受預計歸還時間",
+    });
+  }
+});
+
 export const updateBorrowingDueDateSchema = z.object({
   due_at: z.iso.datetime({ local: false }),
 }).strict();

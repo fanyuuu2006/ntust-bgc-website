@@ -3,14 +3,18 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { UserRound } from "lucide-react";
-
 import { AdminBoardGameLink } from "@/components/(admin)/admin/AdminBoardGameLink";
+import { AdminBulkActionBar } from "@/components/(admin)/admin/AdminBulkActionBar";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
+import { AdminMobileBulkModeButton } from "@/components/(admin)/admin/AdminMobileBulkModeButton";
+import { AdminSelectionCheckbox } from "@/components/(admin)/admin/AdminSelectionCheckbox";
 import { AdminUserLink } from "@/components/(admin)/admin/users/AdminUserLink";
+import {
+  BorrowingActionDialog,
+  type BorrowingLifecycleAction,
+} from "@/components/(admin)/admin/borrowings/BorrowingActionDialog";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { BorrowingStatusBadge } from "@/components/BorrowingStatusBadge";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Modal } from "@/components/Modal";
 import { Badge } from "@/components/ui/Badge";
@@ -28,8 +32,8 @@ import {
   TableRow,
 } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
+import { useCurrentPageSelection } from "@/hooks/useCurrentPageSelection";
 import { borrowingConfig } from "@/libs/borrowingConfig";
-import { clubPolicies } from "@/libs/clubPolicies";
 import type { BoardGameBorrowingForAdmin } from "@/services/board-games/board-games.types";
 import {
   formatAdminDateTime,
@@ -39,6 +43,7 @@ import {
 } from "@/utils/date";
 
 type Action = "approve" | "reject" | "checkout" | "return" | "edit";
+type BulkAction = BorrowingLifecycleAction;
 
 const BASE_PATH = "/admin/board-games/borrowings";
 
@@ -57,6 +62,26 @@ export function AdminBorrowingList({
   const [dueAt, setDueAt] = useState("");
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [mobileBulkMode, setMobileBulkMode] = useState(false);
+  const [bulkAction, setBulkAction] = useState<BulkAction | null>(null);
+  const [bulkDueAt, setBulkDueAt] = useState("");
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const eligibleBorrowings = borrowings.filter(
+    (borrowing) => ["pending", "approved", "borrowed"].includes(borrowing.status),
+  );
+  const {
+    selectedIds, selectedCount, allSelected, partiallySelected,
+    setItemSelected, setCurrentPageSelected, clearSelection,
+  } = useCurrentPageSelection(eligibleBorrowings.map((borrowing) => borrowing.id));
+  const selectedBorrowings = eligibleBorrowings.filter((borrowing) => selectedIds.has(borrowing.id));
+  const selectedStatuses = new Set(selectedBorrowings.map((borrowing) => borrowing.status));
+  const firstSelectedStatus = selectedBorrowings[0]?.status;
+  const selectedStatus = selectedStatuses.size === 1 &&
+    (firstSelectedStatus === "pending" || firstSelectedStatus === "approved" || firstSelectedStatus === "borrowed")
+    ? firstSelectedStatus
+    : null;
+  const isMutating = busy || bulkBusy;
 
   function choose(borrowing: BoardGameBorrowingForAdmin, action: Action) {
     setDueAt(
@@ -71,7 +96,17 @@ export function AdminBorrowingList({
   }
 
   function close() {
-    if (!busy) setSelected(null);
+    if (!busy) {
+      setSelected(null);
+      setFeedback(null);
+    }
+  }
+
+  function closeBulkAction() {
+    if (!bulkBusy) {
+      setBulkAction(null);
+      setFeedback(null);
+    }
   }
 
   async function run() {
@@ -115,14 +150,82 @@ export function AdminBorrowingList({
     }
   }
 
-  const actionTitle = selected ? actionTitles[selected.action] : "";
-  const actionDescription = selected
-    ? `桌遊「${selected.borrowing.board_game.name}」的借用。`
-    : "";
+  async function runBulkAction() {
+    if (!bulkAction || selectedBorrowings.length === 0 || bulkBusy) return;
+    const parsedBulkDueAt = bulkAction === "borrow"
+      ? parseTaipeiDateTimeLocal(bulkDueAt)
+      : null;
+    if (
+      bulkAction === "borrow" &&
+      (!parsedBulkDueAt || new Date(parsedBulkDueAt) <= new Date())
+    ) {
+      setFeedback("請輸入有效且晚於目前時間的預計歸還時間。");
+      return;
+    }
+    setBulkBusy(true);
+    setFeedback(null);
+    setSuccess(null);
+    try {
+      const response = await apiClient<{ data: { updatedCount: number } }>(
+        "/api/admin/borrowings/batch",
+        {
+          method: "PATCH",
+          body: {
+            action: bulkAction,
+            ...(bulkAction === "borrow" ? { due_at: parsedBulkDueAt } : {}),
+            records: selectedBorrowings.map((borrowing) => ({
+              id: borrowing.id,
+              expected_status: borrowing.status,
+              expected_board_game_id: borrowing.board_game_id,
+              expected_board_game_status: borrowing.board_game.status,
+            })),
+          },
+        },
+      );
+      clearSelection();
+      setBulkAction(null);
+      setSuccess(`已完成 ${response.data.updatedCount} 筆借用紀錄的批次${bulkActionLabels[bulkAction]}。`);
+      router.refresh();
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "批次更新借用紀錄失敗，請稍後再試。");
+    } finally {
+      setBulkBusy(false);
+    }
+  }
+
+  function openBulkAction(action: BulkAction) {
+    setFeedback(null);
+    setSuccess(null);
+    setBulkDueAt(
+      action === "borrow"
+        ? getFutureTaipeiDateTimeLocal(borrowingConfig.defaultDurationDays)
+        : "",
+    );
+    setBulkAction(action);
+  }
+
+  const selectedLifecycleAction: BorrowingLifecycleAction =
+    selected?.action === "checkout"
+      ? "borrow"
+      : selected?.action === "approve" ||
+          selected?.action === "reject" ||
+          selected?.action === "return"
+        ? selected.action
+        : "approve";
 
   return (
     <div className="space-y-4">
-      <FormFeedback error={feedback} />
+      <FormFeedback success={success} />
+
+      {eligibleBorrowings.length > 0 ? (
+        <AdminMobileBulkModeButton active={mobileBulkMode} disabled={isMutating} selectedCount={selectedCount} selectionControl={<div className="flex items-center gap-1 text-sm"><AdminSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onCheckedChange={setCurrentPageSelected} label="選取目前頁面所有可批次操作的借用紀錄" />全選本頁</div>} onChange={(active) => { setMobileBulkMode(active); if (!active) clearSelection(); }} />
+      ) : null}
+
+      {selectedCount > 0 ? (
+        <AdminBulkActionBar selectedCount={selectedCount} disabled={isMutating} onClear={clearSelection} selectionControl={<AdminSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating} onCheckedChange={setCurrentPageSelected} label="選取目前頁面所有可批次操作的借用紀錄" />} notice={selectedStatuses.size > 1 ? "請選取相同狀態的借用紀錄。" : undefined} mobilePresentation="panel" mobileActionLabel="批次操作" mobileActions={<BulkActionButtons status={selectedStatus} disabled={isMutating} onAction={openBulkAction} />}>
+          <BulkActionButtons status={selectedStatus} disabled={isMutating} onAction={openBulkAction} />
+        </AdminBulkActionBar>
+      ) : null}
 
       {borrowings.length === 0 && hasQuery ? (
         <QueryEmptyState
@@ -140,6 +243,7 @@ export function AdminBorrowingList({
             <Table className="min-w-190">
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12"><AdminSelectionCheckbox checked={allSelected} indeterminate={partiallySelected} disabled={isMutating || eligibleBorrowings.length === 0} onCheckedChange={setCurrentPageSelected} label="選取目前頁面所有可批次操作的借用紀錄" /></TableHead>
                   <TableHead>桌遊</TableHead>
                   <TableHead>借用人</TableHead>
                   <TableHead>狀態</TableHead>
@@ -150,6 +254,7 @@ export function AdminBorrowingList({
               <TableBody>
                 {borrowings.map((borrowing) => (
                   <TableRow key={borrowing.id}>
+                    <TableCell><AdminSelectionCheckbox checked={selectedIds.has(borrowing.id)} disabled={isMutating || !["pending", "approved", "borrowed"].includes(borrowing.status)} onCheckedChange={(checked) => setItemSelected(borrowing.id, checked)} label={`選取 ${borrowing.board_game.name} 的借用紀錄`} /></TableCell>
                     <TableCell className="min-w-56 max-w-80">
                       <BoardGameSummary borrowing={borrowing} />
                     </TableCell>
@@ -180,6 +285,7 @@ export function AdminBorrowingList({
                 key={borrowing.id}
                 className="w-full min-w-0 max-w-full space-y-2.5 p-3 sm:p-4"
               >
+                {mobileBulkMode ? <div className="flex justify-end"><AdminSelectionCheckbox checked={selectedIds.has(borrowing.id)} disabled={isMutating || !["pending", "approved", "borrowed"].includes(borrowing.status)} onCheckedChange={(checked) => setItemSelected(borrowing.id, checked)} label={`選取 ${borrowing.board_game.name} 的借用紀錄`} /></div> : null}
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <BoardGameSummary
                     borrowing={borrowing}
@@ -194,7 +300,7 @@ export function AdminBorrowingList({
                   <BorrowerSummary borrowing={borrowing} />
                 </div>
                 <MobileBorrowingMetadata borrowing={borrowing} />
-                <BorrowingActions borrowing={borrowing} onAction={choose} />
+                {!mobileBulkMode ? <div className="border-t border-(--border-muted) pt-3"><BorrowingActions borrowing={borrowing} onAction={choose} /></div> : null}
               </Card>
             ))}
           </div>
@@ -202,13 +308,12 @@ export function AdminBorrowingList({
       )}
 
       <Modal
-        open={selected?.action === "checkout" || selected?.action === "edit"}
+        open={selected?.action === "edit"}
         onClose={close}
-        title={actionTitle}
-        description={actionDescription}
+        title="編輯借用紀錄"
+        description={selected ? `桌遊「${selected.borrowing.board_game.name}」的借用。` : ""}
       >
         <div className="space-y-4">
-          {selected ? <CheckoutContext borrowing={selected.borrowing} /> : null}
           <Field label="預計歸還時間（台北時間）" htmlFor="borrowing-due-at" required>
             <Input
               id="borrowing-due-at"
@@ -222,21 +327,8 @@ export function AdminBorrowingList({
             />
           </Field>
           <p className="text-sm leading-6 text-(--text-muted)">
-            {selected?.action === "checkout"
-              ? "已套用預設歸還時間，可依實際情況調整。"
-              : "僅能調整借出中的預計歸還時間。"}
+            僅能調整借出中的預計歸還時間。
           </p>
-          {selected?.action === "checkout" &&
-          selected &&
-          !selected.borrowing.is_current_academic_year_member ? (
-            <p className="flex items-start gap-2 rounded-lg border border-(--border-default) bg-(--surface-subtle) p-3 text-sm leading-6 text-(--text-secondary)">
-              <UserRound
-                aria-hidden="true"
-                className="mt-0.5 size-4 shrink-0 text-(--status-info)"
-              />
-              {clubPolicies.adminNonCurrentAcademicYearMemberBorrowingNotice}
-            </p>
-          ) : null}
           <FormFeedback error={feedback} />
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
             <Button
@@ -253,49 +345,49 @@ export function AdminBorrowingList({
               disabled={busy}
               isLoading={busy}
             >
-              {selected?.action === "edit" ? "儲存變更" : "確認借出"}
+              儲存變更
             </Button>
           </div>
         </div>
       </Modal>
 
-      <ConfirmDialog
-        open={Boolean(
-          selected &&
-          selected.action !== "checkout" &&
-          selected.action !== "edit",
-        )}
+      <BorrowingActionDialog
+        open={Boolean(selected && selected.action !== "edit")}
+        items={selected ? [selected.borrowing] : []}
+        action={selectedLifecycleAction}
+        mode="single"
+        dueAt={dueAt}
+        error={feedback}
+        isSubmitting={busy}
+        onDueAtChange={setDueAt}
         onClose={close}
         onConfirm={run}
-        isSubmitting={busy}
-        title={actionTitle}
-        description={actionDescription}
-        confirmLabel={selected ? actionConfirmLabels[selected.action] : "確認"}
-        confirmVariant={
-          selected?.action === "reject"
-            ? "danger"
-            : "primary"
-        }
+      />
+      <BorrowingActionDialog
+        open={bulkAction !== null}
+        items={selectedBorrowings}
+        action={bulkAction ?? "approve"}
+        mode="batch"
+        dueAt={bulkDueAt}
+        error={feedback}
+        isSubmitting={bulkBusy}
+        onDueAtChange={setBulkDueAt}
+        onClose={closeBulkAction}
+        onConfirm={runBulkAction}
       />
     </div>
   );
 }
 
-const actionTitles: Record<Action, string> = {
-  approve: "核准借用",
-  reject: "拒絕申請",
-  checkout: "確認借出",
-  return: "確認歸還",
-  edit: "編輯借用紀錄",
-};
+const bulkActionLabels: Record<BulkAction, string> = { approve: "核准", reject: "拒絕", borrow: "確認借出", return: "歸還" };
 
-const actionConfirmLabels: Record<Action, string> = {
-  approve: "確認核准",
-  reject: "確認拒絕",
-  checkout: "確認借出",
-  return: "確認歸還",
-  edit: "儲存變更",
-};
+function BulkActionButtons({ status, disabled, onAction }: { status: "pending" | "approved" | "borrowed" | null | undefined; disabled: boolean; onAction: (action: BulkAction) => void }) {
+  if (status === "pending") return <div className="flex min-w-0 flex-wrap gap-2"><Button size="sm" disabled={disabled} onClick={() => onAction("approve")}>批次核准</Button><Button size="sm" variant="danger" disabled={disabled} onClick={() => onAction("reject")}>批次拒絕</Button></div>;
+  if (status === "approved") return <Button size="sm" disabled={disabled} onClick={() => onAction("borrow")}>批次確認借出</Button>;
+  if (status === "borrowed") return <Button size="sm" disabled={disabled} onClick={() => onAction("return")}>批次歸還</Button>;
+  return null;
+}
+
 
 function BorrowingActions({
   borrowing,
@@ -500,29 +592,6 @@ function Timeline({
           {detail}
         </p>
       ))}
-    </div>
-  );
-}
-
-function CheckoutContext({
-  borrowing,
-}: {
-  borrowing: BoardGameBorrowingForAdmin;
-}) {
-  return (
-    <div className="space-y-3 rounded-lg border border-(--border-default) bg-(--surface-subtle) p-3 text-sm">
-      <div>
-        <p className="text-xs font-medium text-(--text-muted)">借用人</p>
-        <div className="mt-1">
-          <BorrowerSummary borrowing={borrowing} />
-        </div>
-      </div>
-      <div>
-        <p className="text-xs font-medium text-(--text-muted)">桌遊</p>
-        <div className="mt-1">
-          <BoardGameSummary borrowing={borrowing} />
-        </div>
-      </div>
     </div>
   );
 }

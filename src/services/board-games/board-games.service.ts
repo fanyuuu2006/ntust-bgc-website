@@ -61,6 +61,7 @@ import {
   BorrowingDueDateError,
   BorrowingWorkflowConflictError,
   BorrowingCancellationConflictError,
+  BorrowingBatchConflictError,
 } from "./board-games.errors";
 import { RepositoryError } from "@/repositories/shared/errors";
 import { removeOwnedBoardGameImageObject } from "@/services/board-game-images/board-game-images.service";
@@ -68,6 +69,7 @@ import {
   createBoardGameSchema,
   updateBoardGameSchema,
   bulkUpdateBoardGamesSchema,
+  bulkUpdateBorrowingsSchema,
 } from "./board-games.schema";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { usersRepository } from "@/repositories/users.repository";
@@ -123,6 +125,25 @@ function rethrowBorrowingApprovalConflict(error: unknown): never {
     throw new BoardGameHasOpenBorrowingError();
   }
 
+  throw error;
+}
+
+function rethrowBorrowingBatchConflict(error: unknown): never {
+  const databaseError = getRepositoryDatabaseError(error);
+  if (
+    databaseError?.code === "22023" &&
+    databaseError.message === "BORROWING_DUE_DATE_INVALID"
+  ) {
+    throw new BorrowingDueDateError();
+  }
+  if (
+    databaseError?.code === "P0001" ||
+    (databaseError?.code === "23505" &&
+      (databaseError.constraint === "board_game_borrowings_one_active_game_idx" ||
+        databaseError.message?.includes('"board_game_borrowings_one_active_game_idx"')))
+  ) {
+    throw new BorrowingBatchConflictError();
+  }
   throw error;
 }
 
@@ -850,6 +871,18 @@ export const boardGamesService = {
     const borrowing = await boardGameBorrowingsRepository.findById(borrowingId);
     if (!borrowing) throw new BorrowingNotFoundError();
     throw new BorrowingStatusTransitionError("borrowed", borrowing.status);
+  },
+
+  bulkUpdateBorrowingsForAdmin: async (actorUserId: string, input: unknown) => {
+    const data = bulkUpdateBorrowingsSchema.parse(input);
+    const result = await boardGameBorrowingsRepository
+      .updateManyForAdmin(actorUserId, data.records, data.action, data.due_at)
+      .catch(rethrowBorrowingBatchConflict);
+    if (result.outcome === "conflict") throw new BorrowingBatchConflictError();
+    if (data.action === "borrow" || data.action === "return") {
+      invalidatePublicDataSafely("popularGames");
+    }
+    return { updatedCount: result.updated_count };
   },
 
   countAllBoardGames: async (): Promise<number> => {
