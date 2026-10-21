@@ -9,6 +9,7 @@ import {
 } from "@/repositories/shared/pagination";
 import { OrderOptions, PaginationQuery } from "@/repositories/shared/types";
 import {
+  BoardGameStatus,
   BoardGameBorrowing,
   BoardGameBorrowingId,
   BorrowingStatus,
@@ -306,6 +307,27 @@ export const boardGameBorrowingsRepository = {
     }
 
     return borrowing as BoardGameBorrowing;
+  },
+
+  updateManyForAdmin: async (
+    actorUserId: string,
+    records: Array<{
+      id: BoardGameBorrowingId;
+      expected_status: "pending" | "approved" | "borrowed";
+      expected_board_game_id: string;
+      expected_board_game_status: BoardGameStatus;
+    }>,
+    action: "approve" | "reject" | "borrow" | "return",
+    dueAt?: string,
+  ): Promise<{ outcome: "updated" | "conflict"; updated_count: number }> => {
+    const { data, error } = await supabase.rpc("manage_admin_board_game_borrowings", {
+      p_actor_user_id: actorUserId,
+      p_records: records,
+      p_action: action,
+      p_due_at: dueAt ?? null,
+    });
+    if (error) throwRepositoryError("批次更新桌遊借用紀錄失敗", error);
+    return data as { outcome: "updated" | "conflict"; updated_count: number };
   },
 
   approve: async (
