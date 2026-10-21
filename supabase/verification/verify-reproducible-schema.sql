@@ -101,6 +101,7 @@ begin
   if to_regclass('public.board_games_with_statistics') is null
      or to_regclass('public.board_game_popularity_statistics') is null
      or to_regclass('public.board_game_rankings') is null
+     or to_regclass('public.board_game_review_rankings') is null
      or to_regclass('public.board_game_review_statistics') is null then
     raise exception 'Required statistics view missing';
   end if;

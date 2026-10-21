@@ -10,6 +10,7 @@ export type RankingDisplayItem = {
   accessibleLabel?: string;
   media?: React.ReactNode;
   title: React.ReactNode;
+  supportingContent?: React.ReactNode;
   primaryMetric: React.ReactNode;
   secondaryMetric?: React.ReactNode;
 };
@@ -54,11 +55,14 @@ export function RankingList({
           <RankingPosition rank={item.rank} />
           {item.media ? <div className="flex items-center">{item.media}</div> : null}
           <div className="min-w-0 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-x-6">
-            {item.href ? (
-              <Link href={item.href} aria-label={item.accessibleLabel} className="inline-flex max-w-full wrap-anywhere font-semibold leading-5 text-(--interactive-primary) hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring) sm:col-start-1 sm:row-span-2">
-                <span className="line-clamp-2">{item.title}</span>
-              </Link>
-            ) : <div className="line-clamp-2 font-semibold leading-5 text-(--text-primary) sm:col-start-1 sm:row-span-2">{item.title}</div>}
+            <div className="min-w-0 sm:col-start-1 sm:row-span-2">
+              {item.href ? (
+                <Link href={item.href} aria-label={item.accessibleLabel} className="inline-flex max-w-full wrap-anywhere font-semibold leading-5 text-(--interactive-primary) hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)">
+                  <span className="line-clamp-2">{item.title}</span>
+                </Link>
+              ) : <div className="line-clamp-2 font-semibold leading-5 text-(--text-primary)">{item.title}</div>}
+              {item.supportingContent ? <div className="mt-1.5 text-xs text-(--text-muted)">{item.supportingContent}</div> : null}
+            </div>
             <div className="mt-1.5 sm:col-start-2 sm:row-start-1 sm:mt-0 sm:flex sm:justify-end sm:text-right">{item.primaryMetric}</div>
             {item.secondaryMetric ? <div className="mt-1 text-xs text-(--text-muted) sm:col-start-2 sm:row-start-2 sm:flex sm:justify-end sm:text-right">{item.secondaryMetric}</div> : null}
           </div>

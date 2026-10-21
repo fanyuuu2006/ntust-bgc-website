@@ -17,6 +17,20 @@ export type PublicReviewWithLikesSource = Omit<BoardGameReview, "board_game_id" 
   liked_by_me: boolean;
 };
 export type ReviewLikeSource = { review_id: string; like_count: number | string; liked_by_me: boolean };
+export type PublicReviewRankingSource = {
+  global_rank: number | string;
+  review_id: string;
+  board_game_id: string;
+  board_game_name: string;
+  rating: number;
+  content: string;
+  created_at: string;
+  author_id: string;
+  author_name: string;
+  author_avatar: string | null;
+  author_closed_at: string | null;
+  like_count: number | string;
+};
 export type ReviewAggregateSource = {
   average_rating: number | string | null;
   rating_count: number | string;
@@ -88,6 +102,25 @@ export const boardGameReviewsRepository = {
       author: { id: review.author_id, name: review.author_name, avatar: review.author_avatar, closed_at: review.author_closed_at },
     }));
     return buildPaginationResult(records, Number(result.total ?? 0), page, pageSize);
+  },
+
+  findPopularRankings: async (options: { page?: number; pageSize?: number } = {}) => {
+    const { page, pageSize, from, to } = normalizePaginationOptions({
+      ...options,
+      maxPageSize: 50,
+    });
+    const { data, error, count } = await supabase
+      .from("board_game_review_rankings")
+      .select("global_rank,review_id,board_game_id,board_game_name,rating,content,created_at,author_id,author_name,author_avatar,author_closed_at,like_count", { count: "exact" })
+      .order("global_rank", { ascending: true })
+      .range(from, to);
+    if (error) throwRepositoryError("取得公開評論排行榜失敗", error);
+    return buildPaginationResult(
+      (data ?? []) as PublicReviewRankingSource[],
+      count,
+      page,
+      pageSize,
+    );
   },
 
   setLike: async (boardGameId: string, reviewId: string, userId: string, liked: boolean): Promise<ReviewLikeSource> => {
