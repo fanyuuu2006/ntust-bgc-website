@@ -119,14 +119,9 @@ export function ProfileSettingsForm({ profile }: { profile: UserProfile }) {
 
   return (
     <section aria-labelledby="profile-settings-title">
-      <div>
-        <h3 id="profile-settings-title" className="font-semibold text-(--text-primary)">
-          個人資料
-        </h3>
-        <p className="mt-1 text-sm text-(--text-muted)">
-          更新聯絡方式與學籍資料。
-        </p>
-      </div>
+      <h3 id="profile-settings-title" className="font-semibold text-(--text-primary)">
+        聯絡與學籍資料
+      </h3>
 
       <form
         onSubmit={handleSubmit}

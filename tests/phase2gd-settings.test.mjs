@@ -5,16 +5,11 @@ import test from "node:test";
 const readSource = (path) =>
   readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("settings presents two focused account and security surfaces without blanking on a missing profile", async () => {
+test("settings index delegates to route-based categories without loading account data", async () => {
   const page = await readSource("src/app/(authenticated)/settings/page.tsx");
 
-  assert.match(page, /PageHeader/);
-  assert.match(page, /title="帳號與個人資料"/);
-  assert.match(page, /title="安全性"/);
-  assert.match(page, /profile \?/);
-  assert.match(page, /個人資料暫時無法載入/);
-  assert.doesNotMatch(page, /if \(!profile\) return null/);
-  assert.doesNotMatch(page, /會員|社員資格|社團足跡|借用/);
+  assert.match(page, /SettingsCategoryList/);
+  assert.doesNotMatch(page, /getCurrentUser|usersService|authService/);
 });
 
 test("authenticated profile update uses an explicit strict five-field self-service boundary", async () => {
@@ -43,16 +38,19 @@ test("authenticated profile update uses an explicit strict five-field self-servi
   assert.doesNotMatch(route, /updateAcademicProfile/);
 });
 
-test("account settings separates username, avatar management, and read-only email", async () => {
-  const account = await readSource(
-    "src/components/(authenticated)/settings/AccountSettingsForm.tsx",
-  );
+test("profile and account settings separate editable identity from read-only email", async () => {
+  const [account, email] = await Promise.all([
+    readSource("src/components/(authenticated)/settings/AccountSettingsForm.tsx"),
+    readSource("src/components/(authenticated)/settings/AccountEmailSection.tsx"),
+  ]);
 
   assert.match(account, /使用者名稱/);
   assert.match(account, /AvatarSettingsSection/);
   assert.doesNotMatch(account, /avatarField|values\.avatar/);
-  assert.match(account, /aria-readonly="true"/);
-  assert.match(account, /Email 為登入帳號，目前無法修改/);
+  assert.doesNotMatch(account, /aria-readonly="true"|ResendEmailVerificationButton/);
+  assert.match(email, /aria-readonly="true"/);
+  assert.match(email, /Email 為登入帳號，目前無法修改/);
+  assert.match(email, /Email 已驗證|Email 尚未驗證/);
   assert.doesNotMatch(account, /emailField|disabled:\s*true/);
   assert.match(account, /variant="primary"/);
   assert.match(account, /FormFeedback/);

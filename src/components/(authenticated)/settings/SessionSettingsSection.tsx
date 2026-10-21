@@ -14,7 +14,7 @@ async function SessionSettingsSectionContent({ userId }: { userId: UUID }) {
           登入工作階段
         </h3>
         <p className="mt-1 text-sm text-(--text-muted)">
-          查看並撤銷目前帳號的其他登入工作階段。
+          查看並撤銷其他裝置的登入狀態。
         </p>
       </div>
 
@@ -31,4 +31,4 @@ async function SessionSettingsSectionContent({ userId }: { userId: UUID }) {
   );
 }
 
-export const SessionSettingsSection = withServerErrorReference(SessionSettingsSectionContent, "/settings");
+export const SessionSettingsSection = withServerErrorReference(SessionSettingsSectionContent, "/settings/security");

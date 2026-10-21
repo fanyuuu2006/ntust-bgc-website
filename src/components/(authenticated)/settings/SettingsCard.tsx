@@ -18,7 +18,7 @@ export const SettingsCard = ({
     className={cn("card rounded-2xl p-4 sm:p-6", className)}
     {...rest}
   >
-    <div className="flex min-w-0 items-start gap-3 border-b border-(--border-default) pb-4">
+    <div className="flex min-w-0 items-start gap-3 border-b border-(--border-default) pb-3 sm:pb-4">
       {icon ? (
         <span className="mt-0.5 shrink-0 text-(--interactive-primary)">
           {icon}
@@ -33,6 +33,6 @@ export const SettingsCard = ({
         ) : null}
       </div>
     </div>
-    <div className="pt-4 sm:pt-5">{children}</div>
+    <div className="pt-4">{children}</div>
   </section>
 );

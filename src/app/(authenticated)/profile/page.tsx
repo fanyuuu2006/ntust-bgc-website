@@ -62,7 +62,7 @@ async function ProfilePage({ searchParams }: { searchParams?: Promise<ReviewSear
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
-            <ButtonLink href="/settings" variant="outline">
+            <ButtonLink href="/settings/profile" variant="outline">
               前往設定
             </ButtonLink>
             <ButtonLink href="/dashboard" variant="text">
@@ -84,7 +84,7 @@ async function ProfilePage({ searchParams }: { searchParams?: Promise<ReviewSear
         </>}
         actions={<div className="flex flex-col gap-2 sm:items-end">
           <ButtonLink href={`/profile/${user.id}`} variant="text" size="sm">查看公開個人頁面</ButtonLink>
-          <ButtonLink href="/settings" variant="outline" size="sm" className="w-full sm:w-auto">編輯資料</ButtonLink>
+          <ButtonLink href="/settings/profile" variant="outline" size="sm" className="w-full sm:w-auto">編輯資料</ButtonLink>
         </div>}
         identityBadges={clubContext.identityBadges}
       />

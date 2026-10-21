@@ -42,9 +42,9 @@ export function AccountClosureSection() {
     }
   }
 
-  return <section aria-labelledby="account-closure-title" className="border-t border-(--border-default) pt-5">
-    <h3 id="account-closure-title" className="font-semibold text-(--text-primary)">註銷帳號</h3>
-    <p className="mt-2 text-sm leading-6 text-(--text-muted)">永久停用此帳號，並清除可移除的個人資料。若仍有待處理或尚未歸還的桌遊，將無法註銷。</p>
+  return <section aria-labelledby="account-closure-title" className="rounded-xl border border-(--status-danger) p-4">
+    <h3 id="account-closure-title" className="font-semibold text-(--status-danger)">註銷帳號</h3>
+    <p className="mt-2 text-sm leading-5 text-(--text-muted)">永久停用帳號並清除可移除的個人資料。若有待處理或未歸還的桌遊，將無法註銷。</p>
     <Button type="button" variant="danger" className="mt-3" onClick={() => setOpen(true)}>註銷帳號</Button>
     <Modal open={open} onClose={close} closeDisabled={busy} title="註銷帳號">
       {complete ? <FormFeedback success="帳號已註銷，即將返回首頁。" /> : <form onSubmit={submit} className="space-y-4" aria-busy={busy}>

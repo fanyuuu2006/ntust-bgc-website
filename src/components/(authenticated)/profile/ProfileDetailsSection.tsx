@@ -69,7 +69,7 @@ export function ProfileDetailsSection({
                 個人資料
               </h2>
             </div>
-            <ButtonLink href="/settings" variant="outline" size="sm">
+            <ButtonLink href="/settings/profile" variant="outline" size="sm">
               編輯資料
             </ButtonLink>
           </div>

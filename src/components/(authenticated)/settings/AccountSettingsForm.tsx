@@ -7,7 +7,6 @@ import { FieldInput, type FieldInputField } from "@/components/FieldInput";
 import { FormFeedback } from "@/components/FormFeedback";
 import { AvatarSettingsSection } from "@/components/(authenticated)/settings/AvatarSettingsSection";
 import { Button } from "@/components/ui/Button";
-import { ResendEmailVerificationButton } from "@/components/(auth)/email-verification/ResendEmailVerificationButton";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import type { User } from "@/types/database";
@@ -82,7 +81,7 @@ export function AccountSettingsForm({
         method: "PATCH",
         body: payload,
       });
-      setSuccessMessage("帳號資料已更新");
+      setSuccessMessage("公開身份已更新");
       router.refresh();
     } catch (error) {
       setFormError(
@@ -106,10 +105,10 @@ export function AccountSettingsForm({
           id="account-settings-title"
           className="font-semibold text-(--text-primary)"
         >
-          帳號資料
+          公開身份
         </h3>
-        <p className="mt-1 text-sm text-(--text-muted)">
-          管理網站上的使用者名稱與頭像。這兩項會顯示在公開個人頁面，請勿填入不希望公開的個資。公開頁也會顯示社員／幹部身份標籤與部分社團足跡摘要。
+        <p className="mt-1 text-sm leading-5 text-(--text-muted)">
+          顯示名稱與頭像會顯示在公開個人頁面；社員／幹部身份與部分社團紀錄也會公開。
         </p>
       </div>
 
@@ -131,40 +130,6 @@ export function AccountSettingsForm({
           />
         </div>
 
-        <div
-          aria-readonly="true"
-          aria-labelledby="settings-email-label"
-          aria-describedby="settings-email-hint"
-          className="min-w-0 rounded-xl border border-(--border-muted) bg-(--surface-subtle) px-3 py-3"
-        >
-          <p
-            id="settings-email-label"
-            className="text-sm font-medium text-(--text-primary)"
-          >
-            Email
-          </p>
-          <p
-            className="mt-1 break-all text-sm text-(--text-secondary)"
-            title={user.email}
-          >
-            {user.email}
-          </p>
-          <p
-            id="settings-email-hint"
-            className="mt-1 text-xs text-(--text-muted)"
-          >
-            Email 為登入帳號，目前無法修改
-          </p>
-          <p className="mt-2 text-xs font-medium text-(--text-secondary)">
-            {user.email_verified_at ? "Email 已驗證" : "Email 尚未驗證"}
-          </p>
-          {!user.email_verified_at && (
-            <div className="mt-3">
-              <ResendEmailVerificationButton />
-            </div>
-          )}
-        </div>
-
         <FormFeedback error={formError} success={successMessage} />
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -184,7 +149,7 @@ export function AccountSettingsForm({
             isLoading={isLoading}
             className="w-full sm:w-auto"
           >
-            儲存帳號資料
+            儲存公開身份
           </Button>
         </div>
       </form>
