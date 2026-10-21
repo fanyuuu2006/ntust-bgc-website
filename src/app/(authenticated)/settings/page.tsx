@@ -1,5 +1,5 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
-import { AlertCircle, ShieldCheck, UserRoundCog } from "lucide-react";
+import { AlertCircle, Palette, ShieldCheck, UserRoundCog } from "lucide-react";
 
 import { AccountSettingsForm } from "@/components/(authenticated)/settings/AccountSettingsForm";
 import { PasswordSettingsForm } from "@/components/(authenticated)/settings/PasswordSettingsForm";
@@ -10,6 +10,7 @@ import { AccountClosureSection } from "@/components/(authenticated)/settings/Acc
 import { PageHeader } from "@/components/PageHeader";
 import { getCurrentUser } from "@/libs/auth";
 import { usersService } from "@/services/users/users.service";
+import { ThemeSelector } from "@/components/theme/ThemeSelector";
 
 async function SettingsPage() {
   const user = await getCurrentUser();
@@ -57,6 +58,15 @@ async function SettingsPage() {
             </section>
           )}
         </div>
+      </SettingsCard>
+
+      <SettingsCard
+        id="appearance"
+        title="外觀"
+        description="選擇網站的顯示主題；設定會儲存在這台裝置的瀏覽器中。"
+        icon={<Palette aria-hidden="true" className="size-5" />}
+      >
+        <ThemeSelector />
       </SettingsCard>
 
       <SettingsCard

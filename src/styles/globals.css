@@ -126,7 +126,8 @@
    ========================================================= */
 
 @layer base {
-  :root {
+  :root,
+  html[data-theme="light"] {
     /* =====================================================
        🎨 Color System
        ===================================================== */
@@ -164,7 +165,9 @@
     --text-primary: var(--foreground);
     --text-secondary: color-mix(in oklab, var(--foreground) 78%, var(--muted));
     --text-muted: var(--muted);
-    --text-inverse: var(--primary-background);
+    --text-inverse: #ffffff;
+    --text-on-image: #ffffff;
+    --text-on-image-muted: rgba(255, 255, 255, 0.78);
 
     /* === Surface === */
     --surface-page: var(--background);
@@ -196,9 +199,23 @@
     --status-info: var(--game-blue);
     --status-neutral: var(--muted);
 
+    /* === Destructive actions === */
+    --destructive: var(--game-red);
+    --destructive-hover: color-mix(in oklab, var(--game-red) 86%, black);
+    --destructive-active: color-mix(in oklab, var(--game-red) 76%, black);
+    --destructive-foreground: #ffffff;
+
     /* === Focus === */
     --focus-ring: color-mix(in oklab, var(--primary) 30%, transparent);
     --focus-ring-danger: color-mix(in oklab, var(--status-danger) 28%, transparent);
+    --focus-ring-destructive: color-mix(in oklab, var(--destructive) 34%, transparent);
+
+    /* === Overlay === */
+    --overlay-backdrop: rgba(15, 23, 42, 0.48);
+    --overlay-on-image-mobile: rgba(3, 10, 20, 0.5);
+    --overlay-on-image-strong: rgba(3, 10, 20, 0.68);
+    --overlay-on-image-medium: rgba(3, 10, 20, 0.38);
+    --overlay-on-image-light: rgba(3, 10, 20, 0.12);
 
     /* === 陰影 === */
     --shadow-base: 0 1px 2px rgba(15, 23, 42, 0.05);
@@ -250,6 +267,67 @@
       var(--text-inverse) 70%,
       transparent
     );
+  }
+
+  html[data-theme="light"] {
+    color-scheme: light;
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+
+    --foreground: #e6edf7;
+    --muted: #9aa9bd;
+    --background: #0c1420;
+    --primary-background: #131e2d;
+    --secondary-background: #1a2738;
+    --tertiary-background: #243449;
+    --primary: #67b7f7;
+    --primary-dark: #91cdfa;
+    --game-red: #ff8797;
+    --game-green: #55d47c;
+    --game-yellow: #f2c94c;
+    --game-blue: #63b3ed;
+    --border: rgba(190, 205, 224, 0.24);
+
+    --text-primary: var(--foreground);
+    --text-secondary: color-mix(in oklab, var(--foreground) 78%, var(--muted));
+    --text-muted: var(--muted);
+    --text-inverse: #08111d;
+    --surface-page: var(--background);
+    --surface-default: var(--primary-background);
+    --surface-subtle: var(--secondary-background);
+    --surface-elevated: #192638;
+    --border-default: var(--border);
+    --border-muted: color-mix(in oklab, var(--border) 62%, transparent);
+    --border-strong: color-mix(in oklab, var(--primary) 65%, transparent);
+    --interactive-primary: var(--primary);
+    --interactive-primary-hover: var(--primary-dark);
+    --interactive-primary-active: var(--primary-dark);
+    --interactive-muted: color-mix(in oklab, var(--primary) 13%, var(--surface-default));
+    --action: #258bd2;
+    --action-hover: #3d9ee1;
+    --action-active: #1c78b7;
+    --action-foreground: #ffffff;
+    --status-success: var(--game-green);
+    --status-warning: var(--game-yellow);
+    --status-danger: var(--game-red);
+    --status-info: var(--game-blue);
+    --status-neutral: var(--muted);
+    --destructive: #b4233c;
+    --destructive-hover: #c9364f;
+    --destructive-active: #941d32;
+    --destructive-foreground: #ffffff;
+    --focus-ring: color-mix(in oklab, var(--primary) 48%, transparent);
+    --focus-ring-danger: color-mix(in oklab, var(--status-danger) 42%, transparent);
+    --focus-ring-destructive: color-mix(in oklab, var(--destructive) 58%, transparent);
+    --overlay-backdrop: rgba(2, 6, 12, 0.72);
+    --shadow-base: 0 1px 2px rgba(0, 0, 0, 0.28);
+    --shadow-card: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.34);
+    --shadow-hover: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.42);
+    --shadow-card-hover: 0 var(--move-y) 1.5rem rgba(40, 145, 220, 0.24);
+    --skeleton-bg: color-mix(in oklab, var(--interactive-primary) 11%, var(--surface-subtle));
+    --skeleton-highlight: color-mix(in oklab, var(--text-primary) 14%, transparent);
   }
 
   /* =====================================================
@@ -437,13 +515,23 @@
   }
 
   .btn.danger {
-    background: var(--status-danger);
-    color: var(--text-inverse);
-    border-color: transparent;
+    background: var(--destructive);
+    color: var(--destructive-foreground);
+    border-color: var(--destructive);
   }
 
   .btn.danger:hover {
-    background: color-mix(in oklab, var(--status-danger) 86%, black);
+    background: var(--destructive-hover);
+    border-color: var(--destructive-hover);
+  }
+
+  .btn.danger:not(:disabled):active {
+    background: var(--destructive-active);
+    border-color: var(--destructive-active);
+  }
+
+  .btn.danger:focus-visible {
+    outline-color: var(--focus-ring-destructive);
   }
 
   /* =====================================================
@@ -606,6 +694,21 @@
    ========================================================= */
 
 @layer utilities {
+  .hero-image-overlay {
+    background: var(--overlay-on-image-mobile);
+  }
+
+  @media (min-width: 1024px) {
+    .hero-image-overlay {
+      background: linear-gradient(
+        to right,
+        var(--overlay-on-image-strong),
+        var(--overlay-on-image-medium),
+        var(--overlay-on-image-light)
+      );
+    }
+  }
+
   :is(a, button, .btn, input, textarea, summary):focus-visible {
     outline: 2px solid var(--focus-ring);
     outline-offset: 0;

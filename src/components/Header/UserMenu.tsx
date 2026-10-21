@@ -150,7 +150,7 @@ export function UserMenu({
           <hr className="my-0.5 border-(--border-muted)" />
           <LogoutButton
             variant="danger"
-            className="w-full px-3 text-(--background)"
+            className="w-full px-3"
             onClick={closeMenu}
           >
             登出

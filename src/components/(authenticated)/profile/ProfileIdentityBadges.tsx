@@ -28,7 +28,7 @@ const categoryPresentation: Record<
         "color-mix(in oklab, var(--primary) 7%, var(--surface-default))",
       borderColor:
         "color-mix(in oklab, var(--primary) 24%, var(--border-default))",
-      color: "var(--primary-dark)",
+      color: "var(--interactive-primary)",
     },
   },
   officer: { tone: "success" },
