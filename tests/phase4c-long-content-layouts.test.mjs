@@ -21,7 +21,10 @@ test("public review identity bounds a long author name without shrinking the ava
     },
   }));
 
+  const linkClasses = html.match(/^<a class="([^"]+)"/)?.[1].split(" ") ?? [];
   assert.match(html, /min-w-0/);
+  assert.ok(linkClasses.includes("inline-flex"));
+  assert.ok(!linkClasses.some((className) => ["flex", "flex-1", "grow", "w-full"].includes(className)));
   assert.match(html, /truncate/);
   assert.match(html, /shrink-0/);
   assert.match(html, new RegExp(`title="${longName}"`));
