@@ -85,6 +85,16 @@ export const reviewsService = {
     return { ...result, data: result.data.map(toPublicReview) };
   },
 
+  resolvePublicNewestLocation: async (boardGameId: unknown, reviewId: unknown, pageSize = 10) => {
+    const gameId = z.uuid().parse(boardGameId);
+    const id = z.uuid().parse(reviewId);
+    const normalizedPageSize = z.number().int().min(1).max(50).parse(pageSize);
+    const precedingCount = await boardGameReviewsRepository.findPublicNewestPosition(gameId, id);
+    return precedingCount === null
+      ? null
+      : { reviewId: id, page: Math.floor(precedingCount / normalizedPageSize) + 1 };
+  },
+
   listPublicByUser: async (userId: unknown, input: unknown = {}): Promise<PublicProfileReviewsPage> => {
     const id = z.uuid().parse(userId);
     const options = profileReviewsQuerySchema.parse(input);

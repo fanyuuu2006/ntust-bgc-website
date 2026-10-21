@@ -7,7 +7,7 @@ import { formatDateTime } from "@/utils/date";
 import { wasReviewMeaningfullyEdited } from "@/utils/review-presentation";
 import { formatAverageRating, RatingStars } from "./RatingStars";
 
-export function BoardGameReviews({ boardGameId, aggregate, reviews, query: suppliedQuery, sort, authorAction, returnTo }: {
+export function BoardGameReviews({ boardGameId, aggregate, reviews, query: suppliedQuery, sort, authorAction, returnTo, targetReviewId, targetUnavailable = false }: {
   boardGameId: string;
   aggregate: BoardGameReviewAggregate;
   reviews: PublicBoardGameReviewsPage;
@@ -16,6 +16,8 @@ export function BoardGameReviews({ boardGameId, aggregate, reviews, query: suppl
   sort?: ReviewListQuery["sort"];
   authorAction?: React.ReactNode;
   returnTo?: string;
+  targetReviewId?: string;
+  targetUnavailable?: boolean;
 }) {
   const query: ReviewListQuery = suppliedQuery ?? { page: reviews.page, pageSize: reviews.pageSize, sort: sort ?? "newest" };
   const basePath = `/board-games/${boardGameId}`;
@@ -61,13 +63,23 @@ export function BoardGameReviews({ boardGameId, aggregate, reviews, query: suppl
         aria-label="評論分頁"
         summary={<ReviewResultSummary total={reviews.total} filtered={filtered} />}
       >
+        {targetUnavailable ? (
+          <p role="status" className="mb-4 rounded-xl border border-(--border-default) bg-(--surface-subtle) px-4 py-3 text-sm text-(--text-muted)">
+            找不到可公開的指定評論
+          </p>
+        ) : null}
         {reviews.total === 0 ? (
           filtered ? <QueryEmptyState title="找不到符合條件的評價" description="試著調整搜尋或評分條件。" clearHref={resetHref} />
             : <p className="py-2 text-sm text-(--text-muted)">目前還沒有評分</p>
         ) : (
           <div className="divide-y divide-(--border-muted)">
           {reviews.data.map((review) => (
-            <article key={review.id} className="min-w-0 py-5 first:pt-4 last:pb-4">
+            <article
+              key={review.id}
+              id={`review-${review.id}`}
+              className="min-w-0 scroll-mt-24 rounded-xl py-5 transition-colors first:pt-4 last:pb-4 target:bg-(--surface-subtle) target:px-4"
+              aria-current={review.id === targetReviewId ? "true" : undefined}
+            >
               <header className="min-w-0">
                 <PublicUserLink identity={review.author} />
                 <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-(--text-muted)">

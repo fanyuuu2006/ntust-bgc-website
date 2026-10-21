@@ -23,7 +23,7 @@ import { cn } from "@/utils/className";
 import { buildQueryString } from "@/utils/url";
 import { redirect } from "next/navigation";
 import { getBoardGameDetail } from "./board-game-detail";
-import { normalizeBoardGameReviewQuery, type BoardGameReviewSearchParams } from "./review-query";
+import { normalizeBoardGameReviewQuery, shouldCorrectReviewPermalink, type BoardGameReviewSearchParams } from "./review-query";
 import { normalizeBoardGameReturnTo } from "@/libs/board-game-return";
 import { createPublicMetadata } from "@/libs/seo";
 import { StructuredData } from "@/components/StructuredData";
@@ -57,7 +57,7 @@ async function generateMetadataContent({
       canonical,
       image: image ? { url: image, alt: normalizedName } : undefined,
     }),
-    ...(reviewQuery.page > 1 || reviewQuery.sort !== "newest" || reviewQuery.search || reviewQuery.rating
+    ...(reviewQuery.page > 1 || reviewQuery.sort !== "newest" || reviewQuery.search || reviewQuery.rating || reviewQuery.targetReviewId !== undefined
       ? { robots: { index: false, follow: true } }
       : {}),
   };
@@ -77,13 +77,35 @@ async function BoardGameDetailPage({
       : rawSearchParams.returnTo,
   );
 
-  const [viewer, reviewAggregate, reviews] = await Promise.all([
+  const [viewer, reviewAggregate, targetLocation] = await Promise.all([
     resolvePublicViewer(),
     reviewsService.getAggregate(boardGame.id),
-    reviewsService.listPublic(boardGame.id, reviewQuery),
+    typeof reviewQuery.targetReviewId === "string"
+      ? reviewsService.resolvePublicNewestLocation(boardGame.id, reviewQuery.targetReviewId, reviewQuery.pageSize)
+      : Promise.resolve(null),
   ]);
 
-  if (reviews.totalPages > 0 && reviewQuery.page > reviews.totalPages) {
+  const targetRequested = reviewQuery.targetReviewId !== undefined;
+  const targetUnavailable = targetRequested && targetLocation === null;
+  const effectiveReviewQuery = targetLocation
+    ? { ...reviewQuery, page: targetLocation.page, search: undefined, rating: undefined, sort: "newest" as const }
+    : targetRequested
+      ? { ...reviewQuery, page: 1, search: undefined, rating: undefined, sort: "newest" as const }
+      : reviewQuery;
+
+  if (targetLocation) {
+    if (shouldCorrectReviewPermalink(rawSearchParams, targetLocation)) {
+      redirect(`/board-games/${boardGame.id}?${buildQueryString({
+        review: targetLocation.reviewId,
+        reviewSort: "newest",
+        reviewPage: targetLocation.page,
+      })}#review-${targetLocation.reviewId}`);
+    }
+  }
+
+  const reviews = await reviewsService.listPublic(boardGame.id, effectiveReviewQuery);
+
+  if (!targetRequested && reviews.totalPages > 0 && reviewQuery.page > reviews.totalPages) {
     redirect(`/board-games/${boardGame.id}?${buildQueryString({
       reviewPage: reviews.totalPages,
       reviewSearch: reviewQuery.search,
@@ -214,7 +236,9 @@ async function BoardGameDetailPage({
             boardGameId={boardGame.id}
             aggregate={reviewAggregate}
             reviews={reviews}
-            query={reviewQuery}
+            query={effectiveReviewQuery}
+            targetReviewId={targetLocation?.reviewId}
+            targetUnavailable={targetUnavailable}
             returnTo={returnTo === "/board-games" ? undefined : returnTo}
             authorAction={<ReviewAuthorAction boardGameId={boardGame.id} ownReview={ownReview} eligibility={viewer.status === "unavailable" ? "unavailable" : !user ? "anonymous" : !user.email_verified_at ? "unverified" : "verified"} />}
           />

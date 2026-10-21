@@ -135,7 +135,8 @@ test("review presentation distinguishes no ratings from rating-only activity", (
 test("public detail keeps canonical metadata and noindexes review variants", async () => {
   const page = await read("src/app/(public)/board-games/[id]/page.tsx");
   assert.match(page, /reviewsService\.getAggregate\(boardGame\.id\)/);
-  assert.match(page, /reviewsService\.listPublic\(boardGame\.id, reviewQuery\)/);
+  assert.match(page, /reviewsService\.listPublic\(boardGame\.id, effectiveReviewQuery\)/);
+  assert.match(page, /reviewsService\.resolvePublicNewestLocation\(boardGame\.id, reviewQuery\.targetReviewId, reviewQuery\.pageSize\)/);
   assert.match(page, /Promise\.all/);
   assert.match(page, /createPublicMetadata\(\{[\s\S]*?canonical/);
   assert.match(page, /reviewQuery\.page > 1 \|\| reviewQuery\.sort !== "newest"/);
