@@ -6,8 +6,9 @@ import type { BoardGameReviewAggregate, PublicBoardGameReviewsPage, ReviewListQu
 import { formatDateTime } from "@/utils/date";
 import { wasReviewMeaningfullyEdited } from "@/utils/review-presentation";
 import { formatAverageRating, RatingStars } from "./RatingStars";
+import { ReviewLikeButton } from "./ReviewLikeButton";
 
-export function BoardGameReviews({ boardGameId, aggregate, reviews, query: suppliedQuery, sort, authorAction, returnTo, targetReviewId, targetUnavailable = false }: {
+export function BoardGameReviews({ boardGameId, aggregate, reviews, query: suppliedQuery, sort, authorAction, returnTo, targetReviewId, targetUnavailable = false, likeEligibility = "anonymous" }: {
   boardGameId: string;
   aggregate: BoardGameReviewAggregate;
   reviews: PublicBoardGameReviewsPage;
@@ -18,13 +19,14 @@ export function BoardGameReviews({ boardGameId, aggregate, reviews, query: suppl
   returnTo?: string;
   targetReviewId?: string;
   targetUnavailable?: boolean;
+  likeEligibility?: "anonymous" | "unverified" | "verified" | "unavailable";
 }) {
-  const query: ReviewListQuery = suppliedQuery ?? { page: reviews.page, pageSize: reviews.pageSize, sort: sort ?? "newest" };
+  const query: ReviewListQuery = suppliedQuery ?? { page: reviews.page, pageSize: reviews.pageSize, sort: sort ?? "popular" };
   const basePath = `/board-games/${boardGameId}`;
   const preservedQuery = { returnTo };
   const appliedQuery = reviewAppliedQuery(query, preservedQuery);
   const filtered = hasReviewCriteria(query);
-  const resetHref = reviewQueryHref(basePath, { ...preservedQuery, reviewSort: query.sort === "newest" ? undefined : query.sort }, "board-game-reviews");
+  const resetHref = reviewQueryHref(basePath, { ...preservedQuery, reviewSort: query.sort === "popular" ? undefined : query.sort }, "board-game-reviews");
 
   return (
     <section id="board-game-reviews" className="mt-8 max-w-4xl border-t border-(--border-muted) pt-6" aria-labelledby="board-game-reviews-title">
@@ -47,7 +49,7 @@ export function BoardGameReviews({ boardGameId, aggregate, reviews, query: suppl
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 id="public-reviews-title" className="font-semibold text-(--text-primary)">公開評價</h3>
         </div>
-        <ReviewQueryControls basePath={basePath} query={query} searchPlaceholder="搜尋評論內容" searchLabel="搜尋這款桌遊的評論" preservedQuery={preservedQuery} anchor="board-game-reviews" />
+        <ReviewQueryControls basePath={basePath} query={query} searchPlaceholder="搜尋評論內容" searchLabel="搜尋這款桌遊的評論" preservedQuery={preservedQuery} anchor="board-game-reviews" includePopular defaultSort="popular" />
       </section>
 
       <PaginatedCollection
@@ -90,6 +92,13 @@ export function BoardGameReviews({ boardGameId, aggregate, reviews, query: suppl
                 </div>
               </header>
               {review.content === null ? null : <p className="mt-3 max-w-3xl whitespace-pre-wrap wrap-anywhere text-sm leading-6 text-(--text-secondary)">{review.content}</p>}
+              <ReviewLikeButton
+                boardGameId={boardGameId}
+                reviewId={review.id}
+                initialLikeCount={review.likeCount ?? 0}
+                initialLikedByMe={review.likedByMe ?? false}
+                eligibility={likeEligibility}
+              />
             </article>
           ))}
           </div>

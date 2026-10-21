@@ -8,41 +8,21 @@ import { load } from "./helpers/load-app-module.mjs";
 const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 
-test("public repository paginates every review before sorting and counting", async () => {
+test("public repository delegates stable sorting and pagination to one set-based RPC", async () => {
   const calls = [];
-  const rows = Array.from({ length: 15 }, (_, index) => ({
-    id: `r${index}`,
-    content: index < 10 ? `review ${index}` : null,
-  }));
-  const builder = {
-    select(projection, options) { calls.push(["select", projection, options]); return this; },
-    eq(column, value) { calls.push(["eq", column, value]); return this; },
-    not(column, operator, value) { calls.push(["not", column, operator, value]); return this; },
-    order(column, options) { calls.push(["order", column, options]); return this; },
-    range(from, to) { calls.push(["range", from, to]); return Promise.resolve({ data: rows.slice(from, to + 1), count: 15, error: null }); },
-  };
   const { boardGameReviewsRepository } = load("src/repositories/board-game-reviews.repository.ts", {
-    "@/libs/supabase/server": { supabase: { from: (table) => { assert.equal(table, "board_game_reviews"); return builder; } } },
+    "@/libs/supabase/server": { supabase: { rpc: async (name, args) => {
+      calls.push([name, args]);
+      return { data: { data: [{ id: "r1", rating: 5, content: "review", created_at: "created", updated_at: "updated", author_id: "u1", author_name: "User", author_avatar: null, author_closed_at: null, like_count: "4", liked_by_me: true }], total: "15" }, error: null };
+    } } },
   });
-  const result = await boardGameReviewsRepository.findPublicPage("game", { page: 2, pageSize: 5, sort: "highest" });
-  assert.equal(calls.some((call) => call[0] === "not"), false);
-  assert.deepEqual(calls.filter((call) => call[0] === "order").map((call) => call.slice(1)), [
-    ["rating", { ascending: false }], ["created_at", { ascending: false }], ["id", { ascending: false }],
-  ]);
-  assert.deepEqual(calls.find((call) => call[0] === "range"), ["range", 5, 9]);
+  const result = await boardGameReviewsRepository.findPublicPage("game", { page: 2, pageSize: 5, sort: "popular", viewerUserId: "viewer" });
+  assert.equal(calls[0][0], "list_public_board_game_reviews");
+  assert.deepEqual(calls[0][1], { p_board_game_id: "game", p_viewer_user_id: "viewer", p_search: null, p_rating: null, p_sort: "popular", p_offset: 5, p_limit: 5 });
   assert.equal(result.total, 15);
   assert.equal(result.totalPages, 3);
-
-  for (const [sort, expected] of [
-    ["newest", [["created_at", { ascending: false }], ["id", { ascending: false }]]],
-    ["oldest", [["created_at", { ascending: true }], ["id", { ascending: true }]]],
-    ["lowest", [["rating", { ascending: true }], ["created_at", { ascending: false }], ["id", { ascending: false }]]],
-  ]) {
-    calls.length = 0;
-    await boardGameReviewsRepository.findPublicPage("game", { page: 1, pageSize: 5, sort });
-    assert.deepEqual(calls.filter((call) => call[0] === "order").map((call) => call.slice(1)), expected);
-    assert.equal(calls.some((call) => call[0] === "not"), false);
-  }
+  assert.equal(result.data[0].like_count, "4");
+  assert.equal(result.data[0].liked_by_me, true);
 });
 
 test("rating count and written review count remain separate", async () => {
@@ -135,11 +115,11 @@ test("review presentation distinguishes no ratings from rating-only activity", (
 test("public detail keeps canonical metadata and noindexes review variants", async () => {
   const page = await read("src/app/(public)/board-games/[id]/page.tsx");
   assert.match(page, /reviewsService\.getAggregate\(boardGame\.id\)/);
-  assert.match(page, /reviewsService\.listPublic\(boardGame\.id, effectiveReviewQuery\)/);
+  assert.match(page, /reviewsService\.listPublic\(boardGame\.id, effectiveReviewQuery, viewer\.user\?\.id\)/);
   assert.match(page, /reviewsService\.resolvePublicNewestLocation\(boardGame\.id, reviewQuery\.targetReviewId, reviewQuery\.pageSize\)/);
   assert.match(page, /Promise\.all/);
   assert.match(page, /createPublicMetadata\(\{[\s\S]*?canonical/);
-  assert.match(page, /reviewQuery\.page > 1 \|\| reviewQuery\.sort !== "newest"/);
+  assert.match(page, /reviewQuery\.page > 1 \|\| reviewQuery\.sort !== "popular"/);
   assert.doesNotMatch(page, /hasReviewQueryVariant/);
   assert.match(page, /robots: \{ index: false, follow: true \}/);
   assert.match(page, /user\.email_verified_at \? reviewsService\.findOwn\(user\.id, boardGame\.id\)/);
@@ -164,12 +144,12 @@ test("review metadata follows normalized query semantics", async () => {
     "./board-game-detail": { getBoardGameDetail: async () => game },
   });
   const metadata = async (query) => pageModule.generateMetadata({ params: Promise.resolve({ id: game.id }), searchParams: Promise.resolve(query) });
-  for (const query of [{}, { reviewPage: "abc" }, { reviewSort: "garbage" }, { reviewPage: "1", reviewSort: "newest" }]) {
+  for (const query of [{}, { reviewPage: "abc" }, { reviewSort: "garbage" }, { reviewPage: "1", reviewSort: "popular" }]) {
     const result = await metadata(query);
     assert.equal(result.alternates.canonical, `/board-games/${game.id}`);
     assert.equal(result.robots, undefined);
   }
-  for (const query of [{ reviewPage: "2" }, { reviewSort: "oldest" }, { reviewSort: "highest" }]) {
+  for (const query of [{ reviewPage: "2" }, { reviewSort: "newest" }, { reviewSort: "oldest" }, { reviewSort: "highest" }]) {
     assert.deepEqual((await metadata(query)).robots, { index: false, follow: true });
   }
 });

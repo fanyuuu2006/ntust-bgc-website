@@ -55,7 +55,7 @@ test("every user identity consumer delegates image rendering to UserAvatar", () 
     "src/app/(admin)/admin/users/[id]/page.tsx",
   ].map((path) => [path, readFileSync(path, "utf8")]);
   for (const [path, source] of consumers) assert.match(source, /UserAvatar|AvatarManagement/, path);
-  assert.match(readFileSync("src/repositories/board-game-reviews.repository.ts", "utf8"), /author:users[^\n]+avatar/);
+  assert.match(readFileSync("src/repositories/board-game-reviews.repository.ts", "utf8"), /author_avatar[\s\S]*author: \{ id: review\.author_id, name: review\.author_name, avatar: review\.author_avatar/);
   assert.match(readFileSync("src/components/PublicUserLink.tsx", "utf8"), /UserAvatar/);
 });
 
