@@ -100,14 +100,9 @@ export function PasswordSettingsForm() {
 
   return (
     <section aria-labelledby="password-settings-title">
-      <div>
-        <h3 id="password-settings-title" className="font-semibold text-(--text-primary)">
-          變更密碼
-        </h3>
-        <p className="mt-1 text-sm text-(--text-muted)">
-          使用目前密碼驗證後設定新密碼。
-        </p>
-      </div>
+      <h3 id="password-settings-title" className="font-semibold text-(--text-primary)">
+        變更密碼
+      </h3>
 
       <form
         onSubmit={handleSubmit}

@@ -15,7 +15,7 @@ export function ThemeSelector() {
     <Field
       label="顯示主題"
       htmlFor={selectId}
-      hint="選擇後會立即套用，不需要另外儲存。"
+      hint="選擇後立即套用，並儲存在此瀏覽器。"
       hintPlacement="below"
       className="max-w-md"
     >

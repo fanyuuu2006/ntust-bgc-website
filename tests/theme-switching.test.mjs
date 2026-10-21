@@ -124,8 +124,8 @@ test("settings owns the accessible Select while public and admin headers stay un
     readSource("src/components/theme/ThemeSelector.tsx"),
     readSource("src/components/Header/HeaderActions.tsx"),
     readSource("src/components/(admin)/AdminHeader.tsx"),
-    readSource("src/app/(authenticated)/settings/page.tsx"),
-    readSource("src/app/(authenticated)/settings/loading.tsx"),
+    readSource("src/app/(authenticated)/settings/appearance/page.tsx"),
+    readSource("src/app/(authenticated)/settings/appearance/loading.tsx"),
   ]);
 
   assert.match(selector, /<Field[\s\S]*label="顯示主題"/);
@@ -136,9 +136,9 @@ test("settings owns the accessible Select while public and admin headers stay un
   assert.match(selector, /setPreference\(event\.target\.value\)/);
   assert.doesNotMatch(headerActions, /ThemeMenu|ThemeSelector|切換網站主題/);
   assert.doesNotMatch(adminHeader, /ThemeMenu|ThemeSelector|切換網站主題/);
-  assert.match(settings, /title="外觀"/);
+  assert.match(settings, /title="外觀與偏好"/);
   assert.match(settings, /<ThemeSelector \/>/);
-  assert.match(settingsLoading, /h-96[\s\S]*h-40[\s\S]*h-80/);
+  assert.match(settingsLoading, /SettingsCardLoading/);
 });
 
 test("settings theme Select applies each validated preference immediately", async () => {
