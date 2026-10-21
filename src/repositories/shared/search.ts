@@ -5,9 +5,14 @@
  * 例如 buildIlikeSearch(["name", "email"], "50%off")
  * → "name.ilike.%50\%off%,email.ilike.%50\%off%"
  */
-export function buildIlikeSearch(fields: string[], keyword: string): string {
+export function buildIlikePattern(keyword: string): string {
   const escaped = keyword.replace(/[%_]/g, (c) => `\\${c}`);
-  return fields.map((field) => `${field}.ilike.%${escaped}%`).join(",");
+  return `%${escaped}%`;
+}
+
+export function buildIlikeSearch(fields: string[], keyword: string): string {
+  const pattern = buildIlikePattern(keyword);
+  return fields.map((field) => `${field}.ilike.${pattern}`).join(",");
 }
 
 export function buildNumericSearch(fields: string[], keyword: string): string {

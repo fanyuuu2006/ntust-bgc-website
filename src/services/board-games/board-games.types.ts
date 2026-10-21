@@ -46,4 +46,8 @@ export type BoardGameDiscoveryItem = Pick<BoardGame, "id" | "name" | "image" | "
   stats: BoardGameStats;
 };
 
+export type BoardGameRankingItem = BoardGameDiscoveryItem & {
+  globalRank: number;
+};
+
 export type HomeBoardGameItem = BoardGameDiscoveryItem;
