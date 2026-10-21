@@ -29,13 +29,16 @@ test("full Footer exposes the confirmed identity, website, contact, related, and
   assert.ok(footer.includes("\u5b98\u65b9\u7db2\u7ad9"));
   assert.ok(footer.includes("\u7db2\u7ad9\u958b\u767c\u8207\u7dad\u8b77\uff1a"));
   assert.ok(footer.includes("\u98ef\u9b5a"));
-  assert.match(footer, /const developerUrl = "https:\/\/fanyu\.vercel\.app"/);
-  assert.match(footer, /href=\{developerUrl\}/);
+  assert.ok(footer.includes("YBeanAn"));
+  assert.match(footer, /name: "\u98ef\u9b5a", href: "https:\/\/fanyu\.vercel\.app"/);
+  assert.match(footer, /name: "YBeanAn", href: "https:\/\/github\.com\/YBeanAn"/);
+  assert.match(footer, /developers\.map/);
+  assert.match(footer, /<DeveloperCredits \/>/);
   assert.doesNotMatch(footer, /\u00a9|new Date\(\)\.getFullYear\(\)|\u7248\u6b0a\u6240\u6709|All Rights Reserved/i);
   assert.doesNotMatch(footer, /<Image|siteConfigs\.logo/);
   assert.doesNotMatch(
     footer,
-    /memberMenuNavigation|adminNavigation|\/dashboard|\/admin|GitHub|Facebook|\u7248\u672c|version/i,
+    /memberMenuNavigation|adminNavigation|\/dashboard|\/admin|Facebook|\u7248\u672c|version/i,
   );
 });
 
@@ -54,7 +57,7 @@ test("Footer variants retain semantic navigation while legal mode stays a compac
   assert.match(legalBranch, /siteConfigs\.fullName/);
   assert.ok(legalBranch.includes("\u5b98\u65b9\u7db2\u7ad9"));
   assert.ok(legalBranch.includes("\u7db2\u7ad9\u958b\u767c\u8207\u7dad\u8b77\uff1a"));
-  assert.match(legalBranch, /href=\{developerUrl\}/);
+  assert.match(legalBranch, /<DeveloperCredits \/>/);
   assert.doesNotMatch(
     legalBranch,
     /ntustboardgame@gmail\.com|Instagram|www\.ntust\.edu\.tw|publicNavigation/,

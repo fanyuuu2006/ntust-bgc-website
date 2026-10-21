@@ -8,7 +8,7 @@
 
 本網站服務國立臺灣科技大學桌上遊戲研究社，並以該社團的官方網站與管理平台呈現。
 
-主要網站開發與維護 attribution 為飯魚（<https://fanyu.vercel.app>）。網站服務對象、營運角色、技術維護與 source-code rights 是不同概念，不應由單一 Footer 文案推定其法律關係。
+網站開發與維護 attribution 為飯魚（<https://fanyu.vercel.app>）與 YBeanAn（<https://github.com/YBeanAn>）。網站服務對象、營運角色、技術維護與 source-code rights 是不同概念，不應由 Footer 文案推定其法律關係。
 
 ## 3. Source code
 
