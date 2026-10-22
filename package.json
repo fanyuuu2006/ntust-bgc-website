@@ -9,6 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test",
+    "openapi:lint": "redocly lint docs/api/openapi.yaml",
+    "test:openapi": "node --test tests/openapi-documentation.test.mjs",
     "db:start": "npx supabase@2.117.0 start",
     "db:reset": "npx supabase@2.117.0 db reset",
     "db:verify": "node scripts/verify-local-database.mjs",
@@ -32,6 +34,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@redocly/cli": "^2.67.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
