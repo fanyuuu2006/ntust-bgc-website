@@ -1,6 +1,8 @@
 -- PR Profile Visibility 唯讀驗證；預期全部 PASS。
 with checks as (
-  select 'enum.values' check_name, array_agg(enum.enumlabel order by enum.enumsortorder) = array['public', 'limited'] passed
+  select 'enum.values' check_name,
+    array_agg(enum.enumlabel::text order by enum.enumsortorder)
+      = array['public', 'limited']::text[] passed
   from pg_type type
   join pg_namespace namespace on namespace.oid = type.typnamespace
   join pg_enum enum on enum.enumtypid = type.oid
