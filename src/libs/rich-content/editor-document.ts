@@ -16,6 +16,9 @@ export function canonicalEditorContent(node: JSONContent): unknown {
       caption: typeof node.attrs?.caption === "string"
         ? node.attrs.caption.trim() || null
         : null,
+      ...(typeof node.attrs?.decorative === "boolean"
+        ? { decorative: node.attrs.decorative }
+        : {}),
     } } : {}),
     ...(node.type === "heading" ? { attrs: { level: node.attrs?.level } } : {}),
     ...(node.type === "orderedList" ? { attrs: { start: node.attrs?.start ?? 1 } } : {}),

@@ -10,7 +10,7 @@ export type RichContentImageMimeType =
   (typeof RICH_CONTENT_IMAGE_MIME_TYPES)[number];
 export type RichImageNode = {
   type: "image";
-  attrs: { src: string; alt: string; caption: string | null };
+  attrs: { src: string; alt: string; caption: string | null; decorative?: boolean };
 };
 
 const OBJECT_PATH =
@@ -111,11 +111,11 @@ export function normalizeRichImageNode(value: unknown): RichImageNode | null {
   ) return null;
   const attrs = node.attrs as Record<string, unknown>;
   if (
-    Object.keys(attrs).length !== 3 ||
-    Object.keys(attrs).some((key) => !["src", "alt", "caption"].includes(key)) ||
+    Object.keys(attrs).some((key) => !["src", "alt", "caption", "decorative"].includes(key)) ||
     typeof attrs.src !== "string" ||
     typeof attrs.alt !== "string" ||
     (attrs.caption !== null && typeof attrs.caption !== "string") ||
+    (attrs.decorative !== undefined && typeof attrs.decorative !== "boolean") ||
     !isCanonicalRichContentImageUrl(attrs.src)
   ) return null;
 
@@ -127,5 +127,16 @@ export function normalizeRichImageNode(value: unknown): RichImageNode | null {
   if (unicodeLength(alt) > 300 || (caption && unicodeLength(caption) > 500)) {
     return null;
   }
-  return { type: "image", attrs: { src: attrs.src, alt, caption } };
+  if (attrs.decorative === true && alt !== "") return null;
+  return {
+    type: "image",
+    attrs: {
+      src: attrs.src,
+      alt,
+      caption,
+      ...(typeof attrs.decorative === "boolean"
+        ? { decorative: attrs.decorative }
+        : {}),
+    },
+  };
 }
