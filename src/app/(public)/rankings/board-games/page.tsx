@@ -39,7 +39,7 @@ async function BoardGameRankingsPage({ searchParams }: RankingsPageProps) {
     <section className="container py-8">
       <div className="flex items-start justify-between gap-3">
         <PageHeader eyebrow="排行榜" title="桌遊排行榜" description={ranking.description} />
-        <RankingInfoDialog><BoardGameRankingGuide /></RankingInfoDialog>
+        <RankingInfoDialog iconOnly><BoardGameRankingGuide /></RankingInfoDialog>
       </div>
       <div className="mt-6"><RankingNavigation active={ranking.key} search={search} /></div>
       <BoardGameRankingSearchForm
