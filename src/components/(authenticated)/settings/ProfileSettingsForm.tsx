@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import type { UserProfile } from "@/types/database";
+import { useToast } from "@/contexts/ToastContext";
 
 type ProfileFormValues = Pick<
   UserProfile,
@@ -73,10 +74,10 @@ function isDirty(current: ProfileFormValues, initial: ProfileFormValues) {
 
 export function ProfileSettingsForm({ profile }: { profile: UserProfile }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const initialValues = toFormValues(profile);
   const [values, setValues] = useState<ProfileFormValues>(initialValues);
   const [formError, setFormError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const hasChanges = isDirty(values, initialValues);
 
@@ -84,19 +85,16 @@ export function ProfileSettingsForm({ profile }: { profile: UserProfile }) {
     const { name, value } = event.target;
     setValues((current) => ({ ...current, [name]: value }));
     setFormError(null);
-    setSuccessMessage(null);
   }
 
   function handleReset() {
     setValues(initialValues);
     setFormError(null);
-    setSuccessMessage(null);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError(null);
-    setSuccessMessage(null);
     setIsLoading(true);
 
     try {
@@ -104,7 +102,7 @@ export function ProfileSettingsForm({ profile }: { profile: UserProfile }) {
         method: "PATCH",
         body: values,
       });
-      setSuccessMessage("個人資料已更新");
+      showToast("success", "個人資料已儲存");
       router.refresh();
     } catch (error) {
       setFormError(
@@ -150,7 +148,7 @@ export function ProfileSettingsForm({ profile }: { profile: UserProfile }) {
           ))}
         </div>
 
-        <FormFeedback error={formError} success={successMessage} />
+        <FormFeedback error={formError} />
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { FormFeedback } from "@/components/FormFeedback";
+import { useToast } from "@/contexts/ToastContext";
 import { Select } from "@/components/ui/Select";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
@@ -17,11 +18,11 @@ export function PublicProfileSettings({
   initialOptedIn: boolean;
 }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [visibility, setVisibility] = useState(initialVisibility);
   const [optedIn, setOptedIn] = useState(initialOptedIn);
   const [busyField, setBusyField] = useState<"visibility" | "ranking" | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const visibilityDescription = visibility === "public"
     ? "其他人可查看你的公開身份、社團足跡與評論紀錄。"
     : "其他人只能查看你的顯示名稱與頭像。";
@@ -30,14 +31,13 @@ export function PublicProfileSettings({
     const previous = visibility;
     setBusyField("visibility");
     setError(null);
-    setSuccess(null);
     setVisibility(nextValue);
     try {
       await apiClient("/api/users/me/profile-visibility", {
         method: "PATCH",
         body: { visibility: nextValue },
       });
-      setSuccess(nextValue === "public" ? "個人檔案已設為公開" : "個人檔案已設為限制公開");
+      showToast("success", "設定已更新");
       router.refresh();
     } catch (cause) {
       setVisibility(previous);
@@ -50,14 +50,13 @@ export function PublicProfileSettings({
   async function updatePreference(nextValue: boolean) {
     setBusyField("ranking");
     setError(null);
-    setSuccess(null);
     try {
       await apiClient("/api/users/me/public-ranking-preference", {
         method: "PATCH",
         body: { optedIn: nextValue },
       });
       setOptedIn(nextValue);
-      setSuccess(nextValue ? "已顯示在評論貢獻排行" : "已從評論貢獻排行移除");
+      showToast("success", "設定已更新");
       router.refresh();
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : "更新排行榜參與設定失敗，請稍後再試");
@@ -114,7 +113,7 @@ export function PublicProfileSettings({
       <p className="mt-3 text-sm leading-6 text-(--text-muted)">
         個人檔案可見性不會影響你已發表的公開評論。
       </p>
-      <FormFeedback error={error} success={success} className="mt-3" />
+      <FormFeedback error={error} className="mt-3" />
     </section>
   );
 }

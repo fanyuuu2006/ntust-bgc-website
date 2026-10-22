@@ -8,6 +8,7 @@ import { FormFeedback } from "@/components/FormFeedback";
 import { Button } from "@/components/ui/Button";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
+import { useToast } from "@/contexts/ToastContext";
 import type { BoardGameBorrowing } from "@/types/database";
 
 type CancelBorrowingResponse = { data: BoardGameBorrowing };
@@ -20,6 +21,7 @@ export function CancelBorrowingAction({
   boardGameName: string;
 }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,10 +37,12 @@ export function CancelBorrowingAction({
         { method: "POST" },
       );
       setOpen(false);
+      showToast("success", "借用申請已取消");
       router.refresh();
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 409) {
         setOpen(false);
+        showToast("success", "借用申請已取消");
         router.refresh();
         return;
       }

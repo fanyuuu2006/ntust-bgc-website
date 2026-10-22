@@ -11,6 +11,7 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/Button";
 import { ApiError } from "@/libs/api/errors";
 import { AVATAR_MAX_BYTES } from "@/libs/avatar/image";
+import { useToast } from "@/contexts/ToastContext";
 import type { User } from "@/types/database";
 
 const ACCEPTED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -31,6 +32,7 @@ async function readAvatarResponse(response: Response): Promise<AvatarResponse> {
 
 export function AvatarManagement({ user, endpoint, admin = false }: AvatarManagementProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [avatarOverride, setAvatarOverride] = useState<{ base: string | null; value: string | null } | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -40,7 +42,6 @@ export function AvatarManagement({ user, endpoint, admin = false }: AvatarManage
   const [removing, setRemoving] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const avatar = avatarOverride !== null && avatarOverride.base === user.avatar
     ? avatarOverride.value
@@ -68,11 +69,11 @@ export function AvatarManagement({ user, endpoint, admin = false }: AvatarManage
 
   async function uploadAvatar() {
     if (!file || uploading) return;
-    setUploadError(null); setSuccess(null); setUploading(true);
+    setUploadError(null); setUploading(true);
     try {
       const body = new FormData(); body.append("file", file);
       const payload = await readAvatarResponse(await fetch(endpoint, { method: "POST", body }));
-      setAvatarOverride({ base: user.avatar, value: payload.data.avatar }); setSuccess(avatar ? "頭像已更新" : "頭像已上傳");
+      setAvatarOverride({ base: user.avatar, value: payload.data.avatar }); showToast("success", avatar ? "頭像已更新" : "頭像已上傳");
       setUploadOpen(false); resetSelection(); router.refresh();
     } catch (error) {
       if (error instanceof ApiError && error.status === 409) {
@@ -83,10 +84,10 @@ export function AvatarManagement({ user, endpoint, admin = false }: AvatarManage
 
   async function removeAvatar() {
     if (removing) return;
-    setRemoveError(null); setSuccess(null); setRemoving(true);
+    setRemoveError(null); setRemoving(true);
     try {
       await readAvatarResponse(await fetch(endpoint, { method: "DELETE" }));
-      setAvatarOverride({ base: user.avatar, value: null }); setRemoveOpen(false); setSuccess("頭像已移除"); router.refresh();
+      setAvatarOverride({ base: user.avatar, value: null }); setRemoveOpen(false); showToast("success", "頭像已移除"); router.refresh();
     } catch (error) {
       if (error instanceof ApiError && error.status === 409) {
         setRemoveOpen(false); setRemoveError("頭像已在其他操作中更新，已重新載入最新狀態。"); router.refresh();
@@ -106,7 +107,7 @@ export function AvatarManagement({ user, endpoint, admin = false }: AvatarManage
         </div>
       </div>
     </div>
-    <FormFeedback error={removeOpen ? null : removeError} success={success} className="mt-2" />
+    <FormFeedback error={removeOpen ? null : removeError} className="mt-2" />
     <Modal open={uploadOpen} onClose={closeUpload} closeDisabled={uploading} title={actionLabel} description="選擇一張圖片作為頭像。" size="sm">
       <div className="space-y-4" aria-busy={uploading || undefined}>
         {previewUrl ? <div className="flex min-w-0 items-center gap-3 rounded-xl border border-(--border-default) bg-(--surface-subtle) p-3">

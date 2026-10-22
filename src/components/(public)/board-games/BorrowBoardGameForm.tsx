@@ -10,6 +10,7 @@ import { apiClient } from "@/libs/api/client";
 import { FormFeedback } from "@/components/FormFeedback";
 import { Button } from "@/components/ui/Button";
 import { clubPolicies } from "@/libs/clubPolicies";
+import { useToast } from "@/contexts/ToastContext";
 
 type BorrowBoardGameFormProps = {
   boardGameId: string;
@@ -23,17 +24,16 @@ export function BorrowBoardGameForm({
   showNonCurrentMemberNotice,
 }: BorrowBoardGameFormProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
     setError(null);
-    setSuccess(null);
 
     try {
       await apiClient<{ data: { id: string } }>(
@@ -44,7 +44,7 @@ export function BorrowBoardGameForm({
         },
       );
 
-      setSuccess("借用申請已送出，請等待幹部審核。");
+      showToast("success", "借用申請已送出");
       setOpen(false);
       router.refresh();
     } catch (caughtError) {
@@ -65,7 +65,6 @@ export function BorrowBoardGameForm({
         type="button"
         onClick={() => {
           setError(null);
-          setSuccess(null);
           setOpen(true);
         }}
         disabled={isSubmitting}
@@ -74,7 +73,7 @@ export function BorrowBoardGameForm({
         申請借用
       </Button>
 
-      <FormFeedback error={error} success={success} className="min-h-0" />
+      <FormFeedback error={error} className="min-h-0" />
       <ConfirmDialog
         open={open}
         onClose={() => {

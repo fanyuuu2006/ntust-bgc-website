@@ -4,6 +4,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 export { metadata } from "@/libs/metadata";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ToastProvider } from "@/contexts/ToastContext";
 import { THEME_INITIALIZATION_SCRIPT } from "@/libs/theme";
 import "@/styles/globals.css";
 
@@ -33,7 +34,7 @@ function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INITIALIZATION_SCRIPT }} />
       </head>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider><ToastProvider>{children}</ToastProvider></ThemeProvider>
       </body>
       {isProductionDeployment() ? (
         <GoogleAnalytics gaId={GOOGLE_ANALYTICS_ID} />
