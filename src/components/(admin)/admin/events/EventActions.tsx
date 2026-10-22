@@ -12,6 +12,7 @@ import dynamic from "next/dynamic";
 import { editableRichContent } from "@/libs/rich-content/content";
 import { apiClient } from "@/libs/api/client";
 import { parseTaipeiDateTimeLocal } from "@/utils/date";
+import { useToast } from "@/contexts/ToastContext";
 
 // Editor runtime 僅供管理端編輯，不帶入伺服器渲染的閱讀頁面。
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor").then((module) => module.RichTextEditor), { ssr: false });
@@ -38,6 +39,7 @@ const emptyFormValues = (): EventFormValues => ({
 
 export function EventActions() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +81,7 @@ export function EventActions() {
         },
       });
       setOpen(false);
+      showToast("success", "活動已新增");
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "新增活動失敗，請稍後再試。");

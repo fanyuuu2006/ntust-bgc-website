@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/Select";
 import { AdminUserPicker } from "@/components/(admin)/admin/users/AdminUserPicker";
 import { apiClient } from "@/libs/api/client";
 import type { AcademicYear, MembershipStatus } from "@/types/database";
+import { useToast } from "@/contexts/ToastContext";
 
 type Props = {
   years: AcademicYear[];
@@ -19,6 +20,7 @@ export function MembershipCreateButton({
   years,
 }: Props) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +50,7 @@ export function MembershipCreateButton({
     try {
       await apiClient("/api/admin/memberships", { method: "POST", body: values });
       setOpen(false);
+      showToast("success", "社員資格已新增");
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "新增社員資格失敗。" );

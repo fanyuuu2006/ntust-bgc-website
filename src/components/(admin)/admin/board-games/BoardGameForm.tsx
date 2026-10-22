@@ -26,6 +26,7 @@ import { Select } from "@/components/ui/Select";
 import dynamic from "next/dynamic";
 import { editableRichContent, readRichContent } from "@/libs/rich-content/content";
 import { storedDescription } from "@/libs/rich-content/description";
+import { useToast } from "@/contexts/ToastContext";
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor").then((module) => module.RichTextEditor), { ssr: false });
 
 type BoardGameFormMode = "create" | "edit";
@@ -135,6 +136,7 @@ export function BoardGameForm({
   returnTo,
 }: BoardGameFormProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const submittingRef = useRef(false);
   const removingRef = useRef(false);
@@ -305,6 +307,7 @@ export function BoardGameForm({
         }
       }
 
+      showToast("success", mode === "create" ? "桌遊已新增" : "桌遊資料已更新");
       router.push(returnHref);
       router.refresh();
     } catch (err) {

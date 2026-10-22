@@ -33,3 +33,27 @@ test("first operation batch uses toast only after successful clipboard or mutati
   assert.match(files[2], /await apiClient[\s\S]*showToast\("success"/);
   assert.match(files[3], /await apiClient[\s\S]*showToast\("success"/);
 });
+
+test("admin create actions notify only after successful API responses", async () => {
+  const files = await Promise.all([
+    "../src/components/(admin)/admin/board-games/categories/CategoryCreateAction.tsx",
+    "../src/components/(admin)/admin/memberships/MembershipCreateButton.tsx",
+    "../src/components/(admin)/admin/events/EventActions.tsx",
+  ].map((path) => readFile(new URL(path, import.meta.url), "utf8")));
+  for (const text of files) assert.match(text, /useToast/);
+  for (const text of files) assert.match(text, /await apiClient[\s\S]*showToast\("success"/);
+});
+
+test("admin board-game and announcement mutations use operation-specific success copy", async () => {
+  const files = await Promise.all([
+    "../src/components/(admin)/admin/board-games/BoardGameForm.tsx",
+    "../src/components/(admin)/admin/announcements/AnnouncementEditor.tsx",
+  ].map((path) => readFile(new URL(path, import.meta.url), "utf8")));
+  for (const text of files) {
+    assert.match(text, /useToast/);
+    assert.match(text, /await apiClient[\s\S]*showToast\("success"/);
+  }
+  assert.match(files[0], /mode === "create" \? "桌遊已新增" : "桌遊資料已更新"/);
+  assert.match(files[1], /公告已刪除/);
+  assert.match(files[1], /公告已發布/);
+});
