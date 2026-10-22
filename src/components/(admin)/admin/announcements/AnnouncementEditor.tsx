@@ -14,6 +14,7 @@ import dynamic from "next/dynamic";
 import { editableRichContent, richContentSchema, readRichContent } from "@/libs/rich-content/content";
 
 import { apiClient } from "@/libs/api/client";
+import { useToast } from "@/contexts/ToastContext";
 import {
   buildAnnouncementSubmitPayload,
   type AnnouncementSubmitIntent,
@@ -36,6 +37,7 @@ type EditableAnnouncement = {
 
 export function AnnouncementEditor({ announcement, returnTo }: { announcement?: EditableAnnouncement; returnTo?: string }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const returnHref = getAdminReturnPath(returnTo, "/admin/announcements");
   const [title, setTitle] = useState(announcement?.title ?? "");
   const [initialContent] = useState(() => editableRichContent(announcement));
@@ -69,6 +71,12 @@ export function AnnouncementEditor({ announcement, returnTo }: { announcement?: 
           }),
         },
       );
+      showToast(
+        "success",
+        intent === "publish"
+          ? announcement ? "公告已發布" : "公告已新增並發布"
+          : announcement ? "公告已更新" : "公告草稿已儲存",
+      );
       router.push(returnHref);
       router.refresh();
     } catch (reason) {
@@ -84,6 +92,7 @@ export function AnnouncementEditor({ announcement, returnTo }: { announcement?: 
     setError(null);
     try {
       await apiClient(`/api/admin/announcements/${announcement.id}`, { method: "DELETE" });
+      showToast("success", "公告已刪除");
       router.push(returnHref);
       router.refresh();
     } catch (reason) {

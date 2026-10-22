@@ -10,9 +10,11 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { apiClient } from "@/libs/api/client";
 import { Plus } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
 
 export function CategoryCreateAction() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -45,6 +47,7 @@ export function CategoryCreateAction() {
         body: { name, description: description || null },
       });
       setOpen(false);
+      showToast("success", "桌遊分類已新增");
       router.refresh();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "新增桌遊分類失敗，請稍後再試。");
