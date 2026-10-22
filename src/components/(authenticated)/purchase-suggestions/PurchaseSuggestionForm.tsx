@@ -12,10 +12,12 @@ import { FormFeedback } from "@/components/FormFeedback";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import { createPurchaseSuggestionSchema } from "@/services/purchase-suggestions/purchase-suggestions.schema";
+import { useToast } from "@/contexts/ToastContext";
 export function PurchaseSuggestionForm({ remaining }: {
   remaining: number;
 }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const request = useRef<{
     key: string;
     id: string;
@@ -24,7 +26,6 @@ export function PurchaseSuggestionForm({ remaining }: {
   const [busy, setBusy] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   function validateField(name: "game_name" | "reason" | "reference_url", value: string) {
     const parsed = createPurchaseSuggestionSchema.shape[name].safeParse(value);
@@ -42,7 +43,6 @@ export function PurchaseSuggestionForm({ remaining }: {
       request.current = { key, id: crypto.randomUUID() };
     const parsed = createPurchaseSuggestionSchema.safeParse({ ...values, request_id: request.current.id });
     setError(null);
-    setSuccess(null);
     setFieldErrors({});
     if (!parsed.success) {
       const errors: Record<string, string> = {};
@@ -60,7 +60,7 @@ export function PurchaseSuggestionForm({ remaining }: {
     setBusy(true);
     try {
       await apiClient("/api/board-games/suggest", { method: "POST", body: { ...values, request_id: request.current.id } });
-      setSuccess("已收到你的推薦，謝謝你的建議！幹部將評估是否購入。");
+      showToast("success", "桌遊推薦已送出");
       form.reset();
       request.current = null;
       router.refresh();
@@ -166,7 +166,7 @@ export function PurchaseSuggestionForm({ remaining }: {
         }}
       />
     </Field>
-    <div aria-live="polite"><FormFeedback error={error} success={success} /></div>
+    <div aria-live="polite"><FormFeedback error={error} /></div>
     <Button type="submit" isLoading={busy}>送出推薦</Button>
   </form>
     <Modal open={rulesOpen} onClose={() => setRulesOpen(false)} title="推薦規則" size="md">

@@ -7,6 +7,7 @@ import { FormFeedback } from "@/components/FormFeedback";
 import { Button } from "@/components/ui/Button";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
+import { useToast } from "@/contexts/ToastContext";
 
 type PasswordFormValues = {
   currentPassword: string;
@@ -49,9 +50,9 @@ const baseFields: PasswordField[] = [
 ];
 
 export function PasswordSettingsForm() {
+  const { showToast } = useToast();
   const [values, setValues] = useState<PasswordFormValues>(initialValues);
   const [formError, setFormError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const isDirty = Object.values(values).some(Boolean);
   const fields = useMemo(
@@ -63,19 +64,16 @@ export function PasswordSettingsForm() {
     const { name, value } = event.target;
     setValues((current) => ({ ...current, [name]: value }));
     setFormError(null);
-    setSuccessMessage(null);
   }
 
   function handleReset() {
     setValues(initialValues);
     setFormError(null);
-    setSuccessMessage(null);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError(null);
-    setSuccessMessage(null);
 
     if (values.newPassword !== values.confirmPassword) {
       setFormError("兩次輸入的新密碼不一致");
@@ -85,7 +83,7 @@ export function PasswordSettingsForm() {
     setIsLoading(true);
     try {
       await apiClient("/api/auth/password", { method: "PATCH", body: values });
-      setSuccessMessage("密碼已更新，下次登入請使用新密碼");
+      showToast("success", "密碼已更新，下次登入請使用新密碼");
       setValues(initialValues);
     } catch (error) {
       setFormError(
@@ -122,7 +120,7 @@ export function PasswordSettingsForm() {
           ))}
         </div>
 
-        <FormFeedback error={formError} success={successMessage} />
+        <FormFeedback error={formError} />
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button

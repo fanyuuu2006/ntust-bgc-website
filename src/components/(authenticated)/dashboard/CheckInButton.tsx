@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/Button";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import type { EventAttendance } from "@/types/database";
+import { useToast } from "@/contexts/ToastContext";
 
 type CheckInResponse = { data: EventAttendance };
 
 export function CheckInButton({ eventId }: { eventId: string }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,9 +28,11 @@ export function CheckInButton({ eventId }: { eventId: string }) {
       await apiClient<CheckInResponse>(`/api/events/${eventId}/check-in`, {
         method: "POST",
       });
+      showToast("success", "已完成簽到");
       router.refresh();
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 409) {
+        showToast("success", "你已完成簽到");
         router.refresh();
         return;
       }

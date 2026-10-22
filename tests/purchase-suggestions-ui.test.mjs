@@ -77,9 +77,10 @@ test("rules button opens the shared dialog without submitting or clearing the fo
 
 test("failed submission preserves fields and request ID; successful receipt clears the form", async () => {
   await withDom(async ({ dom, host, root }) => {
-    const calls = []; let succeed = false; let refreshes = 0;
+    const calls = []; const toasts = []; let succeed = false; let refreshes = 0;
     const { PurchaseSuggestionForm } = load("src/components/(authenticated)/purchase-suggestions/PurchaseSuggestionForm.tsx", {
       "next/navigation": { useRouter: () => ({ refresh: () => { refreshes++; } }) },
+      "@/contexts/ToastContext": { useToast: () => ({ showToast: (...toast) => toasts.push(toast) }) },
       "@/libs/api/client": { apiClient: async (url, options) => { calls.push({ url, ...options }); if (!succeed) throw new Error("response lost"); return { data: {} }; } },
     });
     await act(async () => root.render(createElement(PurchaseSuggestionForm, { remaining: 3 })));
@@ -96,7 +97,7 @@ test("failed submission preserves fields and request ID; successful receipt clea
     assert.equal(calls.length, 2);
     assert.equal(calls[0].body.request_id, calls[1].body.request_id);
     assert.equal(name.value, ""); assert.equal(reason.value, "");
-    assert.match(host.textContent, /已收到你的推薦/); assert.equal(refreshes, 1);
+    assert.deepEqual(toasts, [["success", "桌遊推薦已送出"]]); assert.equal(refreshes, 1);
   });
 });
 

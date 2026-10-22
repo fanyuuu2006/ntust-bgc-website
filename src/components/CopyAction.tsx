@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useToast } from "@/contexts/ToastContext";
 
 export function CopyAction({ label, text }: { label: string; text: string }) {
   const [feedback, setFeedback] = useState("");
+  const { showToast } = useToast();
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
   async function copy() {
@@ -13,7 +15,11 @@ export function CopyAction({ label, text }: { label: string; text: string }) {
     try {
       await navigator.clipboard.writeText(text);
       setFeedback("已複製");
-    } catch { setFeedback("無法複製，請手動選取文字。"); }
+      showToast("success", "已複製");
+    } catch {
+      setFeedback("無法複製，請手動選取文字。");
+      showToast("error", "無法複製，請手動選取文字。");
+    }
     timer.current = setTimeout(() => setFeedback(""), 2500);
   }
   return <>
