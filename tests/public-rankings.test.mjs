@@ -135,7 +135,8 @@ test("public routes expose an extensible hub, four board-game rankings and SSR p
   assert.match(overview, /getBoardGameRanking/);
   assert.match(overview, /basePath="\/rankings"/);
   assert.match(overview, /桌遊排行/);
-  assert.doesNotMatch(overview, /\/rankings\/(reviews|contributors|events)/);
+  assert.match(overview, /href="\/rankings\/reviews"/);
+  assert.doesNotMatch(overview, /\/rankings\/(contributors|events)/);
   assert.match(boardGames, /PaginatedCollection/);
   assert.match(boardGames, /listBoardGameRankings/);
   assert.match(boardGames, /BoardGameRankingSearchForm/);
@@ -149,6 +150,7 @@ test("public routes expose an extensible hub, four board-game rankings and SSR p
   assert.match(navigation, /label: "排行", href: "\/rankings"/);
   assert.match(sitemap, /"\/rankings"/);
   assert.match(sitemap, /"\/rankings\/board-games"/);
+  assert.match(sitemap, /"\/rankings\/reviews"/);
 });
 
 test("ranking list renders empty data safely and keeps rank, metric and detail link explicit", () => {

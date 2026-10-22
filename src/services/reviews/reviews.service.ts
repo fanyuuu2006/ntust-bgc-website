@@ -7,9 +7,9 @@ import { boardGameReviewsRepository } from "@/repositories/board-game-reviews.re
 import { boardGamesRepository } from "@/repositories/board-games.repository";
 import { BoardNotFoundError } from "@/services/board-games/board-games.errors";
 import { toPublicUserIdentity } from "@/services/users/public-identity";
-import { createReviewSchema, listReviewsSchema, profileReviewsQuerySchema, replaceReviewSchema, setReviewLikeSchema } from "./reviews.schema";
+import { createReviewSchema, listReviewsSchema, profileReviewsQuerySchema, publicReviewRankingsQuerySchema, replaceReviewSchema, setReviewLikeSchema } from "./reviews.schema";
 import { DuplicateReviewError, ReviewNotFoundError } from "./reviews.errors";
-import type { BoardGameReviewAggregate, PublicBoardGameReview, PublicBoardGameReviewsPage, PublicProfileReviewsPage, ReviewRating } from "./reviews.types";
+import type { BoardGameReviewAggregate, PublicBoardGameReview, PublicBoardGameReviewsPage, PublicProfileReviewsPage, PublicReviewRankingsPage, ReviewRating } from "./reviews.types";
 
 type DatabaseError = { code?: string; constraint?: string; message?: string };
 
@@ -86,6 +86,29 @@ export const reviewsService = {
     const viewerId = viewerUserId == null ? undefined : z.uuid().parse(viewerUserId);
     const result = await boardGameReviewsRepository.findPublicPage(id, { ...options, viewerUserId: viewerId });
     return { ...result, data: result.data.map(toPublicReview) };
+  },
+
+  listPopularRankings: async (input: unknown = {}): Promise<PublicReviewRankingsPage> => {
+    const options = publicReviewRankingsQuerySchema.parse(input);
+    const result = await boardGameReviewsRepository.findPopularRankings(options);
+    return {
+      ...result,
+      data: result.data.map((review) => ({
+        globalRank: Number(review.global_rank),
+        id: review.review_id,
+        boardGame: { id: review.board_game_id, name: review.board_game_name },
+        rating: review.rating as ReviewRating,
+        content: review.content,
+        createdAt: review.created_at,
+        likeCount: Number(review.like_count),
+        author: toPublicUserIdentity({
+          id: review.author_id,
+          name: review.author_name,
+          avatar: review.author_avatar,
+          closed_at: review.author_closed_at,
+        }),
+      })),
+    };
   },
 
   setLike: async (userId: unknown, boardGameId: unknown, reviewId: unknown, input: unknown) => {

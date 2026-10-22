@@ -40,6 +40,25 @@ export type PublicBoardGameReviewsPage = Readonly<{
   totalPages: number;
 }>;
 
+export type PublicReviewRankingItem = Readonly<{
+  globalRank: number;
+  id: string;
+  boardGame: Readonly<{ id: string; name: string }>;
+  rating: ReviewRating;
+  content: string;
+  createdAt: string;
+  likeCount: number;
+  author: PublicUserIdentity;
+}>;
+
+export type PublicReviewRankingsPage = Readonly<{
+  data: PublicReviewRankingItem[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}>;
+
 export type PublicProfileReview = Readonly<{
   id: string;
   rating: ReviewRating;

@@ -10,6 +10,7 @@ const STATIC_PATHS = [
   "/board-games",
   "/rankings",
   "/rankings/board-games",
+  "/rankings/reviews",
   "/support",
   "/privacy",
   "/terms",
