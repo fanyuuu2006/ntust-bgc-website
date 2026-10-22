@@ -1,0 +1,1369 @@
+openapi: 3.1.0
+info:
+  title: NTUST BGC API
+  version: 1.0.0
+  description: Cookie Session authentication is handled by the browser.
+  license:
+    name: UNLICENSED
+    identifier: LicenseRef-Proprietary
+servers:
+  - url: /
+tags:
+  - name: Authentication
+    description: Authentication and session endpoints.
+  - name: Public
+    description: Public read and interaction endpoints.
+  - name: User
+    description: Authenticated member endpoints.
+  - name: Admin
+    description: Administrator-only management endpoints.
+paths:
+  '/api/admin/academic-years':
+    get:
+      operationId: get-1
+      tags: [Admin]
+      summary: GET /api/admin/academic-years
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    post:
+      operationId: post-2
+      tags: [Admin]
+      summary: POST /api/admin/academic-years
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/academic-years/{id}':
+    patch:
+      operationId: patch-3
+      tags: [Admin]
+      summary: PATCH /api/admin/academic-years/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    delete:
+      operationId: delete-4
+      tags: [Admin]
+      summary: DELETE /api/admin/academic-years/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/announcements':
+    post:
+      operationId: post-5
+      tags: [Admin]
+      summary: POST /api/admin/announcements
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/announcements/{id}':
+    patch:
+      operationId: patch-6
+      tags: [Admin]
+      summary: PATCH /api/admin/announcements/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    delete:
+      operationId: delete-7
+      tags: [Admin]
+      summary: DELETE /api/admin/announcements/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/board-game-categories':
+    get:
+      operationId: get-8
+      tags: [Admin]
+      summary: GET /api/admin/board-game-categories
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    post:
+      operationId: post-9
+      tags: [Admin]
+      summary: POST /api/admin/board-game-categories
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/board-game-categories/{id}':
+    patch:
+      operationId: patch-10
+      tags: [Admin]
+      summary: PATCH /api/admin/board-game-categories/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    delete:
+      operationId: delete-11
+      tags: [Admin]
+      summary: DELETE /api/admin/board-game-categories/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/board-game-locations':
+    get:
+      operationId: get-12
+      tags: [Admin]
+      summary: GET /api/admin/board-game-locations
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    post:
+      operationId: post-13
+      tags: [Admin]
+      summary: POST /api/admin/board-game-locations
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/board-game-locations/{id}':
+    patch:
+      operationId: patch-14
+      tags: [Admin]
+      summary: PATCH /api/admin/board-game-locations/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    delete:
+      operationId: delete-15
+      tags: [Admin]
+      summary: DELETE /api/admin/board-game-locations/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/board-games':
+    get:
+      operationId: get-16
+      tags: [Admin]
+      summary: GET /api/admin/board-games
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    post:
+      operationId: post-17
+      tags: [Admin]
+      summary: POST /api/admin/board-games
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/board-games/batch':
+    patch:
+      operationId: patch-18
+      tags: [Admin]
+      summary: PATCH /api/admin/board-games/batch
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/board-games/search':
+    get:
+      operationId: get-19
+      tags: [Admin]
+      summary: GET /api/admin/board-games/search
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/board-games/suggests/batch':
+    patch:
+      operationId: patch-20
+      tags: [Admin]
+      summary: PATCH /api/admin/board-games/suggests/batch
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/board-games/suggests/{id}':
+    patch:
+      operationId: patch-21
+      tags: [Admin]
+      summary: PATCH /api/admin/board-games/suggests/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/board-games/{id}':
+    get:
+      operationId: get-22
+      tags: [Admin]
+      summary: GET /api/admin/board-games/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    patch:
+      operationId: patch-23
+      tags: [Admin]
+      summary: PATCH /api/admin/board-games/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    delete:
+      operationId: delete-24
+      tags: [Admin]
+      summary: DELETE /api/admin/board-games/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/board-games/{id}/image':
+    post:
+      operationId: post-25
+      tags: [Admin]
+      summary: POST /api/admin/board-games/{id}/image
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    delete:
+      operationId: delete-26
+      tags: [Admin]
+      summary: DELETE /api/admin/board-games/{id}/image
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/borrowings':
+    get:
+      operationId: get-27
+      tags: [Admin]
+      summary: GET /api/admin/borrowings
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/borrowings/batch':
+    patch:
+      operationId: patch-28
+      tags: [Admin]
+      summary: PATCH /api/admin/borrowings/batch
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/borrowings/{id}':
+    patch:
+      operationId: patch-29
+      tags: [Admin]
+      summary: PATCH /api/admin/borrowings/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/events':
+    post:
+      operationId: post-30
+      tags: [Admin]
+      summary: POST /api/admin/events
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/events/{id}':
+    patch:
+      operationId: patch-31
+      tags: [Admin]
+      summary: PATCH /api/admin/events/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    delete:
+      operationId: delete-32
+      tags: [Admin]
+      summary: DELETE /api/admin/events/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/events/{id}/attendances':
+    post:
+      operationId: post-33
+      tags: [Admin]
+      summary: POST /api/admin/events/{id}/attendances
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/events/{id}/attendances/batch':
+    patch:
+      operationId: patch-34
+      tags: [Admin]
+      summary: PATCH /api/admin/events/{id}/attendances/batch
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/events/{id}/attendances/{attendanceId}':
+    patch:
+      operationId: patch-35
+      tags: [Admin]
+      summary: PATCH /api/admin/events/{id}/attendances/{attendanceId}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: attendanceId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    delete:
+      operationId: delete-36
+      tags: [Admin]
+      summary: DELETE /api/admin/events/{id}/attendances/{attendanceId}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: attendanceId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/exports/{domain}':
+    get:
+      operationId: get-37
+      tags: [Admin]
+      summary: GET /api/admin/exports/{domain}
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/members/register-keys':
+    get:
+      operationId: get-38
+      tags: [Admin]
+      summary: GET /api/admin/members/register-keys
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    post:
+      operationId: post-39
+      tags: [Admin]
+      summary: POST /api/admin/members/register-keys
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/members/register-keys/batch':
+    patch:
+      operationId: patch-40
+      tags: [Admin]
+      summary: PATCH /api/admin/members/register-keys/batch
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/members/register-keys/{id}':
+    patch:
+      operationId: patch-41
+      tags: [Admin]
+      summary: PATCH /api/admin/members/register-keys/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/memberships':
+    post:
+      operationId: post-42
+      tags: [Admin]
+      summary: POST /api/admin/memberships
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/memberships/batch':
+    patch:
+      operationId: patch-43
+      tags: [Admin]
+      summary: PATCH /api/admin/memberships/batch
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/memberships/{id}':
+    patch:
+      operationId: patch-44
+      tags: [Admin]
+      summary: PATCH /api/admin/memberships/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    delete:
+      operationId: delete-45
+      tags: [Admin]
+      summary: DELETE /api/admin/memberships/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/officers':
+    get:
+      operationId: get-46
+      tags: [Admin]
+      summary: GET /api/admin/officers
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    post:
+      operationId: post-47
+      tags: [Admin]
+      summary: POST /api/admin/officers
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/officers/{id}':
+    patch:
+      operationId: patch-48
+      tags: [Admin]
+      summary: PATCH /api/admin/officers/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    delete:
+      operationId: delete-49
+      tags: [Admin]
+      summary: DELETE /api/admin/officers/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/reviews/{id}':
+    delete:
+      operationId: delete-50
+      tags: [Admin]
+      summary: DELETE /api/admin/reviews/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/rich-content/images':
+    post:
+      operationId: post-51
+      tags: [Admin]
+      summary: POST /api/admin/rich-content/images
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/users/search':
+    get:
+      operationId: get-52
+      tags: [Admin]
+      summary: GET /api/admin/users/search
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/users/{id}/account':
+    patch:
+      operationId: patch-53
+      tags: [Admin]
+      summary: PATCH /api/admin/users/{id}/account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/users/{id}/avatar':
+    post:
+      operationId: post-54
+      tags: [Admin]
+      summary: POST /api/admin/users/{id}/avatar
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    delete:
+      operationId: delete-55
+      tags: [Admin]
+      summary: DELETE /api/admin/users/{id}/avatar
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/users/{id}/profile':
+    patch:
+      operationId: patch-56
+      tags: [Admin]
+      summary: PATCH /api/admin/users/{id}/profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/auth/email-verification/confirm':
+    post:
+      operationId: post-57
+      tags: [Authentication]
+      summary: POST /api/auth/email-verification/confirm
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/auth/email-verification/resend':
+    post:
+      operationId: post-58
+      tags: [Authentication]
+      summary: POST /api/auth/email-verification/resend
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/auth/login':
+    post:
+      operationId: post-59
+      tags: [Authentication]
+      summary: POST /api/auth/login
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/auth/logout':
+    post:
+      operationId: post-60
+      tags: [Authentication]
+      summary: POST /api/auth/logout
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/auth/me':
+    get:
+      operationId: get-61
+      tags: [Authentication]
+      summary: GET /api/auth/me
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/auth/password':
+    patch:
+      operationId: patch-62
+      tags: [Authentication]
+      summary: PATCH /api/auth/password
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/auth/password-recovery/open':
+    get:
+      operationId: get-63
+      tags: [Authentication]
+      summary: GET /api/auth/password-recovery/open
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/auth/password-recovery/request':
+    post:
+      operationId: post-64
+      tags: [Authentication]
+      summary: POST /api/auth/password-recovery/request
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/auth/password-recovery/reset':
+    post:
+      operationId: post-65
+      tags: [Authentication]
+      summary: POST /api/auth/password-recovery/reset
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/auth/register':
+    post:
+      operationId: post-66
+      tags: [Authentication]
+      summary: POST /api/auth/register
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/auth/sessions':
+    delete:
+      operationId: delete-67
+      tags: [Authentication]
+      summary: DELETE /api/auth/sessions
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/auth/sessions/{id}':
+    delete:
+      operationId: delete-68
+      tags: [Authentication]
+      summary: DELETE /api/auth/sessions/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/board-games/suggest':
+    post:
+      operationId: post-69
+      tags: [Public]
+      summary: POST /api/board-games/suggest
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/board-games/{id}/borrow':
+    post:
+      operationId: post-70
+      tags: [Public]
+      summary: POST /api/board-games/{id}/borrow
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/board-games/{id}/reviews':
+    post:
+      operationId: post-71
+      tags: [Public]
+      summary: POST /api/board-games/{id}/reviews
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/board-games/{id}/reviews/me':
+    patch:
+      operationId: patch-72
+      tags: [Public]
+      summary: PATCH /api/board-games/{id}/reviews/me
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    delete:
+      operationId: delete-73
+      tags: [Public]
+      summary: DELETE /api/board-games/{id}/reviews/me
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/board-games/{id}/reviews/{reviewId}/like':
+    put:
+      operationId: put-74
+      tags: [Public]
+      summary: PUT /api/board-games/{id}/reviews/{reviewId}/like
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/events/{id}/check-in':
+    post:
+      operationId: post-75
+      tags: [User]
+      summary: POST /api/events/{id}/check-in
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/health':
+    get:
+      operationId: get-76
+      tags: [Public]
+      summary: GET /api/health
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/memberships/activate':
+    post:
+      operationId: post-77
+      tags: [Public]
+      summary: POST /api/memberships/activate
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/support/manage':
+    get:
+      operationId: get-78
+      tags: [User]
+      summary: GET /api/support/manage
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    post:
+      operationId: post-79
+      tags: [User]
+      summary: POST /api/support/manage
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/support/manage/{id}':
+    patch:
+      operationId: patch-80
+      tags: [User]
+      summary: PATCH /api/support/manage/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/users/me/account':
+    patch:
+      operationId: patch-81
+      tags: [User]
+      summary: PATCH /api/users/me/account
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/users/me/avatar':
+    post:
+      operationId: post-82
+      tags: [User]
+      summary: POST /api/users/me/avatar
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    delete:
+      operationId: delete-83
+      tags: [User]
+      summary: DELETE /api/users/me/avatar
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/users/me/borrowings':
+    get:
+      operationId: get-84
+      tags: [User]
+      summary: GET /api/users/me/borrowings
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/users/me/borrowings/{id}/cancel':
+    post:
+      operationId: post-85
+      tags: [User]
+      summary: POST /api/users/me/borrowings/{id}/cancel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/users/me/closure':
+    post:
+      operationId: post-86
+      tags: [User]
+      summary: POST /api/users/me/closure
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/users/me/profile':
+    get:
+      operationId: get-87
+      tags: [User]
+      summary: GET /api/users/me/profile
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    patch:
+      operationId: patch-88
+      tags: [User]
+      summary: PATCH /api/users/me/profile
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/users/me/profile-visibility':
+    patch:
+      operationId: patch-89
+      tags: [User]
+      summary: PATCH /api/users/me/profile-visibility
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/users/me/public-ranking-preference':
+    patch:
+      operationId: patch-90
+      tags: [User]
+      summary: PATCH /api/users/me/public-ranking-preference
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+components:
+  securitySchemes:
+    cookieSession:
+      type: apiKey
+      in: cookie
+      name: ntust-bgc-session
+      description: Cookie Session authentication; no token is included in this document.
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message: { type: string }
+        errors: { type: object, additionalProperties: true }
+      required: [message]
+  responses:
+    BadRequest:
+      description: Request validation failed
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    ServerError:
+      description: Server error
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
