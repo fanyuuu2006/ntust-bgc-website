@@ -34,8 +34,20 @@ export function RankingPosition({ rank }: { rank: number }) {
       className="inline-flex size-8 shrink-0 items-center justify-center text-sm font-bold tabular-nums text-(--text-secondary)"
       style={podiumColor ? { color: podiumColor } : undefined}
     >
-      {rank}
+      {rank <= 3 ? <RankMedal rank={rank as 1 | 2 | 3} /> : rank}
+      {rank <= 3 ? <span className="sr-only">第 {rank} 名</span> : null}
     </span>
+  );
+}
+
+function RankMedal({ rank }: { rank: 1 | 2 | 3 }) {
+  const fill = rank === 1 ? "var(--status-warning)" : rank === 2 ? "var(--text-secondary)" : "#B87945";
+  return (
+    <svg aria-hidden="true" viewBox="0 0 32 34" className="size-8 shrink-0">
+      <path d="M9 2h5l2 8-4 3-5-7zM23 2h-5l-2 8 4 3 5-7z" fill={fill} opacity=".9" />
+      <circle cx="16" cy="21" r="10" fill={fill} stroke="currentColor" strokeWidth="1.5" />
+      <text x="16" y="25" textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--surface-default)">{rank}</text>
+    </svg>
   );
 }
 

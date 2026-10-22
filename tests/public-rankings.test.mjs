@@ -41,7 +41,7 @@ function setupRepository(globalRank = 17) {
 
 test("rankings validate query values and default to popular", () => {
   const { normalizeBoardGameRankingQuery } = load("src/app/(public)/rankings/board-games/query.ts");
-  assert.deepEqual(normalizeBoardGameRankingQuery({}), { ranking: { key: "popular", label: "綜合排行", description: "看看哪些桌遊最受大家喜愛！" }, page: 1, search: undefined });
+  assert.deepEqual(normalizeBoardGameRankingQuery({}), { ranking: { key: "popular", label: "綜合排行", description: "探索社團裡受歡迎的桌遊！" }, page: 1, search: undefined });
   assert.equal(normalizeBoardGameRankingQuery({ ranking: "reviews", page: "3" }).ranking.key, "reviews");
   assert.equal(normalizeBoardGameRankingQuery({ ranking: "invalid", page: "-2" }).ranking.key, "popular");
   assert.equal(normalizeBoardGameRankingQuery({ ranking: "rating" }).ranking.description, "一起看看大家最推薦哪些桌遊！");
@@ -106,6 +106,8 @@ test("ranking view computes eligible global ranks with the existing tie-breakers
   assert.match(migration, /revoke all privileges[\s\S]*from public, anon, authenticated/);
   assert.match(migration, /grant select[\s\S]*to service_role/);
   assert.match(canonical, /create view public\.board_game_rankings/);
+  const projectionMigration = await source("supabase/migrations/202610230001_expose_board_game_popularity_score.sql");
+  assert.match(projectionMigration, /create or replace view public\.board_game_rankings[\s\S]*location_name,\s+statistics\.popularity_score/);
   assert.match(canonical, /grant select on table public\.board_game_rankings to service_role/);
   assert.match(verification, /matches_existing_order/);
   assert.match(verification, /public\.select/);
@@ -244,6 +246,7 @@ test("all ranks use one leaderboard list and the top three keep subtle semantic 
     location: null,
     stats: { averageRating: 4.5, ratingCount: 8, reviewCount: 3, completedBorrowCount: 5 },
     globalRank: 1,
+    popularityScore: 0.875,
   };
   const html = renderToStaticMarkup(createElement(BoardGameRankingList, {
     ranking: "popular",
@@ -256,6 +259,13 @@ test("all ranks use one leaderboard list and the top three keep subtle semantic 
   assert.match(html, /--status-warning/);
   assert.match(html, /--text-secondary/);
   assert.match(html, /--status-danger/);
+  assert.match(html, /\u7d9c\u5408\u6307\u6578 87\.5/);
+  assert.equal(html.includes("87.5 / 100"), false);
+  const rankingListSource = await source("src/components/(public)/rankings/RankingList.tsx");
+  assert.match(rankingListSource, /Medal/);
+  assert.match(rankingListSource, /sr-only/);
+  const infoDialogSource = await source("src/components/(public)/rankings/RankingInfoDialog.tsx");
+  assert.match(infoDialogSource, /排行說明/);
   await assert.rejects(source("src/components/(public)/rankings/RankingPodium.tsx"), { code: "ENOENT" });
 });
 
@@ -295,4 +305,16 @@ test("rankings hub validates its server-side ranking switch", () => {
   assert.equal(getBoardGameRanking("reviews").key, "reviews");
   assert.equal(getBoardGameRanking("borrowed").key, "borrowed");
   assert.equal(getBoardGameRanking("missing").key, "popular");
+});
+test("ranking guide example matches the composite score arithmetic", async () => {
+  const guide = await source("src/components/(public)/rankings/BoardGameRankingGuide.tsx");
+  const borrowingHeat = Math.log(17) / Math.log(21);
+  const participation = Math.log(5) / Math.log(11);
+  const quality = (((4 * 4.5 + 5 * 3.5) / 9) - 1) / 4;
+  const score = 0.5 * borrowingHeat + 0.35 * quality + 0.15 * participation;
+  assert.equal(Number((score * 100).toFixed(1)), 82.4);
+  assert.match(guide, /displayScore/);
+  assert.match(guide, /50%/);
+  assert.match(guide, /35%/);
+  assert.match(guide, /15%/);
 });

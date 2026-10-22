@@ -53,6 +53,7 @@ type HomeBoardGameStatisticsRow = Omit<HomeBoardGameItem, "stats"> & Pick<
 type BoardGameRankingRow = Omit<BoardGameStatisticsRow, "id" | "category" | "location"> & {
   board_game_id: string;
   global_rank: number | string;
+  popularity_score: number | string;
   category_name: string | null;
   location_name: string | null;
 };
@@ -94,6 +95,7 @@ function toBoardGameRankingItem(row: BoardGameRankingRow): BoardGameRankingItem 
     location: row.location_name === null ? null : { name: row.location_name },
     stats: toStats(row),
     globalRank: Number(row.global_rank),
+    popularityScore: Number(row.popularity_score),
   };
 }
 
@@ -213,7 +215,7 @@ async function findRanked(
   const keyword = options.search?.trim();
   let query = supabase
     .from("board_game_rankings")
-    .select("board_game_id,global_rank,name,image,status,inventory_number,completed_borrow_count,average_rating,rating_count,review_count,category_name,location_name", { count: "exact" })
+    .select("board_game_id,global_rank,name,image,status,inventory_number,completed_borrow_count,average_rating,rating_count,review_count,category_name,location_name,popularity_score", { count: "exact" })
     .eq("ranking", ranking);
 
   if (keyword) {
