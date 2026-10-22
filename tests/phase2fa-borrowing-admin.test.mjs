@@ -12,7 +12,7 @@ const eventsService = read("src/services/events/events.service.ts");
 const loginForm = read("src/components/(auth)/login/LoginForm.tsx");
 const registerForm = read("src/components/(auth)/register/RegisterForm.tsx");
 const adminBorrowings = read("src/components/(admin)/admin/borrowings/AdminBorrowingList.tsx");
-const confirmDialog = read("src/components/ConfirmDialog.tsx");
+const borrowingActionDialog = read("src/components/(admin)/admin/borrowings/BorrowingActionDialog.tsx");
 const navigation = read("src/libs/navigation.tsx");
 const borrowingConfig = read("src/libs/borrowingConfig.ts");
 const clubPolicies = read("src/libs/clubPolicies.ts");
@@ -58,8 +58,8 @@ test("club policy copy and the borrowing default have separate, centralized sour
 test("checkout uses an editable Taipei-local seven-day default", () => {
   assert.match(adminBorrowings, /getFutureTaipeiDateTimeLocal\(borrowingConfig\.defaultDurationDays\)/);
   assert.match(adminBorrowings, /parseTaipeiDateTimeLocal/);
-  assert.match(adminBorrowings, /type="datetime-local"/);
-  assert.match(adminBorrowings, /已套用預設歸還時間，可依實際情況調整/);
+  assert.match(borrowingActionDialog, /type="datetime-local"/);
+  assert.match(borrowingActionDialog, /預計歸還時間（台北時間）/);
   assert.match(dateUtils, /CLUB_TIME_ZONE/);
   assert.match(dateUtils, /Asia\/Taipei/);
 });
@@ -69,20 +69,20 @@ test("admin borrowing shows borrower identity and membership only as operating c
   assert.match(borrowingService, /is_current_academic_year_member/);
   assert.match(adminBorrowings, /AdminUserLink/);
   assert.match(adminBorrowings, /disambiguation="email"/);
-  assert.match(adminBorrowings, /本學年度社員/);
-  assert.match(adminBorrowings, /非本學年度社員/);
-  assert.match(adminBorrowings, /adminNonCurrentAcademicYearMemberBorrowingNotice/);
-  assert.doesNotMatch(adminBorrowings, /payment_status|已收費|未繳費/);
+  assert.match(borrowingActionDialog, /借用人：/);
+  assert.match(borrowingActionDialog, /user_profile\?\.real_name \?\? item\.user\.name/);
+  assert.match(borrowingActionDialog, /adminNonCurrentAcademicYearMemberBorrowingNotice/);
+  assert.doesNotMatch(adminBorrowings, /payment_status|已繳費|未繳費/);
 });
 
 test("workflow confirmations distinguish destructive rejection from normal operations", () => {
-  assert.match(confirmDialog, /confirmVariant\?: "primary" \| "danger"/);
-  assert.match(confirmDialog, /variant=\{confirmVariant\}/);
-  assert.match(adminBorrowings, /confirmVariant=\{\s*selected\?\.action === "reject"\s*\? "danger"\s*:\s*"primary"\s*\}/s);
-  assert.match(adminBorrowings, /onAction\(borrowing, "approve"\).*?核准借用/s);
-  assert.match(adminBorrowings, /variant="danger".*?onAction\(borrowing, "reject"\).*?拒絕申請/s);
-  assert.match(adminBorrowings, /onAction\(borrowing, "checkout"\).*?確認借出/s);
-  assert.match(adminBorrowings, /onAction\(borrowing, "return"\).*?確認歸還/s);
+  assert.match(borrowingActionDialog, /reject:\s*\{[\s\S]*confirmLabel: "確認拒絕"/);
+  assert.match(borrowingActionDialog, /拒絕後，此借用申請將無法繼續借出/);
+  assert.match(borrowingActionDialog, /variant=\{action === "reject" \? "danger" : "primary"\}/);
+  assert.match(adminBorrowings, /onAction\(borrowing, "approve"\)[\s\S]*核准借用/);
+  assert.match(adminBorrowings, /variant="danger"[\s\S]*onAction\(borrowing, "reject"\)[\s\S]*拒絕申請/);
+  assert.match(adminBorrowings, /onAction\(borrowing, "checkout"\)[\s\S]*確認借出/);
+  assert.match(adminBorrowings, /onAction\(borrowing, "return"\)[\s\S]*確認歸還/);
 });
 
 test("admin sidebar keeps management routes under the approved domain groups", () => {
