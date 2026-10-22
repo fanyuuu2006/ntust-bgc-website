@@ -15,7 +15,7 @@ type RankingsPageProps = { searchParams: Promise<BoardGameRankingSearchParams> }
 
 const BASE_METADATA = createPublicMetadata({
   title: "桌遊排行榜",
-  description: "查看桌遊綜合、評分、評論與累計借用排行。",
+  description: "一起看看大家喜愛、推薦、討論與常借的桌遊！",
   canonical: "/rankings/board-games",
 });
 

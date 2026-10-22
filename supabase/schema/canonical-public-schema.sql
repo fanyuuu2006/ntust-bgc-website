@@ -2265,12 +2265,12 @@ revoke all privileges on table public.board_game_review_rankings
   from public, anon, authenticated;
 grant select on table public.board_game_review_rankings to service_role;
 
--- 公開評論貢獻者排行榜需由使用者主動加入，既有與新帳號預設都不參與。
+-- 新帳號預設加入公開評論貢獻排行；既有 false 設定不批次改寫，以保留可辨識的退出狀態。
 alter table public.users
-  add column review_contributor_ranking_opt_in boolean not null default false;
+  add column review_contributor_ranking_opt_in boolean not null default true;
 
 comment on column public.users.review_contributor_ranking_opt_in is
-  '使用者是否自願加入公開評論貢獻者排行榜；預設 false，可隨時退出。';
+  '是否顯示於公開評論貢獻排行；新帳號預設 true，可隨時關閉。既有 false 設定維持退出。';
 
 create view public.review_contributor_rankings
 with (security_invoker = true)

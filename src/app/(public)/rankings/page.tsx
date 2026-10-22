@@ -18,7 +18,7 @@ type RankingsPageProps = { searchParams: Promise<{ ranking?: string | string[] }
 
 const BASE_METADATA = createPublicMetadata({
   title: "排行榜",
-  description: "查看桌遊、熱門評論與自願參與的評論貢獻排行。",
+  description: "探索大家喜愛的桌遊與心得排行。",
   canonical: "/rankings",
 });
 
@@ -38,7 +38,7 @@ async function RankingsPage({ searchParams }: RankingsPageProps) {
 
   return (
     <section className="container py-8">
-      <PageHeader title="排行榜" description="探索社團中值得關注的內容與排行。" />
+      <PageHeader title="排行榜" description="探索大家喜愛的桌遊與心得排行。" />
 
       <section className="mt-6" aria-labelledby="board-game-ranking-heading">
         <div className="flex items-center justify-between gap-3">
@@ -61,7 +61,7 @@ async function RankingsPage({ searchParams }: RankingsPageProps) {
             完整排行 <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
         </div>
-        <p className="mt-1 text-sm text-(--text-muted)">依有效公開評論數排名，僅顯示自願參與者。</p>
+        <p className="mt-1 text-sm text-(--text-muted)">看看誰分享了最多桌遊心得！</p>
         <div className="mt-4 rounded-2xl border border-(--border-default) bg-(--surface-default) px-3 sm:px-5">
           <ReviewContributorRankingList items={contributorResult.data} />
         </div>
@@ -74,7 +74,7 @@ async function RankingsPage({ searchParams }: RankingsPageProps) {
             完整排行 <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
         </div>
-        <p className="mt-1 text-sm text-(--text-muted)">依公開評論獲得的按讚數排名。</p>
+        <p className="mt-1 text-sm text-(--text-muted)">看看哪些桌遊心得最受歡迎！</p>
         <div className="mt-4 rounded-2xl border border-(--border-default) bg-(--surface-default) px-3 sm:px-5">
           <ReviewRankingList items={reviewResult.data} compact />
         </div>

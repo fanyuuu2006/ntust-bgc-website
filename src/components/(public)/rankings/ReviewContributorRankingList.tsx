@@ -21,7 +21,7 @@ function toDisplayItem(item: ReviewContributorRankingItem): RankingDisplayItem {
       />
     ),
     primaryMetric: (
-      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-(--text-primary)" aria-label={`${item.reviewCount} 則有效公開評論`}>
+      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-(--text-primary)" aria-label={`${item.reviewCount} 則評論`}>
         <MessageSquareText aria-hidden="true" className="size-4 text-(--interactive-primary)" />
         <strong className="tabular-nums">{item.reviewCount}</strong><span>則評論</span>
       </span>
@@ -39,8 +39,8 @@ export function ReviewContributorRankingList({ items }: { items: ReviewContribut
   return (
     <RankingList
       items={items.map(toDisplayItem)}
-      emptyTitle="尚無評論貢獻排行資料"
-      emptyDescription="使用者主動參與並留下有效公開評論後，就會顯示在這裡。"
+      emptyTitle="目前還沒有人上榜"
+      emptyDescription="快來分享你的桌遊心得吧！"
       emptyWithinContainer
     />
   );

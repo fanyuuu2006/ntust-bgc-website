@@ -57,7 +57,7 @@ export function PublicProfileSettings({
         body: { optedIn: nextValue },
       });
       setOptedIn(nextValue);
-      setSuccess(nextValue ? "已加入公開個人排行榜" : "已退出公開個人排行榜");
+      setSuccess(nextValue ? "已顯示在評論貢獻排行" : "已從評論貢獻排行移除");
       router.refresh();
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : "更新排行榜參與設定失敗，請稍後再試");
@@ -93,9 +93,9 @@ export function PublicProfileSettings({
       </div>
       <div className="mt-4 flex min-w-0 flex-col gap-3 border-t border-(--border-muted) pt-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0">
-          <h4 id="public-ranking-preference-title" className="font-medium text-(--text-primary)">參與公開個人排行榜</h4>
+          <h4 id="public-ranking-preference-title" className="font-medium text-(--text-primary)">顯示在評論貢獻排行</h4>
           <p id="public-ranking-preference-description" className="mt-1 text-sm leading-6 text-(--text-muted)">
-            開啟後可出現在評論貢獻排行。
+            開啟後，其他人就能在排行榜上看到你；關閉後則不會顯示。
           </p>
         </div>
         <label className="inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-2 self-start text-sm font-medium text-(--text-primary)">
