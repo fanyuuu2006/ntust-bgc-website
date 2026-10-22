@@ -6,6 +6,8 @@ import { BoardGameRankingList } from "@/components/(public)/rankings/BoardGameRa
 import { ReviewRankingList } from "@/components/(public)/rankings/ReviewRankingList";
 import { ReviewContributorRankingList } from "@/components/(public)/rankings/ReviewContributorRankingList";
 import { RankingNavigation } from "@/components/(public)/rankings/RankingNavigation";
+import { RankingInfoDialog } from "@/components/(public)/rankings/RankingInfoDialog";
+import { BoardGameRankingGuide } from "@/components/(public)/rankings/BoardGameRankingGuide";
 import { PageHeader } from "@/components/PageHeader";
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { createPublicMetadata } from "@/libs/seo";
@@ -41,11 +43,14 @@ async function RankingsPage({ searchParams }: RankingsPageProps) {
       <PageHeader title="排行榜" description="探索大家喜愛的桌遊與心得排行。" />
 
       <section className="mt-6" aria-labelledby="board-game-ranking-heading">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <h2 id="board-game-ranking-heading" className="text-lg font-bold text-(--text-primary)">桌遊排行</h2>
-          <Link href={ranking.key === "popular" ? "/rankings/board-games" : `/rankings/board-games?ranking=${ranking.key}`} className="inline-flex min-h-11 shrink-0 items-center gap-1 px-1 text-sm font-medium text-(--interactive-primary) hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)">
-            完整排行 <ArrowRight aria-hidden="true" className="size-4" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <RankingInfoDialog><BoardGameRankingGuide /></RankingInfoDialog>
+            <Link href={ranking.key === "popular" ? "/rankings/board-games" : `/rankings/board-games?ranking=${ranking.key}`} className="inline-flex min-h-11 shrink-0 items-center gap-1 px-1 text-sm font-medium text-(--interactive-primary) hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)">
+              完整排行 <ArrowRight aria-hidden="true" className="size-4" />
+            </Link>
+          </div>
         </div>
         <p className="mt-1 text-sm text-(--text-muted)">{ranking.description}</p>
         <div className="mt-4"><RankingNavigation active={ranking.key} basePath="/rankings" /></div>

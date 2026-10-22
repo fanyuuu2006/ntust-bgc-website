@@ -20,13 +20,13 @@ function RatingMetric({ item, subtle = false }: { item: BoardGameDiscoveryItem; 
 
 function primaryMetric(item: BoardGameRankingItem, ranking: BoardGameRanking) {
   if (ranking === "rating") return <RatingMetric item={item} />;
-  if (ranking === "popular") return <span className="text-sm font-medium text-(--text-primary)"><strong className="text-base tabular-nums">{(item.popularityScore * 100).toFixed(1)} / 100</strong> 綜合熱度分數</span>;
+  if (ranking === "popular") return <span className="text-sm font-medium text-(--text-primary)"><strong className="text-base tabular-nums">綜合指數 {(item.popularityScore * 100).toFixed(1)}</strong></span>;
   if (ranking === "reviews") return <span className="text-sm font-medium text-(--text-primary)"><strong className="text-base tabular-nums">{item.stats.reviewCount}</strong> 則文字評論</span>;
   return <span className="text-sm font-medium text-(--text-primary)"><strong className="text-base tabular-nums">{item.stats.completedBorrowCount}</strong> 次借用</span>;
 }
 
 function secondaryMetric(item: BoardGameRankingItem, ranking: BoardGameRanking) {
-  if (ranking === "popular") return `借用 ${item.stats.completedBorrowCount} 次 ? 評分 ${item.stats.ratingCount} 人 ? 評論 ${item.stats.reviewCount} 則`;
+  if (ranking === "popular") return <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1"><span>借用 {item.stats.completedBorrowCount} 次</span><span>評分 {item.stats.ratingCount} 人</span></span>
   if (ranking === "rating") return undefined;
   if (ranking === "reviews") return item.stats.averageRating === null ? undefined : <RatingMetric item={item} subtle />;
   return `${item.stats.reviewCount} 則文字評論`;

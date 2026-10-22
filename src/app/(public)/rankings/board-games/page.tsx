@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { BoardGameRankingList } from "@/components/(public)/rankings/BoardGameRankingList";
 import { BoardGameRankingSearchForm } from "@/components/(public)/rankings/BoardGameRankingSearchForm";
 import { RankingNavigation } from "@/components/(public)/rankings/RankingNavigation";
+import { RankingInfoDialog } from "@/components/(public)/rankings/RankingInfoDialog";
+import { BoardGameRankingGuide } from "@/components/(public)/rankings/BoardGameRankingGuide";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { PageHeader } from "@/components/PageHeader";
 import { createPublicMetadata } from "@/libs/seo";
@@ -35,7 +37,10 @@ async function BoardGameRankingsPage({ searchParams }: RankingsPageProps) {
 
   return (
     <section className="container py-8">
-      <PageHeader eyebrow="排行榜" title="桌遊排行榜" description={ranking.description} />
+      <div className="flex items-start justify-between gap-3">
+        <PageHeader eyebrow="排行榜" title="桌遊排行榜" description={ranking.description} />
+        <RankingInfoDialog><BoardGameRankingGuide /></RankingInfoDialog>
+      </div>
       <div className="mt-6"><RankingNavigation active={ranking.key} search={search} /></div>
       <BoardGameRankingSearchForm
         ranking={ranking.key}
