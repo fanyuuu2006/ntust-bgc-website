@@ -12,7 +12,7 @@ import { OrderOptions, PaginationQuery } from "./shared/types";
 export type UserEmailVerificationFilter = "verified" | "unverified";
 
 type CreateUserInput = Pick<User, "email" | "name">;
-type UpdateUserInput = Partial<Pick<User, "name" | "avatar">>;
+type UpdateUserInput = Partial<Pick<User, "name" | "avatar" | "review_contributor_ranking_opt_in" | "profile_visibility">>;
 
 export type AdminUserIdentityRow = Pick<
   User,
@@ -172,6 +172,36 @@ export const usersRepository = {
       .select()
       .maybeSingle();
     if (error) throwRepositoryError("更新用戶失敗", error);
+    return data;
+  },
+
+  updatePublicRankingPreference: async (
+    id: string,
+    optedIn: boolean,
+  ): Promise<Pick<User, "id" | "review_contributor_ranking_opt_in"> | null> => {
+    const { data, error } = await supabase
+      .from("users")
+      .update({ review_contributor_ranking_opt_in: optedIn })
+      .eq("id", id)
+      .is("closed_at", null)
+      .select("id,review_contributor_ranking_opt_in")
+      .maybeSingle();
+    if (error) throwRepositoryError("更新公開個人排行榜偏好失敗", error);
+    return data;
+  },
+
+  updateProfileVisibility: async (
+    id: string,
+    visibility: User["profile_visibility"],
+  ): Promise<Pick<User, "id" | "profile_visibility"> | null> => {
+    const { data, error } = await supabase
+      .from("users")
+      .update({ profile_visibility: visibility })
+      .eq("id", id)
+      .is("closed_at", null)
+      .select("id,profile_visibility")
+      .maybeSingle();
+    if (error) throwRepositoryError("更新個人檔案可見性失敗", error);
     return data;
   },
 

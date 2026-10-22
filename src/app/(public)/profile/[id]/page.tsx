@@ -21,15 +21,17 @@ type Props = {
 };
 
 async function profileMetadata({ params, searchParams }: Props): Promise<Metadata> {
-  const { identity, clubFootprint } = await getPublicProfile((await params).id);
+  const { identity, visibility } = await getPublicProfile((await params).id);
   const { indexable } = classifyQuerySeo((await searchParams) ?? {}, {
     reviewPage: "1",
     reviewSort: "newest",
   });
   const description = createMetadataDescription(
-    clubFootprint === null
+    visibility === "closed"
       ? "此帳號已註銷；公開個人頁面不再顯示原有身份資料。"
-      : `查看「${identity.name}」在臺科大桌遊社公開的個人頁面、社團足跡與桌遊評價。`,
+      : visibility === "limited"
+        ? `「${identity.name}」已限制個人檔案的公開內容。`
+        : `查看「${identity.name}」在臺科大桌遊社公開的個人頁面、社團足跡與桌遊評價。`,
   );
   return {
     ...createPublicMetadata({
@@ -40,7 +42,7 @@ async function profileMetadata({ params, searchParams }: Props): Promise<Metadat
         ? { url: identity.avatar, alt: identity.name }
         : undefined,
     }),
-    ...(!indexable || clubFootprint === null
+    ...(!indexable || visibility !== "public"
       ? { robots: { index: false, follow: true } }
       : {}),
   };
@@ -48,9 +50,10 @@ async function profileMetadata({ params, searchParams }: Props): Promise<Metadat
 
 async function PublicProfilePage({ params, searchParams }: Props) {
   const { id } = await params;
-  const { identity, identityBadges, clubFootprint } = await getPublicProfile(id);
+  const { identity, visibility, identityBadges, clubFootprint } = await getPublicProfile(id);
   const reviewQuery = normalizeProfileReviewsQuery((await searchParams) ?? {});
-  const reviews = clubFootprint === null
+  // limited 與 closed 都在 Server 編排層停止評論查詢，不能只靠 JSX 隱藏。
+  const reviews = visibility !== "public"
     ? null
     : await reviewsService.listPublicByUser(identity.id, reviewQuery);
 
@@ -59,7 +62,7 @@ async function PublicProfilePage({ params, searchParams }: Props) {
   }
   return (
     <section className="container max-w-5xl space-y-6 py-6 sm:space-y-8 sm:py-8">
-      {clubFootprint !== null ? (
+      {visibility === "public" ? (
         <StructuredData
           data={{
             "@context": "https://schema.org",
@@ -73,8 +76,16 @@ async function PublicProfilePage({ params, searchParams }: Props) {
           }}
         />
       ) : null}
-      <ProfileHeroSection user={identity} identityBadges={identityBadges.map((badge, index) => ({ ...badge, id: `public-badge-${index}` }))} details={clubFootprint === null ? <p className="mt-2 text-sm text-(--muted)">此帳號已註銷。</p> : undefined} />
-      {clubFootprint !== null && <ProfileClubFootprint title="社團足跡" {...clubFootprint} />}
+      <ProfileHeroSection
+        user={identity}
+        identityBadges={identityBadges.map((badge, index) => ({ ...badge, id: `public-badge-${index}` }))}
+        details={visibility === "closed"
+          ? <p className="mt-2 text-sm text-(--muted)">此帳號已註銷。</p>
+          : visibility === "limited"
+            ? <p className="mt-2 text-sm text-(--muted)">此使用者已限制個人檔案的公開內容。</p>
+            : undefined}
+      />
+      {visibility === "public" && clubFootprint !== null && <ProfileClubFootprint title="社團足跡" {...clubFootprint} />}
       {reviews ? <ProfileReviewCollection basePath={`/profile/${identity.id}`} reviews={reviews} query={reviewQuery} own={false} /> : null}
     </section>
   );

@@ -66,3 +66,11 @@ export const updateUserAccountSchema = z
 export const adminUserPickerSearchSchema = z.object({
   search: z.string().trim().min(1, "請輸入搜尋條件").max(100),
 });
+
+export const updatePublicRankingPreferenceSchema = z.object({
+  optedIn: z.boolean(),
+}).strict();
+
+export const updateProfileVisibilitySchema = z.object({
+  visibility: z.enum(["public", "limited"]),
+}).strict();

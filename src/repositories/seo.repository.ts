@@ -32,6 +32,7 @@ export const seoRepository = {
         .from("users")
         .select("id,updated_at")
         .is("closed_at", null)
+        .eq("profile_visibility", "public")
         .order("id")
         .limit(SITEMAP_ENTITY_LIMIT),
     ]);

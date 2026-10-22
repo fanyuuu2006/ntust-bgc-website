@@ -9,6 +9,7 @@ export type PublicUserIdentity = Readonly<{
 export type PublicIdentityBadge = Readonly<{ label: string; category: "current-membership" | "historical-membership" | "officer" }>;
 export type PublicProfile = Readonly<{
   identity: PublicUserIdentity;
+  visibility: "public" | "limited" | "closed";
   identityBadges: PublicIdentityBadge[];
   /** 註銷者不提供統計，不能以 0 偽裝其歷史資料。 */
   clubFootprint: { totalBorrowedCount: number; attendedCount: number; joinedAcademicYear: string | null } | null;

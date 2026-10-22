@@ -4,6 +4,10 @@
 
 USER 明確授權未註銷帳號公開名稱、頭像、社員／幹部身份 badges、累積借用次數、本學年簽到次數與加入社團學年度。這取代 Phase 3I-1 僅職稱／學年度的契約；不代表公開原始社員、借用或簽到紀錄。Privacy／Terms／Settings 同步告知，未新增同意 checkbox 或 visibility settings。
 
+公開個人檔案與公開個人排行榜是不同契約。既有公開個人檔案維持開放，公開範圍仍只限本文件列出的投影；排行榜參與則預設關閉，必須由使用者主動開啟。相容欄位 `review_contributor_ranking_opt_in` 保存這個偏好，目前只控制評論貢獻排行，應用層以一般「公開個人排行榜」命名，讓後續個人排行沿用同一份明確同意。退出排行榜不會刪除或隱藏使用者原本公開提交的評論；註銷帳號一律排除於排行榜之外。
+
+`users.profile_visibility` 控制公開個人頁的詳細內容，預設 `public` 以維持既有契約。`limited` 仍允許公開身份投影中的名稱與頭像，但 Server 不查詢社員／幹部 badges、社團足跡或集中式評論歷史；公開桌遊頁上的既有評論及作者連結不受影響。四種 visibility／排行榜 opt-in 組合均有效，兩個設定不可互相覆寫。限制頁使用 `noindex, follow`、不輸出 ProfilePage JSON-LD，且不列入 Sitemap。
+
 | 欄位 | Public | Authenticated | Admin | 理由 |
 | --- | --- | --- | --- | --- |
 | users.id | 是 | 本人 | 是 | 穩定路由／作者參照，不是授權憑證 |

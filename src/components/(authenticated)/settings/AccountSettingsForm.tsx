@@ -108,7 +108,7 @@ export function AccountSettingsForm({
           公開身份
         </h3>
         <p className="mt-1 text-sm leading-5 text-(--text-muted)">
-          顯示名稱與頭像會顯示在公開個人頁面；社員／幹部身份與部分社團紀錄也會公開。
+          顯示名稱與頭像會作為公開身份；其他個人檔案內容依你的可見性設定顯示。
         </p>
       </div>
 

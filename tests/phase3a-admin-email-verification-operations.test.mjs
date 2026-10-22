@@ -183,7 +183,7 @@ test("Phase 3A remains read-only and keeps verification separate from membership
   assert.doesNotMatch(listForAdmin, /membershipService|officerPositionsService/);
   assert.match(
     repository,
-    /type UpdateUserInput = Partial<Pick<User, "name" \| "avatar">>/,
+    /type UpdateUserInput = Partial<Pick<User, "name" \| "avatar" \| "review_contributor_ranking_opt_in" \| "profile_visibility">>/,
   );
   const updateById = repository.slice(
     repository.indexOf("updateById"),

@@ -13,7 +13,7 @@ type ReviewsRankingsPageProps = { searchParams: Promise<ReviewRankingSearchParam
 
 const PAGE_SIZE = 20;
 const BASE_METADATA = createPublicMetadata({
-  title: "最受歡迎評論排行",
+  title: "熱門評論",
   description: "查看社群中獲得最多讚的公開桌遊評論。",
   canonical: "/rankings/reviews",
 });
@@ -29,7 +29,7 @@ async function ReviewRankingsPage({ searchParams }: ReviewsRankingsPageProps) {
 
   return (
     <section className="container py-8">
-      <PageHeader eyebrow="排行榜" title="最受歡迎評論" description="依公開評論獲得的按讚數排名。" />
+      <PageHeader eyebrow="排行榜" title="熱門評論" description="依公開評論獲得的按讚數排名。" />
       <ReviewRankingSearchForm search={search} total={result.total} />
       <PaginatedCollection
         className="mt-5"

@@ -18,7 +18,7 @@ export default function RegisterPage() {
         >
           <div className="flex flex-col gap-6">
             <p className="rounded-lg bg-(--surface-subtle) p-4 text-sm leading-6 text-(--text-muted)">
-              建立網站帳號不等於加入社團。若要成為社員，請登入後使用社員註冊序號完成入社。
+              建立網站帳號不等於加入社團。顯示名稱與頭像會用於公開身份；個人檔案詳細內容可於設定中限制。若要成為社員，請登入後使用社員註冊序號完成入社。
             </p>
             <RegisterForm />
           </div>

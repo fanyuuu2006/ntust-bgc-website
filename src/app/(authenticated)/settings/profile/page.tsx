@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AlertCircle, CircleUserRound } from "lucide-react";
 import { AccountSettingsForm } from "@/components/(authenticated)/settings/AccountSettingsForm";
 import { ProfileSettingsForm } from "@/components/(authenticated)/settings/ProfileSettingsForm";
+import { PublicProfileSettings } from "@/components/(authenticated)/settings/PublicProfileSettings";
 import { SettingsCard } from "@/components/(authenticated)/settings/SettingsCard";
 import { getCurrentUser } from "@/libs/auth";
 import { withServerErrorReference } from "@/libs/observability/server-render";
@@ -16,6 +17,10 @@ async function ProfileSettingsPage() {
   return (
     <SettingsCard title="個人資料" icon={<CircleUserRound aria-hidden="true" className="size-5" />}>
       <AccountSettingsForm key={user.updated_at} user={user} />
+      <PublicProfileSettings
+        initialVisibility={user.profile_visibility}
+        initialOptedIn={Boolean(user.review_contributor_ranking_opt_in)}
+      />
       <div className="mt-5 border-t border-(--border-default) pt-5 sm:mt-6 sm:pt-6">
         {profile ? <ProfileSettingsForm key={profile.updated_at} profile={profile} /> : (
           <section aria-labelledby="profile-settings-unavailable-title">

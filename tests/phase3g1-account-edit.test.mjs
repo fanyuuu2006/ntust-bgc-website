@@ -48,6 +48,6 @@ test('admin account route authorizes before invoking the shared service', async 
 test('closure entry and confirmation are danger actions with concise copy', () => {
   const source = readFileSync('src/components/(authenticated)/settings/AccountClosureSection.tsx', 'utf8');
   assert.equal((source.match(/variant="danger"/g) ?? []).length, 2);
-  assert.match(source, /永久停用此帳號/);
+  assert.match(source, /永久停用帳號並清除可移除的個人資料/);
   assert.doesNotMatch(source, /送出時系統會再次確認/);
 });
