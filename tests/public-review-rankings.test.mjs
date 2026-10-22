@@ -35,6 +35,7 @@ test("repository reads the ranked view and paginates in global rank order", asyn
   const calls = [];
   const builder = {
     select(columns, options) { calls.push(["select", columns, options]); return this; },
+    ilike(column, pattern) { calls.push(["ilike", column, pattern]); return this; },
     order(column, options) { calls.push(["order", column, options]); return this; },
     async range(from, to) {
       calls.push(["range", from, to]);
@@ -64,12 +65,26 @@ test("repository reads the ranked view and paginates in global rank order", asyn
     },
   }).boardGameReviewsRepository;
 
-  const result = await repository.findPopularRankings({ page: 2, pageSize: 20 });
+  const result = await repository.findPopularRankings({ page: 2, pageSize: 20, search: "50%_推薦" });
   assert.deepEqual(calls[0], ["from", "board_game_review_rankings"]);
+  assert.deepEqual(calls.find(([method]) => method === "ilike").slice(1), ["content", "%50\\%\\_推薦%"]);
   assert.deepEqual(calls.find(([method]) => method === "order").slice(1), ["global_rank", { ascending: true }]);
   assert.deepEqual(calls.at(-1), ["range", 20, 39]);
   assert.equal(result.data[0].global_rank, 21);
   assert.equal(result.total, 41);
+});
+
+test("review ranking query keeps valid URL search state and rejects overlong values", () => {
+  const { normalizeReviewRankingQuery } = load("src/app/(public)/rankings/reviews/query.ts");
+
+  assert.deepEqual(normalizeReviewRankingQuery({ page: "2", q: "  50%_推薦  " }), {
+    page: 2,
+    search: "50%_推薦",
+  });
+  assert.deepEqual(normalizeReviewRankingQuery({ page: "invalid", q: "x".repeat(101) }), {
+    page: 1,
+    search: undefined,
+  });
 });
 
 test("review ranking UI shows public identity, game, rating, likes, date and canonical deep link", () => {
@@ -95,20 +110,52 @@ test("review ranking UI shows public identity, game, rating, likes, date and can
   assert.match(html, /測試桌遊/);
   assert.match(html, /aria-label="5 分"/);
   assert.match(html, /aria-label="8 個讚"/);
+  assert.doesNotMatch(html, /<img/);
+  assert.match(html, /line-clamp-2/);
+  assert.match(html, /text-\(--text-primary\)/);
   assert.match(html, new RegExp(`href="/board-games/${gameId}\\?review=${id}&amp;reviewSort=newest#review-${id}"`));
 });
 
-test("review ranking route is SSR paginated and discoverable without fake ranking routes", async () => {
-  const [page, overview, sitemap] = await Promise.all([
+test("review ranking compact preview truncates to one line while keeping the same row structure", () => {
+  const { ReviewRankingList } = load("src/components/(public)/rankings/ReviewRankingList.tsx");
+  const html = renderToStaticMarkup(createElement(ReviewRankingList, {
+    compact: true,
+    items: [{
+      globalRank: 1,
+      id: "11111111-1111-4111-8111-111111111111",
+      boardGame: { id: "22222222-2222-4222-8222-222222222222", name: "測試桌遊" },
+      rating: 5,
+      content: "這是一段很長的評論摘要。",
+      createdAt: "2026-10-22T00:00:00.000Z",
+      likeCount: 9,
+      author: { id: "33333333-3333-4333-8333-333333333333", name: "測試使用者", avatar: null },
+    }],
+  }));
+
+  assert.match(html, /line-clamp-1/);
+  assert.doesNotMatch(html, /<img/);
+  assert.match(html, /aria-label="9 個讚"/);
+});
+
+test("review ranking route is searchable, SSR paginated and discoverable without fake ranking routes", async () => {
+  const [page, query, searchForm, overview, sitemap] = await Promise.all([
     source("src/app/(public)/rankings/reviews/page.tsx"),
+    source("src/app/(public)/rankings/reviews/query.ts"),
+    source("src/components/(public)/rankings/ReviewRankingSearchForm.tsx"),
     source("src/app/(public)/rankings/page.tsx"),
     source("src/app/sitemap.ts"),
   ]);
   assert.match(page, /reviewsService\.listPopularRankings/);
   assert.match(page, /PaginatedCollection/);
   assert.match(page, /basePath="\/rankings\/reviews"/);
+  assert.match(page, /listPopularRankings\(\{ page, pageSize: PAGE_SIZE, search \}\)/);
+  assert.match(page, /query=\{\{ q: search \}\}/);
   assert.match(page, /robots: \{ index: false, follow: true \}/);
+  assert.match(query, /REVIEW_RANKING_SEARCH_MAX_LENGTH = 100/);
+  assert.match(searchForm, /搜尋評論內容/);
+  assert.match(searchForm, /清除搜尋/);
   assert.match(overview, /reviewsService\.listPopularRankings\(\{ page: 1, pageSize: 3 \}\)/);
+  assert.match(overview, /ReviewRankingList items=\{reviewResult\.data\} compact/);
   assert.match(overview, /href="\/rankings\/reviews"/);
   assert.doesNotMatch(overview, /\/rankings\/(contributors|events)/);
   assert.match(sitemap, /"\/rankings\/reviews"/);

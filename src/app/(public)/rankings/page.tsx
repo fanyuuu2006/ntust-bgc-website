@@ -60,7 +60,7 @@ async function RankingsPage({ searchParams }: RankingsPageProps) {
         </div>
         <p className="mt-1 text-sm text-(--text-muted)">依公開評論獲得的按讚數排名。</p>
         <div className="mt-4 rounded-2xl border border-(--border-default) bg-(--surface-default) px-3 sm:px-5">
-          <ReviewRankingList items={reviewResult.data} />
+          <ReviewRankingList items={reviewResult.data} compact />
         </div>
       </section>
     </section>

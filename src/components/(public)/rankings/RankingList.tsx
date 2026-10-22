@@ -10,6 +10,8 @@ export type RankingDisplayItem = {
   accessibleLabel?: string;
   media?: React.ReactNode;
   title: React.ReactNode;
+  titleClassName?: string;
+  titleClampClassName?: string;
   supportingContent?: React.ReactNode;
   primaryMetric: React.ReactNode;
   secondaryMetric?: React.ReactNode;
@@ -57,10 +59,10 @@ export function RankingList({
           <div className="min-w-0 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-x-6">
             <div className="min-w-0 sm:col-start-1 sm:row-span-2">
               {item.href ? (
-                <Link href={item.href} aria-label={item.accessibleLabel} className="inline-flex max-w-full wrap-anywhere font-semibold leading-5 text-(--interactive-primary) hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)">
-                  <span className="line-clamp-2">{item.title}</span>
+                <Link href={item.href} aria-label={item.accessibleLabel} className={cn("inline-flex max-w-full wrap-anywhere font-semibold leading-5 text-(--interactive-primary) hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)", item.titleClassName)}>
+                  <span className={cn("line-clamp-2", item.titleClampClassName)}>{item.title}</span>
                 </Link>
-              ) : <div className="line-clamp-2 font-semibold leading-5 text-(--text-primary)">{item.title}</div>}
+              ) : <div className={cn("line-clamp-2 font-semibold leading-5 text-(--text-primary)", item.titleClassName, item.titleClampClassName)}>{item.title}</div>}
               {item.supportingContent ? <div className="mt-1.5 text-xs text-(--text-muted)">{item.supportingContent}</div> : null}
             </div>
             <div className="mt-1.5 sm:col-start-2 sm:row-start-1 sm:mt-0 sm:flex sm:justify-end sm:text-right">{item.primaryMetric}</div>

@@ -6,7 +6,7 @@ import { buildPaginationResult, normalizePaginationOptions } from "@/repositorie
 import type { BoardGameReview } from "@/types/database";
 import type { PublicIdentitySource } from "@/services/users/public-identity";
 import type { ReviewSort } from "@/services/reviews/reviews.types";
-import { buildIlikeSearch } from "@/repositories/shared/search";
+import { buildIlikePattern, buildIlikeSearch } from "@/repositories/shared/search";
 
 const REVIEW_FIELDS = "id,board_game_id,user_id,rating,content,created_at,updated_at";
 
@@ -104,14 +104,17 @@ export const boardGameReviewsRepository = {
     return buildPaginationResult(records, Number(result.total ?? 0), page, pageSize);
   },
 
-  findPopularRankings: async (options: { page?: number; pageSize?: number } = {}) => {
+  findPopularRankings: async (options: { page?: number; pageSize?: number; search?: string } = {}) => {
     const { page, pageSize, from, to } = normalizePaginationOptions({
       ...options,
       maxPageSize: 50,
     });
-    const { data, error, count } = await supabase
+    let query = supabase
       .from("board_game_review_rankings")
-      .select("global_rank,review_id,board_game_id,board_game_name,rating,content,created_at,author_id,author_name,author_avatar,author_closed_at,like_count", { count: "exact" })
+      .select("global_rank,review_id,board_game_id,board_game_name,rating,content,created_at,author_id,author_name,author_avatar,author_closed_at,like_count", { count: "exact" });
+    if (options.search) query = query.ilike("content", buildIlikePattern(options.search));
+
+    const { data, error, count } = await query
       .order("global_rank", { ascending: true })
       .range(from, to);
     if (error) throwRepositoryError("取得公開評論排行榜失敗", error);
