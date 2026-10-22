@@ -12,6 +12,8 @@ export const RichContentImageExtension = Node.create({
       src: { default: null },
       alt: { default: "" },
       caption: { default: null },
+      // null 代表舊格式圖片；新插入圖片會明確記錄尚未設定的非裝飾狀態。
+      decorative: { default: null },
     };
   },
   // 不接受貼入 HTML 成為受信任圖片；只接受未來 upload API 產生的 canonical node。

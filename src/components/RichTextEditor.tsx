@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react-hooks/refs -- Toolbar handlers intentionally trigger the hidden file input. */
 
 import { useEffect, useRef, useState } from "react";
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
@@ -30,6 +31,7 @@ import { Modal } from "@/components/Modal";
 import { Textarea } from "@/components/ui/Textarea";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { useToast } from "@/contexts/ToastContext";
 import { isSafeRichLink, type RichContent } from "@/libs/rich-content/content";
 import { canonicalEditorContent } from "@/libs/rich-content/editor-document";
 import { RichContentImageExtension } from "@/libs/rich-content/editor-image";
@@ -137,6 +139,7 @@ export function RichTextEditor({
   required = false,
   invalid = false,
 }: RichTextEditorProps) {
+  const { showToast } = useToast();
   const [mediaOpen, setMediaOpen] = useState(false);
   const [mediaKind, setMediaKind] = useState<MediaKind>("auto");
   const [mediaUrl, setMediaUrl] = useState("");
@@ -160,11 +163,16 @@ export function RichTextEditor({
   const [imageDecorative, setImageDecorative] = useState(false);
   const [imageError, setImageError] = useState("");
   const [imagePending, setImagePending] = useState(false);
+  const [imageDragActive, setImageDragActive] = useState(false);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [imageTarget, setImageTarget] = useState<{
     position: number;
     existing: RichImageNode | null;
   } | null>(null);
   const imageFileRef = useRef<HTMLInputElement>(null);
+  useEffect(() => () => {
+    if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+  }, [imagePreviewUrl]);
   function showMedia(node?: RichMediaNode) {
     setMediaKind("auto");
     setMediaUrl(node ? mediaSource(node) : "");
@@ -173,17 +181,6 @@ export function RichTextEditor({
     setMediaOpen(true);
   }
 
-  function showImageInsert(position: number, file?: File) {
-    if (disabled) return;
-    setImageTarget({ position, existing: null });
-    setImageFile(file ?? null);
-    setImageFileSource(file ? "clipboard" : "picker");
-    setImageAlt("");
-    setImageCaption("");
-    setImageDecorative(false);
-    setImageError(file ? validateImageFile(file) ?? "" : "");
-    setImageOpen(true);
-  }
   const editor = useEditor({
     // Next.js 可能預先渲染 Client Component；等 hydration 後才建立可編輯 DOM，避免 SSR 不一致。
     immediatelyRender: false,
@@ -215,13 +212,37 @@ export function RichTextEditor({
               candidate.type as (typeof RICH_CONTENT_IMAGE_MIME_TYPES)[number],
             ),
           ) ?? imageFiles[0];
-        showImageInsert(view.state.selection.from, file);
+        void uploadAndInsert(file, view.state.selection.from);
         return true;
       },
-      handleDrop: (_view, event) =>
-        [...(event.dataTransfer?.files ?? [])].some((file) =>
-          file.type.startsWith("image/"),
-        ),
+      handleDOMEvents: {
+        dragover: (_view, event) => {
+          const files = [...(event.dataTransfer?.files ?? [])];
+          if (!files.some((file) => file.type.startsWith("image/"))) return false;
+          event.preventDefault();
+          setImageDragActive(true);
+          return true;
+        },
+        dragleave: (_view, event) => {
+          if (event.currentTarget === event.target) setImageDragActive(false);
+          return false;
+        },
+      },
+      handleDrop: (view, event) => {
+        // 讓 ProseMirror 不會把已確認的圖片交給瀏覽器直接開啟。
+        const file = [...(event.dataTransfer?.files ?? [])].find((candidate) =>
+          RICH_CONTENT_IMAGE_MIME_TYPES.includes(
+            candidate.type as (typeof RICH_CONTENT_IMAGE_MIME_TYPES)[number],
+          ),
+        );
+        if (!file) return false;
+        event.preventDefault();
+        setImageDragActive(false);
+        const position = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos
+          ?? view.state.selection.from;
+        void uploadAndInsert(file, position);
+        return true;
+      },
     },
   });
   useEffect(() => {
@@ -386,7 +407,9 @@ export function RichTextEditor({
       : null;
     const position = editor.state.selection.from;
     if (!existing) {
-      showImageInsert(position);
+      setImageTarget({ position, existing: null });
+      resetImageForm();
+      requestAnimationFrame(() => imageFileRef.current?.click());
       return;
     }
     setImageTarget({ position, existing });
@@ -394,7 +417,8 @@ export function RichTextEditor({
     setImageFileSource("picker");
     setImageAlt(existing?.attrs.alt ?? "");
     setImageCaption(existing?.attrs.caption ?? "");
-    setImageDecorative(existing?.attrs.alt === "");
+    setImageDecorative(existing?.attrs.decorative === true ||
+      (existing?.attrs.decorative === undefined && existing?.attrs.alt === ""));
     setImageError("");
     setImageOpen(true);
   }
@@ -422,6 +446,64 @@ export function RichTextEditor({
     if (Array.from(imageAlt.trim()).length > 300) return "圖片說明不得超過 300 字。";
     if (Array.from(imageCaption.trim()).length > 500) return "圖片標題不得超過 500 字。";
     return null;
+  }
+
+  async function uploadAndInsert(file: File, position: number) {
+    if (!editor || disabled || imagePending) return;
+    const startedAt = typeof performance !== "undefined" ? performance.now() : 0;
+    const fileError = validateImageFile(file);
+    if (fileError) {
+      setImageError(fileError);
+      setImageOpen(true);
+      return;
+    }
+    setImagePending(true);
+    setImageError("");
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreviewUrl(previewUrl);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch("/api/admin/rich-content/images", {
+        method: "POST",
+        body: formData,
+      });
+      const payload = await response.json().catch(() => null) as
+        | { data?: { src?: unknown }; message?: unknown } | null;
+      if (!response.ok) {
+        throw new Error(typeof payload?.message === "string"
+          ? payload.message : "圖片上傳失敗，請稍後再試");
+      }
+      const src = payload?.data?.src;
+      if (typeof src !== "string" || !isCanonicalRichContentImageUrl(src)) {
+        throw new Error("圖片上傳結果無效，請稍後再試");
+      }
+      const node: RichImageNode = {
+        type: "image",
+        attrs: { src, alt: "", caption: null, decorative: false },
+      };
+      const safePosition = Math.min(Math.max(position, 0), editor.state.doc.content.size);
+      if (!editor.commands.insertContentAt(safePosition, node)) {
+        editor.commands.insertContentAt(editor.state.doc.content.size, node);
+      }
+      showToast("success", "圖片已插入");
+      if (process.env.NODE_ENV === "development") {
+        console.debug("[RichTextEditor] image upload pipeline", {
+          elapsedMs: Math.round(performance.now() - startedAt),
+        });
+      }
+      setImagePending(false);
+      setImagePreviewUrl(null);
+      setImageOpen(false);
+      setImageTarget(null);
+      resetImageForm();
+      requestAnimationFrame(() => editor.isDestroyed || editor.commands.focus(undefined, { scrollIntoView: false }));
+    } catch (error) {
+      setImagePending(false);
+      setImagePreviewUrl(null);
+      setImageOpen(true);
+      setImageError(error instanceof Error ? error.message : "圖片上傳失敗，請稍後再試");
+    }
   }
 
   async function applyImage() {
@@ -464,6 +546,7 @@ export function RichTextEditor({
           src,
           alt: imageDecorative ? "" : imageAlt.trim(),
           caption: imageCaption.trim() || null,
+          decorative: imageDecorative,
         },
       };
       const { position, existing } = imageTarget;
@@ -844,7 +927,9 @@ export function RichTextEditor({
                   const file = event.target.files?.[0] ?? null;
                   setImageFile(file);
                   setImageFileSource("picker");
-                  setImageError(file ? validateImageFile(file) ?? "" : "");
+                  if (file) {
+                    void uploadAndInsert(file, imageTarget?.position ?? editor?.state.selection.from ?? 0);
+                  }
                 }}
               />
               {imageFile ? (
@@ -951,10 +1036,37 @@ export function RichTextEditor({
         </div>
       </Modal>
       {editor ? (
-        <EditorContent
-          editor={editor}
-          className="rich-editor-viewport min-w-0 max-w-full"
-        />
+        <div className="relative min-w-0">
+          <EditorContent
+            editor={editor}
+            className="rich-editor-viewport min-w-0 max-w-full"
+          />
+          {imagePending && imagePreviewUrl ? (
+            <div
+              role="status"
+              aria-live="polite"
+              className="pointer-events-none absolute inset-x-4 top-4 z-10 flex items-center gap-3 rounded-lg border border-(--border-default) bg-(--surface-default)/95 p-2 text-sm shadow-(--shadow-card)"
+            >
+              {/* Blob 預覽只存在於 Client 上傳期間，不能使用 next/image 的遠端最佳化。 */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={imagePreviewUrl}
+                alt=""
+                aria-hidden="true"
+                className="size-12 shrink-0 rounded object-cover"
+              />
+              <span className="text-(--text-muted)">圖片上傳中…</span>
+            </div>
+          ) : null}
+          {imageDragActive ? (
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-2 flex items-center justify-center rounded-lg border-2 border-dashed border-(--primary) bg-(--primary)/10 text-sm font-medium text-(--primary)"
+            >
+              放開即可插入圖片
+            </div>
+          ) : null}
+        </div>
       ) : (
         <p role="status" className="min-h-64 p-4 text-sm text-(--text-muted)">
           正在載入編輯器…
