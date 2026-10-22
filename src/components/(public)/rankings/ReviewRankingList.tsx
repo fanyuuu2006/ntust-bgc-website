@@ -19,15 +19,19 @@ function toDisplayItem(review: PublicReviewRankingItem, compact: boolean): Ranki
     titleClassName: "font-medium text-(--text-primary)",
     titleClampClassName: compact ? "line-clamp-1" : "line-clamp-2",
     supportingContent: (
-      <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-        <span className="max-w-36 truncate">{review.author.name}</span>
-        <span aria-hidden="true">·</span>
-        <span className="max-w-48 truncate">{review.boardGame.name}</span>
-        <span className="inline-flex items-center gap-1">
+      <span className="grid min-w-0 gap-1">
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="max-w-[min(10rem,45%)] truncate">{review.author.name}</span>
+          <span aria-hidden="true">·</span>
+          <span className="min-w-0 truncate">{review.boardGame.name}</span>
+        </span>
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="inline-flex shrink-0 items-center gap-1">
           <RatingStars rating={review.rating} label={`${review.rating} 分`} size="xs" />
           <span className="tabular-nums">{review.rating}.0</span>
         </span>
-        <time dateTime={review.createdAt}>{formatDateTime(review.createdAt)}</time>
+          </span>
+          <time dateTime={review.createdAt} className="truncate">{formatDateTime(review.createdAt)}</time>
       </span>
     ),
     primaryMetric: (
@@ -36,6 +40,7 @@ function toDisplayItem(review: PublicReviewRankingItem, compact: boolean): Ranki
         <strong className="tabular-nums">{review.likeCount}</strong>
       </span>
     ),
+    primaryMetricOnMobileSide: true,
   };
 }
 
