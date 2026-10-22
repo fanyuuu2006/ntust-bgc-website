@@ -41,10 +41,10 @@ function setupRepository(globalRank = 17) {
 
 test("rankings validate query values and default to popular", () => {
   const { normalizeBoardGameRankingQuery } = load("src/app/(public)/rankings/board-games/query.ts");
-  assert.deepEqual(normalizeBoardGameRankingQuery({}), { ranking: { key: "popular", label: "綜合排行", description: "綜合借用熱度、評分品質與評分參與度排名。" }, page: 1, search: undefined });
+  assert.deepEqual(normalizeBoardGameRankingQuery({}), { ranking: { key: "popular", label: "綜合排行", description: "看看哪些桌遊最受大家喜愛！" }, page: 1, search: undefined });
   assert.equal(normalizeBoardGameRankingQuery({ ranking: "reviews", page: "3" }).ranking.key, "reviews");
   assert.equal(normalizeBoardGameRankingQuery({ ranking: "invalid", page: "-2" }).ranking.key, "popular");
-  assert.equal(normalizeBoardGameRankingQuery({ ranking: "rating" }).ranking.description, "綜合平均評分與評分人數計算排名，避免少量高分讓結果失真。");
+  assert.equal(normalizeBoardGameRankingQuery({ ranking: "rating" }).ranking.description, "一起看看大家最推薦哪些桌遊！");
   assert.equal(normalizeBoardGameRankingQuery({ ranking: ["rating", "borrowed"] }).ranking.key, "popular");
   assert.equal(normalizeBoardGameRankingQuery({ q: "  卡坦島  " }).search, "卡坦島");
   assert.equal(normalizeBoardGameRankingQuery({ q: "x".repeat(101) }).search, undefined);
@@ -116,7 +116,7 @@ test("public borrowing ranking uses concise copy without changing its status sem
     source("src/app/(public)/rankings/ranking-config.ts"),
     source("src/components/(public)/rankings/BoardGameRankingList.tsx"),
   ]);
-  assert.match(config, /依已借出或已歸還的累計借用次數排名/);
+  assert.match(config, /看看哪些桌遊最常被借走/);
   assert.match(list, /次借用/);
   assert.doesNotMatch(config, /已借出或已歸還的成功借用紀錄/);
   assert.doesNotMatch(list, /次成功借用/);

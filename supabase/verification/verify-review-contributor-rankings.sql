@@ -8,12 +8,12 @@ with ranking_views(view_name, relation_oid) as (
     ('review_contributor_rankings')
   ) as expected(view_name)
 ), checks as (
-  select 'column.default_false' check_name,
+  select 'column.default_true' check_name,
     exists (
       select 1 from information_schema.columns
       where table_schema = 'public' and table_name = 'users'
         and column_name = 'review_contributor_ranking_opt_in'
-        and is_nullable = 'NO' and column_default = 'false'
+        and is_nullable = 'NO' and column_default = 'true'
     ) passed
   union all
   select 'view.exists', relation_oid is not null

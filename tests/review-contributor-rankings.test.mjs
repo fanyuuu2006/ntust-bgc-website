@@ -25,7 +25,14 @@ test("contributor ranking migration is opt-in, private-safe and immediately deri
   assert.doesNotMatch(migration, /update public\.users set|insert into public\.users|delete from public\.users/);
   assert.match(canonical, /create view public\.review_contributor_rankings/);
   assert.match(canonical, /author\.avatar as user_avatar/);
-  for (const check of ["column.default_false", "view.security_invoker", "view.only_opted_in_active_authors", "view.contiguous_global_rank"]) assert.match(verification, new RegExp(check.replace(".", "\\.")));
+  for (const check of ["column.default_true", "view.security_invoker", "view.only_opted_in_active_authors", "view.contiguous_global_rank"]) assert.match(verification, new RegExp(check.replace(".", "\\.")));
+});
+
+test("new contributor accounts participate by default without rewriting existing choices", async () => {
+  const migration = await source("supabase/migrations/202610220006_default_review_contributor_ranking_opt_in.sql");
+  assert.match(migration, /alter column review_contributor_ranking_opt_in set default true/);
+  assert.doesNotMatch(migration, /update public\.users/);
+  assert.match(migration, /既有 false 設定維持退出/);
 });
 
 test("contributor repository reads only the ranked public projection", async () => {
@@ -72,7 +79,7 @@ test("contributor list reuses compact ranking rows, public avatar and aggregates
   ] }));
   assert.match(html, /aria-label="第 2 名"/);
   assert.match(html, /href="\/profile\/user-id"/);
-  assert.match(html, /4 則有效公開評論/);
+  assert.match(html, /aria-label="4 則評論"/);
   assert.match(html, /累積獲得 7 個讚/);
   assert.match(html, /src="https:\/\/example\.test\/avatar\.png"/);
   assert.match(html, /href="\/profile\/second-user"/);
@@ -87,7 +94,7 @@ test("contributor list uses the canonical avatar fallback, truncates long names 
   assert.match(populated, /<svg[^>]*role="img"/);
   assert.match(populated, /line-clamp-1/);
   const empty = renderToStaticMarkup(createElement(ReviewContributorRankingList, { items: [] }));
-  assert.match(empty, /尚無評論貢獻排行資料/);
+  assert.match(empty, /目前還沒有人上榜/);
   assert.match(empty, /border-0/);
   assert.match(empty, /bg-transparent/);
 });
@@ -102,18 +109,18 @@ test("settings opt-in is explicit, reversible and server-session scoped", async 
   ]);
   assert.match(component, /role="switch"/);
   assert.match(component, /隱私與公開設定/);
-  assert.match(component, /參與公開個人排行榜/);
+  assert.match(component, /顯示在評論貢獻排行/);
   assert.match(component, /api\/users\/me\/profile-visibility/);
   assert.match(component, /value="public"/);
   assert.match(component, /value="limited"/);
-  assert.match(component, /開啟後可出現在評論貢獻排行/);
+  assert.match(component, /開啟後，其他人就能在排行榜上看到你；關閉後則不會顯示/);
   assert.match(component, /個人檔案可見性不會影響你已發表的公開評論/);
   assert.match(component, /body: \{ optedIn: nextValue \}/);
   assert.match(route, /authorizeVerifiedRequest/);
   assert.doesNotMatch(route, /userId.*request|authorId.*request/);
   assert.match(schema, /optedIn: z\.boolean\(\)/);
-  assert.match(privacy, /公開個人排行榜採自願參與/);
-  assert.match(terms, /公開個人排行榜為自願參與功能/);
+  assert.match(privacy, /評論貢獻排行預設會顯示符合條件的帳號/);
+  assert.match(terms, /評論貢獻排行預設會顯示符合條件的帳號/);
 });
 
 test("contributor ranking route, overview and sitemap are discoverable", async () => {
