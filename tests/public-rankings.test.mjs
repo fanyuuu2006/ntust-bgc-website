@@ -106,6 +106,8 @@ test("ranking view computes eligible global ranks with the existing tie-breakers
   assert.match(migration, /revoke all privileges[\s\S]*from public, anon, authenticated/);
   assert.match(migration, /grant select[\s\S]*to service_role/);
   assert.match(canonical, /create view public\.board_game_rankings/);
+  const projectionMigration = await source("supabase/migrations/202610230001_expose_board_game_popularity_score.sql");
+  assert.match(projectionMigration, /create or replace view public\.board_game_rankings[\s\S]*location_name,\s+statistics\.popularity_score/);
   assert.match(canonical, /grant select on table public\.board_game_rankings to service_role/);
   assert.match(verification, /matches_existing_order/);
   assert.match(verification, /public\.select/);
@@ -244,6 +246,7 @@ test("all ranks use one leaderboard list and the top three keep subtle semantic 
     location: null,
     stats: { averageRating: 4.5, ratingCount: 8, reviewCount: 3, completedBorrowCount: 5 },
     globalRank: 1,
+    popularityScore: 0.875,
   };
   const html = renderToStaticMarkup(createElement(BoardGameRankingList, {
     ranking: "popular",
@@ -256,6 +259,7 @@ test("all ranks use one leaderboard list and the top three keep subtle semantic 
   assert.match(html, /--status-warning/);
   assert.match(html, /--text-secondary/);
   assert.match(html, /--status-danger/);
+  assert.match(html, /87\.5 \/ 100/);
   await assert.rejects(source("src/components/(public)/rankings/RankingPodium.tsx"), { code: "ENOENT" });
 });
 

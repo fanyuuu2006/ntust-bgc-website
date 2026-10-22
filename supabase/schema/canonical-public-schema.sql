@@ -455,7 +455,8 @@ select
   statistics.rating_count,
   statistics.review_count,
   category.name as category_name,
-  location.name as location_name
+  location.name as location_name,
+  statistics.popularity_score
 from public.board_game_popularity_statistics as statistics
 left join public.board_game_categories as category
   on category.id = statistics.category_id
@@ -485,7 +486,8 @@ select
   statistics.rating_count,
   statistics.review_count,
   category.name as category_name,
-  location.name as location_name
+  location.name as location_name,
+  statistics.popularity_score
 from public.board_game_popularity_statistics as statistics
 left join public.board_game_categories as category
   on category.id = statistics.category_id
@@ -514,7 +516,8 @@ select
   statistics.rating_count,
   statistics.review_count,
   category.name as category_name,
-  location.name as location_name
+  location.name as location_name,
+  statistics.popularity_score
 from public.board_game_popularity_statistics as statistics
 left join public.board_game_categories as category
   on category.id = statistics.category_id
@@ -543,7 +546,8 @@ select
   statistics.rating_count,
   statistics.review_count,
   category.name as category_name,
-  location.name as location_name
+  location.name as location_name,
+  statistics.popularity_score
 from public.board_game_popularity_statistics as statistics
 left join public.board_game_categories as category
   on category.id = statistics.category_id

@@ -48,6 +48,8 @@ export type BoardGameDiscoveryItem = Pick<BoardGame, "id" | "name" | "image" | "
 
 export type BoardGameRankingItem = BoardGameDiscoveryItem & {
   globalRank: number;
+  /** Existing normalized popularity score from the ranking view. */
+  popularityScore: number;
 };
 
 export type HomeBoardGameItem = BoardGameDiscoveryItem;
