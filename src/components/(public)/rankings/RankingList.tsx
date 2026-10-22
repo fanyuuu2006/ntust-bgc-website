@@ -15,6 +15,8 @@ export type RankingDisplayItem = {
   supportingContent?: React.ReactNode;
   primaryMetric: React.ReactNode;
   secondaryMetric?: React.ReactNode;
+  /** 評論等需要固定右側指標的清單，在窄螢幕也維持第三欄。 */
+  primaryMetricOnMobileSide?: boolean;
 };
 
 export function RankingPosition({ rank }: { rank: number }) {
@@ -65,8 +67,8 @@ export function RankingList({
         <li key={item.key} className={cn("grid min-w-0 items-center gap-3 py-3.5 sm:gap-4", item.media ? "grid-cols-[2.5rem_3.5rem_minmax(0,1fr)] sm:grid-cols-[2.75rem_4rem_minmax(0,1fr)]" : "grid-cols-[2.5rem_minmax(0,1fr)] sm:grid-cols-[2.75rem_minmax(0,1fr)]")}>
           <RankingPosition rank={item.rank} />
           {item.media ? <div className="flex items-center">{item.media}</div> : null}
-          <div className="min-w-0 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-x-6">
-            <div className="min-w-0 sm:col-start-1 sm:row-span-2">
+          <div className={cn("min-w-0", item.primaryMetricOnMobileSide ? "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3" : "sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-x-6")}>
+            <div className={cn("min-w-0", item.primaryMetricOnMobileSide && "col-start-1 row-span-2", "sm:col-start-1 sm:row-span-2")}>
               {item.href ? (
                 <Link href={item.href} aria-label={item.accessibleLabel} className={cn("inline-flex max-w-full wrap-anywhere font-semibold leading-5 text-(--interactive-primary) hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)", item.titleClassName)}>
                   <span className={cn("line-clamp-2", item.titleClampClassName)}>{item.title}</span>
@@ -74,7 +76,7 @@ export function RankingList({
               ) : <div className={cn("line-clamp-2 font-semibold leading-5 text-(--text-primary)", item.titleClassName, item.titleClampClassName)}>{item.title}</div>}
               {item.supportingContent ? <div className="mt-1.5 text-xs text-(--text-muted)">{item.supportingContent}</div> : null}
             </div>
-            <div className="mt-1.5 sm:col-start-2 sm:row-start-1 sm:mt-0 sm:flex sm:justify-end sm:text-right">{item.primaryMetric}</div>
+            <div className={cn(item.primaryMetricOnMobileSide ? "col-start-2 row-start-1 self-start" : "mt-1.5", "sm:col-start-2 sm:row-start-1 sm:mt-0 sm:flex sm:justify-end sm:text-right")}>{item.primaryMetric}</div>
             {item.secondaryMetric ? <div className="mt-1 text-xs text-(--text-muted) sm:col-start-2 sm:row-start-2 sm:flex sm:justify-end sm:text-right">{item.secondaryMetric}</div> : null}
           </div>
         </li>

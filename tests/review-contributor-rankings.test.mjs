@@ -39,14 +39,16 @@ test("contributor repository reads only the ranked public projection", async () 
   const calls = [];
   const builder = {
     select(columns, options) { calls.push(["select", columns, options]); return this; },
+    ilike(column, pattern) { calls.push(["ilike", column, pattern]); return this; },
     order(column, options) { calls.push(["order", column, options]); return this; },
     async range(from, to) { calls.push(["range", from, to]); return { data: [{ global_rank: 21, user_id: "u", user_name: "公開名稱", user_avatar: "https://example.test/avatar.png", review_count: 3, received_like_count: 2, latest_review_at: "2026-10-22" }], error: null, count: 25 }; },
   };
   const repository = load("src/repositories/review-contributor-rankings.repository.ts", {
     "@/libs/supabase/server": { supabase: { from(table) { calls.push(["from", table]); return builder; } } },
   }).reviewContributorRankingsRepository;
-  const result = await repository.findPage({ page: 2, pageSize: 20 });
+  const result = await repository.findPage({ page: 2, pageSize: 20, search: "YBean_%" });
   assert.deepEqual(calls[0], ["from", "review_contributor_rankings"]);
+  assert.deepEqual(calls[2], ["ilike", "user_name", "%YBean\\_\\%%"]);
   assert.match(calls[1][1], /user_name/);
   assert.match(calls[1][1], /user_avatar/);
   assert.doesNotMatch(calls[1][1], /email|real_name|phone|member/);

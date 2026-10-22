@@ -22,7 +22,9 @@ export const FormFeedback = ({
   className,
   ...props
 }: FormFeedbackProps) => {
+  const hasFeedback = Boolean(error || success || warning || info);
   const reference = error ? readErrorReference(error) : null;
+  if (!hasFeedback) return null;
   return (
     <div
       aria-live="polite"

@@ -9,6 +9,7 @@ import type { ReviewContributorRankingsPage } from "./review-contributor-ranking
 const querySchema = z.object({
   page: z.coerce.number().int().min(1).catch(1),
   pageSize: z.coerce.number().int().min(1).max(50).catch(20),
+  search: z.string().trim().max(100).optional().catch(undefined),
 });
 
 export const reviewContributorRankingsService = {
