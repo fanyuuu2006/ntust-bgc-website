@@ -16,9 +16,13 @@ export const publicIdentityService = {
     const source = await publicIdentitiesRepository.findById(parsed.data);
     if (!source) return null;
     const identity = toPublicUserIdentity(source);
-    if (source.closed_at) return { identity, identityBadges: [], clubFootprint: null };
+    if (source.closed_at) return { identity, visibility: "closed", identityBadges: [], clubFootprint: null };
+    // limited 在資料編排層就終止，避免只靠畫面隱藏後仍查詢社團足跡。
+    if (source.profile_visibility === "limited") {
+      return { identity, visibility: "limited", identityBadges: [], clubFootprint: null };
+    }
     const summary = await publicProfileSummaryService.getSummary(source.id);
-    return { identity, ...summary };
+    return { identity, visibility: "public", ...summary };
   },
   /**
    * 公開頁面／作者資訊的 Server 資料邊界，回傳值只包含三個公開欄位。

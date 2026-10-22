@@ -60,6 +60,7 @@ test("public Profile metadata uses only public identity and noindexes closure or
     "./public-profile": {
       getPublicProfile: async () => ({
         identity: { id, name: "公開名稱", avatar: null },
+        visibility: "public",
         identityBadges: [],
         clubFootprint: { totalBorrowedCount: 1, attendedCount: 2, joinedAcademicYear: "115" },
         privateValues,
@@ -88,6 +89,7 @@ test("closed Profile metadata is a public tombstone and never reconstructs ident
     "./public-profile": {
       getPublicProfile: async () => ({
         identity: { id, name: "已註銷使用者", avatar: null },
+        visibility: "closed",
         identityBadges: [],
         clubFootprint: null,
       }),

@@ -203,7 +203,7 @@ test("active public profile loads one public review page and closed profile supp
   let calls = 0;
   const activePage = load("src/app/(public)/profile/[id]/page.tsx", {
     "next/navigation": { useRouter: () => ({ push: () => {}, replace: () => {} }), redirect: () => {} },
-    "./public-profile": { getPublicProfile: async () => ({ identity: { id: "00000000-0000-4000-8000-000000000001", name: "會員", avatar: null }, identityBadges: [], clubFootprint: { totalBorrowedCount: 0, attendedCount: 0, joinedAcademicYear: null } }) },
+    "./public-profile": { getPublicProfile: async () => ({ identity: { id: "00000000-0000-4000-8000-000000000001", name: "會員", avatar: null }, visibility: "public", identityBadges: [], clubFootprint: { totalBorrowedCount: 0, attendedCount: 0, joinedAcademicYear: null } }) },
     "@/services/reviews/reviews.service": { reviewsService: { listPublicByUser: async () => { calls++; return { data: [], page: 1, pageSize: 10, total: 0, totalPages: 0 }; } } },
   });
   const first = renderToStaticMarkup(await activePage.default({ params: Promise.resolve({ id: "u" }), searchParams: Promise.resolve({ reviewPage: "1" }) }));
@@ -214,7 +214,7 @@ test("active public profile loads one public review page and closed profile supp
 
   const closedPage = load("src/app/(public)/profile/[id]/page.tsx", {
     "next/navigation": { useRouter: () => ({ push: () => {}, replace: () => {} }), redirect: () => {} },
-    "./public-profile": { getPublicProfile: async () => ({ identity: { id: "u", name: "已註銷使用者", avatar: null }, identityBadges: [], clubFootprint: null }) },
+    "./public-profile": { getPublicProfile: async () => ({ identity: { id: "u", name: "已註銷使用者", avatar: null }, visibility: "closed", identityBadges: [], clubFootprint: null }) },
     "@/services/reviews/reviews.service": { reviewsService: { listPublicByUser: async () => { throw new Error("must not query"); } } },
   });
   const closed = renderToStaticMarkup(await closedPage.default({ params: Promise.resolve({ id: "u" }) }));

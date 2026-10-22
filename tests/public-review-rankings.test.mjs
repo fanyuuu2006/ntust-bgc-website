@@ -157,6 +157,7 @@ test("review ranking route is searchable, SSR paginated and discoverable without
   assert.match(overview, /reviewsService\.listPopularRankings\(\{ page: 1, pageSize: 3 \}\)/);
   assert.match(overview, /ReviewRankingList items=\{reviewResult\.data\} compact/);
   assert.match(overview, /href="\/rankings\/reviews"/);
-  assert.doesNotMatch(overview, /\/rankings\/(contributors|events)/);
+  assert.match(overview, /\/rankings\/contributors/);
+  assert.doesNotMatch(overview, /\/rankings\/events/);
   assert.match(sitemap, /"\/rankings\/reviews"/);
 });

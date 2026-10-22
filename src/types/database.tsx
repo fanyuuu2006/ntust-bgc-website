@@ -109,6 +109,7 @@ export type BorrowingStatus =
  * 出席狀態
  */
 export type AttendanceStatus = "present" | "absent" | "late";
+export type ProfileVisibility = "public" | "limited";
 
 /* =========================================================
  * Users
@@ -118,6 +119,10 @@ export type User = {
   id: UUID;
   /** 非空表示已完成註銷與去識別；歷史關聯保留，但不得再授權登入。 */
   closed_at: Timestamp | null;
+  /** 公開個人排行榜的相容儲存欄位；使用者須主動選擇，預設不參與。 */
+  review_contributor_ranking_opt_in: boolean;
+  /** 公開個人頁詳細內容的可見性；基本公開身份不受此欄位影響。 */
+  profile_visibility: ProfileVisibility;
   name: string;
   email: string;
   email_verified_at: Timestamp | null;

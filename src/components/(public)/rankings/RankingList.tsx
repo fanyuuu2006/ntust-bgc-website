@@ -42,13 +42,22 @@ export function RankingList({
   className,
   emptyTitle = "目前沒有排行榜資料",
   emptyDescription = "累積足夠資料後，就會顯示在這裡。",
+  emptyWithinContainer = false,
 }: {
   items: RankingDisplayItem[];
   className?: string;
   emptyTitle?: string;
   emptyDescription?: string;
+  emptyWithinContainer?: boolean;
 }) {
-  if (items.length === 0) return <EmptyState compact title={emptyTitle} description={emptyDescription} />;
+  if (items.length === 0) return (
+    <EmptyState
+      compact
+      title={emptyTitle}
+      description={emptyDescription}
+      className={emptyWithinContainer ? "rounded-none border-0 bg-transparent shadow-none" : undefined}
+    />
+  );
 
   return (
     <ol className={cn("divide-y divide-(--border-muted)", className)}>

@@ -6,6 +6,8 @@ import {
   updateUserAccountSchema,
   updateUserProfileSchema,
   adminUserPickerSearchSchema,
+  updatePublicRankingPreferenceSchema,
+  updateProfileVisibilitySchema,
 } from "./users.schema";
 import type { AdminUserPickerItem } from "./users.types";
 import type { User, UserProfile } from "@/types/database";
@@ -25,6 +27,18 @@ import { eventAttendancesRepository } from "@/repositories/event-attendances.rep
 const ADMIN_USER_PICKER_LIMIT = 20;
 
 export const usersService = {
+  updateProfileVisibility: async (userId: string, input: unknown) => {
+    const { visibility } = updateProfileVisibilitySchema.parse(input);
+    const updated = await usersRepository.updateProfileVisibility(userId, visibility);
+    if (!updated) throw new UserProfileNotFoundError();
+    return { visibility: updated.profile_visibility };
+  },
+  updatePublicRankingPreference: async (userId: string, input: unknown) => {
+    const { optedIn } = updatePublicRankingPreferenceSchema.parse(input);
+    const updated = await usersRepository.updatePublicRankingPreference(userId, optedIn);
+    if (!updated) throw new UserProfileNotFoundError();
+    return { optedIn: updated.review_contributor_ranking_opt_in };
+  },
   searchForAdminPicker: async (
     input: unknown,
   ): Promise<AdminUserPickerItem[]> => {

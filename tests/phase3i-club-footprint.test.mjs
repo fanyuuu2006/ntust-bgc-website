@@ -7,7 +7,7 @@ test('closed public profile never queries badges or aggregates', async()=>{
     '@/repositories/public-identities.repository':{publicIdentitiesRepository:{findById:async()=>({id,name:'OLD',avatar:'https://old.invalid',closed_at:'date',email:'SECRET'})}},
     '@/services/profile/public-profile-summary.service':{publicProfileSummaryService:{getSummary:()=>{throw Error('must not query')}}},
   }).publicIdentityService;
-  assert.deepEqual(await service.findProfileById(id),{identity:{id,name:'已註銷使用者',avatar:null},identityBadges:[],clubFootprint:null});
+  assert.deepEqual(await service.findProfileById(id),{identity:{id,name:'已註銷使用者',avatar:null},visibility:'closed',identityBadges:[],clubFootprint:null});
 });
 test('public summary badges follow private ordering but expose no row IDs or detail fields',async()=>{
   const current={id:'YEAR',year:'115',start_date:'2026-08-01'};

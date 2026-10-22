@@ -36,6 +36,7 @@ create type public.membership_register_key_status as enum (
   'revoked',
   'expired'
 );
+create type public.profile_visibility as enum ('public', 'limited');
 
 -- These names match the verified remote schema. Do not correct the spelling in
 -- a snapshot or migration without a separately approved compatibility plan.
@@ -2263,6 +2264,47 @@ grant select, insert, delete on table public.board_game_review_likes
 revoke all privileges on table public.board_game_review_rankings
   from public, anon, authenticated;
 grant select on table public.board_game_review_rankings to service_role;
+
+-- 公開評論貢獻者排行榜需由使用者主動加入，既有與新帳號預設都不參與。
+alter table public.users
+  add column review_contributor_ranking_opt_in boolean not null default false;
+
+comment on column public.users.review_contributor_ranking_opt_in is
+  '使用者是否自願加入公開評論貢獻者排行榜；預設 false，可隨時退出。';
+
+create view public.review_contributor_rankings
+with (security_invoker = true)
+as
+with valid_reviews as (
+  select review.id, review.user_id, review.created_at
+  from public.board_game_reviews as review
+  where review.content is not null and btrim(review.content) <> ''
+), contributor_statistics as (
+  select author.id as user_id, author.name as user_name,
+    count(distinct review.id)::bigint as review_count,
+    count(review_like.user_id)::bigint as received_like_count,
+    max(review.created_at) as latest_review_at,
+    author.avatar as user_avatar
+  from public.users as author
+  join valid_reviews as review on review.user_id = author.id
+  left join public.board_game_review_likes as review_like on review_like.review_id = review.id
+  where author.review_contributor_ranking_opt_in = true and author.closed_at is null
+  group by author.id
+)
+select row_number() over (order by review_count desc, received_like_count desc,
+    latest_review_at desc, user_id asc)::bigint as global_rank,
+  user_id, user_name, review_count, received_like_count, latest_review_at, user_avatar
+from contributor_statistics;
+
+revoke all privileges on table public.review_contributor_rankings
+  from public, anon, authenticated;
+grant select on table public.review_contributor_rankings to service_role;
+
+alter table public.users
+  add column profile_visibility public.profile_visibility not null default 'public';
+
+comment on column public.users.profile_visibility is
+  '控制公開個人頁的詳細內容；limited 仍保留顯示名稱與頭像。';
 
 create function public.set_board_game_review_like(
   p_board_game_id uuid,
