@@ -231,3 +231,33 @@ test("provider failure is returned through the safe unexpected-error pipeline", 
   assert.doesNotMatch(JSON.stringify(payload), /private provider detail/);
   assert.deepEqual(harness.incidents, [providerError]);
 });
+
+test("service preserves the failing upload stage without exposing provider details", async () => {
+  const providerError = new Error("private storage provider detail");
+  const serviceModule = load("src/services/rich-content-images/rich-content-images.service.ts", {
+    "@/repositories/rich-content-images.repository": {
+      richContentImagesRepository: { upload: async () => { throw providerError; } },
+    },
+  });
+  await assert.rejects(
+    () => serviceModule.richContentImagesService.upload(
+      new File([Uint8Array.from(signatures["image/png"])], "a.png", { type: "image/png" }),
+    ),
+    error => error.stage === "STORAGE_UPLOAD" && error.cause === providerError,
+  );
+});
+
+test("service marks an origin mismatch as CONFIG_CHECK", async () => {
+  const serviceModule = load("src/services/rich-content-images/rich-content-images.service.ts", {
+    "@/libs/env": { SUPABASE_URL: "https://dev.supabase.co" },
+    "@/repositories/rich-content-images.repository": {
+      richContentImagesRepository: { upload: async () => assert.fail() },
+    },
+  });
+  await assert.rejects(
+    () => serviceModule.richContentImagesService.upload(
+      new File([Uint8Array.from(signatures["image/png"])], "a.png", { type: "image/png" }),
+    ),
+    error => error.stage === "CONFIG_CHECK",
+  );
+});

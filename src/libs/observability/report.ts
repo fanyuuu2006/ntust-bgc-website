@@ -7,7 +7,16 @@ type ErrorContext = {
   route?: string;
   method?: string;
   nextDigest?: string;
+  diagnosticStage?: DiagnosticStage;
 };
+
+export type DiagnosticStage =
+  | "AUTH"
+  | "FORM_DATA"
+  | "FILE_VALIDATION"
+  | "CONFIG_CHECK"
+  | "STORAGE_UPLOAD"
+  | "PUBLIC_URL";
 
 // Weak keys only deduplicate a live exception; this is not an incident store.
 const references = new WeakMap<object, string>();
@@ -146,6 +155,7 @@ export function reportUnexpectedError(
       ...(options.nextDigest && /^\d{1,20}$/.test(options.nextDigest)
         ? { nextDigest: options.nextDigest }
         : {}),
+      ...(options.diagnosticStage ? { stage: options.diagnosticStage } : {}),
       cause: typeof window === "undefined" ? serverDiagnostic(error) : technicalCause(error),
     }),
   );
