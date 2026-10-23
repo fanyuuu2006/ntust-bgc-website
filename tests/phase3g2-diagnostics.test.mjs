@@ -38,7 +38,29 @@ test('actual SDK count failure reaches server reporter while render output stays
 test('uncoded SDK fetch failure keeps network identity without private stack',()=>{
   const {serverDiagnostic}=load('src/libs/observability/server-diagnostic.ts');
   const output=serverDiagnostic({message:'TypeError: fetch failed\nprivate stack',code:''});
-  assert.deepEqual(output,{type:'FetchError',message:'fetch failed'});
+  assert.deepEqual(output,{type:'FetchError',classification:'UNKNOWN_ERROR',message:'fetch failed'});
+});
+test('rich content failures receive safe operational classifications',()=>{
+  const {serverDiagnostic}=load('src/libs/observability/server-diagnostic.ts');
+  assert.equal(serverDiagnostic({name:'Error',message:'Rich Content 圖片的 Supabase 公開 origin 設定不一致'}).classification,'CONFIG_ERROR');
+  assert.equal(serverDiagnostic({name:'RepositoryError',context:'上傳 Rich Content 圖片失敗',cause:{code:'500',message:'provider detail'}}).classification,'STORAGE_UPLOAD_ERROR');
+  assert.equal(serverDiagnostic({name:'Error',message:'arrayBuffer failed while processing file'}).classification,'FILE_PROCESSING_ERROR');
+  assert.equal(serverDiagnostic({name:'Error',message:'private provider detail'}).classification,'UNKNOWN_ERROR');
+});
+test('auth infrastructure classification follows a nested cause without exposing details',()=>{
+  const {serverDiagnostic}=load('src/libs/observability/server-diagnostic.ts');
+  const output=serverDiagnostic({name:'RepositoryError',context:'session',cause:{code:'PGRST303',message:'JWT issued at future secret'}});
+  assert.equal(output.classification,'AUTH_INFRASTRUCTURE_ERROR');
+  assert.doesNotMatch(JSON.stringify(output),/secret/);
+});
+test('rich content upload route remains identifiable without exposing dynamic segments',()=>{
+  const {reportUnexpectedError}=load('src/libs/observability/report.ts');
+  const logs=[]; const original=console.error; console.error=(...args)=>logs.push(JSON.parse(args[1]));
+  try {
+    reportUnexpectedError(new Error('provider failure'),{context:'[POST /api/admin/rich-content/images]'});
+    assert.equal(logs[0].route,'/api/admin/rich-content/images');
+    assert.equal(logs[0].method,'POST');
+  } finally { console.error=original; }
 });
 test('browser reporter never adds server diagnostic fields',()=>{
   const originalWindow=globalThis.window,original=console.error;globalThis.window={};const logs=[];console.error=(...args)=>logs.push(args);
