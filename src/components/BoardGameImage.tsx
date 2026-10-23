@@ -1,6 +1,7 @@
 "use client";
 
 import type { BoardGame } from "@/types/database";
+import { resolveMediaDisplayUrl } from "@/libs/media/media-url";
 import { useState } from "react";
 import { cn } from "@/utils/className";
 
@@ -17,9 +18,11 @@ export function BoardGameImage({
   ...rest
 }: BoardGameImageProps) {
   const accessibleName = alt ?? boardGame.name;
+  // 只在顯示層轉換目前環境的 Storage URL；資料庫原值與刪除流程維持不變。
+  const displayUrl = resolveMediaDisplayUrl(boardGame.image);
   const [failedImage, setFailedImage] = useState<string | null>(null);
 
-  if (!boardGame.image || failedImage === boardGame.image) {
+  if (!displayUrl || failedImage === boardGame.image) {
     return (
       <BoardGameImageFallback
         name={accessibleName}
@@ -33,7 +36,7 @@ export function BoardGameImage({
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={boardGame.image}
+      src={displayUrl}
       alt={accessibleName}
       referrerPolicy={referrerPolicy ?? "no-referrer"}
       className={cn("shrink-0", className)}
