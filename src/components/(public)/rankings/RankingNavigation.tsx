@@ -7,18 +7,20 @@ import { BOARD_GAME_RANKINGS } from "@/app/(public)/rankings/ranking-config";
 import type { BoardGameRanking } from "@/repositories/board-game-statistics.repository";
 import { cn } from "@/utils/className";
 
-function buildRankingHref(basePath: string, ranking: BoardGameRanking, search?: string) {
+function buildRankingHref(basePath: string, ranking: BoardGameRanking, search?: string, pageSize?: number) {
   const params = new URLSearchParams();
   if (ranking !== "popular") params.set("ranking", ranking);
   if (search) params.set("q", search);
+  if (pageSize && pageSize !== 20) params.set("pageSize", String(pageSize));
   const query = params.toString();
   return query ? `${basePath}?${query}` : basePath;
 }
 
-export function RankingNavigation({ active, basePath = "/rankings/board-games", search }: {
+export function RankingNavigation({ active, basePath = "/rankings/board-games", search, pageSize }: {
   active: BoardGameRanking;
   basePath?: string;
   search?: string;
+  pageSize?: number;
 }) {
   const activeLinkRef = useRef<HTMLAnchorElement>(null);
 
@@ -41,7 +43,7 @@ export function RankingNavigation({ active, basePath = "/rankings/board-games", 
               <li key={ranking.key} className="shrink-0">
                 <Link
                   ref={isActive ? activeLinkRef : undefined}
-                  href={buildRankingHref(basePath, ranking.key, search)}
+                  href={buildRankingHref(basePath, ranking.key, search, pageSize)}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
                     "-mb-px inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap border-b-2 px-3 text-center text-sm font-medium transition-colors focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring) sm:px-4",

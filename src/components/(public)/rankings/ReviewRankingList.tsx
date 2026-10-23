@@ -51,7 +51,7 @@ export function ReviewRankingList({ items, compact = false, emptyDescription }: 
 }) {
   return (
     <RankingList
-      items={items.map((item) => toDisplayItem(item, compact))}
+      emptyWithinContainer items={items.map((item) => toDisplayItem(item, compact))}
       emptyTitle="尚無熱門評論"
       emptyDescription={emptyDescription ?? "目前還沒有含文字內容的公開評論。"}
     />

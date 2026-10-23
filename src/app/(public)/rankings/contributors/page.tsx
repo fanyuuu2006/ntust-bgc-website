@@ -8,8 +8,8 @@ import { withServerErrorReference } from "@/libs/observability/server-render";
 import { createPublicMetadata } from "@/libs/seo";
 import { reviewContributorRankingsService } from "@/services/rankings/review-contributor-rankings.service";
 
-type PageProps = { searchParams: Promise<{ page?: string | string[]; q?: string | string[] }> };
-const PAGE_SIZE = 20;
+type PageProps = { searchParams: Promise<{ page?: string | string[]; pageSize?: string | string[]; q?: string | string[] }> };
+const PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
 
 const BASE_METADATA = createPublicMetadata({
   title: "評論貢獻排行",
@@ -27,17 +27,19 @@ async function generateMetadataContent({ searchParams }: PageProps): Promise<Met
 async function ReviewContributorRankingsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const rawPage = Number(params.page);
+  const rawPageSize = Number(params.pageSize);
   const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+  const pageSize = PAGE_SIZE_OPTIONS.includes(rawPageSize as 10 | 20 | 50) ? rawPageSize : 20;
   const search = typeof params.q === "string" ? params.q.trim().slice(0, 100) : undefined;
-  const result = await reviewContributorRankingsService.list({ page, pageSize: PAGE_SIZE, search });
+  const result = await reviewContributorRankingsService.list({ page, pageSize, search });
 
   return (
     <section className="container py-8">
       <PageHeader eyebrow="排行榜" title="評論貢獻排行" description="看看誰分享了最多桌遊心得！" />
-      <ContributorRankingSearchForm search={search} total={result.total} />
-      <PaginatedCollection className="mt-5" page={result.page} pageSize={result.pageSize} total={result.total} totalPages={result.totalPages} basePath="/rankings/contributors" query={{ q: search }} showPageSize={false} itemLabel="位貢獻者">
+      <ContributorRankingSearchForm search={search} total={result.total} pageSize={pageSize} />
+      <PaginatedCollection className="mt-5" page={result.page} pageSize={result.pageSize} total={result.total} totalPages={result.totalPages} basePath="/rankings/contributors" query={{ q: search, pageSize: pageSize === 20 ? undefined : pageSize }} pageSizeOptions={PAGE_SIZE_OPTIONS} itemLabel="位貢獻者">
         <div className="rounded-2xl border border-(--border-default) bg-(--surface-default) px-3 sm:px-5">
-          <ReviewContributorRankingList items={result.data} />
+          <ReviewContributorRankingList items={result.data} hasSearch={Boolean(search)} />
         </div>
       </PaginatedCollection>
     </section>

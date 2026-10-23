@@ -7,11 +7,10 @@ import { PageHeader } from "@/components/PageHeader";
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { createPublicMetadata } from "@/libs/seo";
 import { reviewsService } from "@/services/reviews/reviews.service";
-import { normalizeReviewRankingQuery, type ReviewRankingSearchParams } from "./query";
+import { REVIEW_RANKING_PAGE_SIZE_OPTIONS, normalizeReviewRankingQuery, type ReviewRankingSearchParams } from "./query";
 
 type ReviewsRankingsPageProps = { searchParams: Promise<ReviewRankingSearchParams> };
 
-const PAGE_SIZE = 20;
 const BASE_METADATA = createPublicMetadata({
   title: "熱門評論",
   description: "看看哪些桌遊心得最受歡迎！",
@@ -24,13 +23,13 @@ async function generateMetadataContent({ searchParams }: ReviewsRankingsPageProp
 }
 
 async function ReviewRankingsPage({ searchParams }: ReviewsRankingsPageProps) {
-  const { page, search } = normalizeReviewRankingQuery(await searchParams);
-  const result = await reviewsService.listPopularRankings({ page, pageSize: PAGE_SIZE, search });
+  const { page, pageSize, search } = normalizeReviewRankingQuery(await searchParams);
+  const result = await reviewsService.listPopularRankings({ page, pageSize, search });
 
   return (
     <section className="container py-8">
       <PageHeader eyebrow="排行榜" title="熱門評論" description="看看哪些桌遊心得最受歡迎！" />
-      <ReviewRankingSearchForm search={search} total={result.total} />
+      <ReviewRankingSearchForm search={search} total={result.total} pageSize={pageSize} />
       <PaginatedCollection
         className="mt-5"
         page={result.page}
@@ -38,8 +37,8 @@ async function ReviewRankingsPage({ searchParams }: ReviewsRankingsPageProps) {
         total={result.total}
         totalPages={result.totalPages}
         basePath="/rankings/reviews"
-        query={{ q: search }}
-        showPageSize={false}
+        query={{ q: search, pageSize: pageSize === 20 ? undefined : pageSize }}
+        pageSizeOptions={REVIEW_RANKING_PAGE_SIZE_OPTIONS}
         itemLabel="則評論"
       >
         <div className="rounded-2xl border border-(--border-default) bg-(--surface-default) px-3 sm:px-5">

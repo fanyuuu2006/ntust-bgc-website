@@ -51,5 +51,5 @@ export function BoardGameRankingList({ items, ranking, compact = false, emptyDes
   emptyDescription?: string;
 }) {
   const displayItems = items.map((item) => toDisplayItem(item, ranking, compact));
-  return <RankingList items={displayItems} emptyDescription={emptyDescription ?? "累積評分、評論或借用紀錄後，就會顯示在這裡。"} />;
+  return <RankingList emptyWithinContainer items={displayItems} emptyDescription={emptyDescription ?? "累積評分、評論或借用紀錄後，就會顯示在這裡。"} />;
 }
