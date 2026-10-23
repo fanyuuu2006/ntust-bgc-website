@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { resolveMediaDisplayUrl } from "./media/media-url";
 import { siteConfigs } from "./siteConfigs";
 
 export const GOOGLE_SITE_VERIFICATION =
@@ -33,10 +34,15 @@ export function createPublicMetadata({
   image,
   absoluteTitle = false,
 }: PublicMetadataOptions): Metadata {
-  const socialImage = image ?? {
-    url: DEFAULT_SOCIAL_IMAGE,
-    alt: siteConfigs.fullName,
-  };
+  const resolvedImageUrl = image
+    ? resolveMediaDisplayUrl(image.url)
+    : null;
+  const socialImage = resolvedImageUrl
+    ? { ...image, url: resolvedImageUrl }
+    : {
+        url: DEFAULT_SOCIAL_IMAGE,
+        alt: siteConfigs.fullName,
+      };
 
   return {
     title: absoluteTitle ? { absolute: title } : title,
