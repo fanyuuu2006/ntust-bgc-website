@@ -39,6 +39,8 @@ const routeSegments = new Set([
   "check-in",
   "attendance",
   "announcements",
+  "rich-content",
+  "images",
   "academic-years",
   "members",
   "memberships",

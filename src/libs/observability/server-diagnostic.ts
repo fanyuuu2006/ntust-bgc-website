@@ -26,9 +26,41 @@ function diagnosticText(value: unknown): string | undefined {
     .replace(/(['"])(.*?)\1/g, (_match, _quote, text: string) => /^[a-z_][a-z0-9_.]*$/.test(text) ? `"${text}"` : "[VALUE REDACTED]");
 }
 
+type ErrorClassification =
+  | "CONFIG_ERROR"
+  | "STORAGE_UPLOAD_ERROR"
+  | "AUTH_INFRASTRUCTURE_ERROR"
+  | "FILE_PROCESSING_ERROR"
+  | "UNKNOWN_ERROR";
+
+function classifyError(error: unknown, depth = 0): ErrorClassification {
+  if (!error || typeof error !== "object" || depth > 3) return "UNKNOWN_ERROR";
+  const name = field(error, "name");
+  const context = field(error, "context");
+  const operation = typeof context === "string" ? context : "";
+  const message = field(error, "message");
+  const text = typeof message === "string" ? message : "";
+  const code = field(error, "code");
+
+  if (code === "PGRST303" || /jwt issued at future|auth(?:entication)? infrastructure/i.test(text)) {
+    return "AUTH_INFRASTRUCTURE_ERROR";
+  }
+  if (/origin|supabase.*(?:設定|config)|環境變數|storage.*設定/i.test(text)) {
+    return "CONFIG_ERROR";
+  }
+  if (name === "RepositoryError" && /rich.?content|圖片|image|upload|上傳/i.test(operation)) {
+    return "STORAGE_UPLOAD_ERROR";
+  }
+  if (/arraybuffer|file|圖片|image|signature|mime|檔案|處理/i.test(`${operation} ${text}`)) {
+    return "FILE_PROCESSING_ERROR";
+  }
+  const cause = field(error, "cause");
+  return cause && cause !== error ? classifyError(cause, depth + 1) : "UNKNOWN_ERROR";
+}
+
 /** 僅供 Server reporter 輸出；不作為 API、digest 或 production UI 的資料來源。 */
 export function serverDiagnostic(error: unknown, depth = 0): object {
-  if (depth > 3 || !error || typeof error !== "object") return { type: "UnknownError" };
+  if (depth > 3 || !error || typeof error !== "object") return { type: "UnknownError", classification: "UNKNOWN_ERROR" };
   const name = field(error, "name");
   const rawCode = field(error, "code");
   const code = typeof rawCode === "string" && /^(?:[0-9A-Z]{5}|PGRST\d{3}|ECONNRESET|ECONNREFUSED|ETIMEDOUT|ENOTFOUND)$/.test(rawCode) ? rawCode : undefined;
@@ -40,14 +72,16 @@ export function serverDiagnostic(error: unknown, depth = 0): object {
   const operation = field(error, "context");
   const operationContext = field(error, "operationContext");
   const cause = field(error, "cause");
-  const textFields = postgrest || type === "TypeError" ? Object.fromEntries(["message", "details", "hint"].flatMap<[string, string | null]>(key => {
+  const textFields = (postgrest && code !== "PGRST303") || type === "TypeError" ? Object.fromEntries(["message", "details", "hint"].flatMap<[string, string | null]>(key => {
     const value = field(error, key);
     if (value === null) return [[key, null]];
     const cleaned = diagnosticText(value);
     return cleaned ? [[key, cleaned]] : [];
   })) : {};
   return {
-    type: fetchFailure ? "FetchError" : type, ...(code ? { code } : {}),
+    type: fetchFailure ? "FetchError" : type,
+    classification: classifyError(error),
+    ...(code ? { code } : {}),
     ...(typeof status === "number" && Number.isInteger(status) && status >= 400 && status <= 599 ? { status } : {}),
     ...(type === "RepositoryError" && typeof operation === "string" && /^[\p{Script=Han}A-Za-z ._-]{1,120}$/u.test(operation) ? { operation } : {}),
     ...(type === "RepositoryError" && isOperationContext(operationContext) ? { operationContext } : {}),
