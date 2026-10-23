@@ -20,13 +20,14 @@ export type RankingDisplayItem = {
 };
 
 export function RankingPosition({ rank }: { rank: number }) {
-  const podiumColor = rank === 1
-    ? "var(--status-warning)"
-    : rank === 2
-      ? "color-mix(in oklab, var(--text-primary) 62%, var(--surface-default))"
-      : rank === 3
-        ? "color-mix(in oklab, var(--status-warning) 65%, var(--status-danger))"
-        : undefined;
+  const podiumColor =
+    rank === 1
+      ? "var(--status-warning)"
+      : rank === 2
+        ? "color-mix(in oklab, var(--text-primary) 62%, var(--surface-default))"
+        : rank === 3
+          ? "color-mix(in oklab, var(--status-warning) 65%, var(--status-danger))"
+          : undefined;
 
   return (
     <span
@@ -41,12 +42,37 @@ export function RankingPosition({ rank }: { rank: number }) {
 }
 
 function RankMedal({ rank }: { rank: 1 | 2 | 3 }) {
-  const fill = rank === 1 ? "var(--status-warning)" : rank === 2 ? "var(--text-secondary)" : "#B87945";
+  const fill =
+    rank === 1
+      ? "var(--status-warning)"
+      : rank === 2
+        ? "var(--text-secondary)"
+        : "#B87945";
   return (
     <svg aria-hidden="true" viewBox="0 0 32 34" className="size-8 shrink-0">
-      <path d="M9 2h5l2 8-4 3-5-7zM23 2h-5l-2 8 4 3 5-7z" fill={fill} opacity=".9" />
-      <circle cx="16" cy="21" r="10" fill={fill} stroke="currentColor" strokeWidth="1.5" />
-      <text x="16" y="25" textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--surface-default)">{rank}</text>
+      <path
+        d="M9 2h5l2 8-4 3-5-7zM23 2h-5l-2 8 4 3 5-7z"
+        fill={fill}
+        opacity=".9"
+      />
+      <circle
+        cx="16"
+        cy="21"
+        r="10"
+        fill={fill}
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <text
+        x="16"
+        y="25"
+        textAnchor="middle"
+        fontSize="11"
+        fontWeight="700"
+        fill="var(--surface-default)"
+      >
+        {rank}
+      </text>
     </svg>
   );
 }
@@ -64,32 +90,98 @@ export function RankingList({
   emptyDescription?: string;
   emptyWithinContainer?: boolean;
 }) {
-  if (items.length === 0) return (
-    <EmptyState
-      compact
-      title={emptyTitle}
-      description={emptyDescription}
-      className={emptyWithinContainer ? "rounded-none border-0 bg-transparent shadow-none" : undefined}
-    />
-  );
+  if (items.length === 0)
+    return (
+      <EmptyState
+        compact
+        title={emptyTitle}
+        description={emptyDescription}
+        className={
+          emptyWithinContainer
+            ? "rounded-none border-0 bg-transparent shadow-none"
+            : undefined
+        }
+      />
+    );
 
   return (
     <ol className={cn("divide-y divide-(--border-muted)", className)}>
       {items.map((item) => (
-        <li key={item.key} className={cn("grid min-w-0 items-center gap-3 py-3.5 sm:gap-4", item.media ? "grid-cols-[2.5rem_3.5rem_minmax(0,1fr)] sm:grid-cols-[2.75rem_4rem_minmax(0,1fr)]" : "grid-cols-[2.5rem_minmax(0,1fr)] sm:grid-cols-[2.75rem_minmax(0,1fr)]")}>
+        <li
+          key={item.key}
+          className={cn(
+            "grid min-w-0 items-center gap-3 py-3.5 sm:gap-4",
+            item.media
+              ? "grid-cols-[2.5rem_3.5rem_minmax(0,1fr)] sm:grid-cols-[2.75rem_4rem_minmax(0,1fr)]"
+              : "grid-cols-[2.5rem_minmax(0,1fr)] sm:grid-cols-[2.75rem_minmax(0,1fr)]",
+          )}
+        >
           <RankingPosition rank={item.rank} />
-          {item.media ? <div className="flex items-center">{item.media}</div> : null}
-          <div className={cn("min-w-0", item.primaryMetricOnMobileSide ? "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3" : "sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-x-6")}>
-            <div className={cn("min-w-0", item.primaryMetricOnMobileSide && "col-start-1 row-span-2", "sm:col-start-1 sm:row-span-2")}>
+          {item.media ? (
+            <div className="flex items-center">{item.media}</div>
+          ) : null}
+          <div
+            className={cn(
+              "min-w-0",
+              item.primaryMetricOnMobileSide
+                ? "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3"
+                : "sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-x-6",
+            )}
+          >
+            <div
+              className={cn(
+                "min-w-0",
+                item.primaryMetricOnMobileSide && "col-start-1 row-span-2",
+                "sm:col-start-1 sm:row-span-2",
+              )}
+            >
               {item.href ? (
-                <Link href={item.href} aria-label={item.accessibleLabel} className={cn("inline-flex max-w-full wrap-anywhere font-semibold leading-5 text-(--interactive-primary) hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)", item.titleClassName)}>
-                  <span className={cn("line-clamp-2", item.titleClampClassName)}>{item.title}</span>
+                <Link
+                  href={item.href}
+                  aria-label={item.accessibleLabel}
+                  className={cn(
+                    "inline-flex max-w-full wrap-anywhere font-semibold leading-5 text-(--interactive-primary) hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)",
+                    item.titleClassName,
+                  )}
+                >
+                  <span
+                    className={cn("line-clamp-2", item.titleClampClassName)}
+                  >
+                    {item.title}
+                  </span>
                 </Link>
-              ) : <div className={cn("line-clamp-2 font-semibold leading-5 text-(--text-primary)", item.titleClassName, item.titleClampClassName)}>{item.title}</div>}
-              {item.supportingContent ? <div className="mt-1.5 text-xs text-(--text-muted)">{item.supportingContent}</div> : null}
+              ) : (
+                <div
+                  className={cn(
+                    "line-clamp-2 font-semibold leading-5 text-(--text-primary)",
+                    item.titleClassName,
+                    item.titleClampClassName,
+                  )}
+                >
+                  {item.title}
+                </div>
+              )}
+              {item.supportingContent ? (
+                <div className="mt-1.5 text-xs text-(--text-muted)">
+                  {item.supportingContent}
+                </div>
+              ) : null}
             </div>
-            <div className={cn(item.primaryMetricOnMobileSide ? "col-start-2 row-start-1 self-start" : "mt-1.5", "sm:col-start-2 sm:row-start-1 sm:mt-0 sm:flex sm:justify-end sm:text-right")}>{item.primaryMetric}</div>
-            {item.secondaryMetric ? <div className="mt-1 text-xs text-(--text-muted) sm:col-start-2 sm:row-start-2 sm:flex sm:justify-end sm:text-right">{item.secondaryMetric}</div> : null}
+            <div
+              className={cn(
+                item.primaryMetricOnMobileSide
+                  ? "col-start-2 row-start-1 self-start"
+                  : "mt-1.5",
+                "sm:col-start-2 sm:row-start-1 sm:mt-0 sm:flex sm:justify-end sm:text-right",
+              )}
+            >
+              {item.primaryMetric}
+            </div>
+            {item.secondaryMetric ? (
+              <div className="mt-1 text-xs text-(--text-muted) sm:col-start-2 sm:row-start-2 sm:flex sm:justify-end sm:text-right">
+                {item.secondaryMetric}
+              </div>
+            ) : null}
           </div>
         </li>
       ))}

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 
 const BASE_PATH = "/rankings/reviews";
 
-export function ReviewRankingSearchForm({ search, total }: { search?: string; total: number }) {
+export function ReviewRankingSearchForm({ search, total, pageSize }: { search?: string; total: number; pageSize?: number }) {
   return (
     <div className="mt-5 space-y-2">
       <form
@@ -15,6 +15,7 @@ export function ReviewRankingSearchForm({ search, total }: { search?: string; to
         aria-label="搜尋熱門評論排行榜"
         className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]"
       >
+        {pageSize ? <input type="hidden" name="pageSize" value={pageSize} /> : null}
         <ClearableSearchInput
           initialValue={search}
           clearHref={BASE_PATH}

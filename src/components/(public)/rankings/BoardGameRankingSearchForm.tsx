@@ -17,10 +17,12 @@ export function BoardGameRankingSearchForm({
   ranking,
   search,
   total,
+  pageSize,
 }: {
   ranking: BoardGameRanking;
   search?: string;
   total: number;
+  pageSize?: number;
 }) {
   const clearHref = buildClearHref(ranking);
 
@@ -33,6 +35,7 @@ export function BoardGameRankingSearchForm({
         className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]"
       >
         {ranking !== "popular" ? <input type="hidden" name="ranking" value={ranking} /> : null}
+        {pageSize ? <input type="hidden" name="pageSize" value={pageSize} /> : null}
         <ClearableSearchInput
           initialValue={search}
           clearHref={clearHref}

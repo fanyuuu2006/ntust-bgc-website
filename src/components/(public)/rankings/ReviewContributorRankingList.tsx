@@ -13,12 +13,7 @@ function toDisplayItem(item: ReviewContributorRankingItem): RankingDisplayItem {
     title: item.user.name,
     titleClampClassName: "line-clamp-1",
     media: (
-      <UserAvatar
-        user={item.user}
-        className="size-10 rounded-full"
-        width={40}
-        height={40}
-      />
+      <UserAvatar user={item.user} className="size-10 rounded-full" width={40} height={40} />
     ),
     primaryMetric: (
       <span className="inline-flex items-center gap-1.5 text-sm font-medium text-(--text-primary)" aria-label={`${item.reviewCount} 則評論`}>
@@ -35,12 +30,18 @@ function toDisplayItem(item: ReviewContributorRankingItem): RankingDisplayItem {
   };
 }
 
-export function ReviewContributorRankingList({ items }: { items: ReviewContributorRankingItem[] }) {
+export function ReviewContributorRankingList({
+  items,
+  hasSearch = false,
+}: {
+  items: ReviewContributorRankingItem[];
+  hasSearch?: boolean;
+}) {
   return (
     <RankingList
       items={items.map(toDisplayItem)}
-      emptyTitle="目前還沒有人上榜"
-      emptyDescription="快來分享你的桌遊心得吧！"
+      emptyTitle={hasSearch ? "找不到符合搜尋條件的結果" : "目前還沒有人上榜"}
+      emptyDescription={hasSearch ? "請更換關鍵字或清除搜尋條件。" : "目前還沒有符合條件的評論貢獻者。"}
       emptyWithinContainer
     />
   );

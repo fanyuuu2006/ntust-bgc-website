@@ -41,7 +41,10 @@ function setupRepository(globalRank = 17) {
 
 test("rankings validate query values and default to popular", () => {
   const { normalizeBoardGameRankingQuery } = load("src/app/(public)/rankings/board-games/query.ts");
-  assert.deepEqual(normalizeBoardGameRankingQuery({}), { ranking: { key: "popular", label: "綜合排行", description: "探索社團裡受歡迎的桌遊！" }, page: 1, search: undefined });
+  assert.equal(normalizeBoardGameRankingQuery({}).pageSize, 20);
+  assert.equal(normalizeBoardGameRankingQuery({ pageSize: "50" }).pageSize, 50);
+  assert.equal(normalizeBoardGameRankingQuery({ pageSize: "999" }).pageSize, 20);
+  assert.deepEqual(normalizeBoardGameRankingQuery({}), { ranking: { key: "popular", label: "綜合排行", description: "探索社團裡受歡迎的桌遊！" }, page: 1, pageSize: 20, search: undefined });
   assert.equal(normalizeBoardGameRankingQuery({ ranking: "reviews", page: "3" }).ranking.key, "reviews");
   assert.equal(normalizeBoardGameRankingQuery({ ranking: "invalid", page: "-2" }).ranking.key, "popular");
   assert.equal(normalizeBoardGameRankingQuery({ ranking: "rating" }).ranking.description, "一起看看大家最推薦哪些桌遊！");
@@ -182,6 +185,23 @@ test("ranking list renders empty data safely and keeps rank, metric and detail l
   assert.doesNotMatch(html, /1 則文字評論/);
   assert.doesNotMatch(html, /樣本較少/);
   assert.doesNotMatch(html, /#42/);
+});
+
+test("contributor ranking distinguishes search empty state from an empty leaderboard", async () => {
+  const sourceText = await source("src/components/(public)/rankings/ReviewContributorRankingList.tsx");
+  assert.match(sourceText, /hasSearch/);
+  assert.match(sourceText, /emptyTitle=\{hasSearch \?/);
+  assert.match(sourceText, /emptyDescription=\{hasSearch \?/);
+  assert.match(sourceText, /emptyWithinContainer/);
+});
+
+test("contributor ranking keeps its public metadata and loading copy readable", async () => {
+  const page = await source("src/app/(public)/rankings/contributors/page.tsx");
+  const loading = await source("src/app/(public)/rankings/loading.tsx");
+  assert.match(page, /title: "評論貢獻排行"/);
+  assert.match(page, /description: "看看誰分享了最多桌遊心得！"/);
+  assert.match(page, /<PageHeader eyebrow="排行榜"/);
+  assert.match(loading, /aria-label="排行榜載入中"/);
 });
 
 test("filtered ranking results render their original global ranks across result pages", () => {

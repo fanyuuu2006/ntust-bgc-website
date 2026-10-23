@@ -10,8 +10,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { createPublicMetadata } from "@/libs/seo";
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { boardGamesService } from "@/services/board-games/board-games.service";
-import { BOARD_GAME_RANKING_PAGE_SIZE } from "../ranking-config";
-import { normalizeBoardGameRankingQuery, type BoardGameRankingSearchParams } from "./query";
+import { BOARD_GAME_RANKING_PAGE_SIZE_OPTIONS, normalizeBoardGameRankingQuery, type BoardGameRankingSearchParams } from "./query";
 
 type RankingsPageProps = { searchParams: Promise<BoardGameRankingSearchParams> };
 
@@ -28,10 +27,10 @@ async function generateMetadataContent({ searchParams }: RankingsPageProps): Pro
 }
 
 async function BoardGameRankingsPage({ searchParams }: RankingsPageProps) {
-  const { ranking, page, search } = normalizeBoardGameRankingQuery(await searchParams);
+  const { ranking, page, pageSize, search } = normalizeBoardGameRankingQuery(await searchParams);
   const result = await boardGamesService.listBoardGameRankings(ranking.key, {
     page,
-    pageSize: BOARD_GAME_RANKING_PAGE_SIZE,
+    pageSize,
     search,
   });
 
@@ -41,7 +40,7 @@ async function BoardGameRankingsPage({ searchParams }: RankingsPageProps) {
         <PageHeader eyebrow="排行榜" title="桌遊排行榜" description={ranking.description} />
         <RankingInfoDialog iconOnly><BoardGameRankingGuide /></RankingInfoDialog>
       </div>
-      <div className="mt-6"><RankingNavigation active={ranking.key} search={search} /></div>
+      <div className="mt-6"><RankingNavigation active={ranking.key} search={search} pageSize={pageSize} /></div>
       <BoardGameRankingSearchForm
         ranking={ranking.key}
         search={search}
@@ -57,8 +56,9 @@ async function BoardGameRankingsPage({ searchParams }: RankingsPageProps) {
         query={{
           ranking: ranking.key === "popular" ? undefined : ranking.key,
           q: search,
+          pageSize: pageSize === 20 ? undefined : pageSize,
         }}
-        showPageSize={false}
+        pageSizeOptions={BOARD_GAME_RANKING_PAGE_SIZE_OPTIONS}
         itemLabel="款桌遊"
       >
         <div className="rounded-2xl border border-(--border-default) bg-(--surface-default) px-3 sm:px-5">

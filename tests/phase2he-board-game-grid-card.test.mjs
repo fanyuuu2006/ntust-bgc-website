@@ -106,7 +106,7 @@ test("public board-game card keeps one vertical composition at every breakpoint"
   assert.doesNotMatch(card, /尚未補充桌遊描述/);
   assert.match(card, /<BoardGameImage/);
   assert.match(card, /className=\{"h-full w-full object-contain"\}/);
-  assert.match(image, /if \(!boardGame\.image \|\| failedImage === boardGame\.image\)/);
+  assert.match(image, /if \(!displayUrl \|\| failedImage === boardGame\.image\)/);
   assert.match(image, /<BoardGameImageFallback/);
   assert.match(card, /mt-auto[^"\n]*pt-3[^>]*>[\s\S]*查看詳情/);
   assert.doesNotMatch(card, /translate-y|scale-\[/);
