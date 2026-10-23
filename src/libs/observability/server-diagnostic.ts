@@ -72,6 +72,7 @@ export function serverDiagnostic(error: unknown, depth = 0): object {
   const operation = field(error, "context");
   const operationContext = field(error, "operationContext");
   const cause = field(error, "cause");
+  const stage = field(error, "stage");
   const textFields = (postgrest && code !== "PGRST303") || type === "TypeError" ? Object.fromEntries(["message", "details", "hint"].flatMap<[string, string | null]>(key => {
     const value = field(error, key);
     if (value === null) return [[key, null]];
@@ -85,6 +86,7 @@ export function serverDiagnostic(error: unknown, depth = 0): object {
     ...(typeof status === "number" && Number.isInteger(status) && status >= 400 && status <= 599 ? { status } : {}),
     ...(type === "RepositoryError" && typeof operation === "string" && /^[\p{Script=Han}A-Za-z ._-]{1,120}$/u.test(operation) ? { operation } : {}),
     ...(type === "RepositoryError" && isOperationContext(operationContext) ? { operationContext } : {}),
+    ...(typeof stage === "string" && ["AUTH", "FORM_DATA", "FILE_VALIDATION", "CONFIG_CHECK", "STORAGE_UPLOAD", "PUBLIC_URL"].includes(stage) ? { stage } : {}),
     ...textFields,
     ...(postgrest && typeof field(error, "retryAttempted") === "boolean" ? { retryAttempted: field(error, "retryAttempted"), retrySucceeded: false } : {}),
     ...(fetchFailure ? { message: "fetch failed" } : {}),

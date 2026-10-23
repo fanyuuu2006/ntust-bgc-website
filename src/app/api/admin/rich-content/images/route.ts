@@ -5,10 +5,12 @@ import { richContentImagesService } from "@/services/rich-content-images/rich-co
 import { RichContentImageInputError } from "@/services/rich-content-images/rich-content-images.errors";
 
 export async function POST(request: Request) {
+  let diagnosticStage: "AUTH" | "FORM_DATA" = "AUTH";
   try {
     const authorization = await authorizeAdminRequest("您沒有上傳內容圖片的權限");
     if (authorization.response) return authorization.response;
 
+    diagnosticStage = "FORM_DATA";
     let formData: FormData;
     try {
       formData = await request.formData();
@@ -51,6 +53,8 @@ export async function POST(request: Request) {
       "[POST /api/admin/rich-content/images]",
       error,
       "操作暫時無法完成，請稍後再試。",
-    );
+        500,
+        diagnosticStage,
+      );
   }
 }

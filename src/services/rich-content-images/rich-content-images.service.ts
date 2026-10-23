@@ -14,6 +14,19 @@ import {
   type DetectedSupportedImage,
 } from "@/libs/images/file-signature";
 
+export type RichContentImageUploadStage =
+  | "FILE_VALIDATION"
+  | "CONFIG_CHECK"
+  | "STORAGE_UPLOAD"
+  | "PUBLIC_URL";
+
+export class RichContentImageUploadError extends Error {
+  constructor(public readonly stage: RichContentImageUploadStage, cause: unknown) {
+    super("Rich Content image upload failed");
+    this.name = "RichContentImageUploadError";
+    this.cause = cause;
+  }
+}
 export async function validateRichContentImageFile(file: File): Promise<{
   bytes: Uint8Array;
   detected: DetectedSupportedImage;
@@ -39,15 +52,26 @@ export const richContentImagesService = {
       SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_URL,
     )) {
-      throw new Error("Rich Content 圖片的 Supabase 公開 origin 設定不一致");
+      throw new RichContentImageUploadError("CONFIG_CHECK", new Error("origin mismatch"));
     }
-    const { bytes, detected } = await validateRichContentImageFile(file);
+    let validated: Awaited<ReturnType<typeof validateRichContentImageFile>>;
+    try {
+      validated = await validateRichContentImageFile(file);
+    } catch (error) {
+      if (error instanceof RichContentImageInputError) throw error;
+      throw new RichContentImageUploadError("FILE_VALIDATION", error);
+    }
+    const { bytes, detected } = validated;
     const objectPath = createRichContentImageObjectPath(detected.extension);
-    await richContentImagesRepository.upload(
-      objectPath,
-      bytes,
-      detected.mimeType,
-    );
-    return { src: buildRichContentImagePublicUrl(objectPath, SUPABASE_URL) };
+    try {
+      await richContentImagesRepository.upload(objectPath, bytes, detected.mimeType);
+    } catch (error) {
+      throw new RichContentImageUploadError("STORAGE_UPLOAD", error);
+    }
+    try {
+      return { src: buildRichContentImagePublicUrl(objectPath, SUPABASE_URL) };
+    } catch (error) {
+      throw new RichContentImageUploadError("PUBLIC_URL", error);
+    }
   },
 };
