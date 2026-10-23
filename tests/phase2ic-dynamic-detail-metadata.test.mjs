@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import ts from "typescript";
+import { load } from "./helpers/load-app-module.mjs";
+
+process.env.NEXT_PUBLIC_SUPABASE_URL = "https://project.supabase.co";
 
 const root = new URL("../", import.meta.url);
 const readSource = (path) => readFile(new URL(path, root), "utf8");
@@ -39,6 +42,37 @@ test("metadata copy and content helpers produce concise, safe text", async () =>
   assert.equal(helpers.getSafeMetadataImageUrl("/images/game.jpg"), "/images/game.jpg");
   assert.equal(helpers.getSafeMetadataImageUrl("javascript:alert(1)"), undefined);
   assert.equal(helpers.getSafeMetadataImageUrl("not a url"), undefined);
+});
+
+test("public metadata converts owned Storage images without changing external or invalid sources", () => {
+  const { createPublicMetadata } = load("src/libs/seo.ts");
+  const owned = createPublicMetadata({
+    title: "桌遊",
+    description: "描述",
+    canonical: "/board-games/game",
+    image: {
+      url: "https://project.supabase.co/storage/v1/object/public/board-game-images/game/cover.webp",
+      alt: "桌遊封面",
+    },
+  });
+  assert.equal(owned.openGraph.images[0].url, "/media/board-game-images/game/cover.webp");
+  assert.equal(owned.twitter.images[0], "/media/board-game-images/game/cover.webp");
+
+  const external = createPublicMetadata({
+    title: "外部圖片",
+    description: "描述",
+    canonical: "/external",
+    image: { url: "https://example.com/share.jpg", alt: "外部圖片" },
+  });
+  assert.equal(external.openGraph.images[0].url, "https://example.com/share.jpg");
+
+  const invalid = createPublicMetadata({
+    title: "無效圖片",
+    description: "描述",
+    canonical: "/invalid",
+    image: { url: "javascript:alert(1)", alt: "無效圖片" },
+  });
+  assert.equal(invalid.openGraph.images[0].url, "/images/home/hero.jpg");
 });
 
 test("announcement detail metadata shares one cached published-only resolver", async () => {
