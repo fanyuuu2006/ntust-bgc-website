@@ -1,6 +1,7 @@
 "use client";
 
 import { CSS_VARIABLE_COLORS } from "@/libs/css";
+import { resolveMediaDisplayUrl } from "@/libs/media/media-url";
 import { useId, useState } from "react";
 import { cn } from "@/utils/className";
 import type { User } from "@/types/database";
@@ -22,7 +23,9 @@ function hashString(str: string) {
 export function UserAvatar({ user, className, onError, referrerPolicy, ...rest }: UserAvatarProps) {
   const gradientId = `avatar-${useId()}`;
   const [failedAvatar, setFailedAvatar] = useState<string | null>(null);
-  if (!user.avatar || failedAvatar === user.avatar) {
+  // 只在顯示層轉換目前環境的 Storage URL；資料庫原值與頭像刪除流程維持不變。
+  const displayUrl = resolveMediaDisplayUrl(user.avatar);
+  if (!displayUrl || failedAvatar === user.avatar) {
     const seed = hashString(user.id);
     const colorIndex1 = seed % CSS_VARIABLE_COLORS.length;
     // 讓第二個顏色與第一個不同，避免漸層失效變成單一色塊
@@ -76,7 +79,7 @@ export function UserAvatar({ user, className, onError, referrerPolicy, ...rest }
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={user.avatar}
+      src={displayUrl}
       alt={user.name}
       referrerPolicy={referrerPolicy ?? "no-referrer"}
       className={cn("object-cover", className)}

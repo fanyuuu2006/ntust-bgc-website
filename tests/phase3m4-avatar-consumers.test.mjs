@@ -4,6 +4,8 @@ import { test } from "node:test";
 import { JSDOM } from "jsdom";
 import { load } from "./helpers/load-app-module.mjs";
 
+process.env.NEXT_PUBLIC_SUPABASE_URL = "https://project.supabase.co";
+
 const dom = new JSDOM("<!doctype html><html><body></body></html>", { url: "http://localhost", pretendToBeVisual: true });
 Object.assign(globalThis, { window: dom.window, document: dom.window.document, HTMLElement: dom.window.HTMLElement, SVGElement: dom.window.SVGElement });
 Object.defineProperty(globalThis, "navigator", { configurable: true, value: dom.window.navigator });
@@ -29,6 +31,19 @@ test("UserAvatar SSR renders a private, covered image and deterministic accessib
   assert.match(first, /role="img"/); assert.match(first, /aria-label="社員甲"/); assert.match(first, />社</);
   const stops = (html) => [...html.matchAll(/stop-color="([^"]+)"/g)].map((match) => match[1]);
   assert.deepEqual(stops(first), stops(second));
+});
+
+test("UserAvatar converts owned Storage URLs while preserving external avatars", () => {
+  const owned = renderToStaticMarkup(React.createElement(UserAvatar, {
+    user: { ...USER, avatar: "https://project.supabase.co/storage/v1/object/public/avatars/users/a.webp" },
+    className: "size-8 rounded-full",
+  }));
+  assert.match(owned, /src="\/media\/avatars\/users\/a\.webp"/);
+
+  const otherProject = renderToStaticMarkup(React.createElement(UserAvatar, {
+    user: { ...USER, avatar: "https://other.supabase.co/storage/v1/object/public/avatars/users/a.webp" },
+  }));
+  assert.match(otherProject, /src="https:\/\/other\.supabase\.co\/storage\/v1\/object\/public\/avatars\/users\/a\.webp"/);
 });
 
 test("a broken Avatar falls back and a changed valid URL renders again", async (t) => {

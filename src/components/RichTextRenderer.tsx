@@ -7,6 +7,7 @@ import {
   type StoredRichContent,
 } from "@/libs/rich-content/content";
 import { cn } from "@/utils/className";
+import { resolveMediaDisplayUrl } from "@/libs/media/media-url";
 
 // 只映射已驗證節點，由 React 跳脫文字；不將作者資料交給 HTML 執行入口，也不展開為任意 DOM attributes。
 function renderNode(node: RichBlock | RichInline | RichListItem): ReactNode {
@@ -59,13 +60,16 @@ function renderNode(node: RichBlock | RichInline | RichListItem): ReactNode {
         您的瀏覽器無法播放這段音訊。<a href={node.attrs.src}>開啟音訊</a>
       </audio>
     );
-  if (node.type === "image")
+  if (node.type === "image") {
+    // 僅在 render 邊界轉換圖片來源，保留資料庫與 Editor 內容的原始 URL。
+    const displayUrl = resolveMediaDisplayUrl(node.attrs.src);
+    if (!displayUrl) return null;
     return (
       <figure className="rich-content-image">
         {/* Rich Content 圖片已由 canonical Storage URL validator 限制，不使用 Vercel image optimization。 */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={node.attrs.src}
+          src={displayUrl}
           alt={node.attrs.alt}
           loading="lazy"
           decoding="async"
@@ -73,6 +77,7 @@ function renderNode(node: RichBlock | RichInline | RichListItem): ReactNode {
         {node.attrs.caption ? <figcaption>{node.attrs.caption}</figcaption> : null}
       </figure>
     );
+  }
   const children = node.content?.map((child, index) => (
     <Fragment key={index}>{renderNode(child)}</Fragment>
   ));

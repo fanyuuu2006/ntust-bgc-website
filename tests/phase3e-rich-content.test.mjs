@@ -8,6 +8,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { load } from "./helpers/load-app-module.mjs";
 import { getSchema } from "@tiptap/react";
 
+process.env.NEXT_PUBLIC_SUPABASE_URL = "https://project.supabase.co";
+
 const model = () => load("src/libs/rich-content/content.ts");
 const text = (value, marks) => ({ type: "text", text: value, ...(marks ? { marks } : {}) });
 const paragraph = (...content) => ({ type: "paragraph", content });
@@ -28,6 +30,17 @@ test("supported rich document validates and SSR renders semantic features", () =
   for (const tag of ["h2", "h3", "strong", "em", "ul", "ol", "blockquote", "hr"]) assert.match(html, new RegExp(`<${tag}[ >/]`));
   assert.match(html, /href="https:\/\/example.com"/);
   assert.doesNotMatch(html, /<h1|target=/);
+});
+
+test("rich image rendering converts only the display URL and preserves image attributes", () => {
+  const source = "https://project.supabase.co/storage/v1/object/public/rich-content-images/uploads/2026/10/123e4567-e89b-42d3-a456-426614174000.webp";
+  const rich = doc({ type: "image", attrs: { src: source, alt: "公告圖片", caption: "圖片說明" } });
+  const html = render({ content: "fallback", content_format: "rich_text_v1", rich_content: rich });
+  assert.match(html, /src="\/media\/rich-content-images\/uploads\/2026\/10\/123e4567-e89b-42d3-a456-426614174000\.webp"/);
+  assert.match(html, /alt="公告圖片"/);
+  assert.match(html, /<figcaption>圖片說明<\/figcaption>/);
+  assert.match(html, /loading="lazy"/);
+  assert.equal(rich.content[0].attrs.src, source);
 });
 
 test("mutation validation rejects unsafe links, unknown nodes/marks/attributes and H1", () => {

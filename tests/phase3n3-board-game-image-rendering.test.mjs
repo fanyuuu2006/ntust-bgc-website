@@ -4,6 +4,8 @@ import { after, test } from "node:test";
 import { JSDOM } from "jsdom";
 import { load } from "./helpers/load-app-module.mjs";
 
+process.env.NEXT_PUBLIC_SUPABASE_URL = "https://project.supabase.co";
+
 const dom = new JSDOM("<!doctype html><html><body></body></html>", { url: "http://localhost", pretendToBeVisual: true });
 for (const key of ["window", "document", "navigator", "HTMLElement", "Element", "Node", "SVGElement"]) Object.defineProperty(globalThis, key, { configurable: true, value: dom.window[key] });
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -58,7 +60,7 @@ test("a failed source does not prevent a changed source from loading", async (t)
   await React.act(async () => root.render(React.createElement(BoardGameImage, { boardGame: game(first) })));
   await React.act(async () => host.querySelector("img").dispatchEvent(new window.Event("error")));
   await React.act(async () => root.render(React.createElement(BoardGameImage, { boardGame: game(second) })));
-  assert.equal(host.querySelector("img")?.src, second);
+  assert.equal(host.querySelector("img")?.src, "http://localhost/media/board-game-images/game/cover.webp");
   await React.act(async () => root.render(React.createElement(BoardGameImage, { boardGame: game(null) })));
   assert.equal(host.querySelector("img"), null);
   assert.ok(host.querySelector("svg"));
