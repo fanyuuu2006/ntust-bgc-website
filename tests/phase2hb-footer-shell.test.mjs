@@ -11,15 +11,13 @@ test("full Footer exposes the confirmed identity, website, contact, related, and
   const footer = await readSource(footerPath);
 
   assert.match(footer, /variant\??:\s*"full"\s*\|\s*"legal"/);
-  assert.match(footer, /siteConfigs\.name/);
-  assert.match(footer, /siteConfigs\.fullName/);
+  assert.match(footer, /settings\.siteName/);
+  assert.match(footer, /settings\.siteFullName/);
   assert.ok(footer.includes("\u7db2\u7ad9\u5c0e\u89bd"));
   assert.match(footer, /publicNavigation\.map/);
   assert.ok(footer.includes("\u806f\u7d61\u8cc7\u8a0a"));
-  assert.match(footer, /href="mailto:ntustboardgame@gmail\.com"/);
-  assert.ok(footer.includes("ntustboardgame@gmail.com"));
-  assert.match(footer, /href="https:\/\/www\.instagram\.com\/ntust_boardgame\/"/);
-  assert.ok(footer.includes("Instagram"));
+  assert.match(footer, /settings\.contactEmail/);
+  assert.match(footer, /settings\.socialLinks/);
   assert.ok(footer.includes("\u76f8\u95dc\u9023\u7d50"));
   assert.ok(footer.includes('href: "https://www.ntust.edu.tw/"'));
   assert.match(footer, /href=\{link\.href\}/);
@@ -54,7 +52,7 @@ test("Footer variants retain semantic navigation while legal mode stays a compac
   assert.ok(footer.includes('aria-label="\u6cd5\u5f8b\u8cc7\u8a0a"'));
   assert.match(footer, /variant === "legal"/);
   assert.match(legalBranch, /legalNavigation\.map/);
-  assert.match(legalBranch, /siteConfigs\.fullName/);
+  assert.match(legalBranch, /settings\.siteFullName/);
   assert.ok(legalBranch.includes("\u5b98\u65b9\u7db2\u7ad9"));
   assert.ok(legalBranch.includes("\u7db2\u7ad9\u958b\u767c\u8207\u7dad\u8b77\uff1a"));
   assert.match(legalBranch, /<DeveloperCredits \/>/);
@@ -86,7 +84,7 @@ test("full Footer expresses brand, group, link, and quiet utility text as distin
 
   assert.match(
     footer,
-    /className="[^"\n]*text-lg[^"\n]*font-semibold[^"\n]*text-\(--text-primary\)"[\s\S]*?siteConfigs\.name/,
+    /className="[^"\n]*text-lg[^"\n]*font-semibold[^"\n]*text-\(--text-primary\)"[\s\S]*?settings\.siteName/,
   );
   assert.match(
     footer,

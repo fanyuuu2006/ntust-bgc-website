@@ -7,7 +7,7 @@ const readSource = (path) => readFile(new URL(path, root), "utf8");
 
 test("homepage hero uses a bounded neutral scrim and responsive stage height", async () => {
   const [hero, styles] = await Promise.all([
-    readSource("src/components/(public)/home/HomeHero.tsx"),
+    readSource("src/components/(public)/home/HomeHeroPresentation.tsx"),
     readSource("src/styles/globals.css"),
   ]);
 

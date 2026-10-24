@@ -40,7 +40,7 @@ test("AdminShell resists root-body flex shrinking so long Main content extends t
     globals,
     /body\s*\{[\s\S]*?height:\s*100%;[\s\S]*?display:\s*flex;[\s\S]*?flex-direction:\s*column;/,
   );
-  assert.match(adminLayout, /return <AdminShell user=\{user\}>\{children\}<\/AdminShell>/);
+  assert.match(adminLayout, /<AdminShell user=\{user\}/);
   assert.match(
     shell,
     /className="flex[^"\n]*min-h-dvh[^"\n]*shrink-0[^"\n]*flex-col"/,

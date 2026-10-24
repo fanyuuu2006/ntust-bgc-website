@@ -791,6 +791,40 @@ paths:
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/site-settings':
+    get:
+      operationId: get-site-settings
+      tags: [Admin]
+      summary: GET /api/admin/site-settings
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+    patch:
+      operationId: patch-site-settings
+      tags: [Admin]
+      summary: PATCH /api/admin/site-settings
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/site-settings/images':
+    post:
+      operationId: post-site-settings-image
+      tags: [Admin]
+      summary: POST /api/admin/site-settings/images
+      security:
+        - cookieSession: []
+      responses:
+        "201": { description: Created response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
   '/api/admin/users/search':
     get:
       operationId: get-52

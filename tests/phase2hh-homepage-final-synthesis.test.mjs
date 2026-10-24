@@ -8,7 +8,7 @@ const readSource = (path) =>
 test("homepage hero uses native section anchors with stable sticky-header targets", async () => {
   const [page, hero, announcements, popular] = await Promise.all([
     readSource("src/app/(public)/page.tsx"),
-    readSource("src/components/(public)/home/HomeHero.tsx"),
+    readSource("src/components/(public)/home/HomeHeroPresentation.tsx"),
     readSource(
       "src/components/(public)/home/LatestAnnouncementsSection.tsx",
     ),
