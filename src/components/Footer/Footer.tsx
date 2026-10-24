@@ -1,10 +1,11 @@
 import Link from "next/link";
 
 import { publicNavigation } from "@/libs/navigation";
-import { siteConfigs } from "@/libs/siteConfigs";
+import type { SiteSettings } from "@/types/site-settings";
 
 type FooterProps = {
   variant?: "full" | "legal";
+  settings: SiteSettings;
 };
 
 const legalNavigation = [
@@ -37,7 +38,7 @@ function DeveloperCredits() {
   ));
 }
 
-export function Footer({ variant = "full" }: FooterProps) {
+export function Footer({ variant = "full", settings }: FooterProps) {
   if (variant === "legal") {
     return (
       <footer className="shrink-0 border-t border-(--border-default) bg-(--surface-subtle)">
@@ -57,7 +58,7 @@ export function Footer({ variant = "full" }: FooterProps) {
             </ul>
           </nav>
           <div className="space-y-1 sm:text-right">
-            <p>{siteConfigs.fullName}｜官方網站</p>
+            <p>{settings.siteFullName}｜官方網站</p>
             <p>
               網站開發與維護：
               <DeveloperCredits />
@@ -74,10 +75,10 @@ export function Footer({ variant = "full" }: FooterProps) {
         <div className="grid min-w-0 gap-y-5 lg:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,1fr))] lg:items-start lg:gap-x-10 xl:gap-x-14">
           <div className="min-w-0 max-w-72">
             <p className="text-lg leading-5 font-semibold text-(--text-primary)">
-              {siteConfigs.name}
+              {settings.siteName}
             </p>
             <p className="mt-1 max-w-xs text-sm leading-5 text-(--text-muted)">
-              {siteConfigs.fullName}
+              {settings.siteFullName}
             </p>
           </div>
 
@@ -105,21 +106,14 @@ export function Footer({ variant = "full" }: FooterProps) {
             </p>
             <ul className="mt-2 flex flex-col gap-2 text-sm text-(--text-secondary)">
               <li>
-                <a
-                  href="mailto:ntustboardgame@gmail.com"
+                {settings.contactEmail ? <a
+                  href={`mailto:${settings.contactEmail}`}
                   className="inline-flex max-w-full items-center break-all text-sm text-(--text-secondary) hover:text-(--interactive-primary)"
                 >
-                  ntustboardgame@gmail.com
-                </a>
+                  {settings.contactEmail}
+                </a> : <span>尚未提供聯絡信箱</span>}
               </li>
-              <li>
-                <a
-                  href="https://www.instagram.com/ntust_boardgame/"
-                  className="inline-flex items-center text-sm text-(--text-secondary) hover:text-(--interactive-primary)"
-                >
-                  Instagram
-                </a>
-              </li>
+              {settings.socialLinks.map((link) => <li key={link.href}><a href={link.href} className="inline-flex items-center text-sm text-(--text-secondary) hover:text-(--interactive-primary)">{link.label}</a></li>)}
             </ul>
           </address>
 
@@ -144,7 +138,7 @@ export function Footer({ variant = "full" }: FooterProps) {
 
         <div className="mt-6 flex flex-col gap-3 border-t border-(--border-default) pt-4 text-sm leading-5 text-(--text-muted) sm:flex-row sm:items-end sm:justify-between lg:mt-7">
           <div className="space-y-1">
-            <p>{siteConfigs.fullName}｜官方網站</p>
+            <p>{settings.siteFullName}｜官方網站</p>
             <p>
               網站開發與維護：
               <DeveloperCredits />

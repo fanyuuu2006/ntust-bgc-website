@@ -1,12 +1,15 @@
 import { Footer } from "@/components/Footer/Footer";
 import { Header } from "@/components/Header/Header";
 import type { User } from "@/types/database";
+import type { SiteSettings } from "@/types/site-settings";
+import { resolveSitePresentation } from "@/libs/site-settings/presentation";
 
 type WebsiteShellProps = {
   user: User | null;
   isAdmin: boolean;
   footerVariant?: "full" | "legal";
   children: React.ReactNode;
+  siteSettings: SiteSettings;
 };
 
 export function WebsiteShell({
@@ -14,7 +17,9 @@ export function WebsiteShell({
   children,
   isAdmin,
   footerVariant = "full",
+  siteSettings,
 }: WebsiteShellProps) {
+  const site = resolveSitePresentation(siteSettings);
   return (
     <div className="flex min-h-dvh shrink-0 flex-col">
       <a
@@ -23,7 +28,7 @@ export function WebsiteShell({
       >
         跳至主要內容
       </a>
-      <Header user={user} isAdmin={isAdmin} />
+      <Header user={user} isAdmin={isAdmin} site={site} />
       <main
         id="main-content"
         tabIndex={-1}
@@ -31,7 +36,7 @@ export function WebsiteShell({
       >
         {children}
       </main>
-      <Footer variant={footerVariant} />
+      <Footer variant={footerVariant} settings={siteSettings} />
     </div>
   );
 }

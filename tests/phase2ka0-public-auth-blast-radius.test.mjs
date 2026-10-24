@@ -201,6 +201,9 @@ test("PublicLayout renders anonymous-style shell for an unavailable viewer", asy
           isAdmin: false,
         }),
       },
+      "@/libs/site-settings/public": {
+        getPublicSiteSettings: async () => ({}),
+      },
     },
   );
 

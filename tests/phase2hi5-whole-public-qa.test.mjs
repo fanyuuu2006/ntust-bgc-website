@@ -45,7 +45,7 @@ test("public shell retains document scroll, sticky header, and footer push-down"
 
 test("accepted homepage image and bounded-query performance contracts remain intact", async () => {
   const [hero, announcements, popular, boardGameCard] = await Promise.all([
-    readSource("src/components/(public)/home/HomeHero.tsx"),
+    readSource("src/components/(public)/home/HomeHeroPresentation.tsx"),
     readSource(
       "src/components/(public)/home/LatestAnnouncementsSection.tsx",
     ),

@@ -3,6 +3,7 @@ import { WebsiteShell } from "@/components/layouts/WebsiteShell";
 import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { getPublicSiteSettings } from "@/libs/site-settings/public";
 
 export const metadata: Metadata = {
   robots: {
@@ -16,7 +17,7 @@ async function AuthenticatedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
+  const [user, siteSettings] = await Promise.all([getCurrentUser(), getPublicSiteSettings()]);
 
   if (!user) {
     redirect("/login");
@@ -27,7 +28,7 @@ async function AuthenticatedLayout({
   const isAdmin = await isAdminByUserId(user.id);
 
   return (
-    <WebsiteShell user={user} isAdmin={isAdmin}>
+    <WebsiteShell user={user} isAdmin={isAdmin} siteSettings={siteSettings}>
       {children}
     </WebsiteShell>
   );

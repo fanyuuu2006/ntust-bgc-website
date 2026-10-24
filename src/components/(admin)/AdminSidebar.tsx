@@ -7,27 +7,29 @@ import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { useModalDrawer } from "@/hooks/useModalDrawer";
-import { siteConfigs } from "@/libs/siteConfigs";
+import type { SitePresentation } from "@/libs/site-settings/presentation";
 import { cn } from "@/utils/className";
 import { AdminSidebarNav } from "./AdminSidebarNav";
 
 type AdminSidebarProps = React.HTMLAttributes<HTMLElement> & {
+  site: SitePresentation;
   id: string;
   isOpen: boolean;
   onClose: (restoreFocus?: boolean) => void;
 };
 
-function AdminSidebarHeader({ onClose, closeButtonRef }: {
+function AdminSidebarHeader({ onClose, closeButtonRef, site }: {
   onClose: (restoreFocus?: boolean) => void;
   closeButtonRef: React.RefObject<HTMLButtonElement | null>;
+  site: SitePresentation;
 }) {
   return (
     <div className="flex items-center justify-between gap-2 border-b border-(--border-default) px-4 py-2">
-      <Link href="/" onClick={() => onClose(false)} className="flex min-w-0 items-center gap-2.5" aria-label={`返回 ${siteConfigs.name} 首頁`}>
+      <Link href="/" onClick={() => onClose(false)} className="flex min-w-0 items-center gap-2.5" aria-label={`返回 ${site.siteName} 首頁`}>
         <div className="size-10 shrink-0 overflow-hidden rounded-full">
-          <Image src={siteConfigs.logo} alt={`${siteConfigs.fullName} Logo`} width={64} height={64} className="size-full object-contain" />
+          <Image src={site.logoUrl} alt={`${site.siteFullName} Logo`} width={64} height={64} className="size-full object-contain" />
         </div>
-        <p className="truncate text-sm font-bold">{siteConfigs.name}</p>
+        <p className="truncate text-sm font-bold">{site.siteName}</p>
       </Link>
 
       <Button ref={closeButtonRef} type="button" onClick={() => onClose(true)} aria-label="關閉管理導覽" variant="ghost" size="sm" iconOnly className="shrink-0 rounded-lg lg:hidden">
@@ -47,7 +49,7 @@ function AdminSidebarFooter({ onNavigate }: { onNavigate: () => void }) {
   );
 }
 
-export function AdminSidebar({ id, isOpen, onClose, className, ...rest }: AdminSidebarProps) {
+export function AdminSidebar({ id, isOpen, onClose, site, className, ...rest }: AdminSidebarProps) {
   const { drawerRef, initialFocusRef } = useModalDrawer({ isOpen, onClose });
 
   useEffect(() => {
@@ -81,7 +83,7 @@ export function AdminSidebar({ id, isOpen, onClose, className, ...rest }: AdminS
         )}
         {...rest}
       >
-        <AdminSidebarHeader onClose={onClose} closeButtonRef={initialFocusRef} />
+        <AdminSidebarHeader onClose={onClose} closeButtonRef={initialFocusRef} site={site} />
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <AdminSidebarNav onNavigate={() => onClose(false)} />
         </div>

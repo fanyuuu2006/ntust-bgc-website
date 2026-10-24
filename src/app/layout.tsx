@@ -1,12 +1,18 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { GOOGLE_ANALYTICS_ID, isProductionDeployment } from "@/libs/seo";
+import type { Metadata } from "next";
+import { createRootMetadata } from "@/libs/metadata";
+import { getPublicSiteSettings } from "@/libs/site-settings/public";
 import { GoogleAnalytics } from "@next/third-parties/google";
-export { metadata } from "@/libs/metadata";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { THEME_INITIALIZATION_SCRIPT } from "@/libs/theme";
 import "@/styles/globals.css";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return createRootMetadata(await getPublicSiteSettings());
+}
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

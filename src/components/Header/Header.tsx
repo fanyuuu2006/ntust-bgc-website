@@ -1,19 +1,20 @@
-import { siteConfigs } from "@/libs/siteConfigs";
 import { cn } from "@/utils/className";
 import Image from "next/image";
 import Link from "next/link";
 import { DesktopNavigation } from "./DesktopNavigation";
 import { MobileNavigation } from "./MobileNavigation";
 import { HeaderActions } from "./HeaderActions";
-import { User } from "@/types/database";
+import type { User } from "@/types/database";
 import { publicNavigation } from "@/libs/navigation";
+import type { SitePresentation } from "@/libs/site-settings/presentation";
 
 type HeaderProps = React.HTMLAttributes<HTMLElement> & {
   user: User | null;
   isAdmin: boolean;
+  site: SitePresentation;
 };
 
-export const Header = ({ className, user, isAdmin, ...rest }: HeaderProps) => {
+export const Header = ({ className, user, isAdmin, site, ...rest }: HeaderProps) => {
   return (
     <header
       className={cn(
@@ -29,7 +30,7 @@ export const Header = ({ className, user, isAdmin, ...rest }: HeaderProps) => {
           <Link
             href="/"
             className="group flex min-w-0 items-center gap-2"
-            aria-label={`返回${siteConfigs.name}首頁`}
+            aria-label={`返回${site.siteName}首頁`}
           >
             {/* Logo */}
             <div
@@ -38,8 +39,8 @@ export const Header = ({ className, user, isAdmin, ...rest }: HeaderProps) => {
               )}
             >
               <Image
-                src={siteConfigs.logo}
-                alt={`${siteConfigs.fullName} Logo`}
+                src={site.logoUrl}
+                alt={`${site.siteFullName} Logo`}
                 width={320}
                 height={320}
                 priority
@@ -50,11 +51,11 @@ export const Header = ({ className, user, isAdmin, ...rest }: HeaderProps) => {
             {/* Site Name */}
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold leading-tight text-(--text-primary) md:text-lg">
-                {siteConfigs.name}
+                {site.siteName}
               </p>
 
               <p className="hidden text-xs text-(--muted) md:block">
-                {siteConfigs.shortDescription}
+                {site.siteFullName}
               </p>
             </div>
           </Link>

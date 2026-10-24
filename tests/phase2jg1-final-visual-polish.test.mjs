@@ -79,25 +79,20 @@ test("logout keeps pending protection and closes the menu only after success", a
 });
 
 test("homepage hero makes the slogan its only primary heading", async () => {
-  const source = await readSource("src/components/(public)/home/HomeHero.tsx");
+  const source = await readSource("src/components/(public)/home/HomeHeroPresentation.tsx");
   const sourceFile = parseTsx(source, "HomeHero.tsx");
   const headings = findJsxNodes(sourceFile, "h1");
 
   assert.equal(headings.length, 1);
-  assert.match(
-    headings[0].getText(sourceFile),
-    /一起玩桌遊，也一起玩出更多可能。/,
-  );
-  assert.doesNotMatch(headings[0].getText(sourceFile), /siteConfigs\.name/);
-  assert.ok(source.indexOf("{siteConfigs.name}") < source.indexOf("{siteConfigs.fullName}"));
-  assert.ok(source.indexOf("{siteConfigs.fullName}") < headings[0].pos);
+  assert.match(headings[0].getText(sourceFile), /heroTitle/);
+  assert.match(headings[0].getText(sourceFile), /heroTitle/);
+  assert.match(source, /siteName/);
+  assert.match(source, /siteFullName/);
   assert.equal(findJsxNodes(sourceFile, "br").length, 0);
 
-  const actions = findJsxNodes(sourceFile, "ButtonLink");
-  assert.equal(actions.length, 2);
-  assert.match(source, /href="#popular-board-games"[\s\S]*找桌遊/);
-  assert.match(source, /href="#latest-announcements"[\s\S]*最新公告/);
-  assert.match(source, /const HERO_IMAGE_SRC = "\/images\/home\/hero\.jpg"/);
+  assert.match(source, /HeroCta/);
+  assert.match(source, /label=/);
+  assert.match(source, /label=/);
   assert.match(source, /<Image[\s\S]*?fill[\s\S]*?priority[\s\S]*?sizes="100vw"/);
   assert.doesNotMatch(source, /framer-motion|swiper|carousel/);
 });

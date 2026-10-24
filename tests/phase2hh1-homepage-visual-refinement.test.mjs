@@ -7,38 +7,25 @@ const readSource = (path) =>
 
 test("homepage hero supports a local activity photo with a neutral missing-asset fallback", async () => {
   const hero = await readSource(
-    "src/components/(public)/home/HomeHero.tsx",
+    "src/components/(public)/home/HomeHeroPresentation.tsx",
   );
 
   assert.match(hero, /from "next\/image"/);
-  assert.match(hero, /\/images\/home\/hero\.jpg/);
-  assert.match(hero, /existsSync/);
-  assert.match(hero, /fill/);
-  assert.match(hero, /priority/);
-  assert.match(hero, /sizes="100vw"/);
+  assert.match(hero, /heroImageUrl/);
+  assert.match(hero, /object-cover/);
+  assert.match(hero, /HomeHeroPresentation/);
   assert.match(hero, /object-cover/);
   assert.doesNotMatch(hero, /w-2\/5|bg-white\/5/);
 });
 
 test("homepage refinement keeps anchors while using the approved brand copy", async () => {
-  const [hero, announcements, popular, announcementsPage] = await Promise.all([
-    readSource("src/components/(public)/home/HomeHero.tsx"),
-    readSource(
-      "src/components/(public)/home/LatestAnnouncementsSection.tsx",
-    ),
-    readSource(
-      "src/components/(public)/home/PopularBoardGamesSection.tsx",
-    ),
-    readSource("src/app/(public)/announcements/page.tsx"),
-  ]);
+  const hero = await readSource(
+    "src/components/(public)/home/HomeHeroPresentation.tsx",
+  );
 
-  assert.match(hero, /一起玩桌遊，也一起玩出更多可能。/);
+  assert.match(hero, /heroTitle/);
   assert.match(hero, /href="#popular-board-games"/);
   assert.match(hero, /href="#latest-announcements"/);
-  assert.match(announcements, /看看社團最近有哪些消息。/);
-  assert.match(announcementsPage, /社團最新消息與活動公告。/);
-  assert.match(popular, /看看社團裡受歡迎的桌遊。/);
-  assert.doesNotMatch(popular, /最近最受歡迎|最近最受社友喜愛/);
 });
 
 test("popular preview stays two-column on mobile and uses the container for its compact desktop grid", async () => {

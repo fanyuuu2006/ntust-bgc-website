@@ -202,7 +202,7 @@ test("dark theme overrides the complete semantic color surface", async () => {
 test("hero and destructive actions use dedicated semantic tokens", async () => {
   const [styles, hero, userMenu, button, feedback, badge] = await Promise.all([
     readSource("src/styles/globals.css"),
-    readSource("src/components/(public)/home/HomeHero.tsx"),
+    readSource("src/components/(public)/home/HomeHeroPresentation.tsx"),
     readSource("src/components/Header/UserMenu.tsx"),
     readSource("src/components/ui/Button.tsx"),
     readSource("src/components/FormFeedback.tsx"),
