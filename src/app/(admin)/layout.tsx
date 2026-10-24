@@ -1,7 +1,9 @@
-import { withServerErrorReference } from "@/libs/observability/server-render";
+﻿import { withServerErrorReference } from "@/libs/observability/server-render";
 import { AdminShell } from "@/components/layouts/AdminShell";
 import { getCurrentUser, isAdminByUserId } from "@/libs/auth";
 import { redirect } from "next/navigation";
+import { getPublicSiteSettings } from "@/libs/site-settings/public";
+import { resolveSitePresentation } from "@/libs/site-settings/presentation";
 
 async function AdminLayout({
   children,
@@ -24,7 +26,8 @@ async function AdminLayout({
     redirect("/");
   }
 
-  return <AdminShell user={user}>{children}</AdminShell>;
+  const site = resolveSitePresentation(await getPublicSiteSettings());
+  return <AdminShell user={user} site={site}>{children}</AdminShell>;
 }
 
 export default withServerErrorReference(AdminLayout, "/admin");

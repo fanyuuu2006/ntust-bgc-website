@@ -13,6 +13,8 @@ import { formatDate } from "@/utils/date";
 import { getPublishedAnnouncement } from "./announcement-detail";
 import { createPublicMetadata } from "@/libs/seo";
 import { StructuredData } from "@/components/StructuredData";
+import { getPublicSiteSettings } from "@/libs/site-settings/public";
+import { resolveSitePresentation } from "@/libs/site-settings/presentation";
 import { siteConfigs } from "@/libs/siteConfigs";
 
 type AnnouncementDetailPageProps = {
@@ -27,6 +29,7 @@ async function generateMetadataContent({
   const title = createMetadataTitle(announcement.title);
   const description = createMetadataDescription(plainTextFromStoredContent(announcement));
   const canonical = `/announcements/${announcement.id}`;
+  const site = resolveSitePresentation(await getPublicSiteSettings());
 
   return {
     ...createPublicMetadata({
@@ -38,11 +41,11 @@ async function generateMetadataContent({
     openGraph: {
       type: "article",
       locale: "zh_TW",
-      siteName: siteConfigs.name,
+      siteName: site.siteName,
       title,
       description,
       url: canonical,
-      images: [{ url: "/images/home/hero.jpg", alt: siteConfigs.fullName }],
+      images: [{ url: site.socialImageUrl, alt: site.siteFullName }],
       publishedTime: announcement.published_at ?? announcement.created_at,
       modifiedTime: announcement.updated_at,
     },
@@ -54,6 +57,7 @@ async function AnnouncementDetailPage({
 }: AnnouncementDetailPageProps) {
   const { id } = await params;
   const announcement = await getPublishedAnnouncement(id);
+  const site = resolveSitePresentation(await getPublicSiteSettings());
 
   const publishedAt = announcement.published_at ?? announcement.created_at;
 
@@ -72,7 +76,7 @@ async function AnnouncementDetailPage({
           url: new URL(`/announcements/${announcement.id}`, siteConfigs.url).toString(),
           publisher: {
             "@type": "Organization",
-            name: siteConfigs.fullName,
+            name: site.siteFullName,
             url: siteConfigs.url,
           },
         }}

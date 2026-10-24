@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useId, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -7,13 +7,15 @@ import { AdminSidebar } from "../(admin)/AdminSidebar";
 import { adminSidebarNavigation } from "@/libs/navigation";
 import type { User } from "@/types/database";
 import { getActiveNavigationHref } from "@/utils/navigation";
+import type { SitePresentation } from "@/libs/site-settings/presentation";
 
 type AdminShellProps = {
   user: User | null;
+  site: SitePresentation;
   children: React.ReactNode;
 };
 
-export function AdminShell({ user, children }: AdminShellProps) {
+export function AdminShell({ user, site, children }: AdminShellProps) {
   const pathname = usePathname();
   const sidebarId = useId();
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -55,6 +57,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
           id={sidebarId}
           isOpen={isSidebarOpen}
           onClose={closeSidebar}
+          site={site}
         />
         <main className="min-w-0 flex-1" inert={isSidebarOpen ? true : undefined}>
           {children}

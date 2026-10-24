@@ -64,6 +64,7 @@ export const adminSidebarGroups: readonly AdminNavigationGroup[] = [
     items: [
       { label: "活動管理", href: "/admin/events" },
       { label: "公告管理", href: "/admin/announcements" },
+      { label: '網站設定', href: '/admin/site-settings' },
     ],
   },
 ] as const;

@@ -5,16 +5,17 @@ import type { Metadata } from "next";
 import { StructuredData } from "@/components/StructuredData";
 import { createPublicMetadata } from "@/libs/seo";
 import { siteConfigs } from "@/libs/siteConfigs";
+import { getPublicSiteSettings } from "@/libs/site-settings/public";
+import { resolveSitePresentation } from "@/libs/site-settings/presentation";
 
-export const metadata: Metadata = createPublicMetadata({
-  title: `${siteConfigs.name}｜${siteConfigs.fullName}`,
-  description:
-    "臺科大桌遊社官方網站，查看社團公告、探索桌遊，認識國立臺灣科技大學桌上遊戲研究社。",
-  canonical: "/",
-  absoluteTitle: true,
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const site = resolveSitePresentation(await getPublicSiteSettings());
+  return createPublicMetadata({ title: site.seoTitle, description: site.seoDescription, canonical: "/", image: { url: site.socialImageUrl, alt: site.siteFullName }, absoluteTitle: true });
+}
 
-export default function HomePage() {
+export default async function HomePage() {
+  const settings = await getPublicSiteSettings();
+  const site = resolveSitePresentation(settings);
   return (
     <>
       <StructuredData
@@ -22,22 +23,22 @@ export default function HomePage() {
           {
             "@context": "https://schema.org",
             "@type": "Organization",
-            name: siteConfigs.fullName,
-            alternateName: [siteConfigs.name, "台科大桌遊社"],
+            name: site.siteFullName,
+            alternateName: [site.siteName, "台科大桌遊社"],
             url: siteConfigs.url,
-            logo: new URL(siteConfigs.logo, siteConfigs.url).toString(),
+            logo: new URL(site.logoUrl, siteConfigs.url).toString(),
           },
           {
             "@context": "https://schema.org",
             "@type": "WebSite",
-            name: siteConfigs.name,
-            alternateName: siteConfigs.fullName,
+            name: site.siteName,
+            alternateName: site.siteFullName,
             url: siteConfigs.url,
             inLanguage: "zh-Hant",
           },
         ]}
       />
-      <HomeHero />
+      <HomeHero settings={settings} />
       <LatestAnnouncementsSection />
       <PopularBoardGamesSection />
     </>
