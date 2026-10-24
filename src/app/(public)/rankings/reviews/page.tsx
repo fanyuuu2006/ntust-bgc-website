@@ -4,6 +4,7 @@ import { ReviewRankingList } from "@/components/(public)/rankings/ReviewRankingL
 import { ReviewRankingSearchForm } from "@/components/(public)/rankings/ReviewRankingSearchForm";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { PageHeader } from "@/components/PageHeader";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { createPublicMetadata } from "@/libs/seo";
 import { reviewsService } from "@/services/reviews/reviews.service";
@@ -28,7 +29,7 @@ async function ReviewRankingsPage({ searchParams }: ReviewsRankingsPageProps) {
 
   return (
     <section className="container py-8">
-      <PageHeader eyebrow="排行榜" title="熱門評論" description="看看哪些桌遊心得最受歡迎！" />
+      <PageHeader breadcrumb={<Breadcrumbs items={[{ href: "/", label: "首頁" }, { href: "/rankings", label: "排行榜" }, { label: "熱門評論" }]} />} eyebrow="排行榜" title="熱門評論" description="看看哪些桌遊心得最受歡迎！" />
       <ReviewRankingSearchForm search={search} total={result.total} pageSize={pageSize} />
       <PaginatedCollection
         className="mt-5"

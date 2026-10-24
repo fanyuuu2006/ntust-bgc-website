@@ -3,6 +3,7 @@ import { getAdminReturnPath } from "@/utils/admin-return";
 import { ButtonLink } from "@/components/ui/Button";
 import { notFound } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { BoardGameForm } from "@/components/(admin)/admin/board-games/BoardGameForm";
 import { BoardNotFoundError } from "@/services/board-games/board-games.errors";
 import { boardGamesService } from "@/services/board-games/board-games.service";
@@ -39,15 +40,13 @@ async function BoardGameEditPage({
     <>
       <HeadingSection
         className="mx-auto w-full max-w-6xl"
+        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { href: returnTo, label: "桌遊管理" }, { label: "編輯桌遊" }]} />}
         title="編輯桌遊"
         description={`更新「${boardGame.name}」的基本與管理資訊。`}
         actions={
           <div className="flex flex-wrap gap-2">
             <ButtonLink href={`/board-games/${boardGame.id}`} variant="text">
               查看公開頁面
-            </ButtonLink>
-            <ButtonLink href={returnTo} variant="outline">
-              返回列表
             </ButtonLink>
           </div>
         }

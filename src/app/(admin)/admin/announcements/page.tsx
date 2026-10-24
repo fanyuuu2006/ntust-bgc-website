@@ -8,6 +8,7 @@ import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
 import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { AnnouncementStatusBadge } from "@/components/(admin)/admin/announcements/AnnouncementStatusBadge";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
@@ -100,6 +101,7 @@ async function AdminAnnouncementsPage({
     <>
       <HeadingSection
         collection
+        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { label: "公告管理" }]} />}
         title="公告管理"
         description="管理公告草稿與發布狀態。"
         actions={<ButtonLink href={buildAdminReturnHref("/admin/announcements/new", returnTo, "/admin/announcements")}>新增公告</ButtonLink>}

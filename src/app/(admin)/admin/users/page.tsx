@@ -7,6 +7,7 @@ import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
 import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { QueryEmptyState } from "@/components/query/QueryEmptyState";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { SortableTableHeader } from "@/components/(admin)/admin/SortableTableHeader";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Button, ButtonLink } from "@/components/ui/Button";
@@ -102,6 +103,7 @@ async function AdminUsersPage({ searchParams }: Props) {
     <>
       <HeadingSection
         collection
+        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { label: "使用者管理" }]} />}
         title="使用者管理"
         description="管理網站帳號與個人基本資料。"
         actions={<AdminExportMenu domain="users" query={query} />}

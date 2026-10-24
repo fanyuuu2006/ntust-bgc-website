@@ -4,6 +4,7 @@ import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { CategoryCreateAction } from "@/components/(admin)/admin/board-games/categories/CategoryCreateAction";
 import { CategoryRecords } from "@/components/(admin)/admin/board-games/categories/CategoryRecords";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Button } from "@/components/ui/Button";
 import { boardGamesService } from "@/services/board-games/board-games.service";
@@ -47,6 +48,7 @@ async function BoardGameCategoriesPage({
     <>
       <HeadingSection
         collection
+        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { href: "/admin/board-games", label: "桌遊管理" }, { label: "桌遊分類管理" }]} />}
         title="桌遊分類管理"
         description="維護桌遊分類；仍有桌遊使用的分類不可刪除。"
         actions={<CategoryCreateAction />}

@@ -1,5 +1,6 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { AdminBorrowingFilters } from "@/components/(admin)/admin/borrowings/AdminBorrowingFilters";
 import { AdminBorrowingList } from "@/components/(admin)/admin/borrowings/AdminBorrowingList";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
@@ -28,6 +29,7 @@ async function AdminBorrowingsPage({ searchParams }: Props) {
     <>
       <HeadingSection
         collection
+        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { href: "/admin/board-games", label: "桌遊管理" }, { label: "桌遊借用管理" }]} />}
         title="桌遊借用管理"
         description="管理社員借用申請，並確認借出與歸還。"
         actions={<AdminExportMenu domain="borrowings" query={query} />}

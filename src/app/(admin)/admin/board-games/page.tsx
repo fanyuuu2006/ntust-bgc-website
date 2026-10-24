@@ -1,6 +1,7 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { buildAdminListHref, buildAdminReturnHref } from "@/utils/admin-return";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { BoardGameTable } from "@/components/(admin)/admin/board-games/BoardGameTable";
 import { BoardGameSearchForm } from "@/components/(admin)/admin/board-games/BoardGameSearchForm";
 import type { FindManyBoardGamesOptions } from "@/repositories/board-games.repository";
@@ -100,6 +101,7 @@ async function BoardGamesAdminPage({
     <>
       <HeadingSection
         collection
+        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { label: "桌遊管理" }]} />}
         title="桌遊管理"
         description="管理社團桌遊、社產編號與基本資訊。"
         actions={

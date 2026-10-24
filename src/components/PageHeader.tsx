@@ -1,6 +1,7 @@
 import { cn } from "@/utils/className";
 
 type PageHeaderProps = React.HTMLAttributes<HTMLElement> & {
+  breadcrumb?: React.ReactNode;
   eyebrow?: React.ReactNode;
   title: string;
   description?: React.ReactNode;
@@ -8,6 +9,7 @@ type PageHeaderProps = React.HTMLAttributes<HTMLElement> & {
 };
 
 export function PageHeader({
+  breadcrumb,
   eyebrow,
   title,
   description,
@@ -24,6 +26,7 @@ export function PageHeader({
       {...props}
     >
       <div className="min-w-0">
+        {breadcrumb ? <div className="mb-2">{breadcrumb}</div> : null}
         {eyebrow ? (
           <p className="text-sm font-semibold text-(--interactive-primary)">
             {eyebrow}

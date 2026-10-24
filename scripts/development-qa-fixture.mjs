@@ -230,13 +230,14 @@ function userRow(user) {
 }
 
 export function planFixture(fixture, state) {
-  const actorCandidates = state.users.filter((user) => !user.email.endsWith("@example.test") && !user.closed_at && user.email_verified_at && state.officer_positions.some((position) => position.user_id === user.id));
-  if (actorCandidates.length !== 1) throw new Error("Expected exactly one existing non-fixture verified historical Officer actor");
-  const actor = actorCandidates[0];
   const year115 = state.academic_years.find((year) => year.year === "115");
   if (!year115 || year115.start_date !== "2026-09-07" || year115.end_date !== "2027-09-05") throw new Error("Existing Academic Year 115 does not match the approved bootstrap state");
-  const actorPositions = state.officer_positions.filter((position) => position.user_id === actor.id && position.academic_year_id === year115.id);
-  if (actorPositions.length !== 1 || actorPositions[0].title !== "神") throw new Error("Existing bootstrap OfficerPosition is missing or ambiguous");
+  const actorOfficers = fixture.officers.filter((officer) => officer.academic_year === "114");
+  if (actorOfficers.length !== 1) throw new Error("Fixture must define exactly one Academic Year 114 synthetic historical Officer actor");
+  const actor = fixture.users.find((user) => user.id === actorOfficers[0].user_id);
+  if (!actor || !actor.email.endsWith("@example.test") || actor.closed_at || !actor.email_verified_at) {
+    throw new Error("Fixture synthetic Officer actor must be open, verified, and use an example.test identity");
+  }
 
   const plans = {};
   plans.users = planUsers(fixture.users.map(userRow), state.users);

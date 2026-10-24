@@ -11,7 +11,7 @@ test("Admin HeadingSection keeps semantic collection headings without duplicatin
   assert.match(source, /text-xs text-\(--text-muted\) sm:text-sm/);
   assert.match(source, /flex flex-col[^\n]+sm:flex-row/);
   assert.match(source, /collection && "sr-only"/);
-  assert.match(source, /collection && \(actions \? "gap-0 py-2" : "p-0"\)/);
+  assert.match(source, /collection && actions && "gap-0 py-2"/);
   assert.match(source, /flex w-full shrink-0 flex-wrap/);
   assert.doesNotMatch(source, /secondaryActions|更多頁面操作|MoreHorizontal/);
   assert.doesNotMatch(source, /md:text|lg:text/);

@@ -19,7 +19,8 @@ test("register-key generation and cross-page navigation remain directly visible"
   assert.match(form, /已產生 \{generatedKeys\.length\} 組社員註冊序號/);
   assert.match(form, /複製全部/);
   assert.match(form, /max-h-48 overflow-auto/);
-  assert.match(form, /className="min-w-0 space-y-3"/);
+  assert.match(form, /className="min-w-0"/);
+  assert.match(form, /className="mt-3 w-full min-w-0 rounded-xl/);
 });
 
 test("discovery cards give each metadata field an independent overflow boundary", async () => {

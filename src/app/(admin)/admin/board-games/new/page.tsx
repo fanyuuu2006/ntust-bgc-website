@@ -1,7 +1,7 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { getAdminReturnPath } from "@/utils/admin-return";
-import { ButtonLink } from "@/components/ui/Button";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { BoardGameForm } from "@/components/(admin)/admin/board-games/BoardGameForm";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 
@@ -17,13 +17,9 @@ async function NewBoardGamePage({ searchParams }: { searchParams: Promise<{ retu
     <>
       <HeadingSection
         className="mx-auto w-full max-w-6xl"
+        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { href: returnTo, label: "桌遊管理" }, { label: "新增桌遊" }]} />}
         title="新增桌遊"
         description="填寫桌遊、社產編號與存放資訊。"
-        actions={
-          <ButtonLink href={returnTo} variant="outline">
-            返回列表
-          </ButtonLink>
-        }
       />
 
       <section className="mx-auto w-full max-w-6xl px-4 pb-8 sm:px-6 lg:px-8">

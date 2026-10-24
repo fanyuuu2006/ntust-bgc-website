@@ -5,7 +5,6 @@ import { ProfileClubFootprint } from "@/components/(authenticated)/profile/Profi
 import { ProfileDetailsSection } from "@/components/(authenticated)/profile/ProfileDetailsSection";
 import { ProfileHeroSection } from "@/components/(authenticated)/profile/ProfileHeroSection";
 import { MyProfileReviews } from "@/components/(authenticated)/profile/MyProfileReviews";
-import { PageHeader } from "@/components/PageHeader";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { getCurrentUser } from "@/libs/auth";
@@ -45,7 +44,6 @@ async function ProfilePage({ searchParams }: { searchParams?: Promise<ReviewSear
   if (!profile) {
     return (
       <section className="container max-w-3xl space-y-6 py-6 sm:py-8">
-        <PageHeader title="個人檔案" description="查看網站帳號與個人資料。" />
         <Card className="p-5 sm:p-6">
           <div className="flex min-w-0 items-start gap-3">
             <CircleAlert

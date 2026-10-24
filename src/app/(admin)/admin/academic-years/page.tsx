@@ -4,6 +4,7 @@ import { AcademicYearRecords } from "@/components/(admin)/admin/academic-years/A
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Button } from "@/components/ui/Button";
 import { academicYearsService } from "@/services/academic-years/academic-years.service";
@@ -38,6 +39,7 @@ async function AcademicYearsPage({
     <>
       <HeadingSection
         collection
+        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { label: "學年度管理" }]} />}
         title="學年度管理"
         description="建立、編輯與設定目前學年度。"
         actions={<AcademicYearActions />}

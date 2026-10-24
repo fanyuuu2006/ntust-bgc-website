@@ -1,5 +1,6 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { MembershipCreateButton } from "@/components/(admin)/admin/memberships/MembershipCreateButton";
 import { MembershipRecords } from "@/components/(admin)/admin/memberships/MembershipRecords";
 import { MemberFilterBar } from "@/components/(admin)/admin/memberships/MembershipFilterBar";
@@ -26,6 +27,7 @@ async function MembershipsPage({ searchParams }: Props) {
     <>
       <HeadingSection
         collection
+        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { label: "社員資格管理" }]} />}
         title="社員資格管理"
         description="管理使用者各學年度的社員資格。"
         actions={

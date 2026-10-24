@@ -4,6 +4,7 @@ import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { LocationCreateAction } from "@/components/(admin)/admin/board-games/locations/LocationCreateAction";
 import { LocationRecords } from "@/components/(admin)/admin/board-games/locations/LocationRecords";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Button } from "@/components/ui/Button";
 import { boardGamesService } from "@/services/board-games/board-games.service";
@@ -47,6 +48,7 @@ async function BoardGameLocationsPage({
     <>
       <HeadingSection
         collection
+        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { href: "/admin/board-games", label: "桌遊管理" }, { label: "桌遊位置管理" }]} />}
         title="桌遊位置管理"
         description="維護社產存放位置；仍有社產使用的位置不可刪除。"
         actions={<LocationCreateAction />}

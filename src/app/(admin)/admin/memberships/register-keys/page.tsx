@@ -1,10 +1,10 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { RegisterKeyFilterBar } from "@/components/(admin)/admin/memberships/RegisterKeyFilterBar";
 import { RegisterKeyGenerateForm } from "@/components/(admin)/admin/memberships/RegisterKeyGenerateForm";
 import { RegisterKeyTable } from "@/components/(admin)/admin/memberships/RegisterKeyTable";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
-import { ButtonLink } from "@/components/ui/Button";
 import { listMembershipRegisterKeysQuerySchema } from "@/services/memberships/memberships.schema";
 import { membershipService } from "@/services/memberships/memberships.service";
 
@@ -28,19 +28,19 @@ async function MembershipRegisterKeysPage({ searchParams }: Props) {
     <>
       <HeadingSection
         collection
+        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { href: "/admin/memberships", label: "社員資格管理" }, { label: "社員註冊序號管理" }]} />}
         title="社員註冊序號管理"
         description="產生序號，供已完成入社流程的使用者建立社員資格。"
         actions={
           <>
-            <ButtonLink href="/admin/memberships" variant="outline">
-              返回社員資格管理
-            </ButtonLink>
-            <RegisterKeyGenerateForm
-              academicYears={academicYears}
-              defaultAcademicYearId={
-                academicYears.find((year) => year.is_current)?.id
-              }
-            />
+            <div className="flex items-center">
+              <RegisterKeyGenerateForm
+                academicYears={academicYears}
+                defaultAcademicYearId={
+                  academicYears.find((year) => year.is_current)?.id
+                }
+              />
+            </div>
           </>
         }
       />

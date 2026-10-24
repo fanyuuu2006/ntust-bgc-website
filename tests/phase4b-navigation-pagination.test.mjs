@@ -122,7 +122,7 @@ test("detail review navigation preserves contextual return separately", async ()
     source("src/components/(public)/board-games/BoardGameReviews.tsx"),
   ]);
   assert.match(page, /normalizeBoardGameReturnTo/);
-  assert.match(page, />\s*返回\s*</);
+  assert.match(page, /<Breadcrumbs[\s\S]*href: returnTo, label:/);
   assert.match(reviews, /preservedQuery = \{ returnTo \}/);
   assert.doesNotMatch(reviews, /returnTo:\s*review/);
 });

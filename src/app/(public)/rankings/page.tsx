@@ -7,6 +7,7 @@ import { ReviewRankingList } from "@/components/(public)/rankings/ReviewRankingL
 import { ReviewContributorRankingList } from "@/components/(public)/rankings/ReviewContributorRankingList";
 import { RankingNavigation } from "@/components/(public)/rankings/RankingNavigation";
 import { PageHeader } from "@/components/PageHeader";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { createPublicMetadata } from "@/libs/seo";
 import { boardGamesService } from "@/services/board-games/board-games.service";
@@ -38,7 +39,7 @@ async function RankingsPage({ searchParams }: RankingsPageProps) {
 
   return (
     <section className="container py-8">
-      <PageHeader title="排行榜" description="探索大家喜愛的桌遊與心得排行。" />
+      <PageHeader breadcrumb={<Breadcrumbs items={[{ href: "/", label: "首頁" }, { label: "排行榜" }]} />} title="排行榜" description="探索大家喜愛的桌遊與心得排行。" />
 
       <section className="mt-6" aria-labelledby="board-game-ranking-heading">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">

@@ -2,6 +2,7 @@ import { withServerErrorReference } from "@/libs/observability/server-render";
 import { getLatestVerificationForAdmin } from "@/services/email-verification/email-verification-operations.service";
 import { getAdminReturnPath } from "@/utils/admin-return";
 import { notFound } from "next/navigation";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
 import {
   MemberStatusBadge,
@@ -37,15 +38,21 @@ async function AdminUserDetailPage({
   return (
     <>
       <HeadingSection
+        breadcrumb={
+          <AdminBreadcrumbs
+            items={[
+              { href: "/admin", label: "管理總覽" },
+              { href: returnTo, label: "使用者管理" },
+              { label: "使用者詳情" },
+            ]}
+          />
+        }
         title="使用者詳情"
         description={`${user.name} 的帳號、個人資料與社團紀錄。`}
         actions={
           <div className="flex flex-wrap gap-2">
             <ButtonLink href={`/profile/${user.id}`} variant="text">
               {user.closed_at ? "查看匿名化公開頁" : "查看公開個人頁"}
-            </ButtonLink>
-            <ButtonLink href={returnTo} variant="outline">
-              返回使用者管理
             </ButtonLink>
           </div>
         }

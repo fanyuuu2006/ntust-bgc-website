@@ -1,6 +1,7 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { buildAdminListHref } from "@/utils/admin-return";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
@@ -72,6 +73,7 @@ async function AdminEventsPage({
     <>
       <HeadingSection
         collection
+        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { label: "活動管理" }]} />}
         title="活動管理"
         description="建立、編輯與管理社團活動，可進入活動詳情管理簽到。"
         actions={<EventActions />}
