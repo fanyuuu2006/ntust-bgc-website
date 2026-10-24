@@ -7,6 +7,7 @@ export const PUBLIC_CACHE = {
   popularGames: { tag: "public-home-games-v1", ttl: 60 },
   categories: { tag: "public-categories-v1", ttl: 300 },
   locations: { tag: "public-locations-v1", ttl: 300 },
+  siteSettings: { tag: "public-site-settings-v1", ttl: 300 },
 } as const;
 
 type PublicCacheKey = keyof typeof PUBLIC_CACHE;
