@@ -4,6 +4,7 @@ import { cn } from "@/utils/className";
 type HeadingSectionProps = React.HTMLAttributes<HTMLElement> & {
   title: string;
   description?: string;
+  breadcrumb?: ReactNode;
   actions?: ReactNode;
   collection?: boolean;
 };
@@ -11,6 +12,7 @@ type HeadingSectionProps = React.HTMLAttributes<HTMLElement> & {
 export const HeadingSection = ({
   title,
   description,
+  breadcrumb,
   actions,
   collection = false,
   className,
@@ -21,11 +23,12 @@ export const HeadingSection = ({
       {...rest}
       className={cn(
         "flex flex-col gap-2 px-4 pt-3 pb-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:px-6 sm:pt-5 sm:pb-3 lg:px-8",
-        collection && (actions ? "gap-0 py-2" : "p-0"),
+        collection && actions && "gap-0 py-2",
         className,
       )}
     >
       <div className="min-w-0 wrap-anywhere">
+        {breadcrumb ? <div className="mb-2">{breadcrumb}</div> : null}
         <h1
           className={cn(
             "text-lg font-semibold leading-tight text-(--text-primary) sm:text-2xl",

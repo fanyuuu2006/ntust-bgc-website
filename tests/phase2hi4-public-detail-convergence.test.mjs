@@ -5,14 +5,6 @@ import test from "node:test";
 const readSource = (path) =>
   readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-function backLink(source, href) {
-  return (
-    source.match(
-      new RegExp(`<ButtonLink[\\s\\S]*?href="${href}"[\\s\\S]*?</ButtonLink>`),
-    )?.[0] ?? ""
-  );
-}
-
 test("public detail routes share page-top and back-navigation grammar", async () => {
   const [announcement, boardGame] = await Promise.all([
     readSource("src/app/(public)/announcements/[id]/page.tsx"),
@@ -27,16 +19,8 @@ test("public detail routes share page-top and back-navigation grammar", async ()
     );
   }
 
-  const announcementBack = backLink(announcement, "/announcements");
-  const boardGameBack =
-    boardGame.match(/<ButtonLink[\s\S]*?href=\{returnTo\}[\s\S]*?<\/ButtonLink>/)?.[0] ?? "";
-
-  for (const link of [announcementBack, boardGameBack]) {
-    assert.match(link, /variant="text"/);
-    assert.match(link, /size="sm"/);
-    assert.match(link, /className="px-0"/);
-    assert.match(link, /<ArrowLeft[^>]*className="size-4"/);
-  }
+  assert.match(announcement, /<Breadcrumbs[\s\S]*href: "\/announcements"/);
+  assert.match(boardGame, /<Breadcrumbs[\s\S]*href: returnTo/);
 });
 
 test("announcement detail remains a compact readable server-rendered article", async () => {

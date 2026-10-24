@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { settingsNavigation } from "./settings-navigation-data";
@@ -39,15 +38,6 @@ export function SettingsNavigation() {
           </ul>
         </nav>
       </aside>
-      {pathname !== "/settings" ? (
-        <Link
-          href="/settings"
-          className="inline-flex min-h-10 w-fit items-center gap-2 rounded-lg px-1 text-sm font-medium text-(--interactive-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring) lg:hidden"
-        >
-          <ArrowLeft aria-hidden="true" className="size-4" />
-          返回設定
-        </Link>
-      ) : null}
     </>
   );
 }

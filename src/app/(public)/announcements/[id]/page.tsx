@@ -1,10 +1,9 @@
 import { withServerErrorReference } from "@/libs/observability/server-render";
-import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 
 import { RichTextRenderer } from "@/components/RichTextRenderer";
 import { plainTextFromStoredContent } from "@/libs/rich-content/content";
-import { ButtonLink } from "@/components/ui/Button";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import {
   createMetadataDescription,
   createMetadataTitle,
@@ -83,15 +82,7 @@ async function AnnouncementDetailPage({
       />
       <div className="container">
         <div className="mx-auto max-w-3xl">
-          <ButtonLink
-            href="/announcements"
-            variant="text"
-            size="sm"
-            className="px-0"
-          >
-            <ArrowLeft aria-hidden="true" className="size-4" />
-            返回公告列表
-          </ButtonLink>
+          <Breadcrumbs items={[{ href: "/", label: "首頁" }, { href: "/announcements", label: "公告" }, { label: announcement.title }]} />
 
           <article className="mt-5 min-w-0">
             <header className="border-b border-(--border-muted) pb-5">

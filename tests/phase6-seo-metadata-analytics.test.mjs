@@ -10,7 +10,7 @@ const readSource = (path) => readFile(new URL(`../${path}`, import.meta.url), "u
 const id = "00000000-0000-4000-8000-000000000001";
 
 test("root metadata owns title grammar, social defaults and public Google verification", () => {
-  const { metadata } = load("src/libs/metadata.tsx", {
+  const { createRootMetadata } = load("src/libs/metadata.tsx", {
     "./siteConfigs": {
       siteConfigs: {
         name: "臺科大桌遊社",
@@ -25,6 +25,13 @@ test("root metadata owns title grammar, social defaults and public Google verifi
       GOOGLE_SITE_VERIFICATION: "public-verification",
       isProductionDeployment: () => true,
     },
+    "./site-settings/presentation": { resolveSitePresentation: (settings) => settings },
+  });
+
+  const metadata = createRootMetadata({
+    siteName: "臺科大桌遊社", siteFullName: "國立臺灣科技大學桌上遊戲研究社",
+    seoTitle: "臺科大桌遊社｜國立臺灣科技大學桌上遊戲研究社", seoDescription: "官方網站",
+    socialImageUrl: "/social.jpg", faviconUrl: "/icon.ico",
   });
 
   assert.equal(metadata.title.template, "%s｜臺科大桌遊社");

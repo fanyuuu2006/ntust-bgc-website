@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { SettingsNavigation } from "@/components/(authenticated)/settings/SettingsNavigation";
+import { SettingsBreadcrumbs } from "@/components/(authenticated)/settings/SettingsBreadcrumbs";
 import { PageHeader } from "@/components/PageHeader";
 
 export const metadata: Metadata = {
@@ -15,6 +16,7 @@ export default function SettingsLayout({
   return (
     <section className="container max-w-6xl space-y-4 py-4 sm:space-y-6 sm:py-8">
       <PageHeader
+        breadcrumb={<SettingsBreadcrumbs />}
         title="設定"
         description={
           <span className="hidden sm:inline">

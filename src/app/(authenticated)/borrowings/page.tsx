@@ -10,6 +10,7 @@ import {
 import { BorrowingsResultsLoading } from "@/components/(authenticated)/borrowings/BorrowingsResultsLoading";
 import { BORROWING_STATUS_LABEL } from "@/components/BorrowingStatusBadge";
 import { PageHeader } from "@/components/PageHeader";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
 import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
@@ -113,7 +114,7 @@ async function BorrowingsPage({
   return (
     <section className="py-8">
       <div className="container max-w-3xl space-y-6">
-        <PageHeader
+        <PageHeader breadcrumb={<Breadcrumbs items={[{ href: "/dashboard", label: "儀表板" }, { label: "借閱紀錄" }]} />}
           eyebrow="我的桌遊"
           title="借用紀錄"
           description="查看目前借用進度與過去的借用紀錄。"

@@ -1,7 +1,6 @@
 import { RichTextRenderer } from "@/components/RichTextRenderer";
 import { storedDescription } from "@/libs/rich-content/description";
 import { withServerErrorReference } from "@/libs/observability/server-render";
-import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 
 import { BoardGameBorrowingPanel } from "@/components/(public)/board-games/BoardGameBorrowingPanel";
@@ -9,7 +8,7 @@ import { BoardGameStatusBadge } from "@/components/(public)/board-games/BoardGam
 import { BoardGameImage } from "@/components/BoardGameImage";
 import { BoardGameReviews } from "@/components/(public)/board-games/BoardGameReviews";
 import { ReviewAuthorAction } from "@/components/(public)/board-games/ReviewAuthorAction";
-import { ButtonLink } from "@/components/ui/Button";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import {
   createMetadataDescription,
   createMetadataTitle,
@@ -145,15 +144,7 @@ async function BoardGameDetailPage({
       />
       <div className="container">
         <div className="mx-auto max-w-6xl">
-          <ButtonLink
-            href={returnTo}
-            variant="text"
-            size="sm"
-            className="px-0"
-          >
-            <ArrowLeft aria-hidden="true" className="size-4" />
-            返回
-          </ButtonLink>
+          <Breadcrumbs items={[{ href: "/", label: "首頁" }, { href: returnTo, label: "桌遊" }, { label: boardGame.name }]} />
 
           <div className="mt-5 grid min-w-0 gap-5 lg:grid-cols-2 lg:items-start lg:gap-8">
             <div

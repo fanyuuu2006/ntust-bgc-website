@@ -4,6 +4,7 @@ import { ReviewContributorRankingList } from "@/components/(public)/rankings/Rev
 import { ContributorRankingSearchForm } from "@/components/(public)/rankings/ContributorRankingSearchForm";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { PageHeader } from "@/components/PageHeader";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { createPublicMetadata } from "@/libs/seo";
 import { reviewContributorRankingsService } from "@/services/rankings/review-contributor-rankings.service";
@@ -35,7 +36,7 @@ async function ReviewContributorRankingsPage({ searchParams }: PageProps) {
 
   return (
     <section className="container py-8">
-      <PageHeader eyebrow="排行榜" title="評論貢獻排行" description="看看誰分享了最多桌遊心得！" />
+      <PageHeader breadcrumb={<Breadcrumbs items={[{ href: "/", label: "首頁" }, { href: "/rankings", label: "排行榜" }, { label: "評論貢獻排行" }]} />} eyebrow="排行榜" title="評論貢獻排行" description="看看誰分享了最多桌遊心得！" />
       <ContributorRankingSearchForm search={search} total={result.total} pageSize={pageSize} />
       <PaginatedCollection className="mt-5" page={result.page} pageSize={result.pageSize} total={result.total} totalPages={result.totalPages} basePath="/rankings/contributors" query={{ q: search, pageSize: pageSize === 20 ? undefined : pageSize }} pageSizeOptions={PAGE_SIZE_OPTIONS} itemLabel="位貢獻者">
         <div className="rounded-2xl border border-(--border-default) bg-(--surface-default) px-3 sm:px-5">

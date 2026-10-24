@@ -66,9 +66,12 @@ test("fixture is QA-case-driven and respects domain invariants", () => {
   }
 });
 
-test("clean Development plan preserves bootstrap Admin and plans fixture", () => {
+test("clean Development plan uses the deterministic synthetic Officer and plans fixture", () => {
   const fixture = buildFixture();
   const plan = planFixture(fixture, emptyState(fixture));
+  const expectedActor = fixture.officers.find((officer) => officer.academic_year === "114").user_id;
+  assert.equal(plan.actorId, expectedActor);
+  assert.match(fixture.users.find((user) => user.id === plan.actorId).email, /@example\.test$/);
   assert.equal(plan.totals.users.create, 20);
   assert.equal(plan.totals.board_games.create, 25);
   assert.equal(plan.totals.board_game_reviews.create, 21);
@@ -76,7 +79,7 @@ test("clean Development plan preserves bootstrap Admin and plans fixture", () =>
   assert.equal(plan.plans.board_game_borrowings.create.filter((borrowing) => borrowing.user_id === plan.actorId).length, 11);
   assert.equal(plan.totals.board_game_borrowings.create, 21);
   assert.equal(plan.totals.current_academic_year.create, 1);
-  assert.ok(!fixture.memberships.some((item) => item.user_id === plan.actorId));
+  assert.ok(fixture.memberships.some((item) => item.user_id === plan.actorId));
 });
 
 test("partial fixture reuses exact rows and rejects conflicting identity", () => {
@@ -143,6 +146,7 @@ test("verification resume consumes the existing hash instead of issuing a replac
 test("planner rejects conflicting membership, Officer, and borrowing lifecycle identities", () => {
   const fixture = buildFixture();
   const state = emptyState(fixture);
+  const actorId = fixture.officers.find((officer) => officer.academic_year === "114").user_id;
   const currentYear = state.academic_years[0];
   state.memberships.push({ ...fixture.memberships[0], academic_year_id: currentYear.id, status: "cancelled" });
   assert.throws(() => planFixture(fixture, state), /Conflicting memberships/);
@@ -150,13 +154,14 @@ test("planner rejects conflicting membership, Officer, and borrowing lifecycle i
   state.officer_positions.push({ user_id: fixture.officers[1].user_id, academic_year_id: currentYear.id, title: "unexpected" });
   assert.throws(() => planFixture(fixture, state), /Conflicting officer_positions/);
   state.officer_positions.pop();
-  state.board_game_borrowings.push({ ...fixture.borrowings[0], user_id: state.users[0].id, approved_by_user_id: state.users[0].id, status: "returned" });
+  state.board_game_borrowings.push({ ...fixture.borrowings[0], user_id: actorId, approved_by_user_id: actorId, status: "returned" });
   assert.throws(() => planFixture(fixture, state), /Conflicting board_game_borrowings/);
 });
 
 test("fully represented fixture is a no-op", () => {
   const fixture = buildFixture();
   const state = emptyState(fixture);
+  const actorId = fixture.officers.find((officer) => officer.academic_year === "114").user_id;
   state.academic_years[0].is_current = true;
   state.users.push(...fixture.users.map((user) => ({
     id: user.id, email: user.email, name: user.name,
@@ -172,24 +177,34 @@ test("fully represented fixture is a no-op", () => {
   const year = (identifier) => identifier === "115" ? state.academic_years[0] : fixture.years.find((item) => item.year === identifier);
   state.officer_positions.push(...fixture.officers.map((item) => ({ ...item, academic_year_id: year(item.academic_year).id })));
   state.memberships.push(...fixture.memberships.map((item) => ({ ...item, academic_year_id: year(item.academic_year).id })));
-  state.board_game_reviews.push(...fixture.reviews.map((item) => ({ ...item, user_id: item.user_id === "$actor" ? state.users[0].id : item.user_id })));
-  state.board_game_borrowings.push(...fixture.borrowings.map((item) => ({ ...item, user_id: item.user_id === "$actor" ? state.users[0].id : item.user_id, approved_by_user_id: item.approved_by_actor ? state.users[0].id : null })));
+  state.board_game_reviews.push(...fixture.reviews.map((item) => ({ ...item, user_id: item.user_id === "$actor" ? actorId : item.user_id })));
+  state.board_game_borrowings.push(...fixture.borrowings.map((item) => ({ ...item, user_id: item.user_id === "$actor" ? actorId : item.user_id, approved_by_user_id: item.approved_by_actor ? actorId : null })));
   state.events.push(...fixture.events);
   state.event_attendances.push(...fixture.attendances);
-  state.announcements.push(...fixture.announcements.map((item) => ({ ...item, author_id: state.users[0].id })));
+  state.announcements.push(...fixture.announcements.map((item) => ({ ...item, author_id: actorId })));
   const plan = planFixture(fixture, state);
   assert.equal(Object.values(plan.totals).reduce((sum, item) => sum + item.create, 0), 0);
   assert.match(formatPlan(fixture, plan, true), /Total to create: 0/);
 });
 
-test("planner fails closed for missing or ambiguous bootstrap actor", () => {
+test("planner ignores zero or multiple real Officers and keeps the synthetic actor", () => {
   const fixture = buildFixture();
+  const expectedActor = fixture.officers.find((officer) => officer.academic_year === "114").user_id;
   const missing = emptyState(fixture); missing.officer_positions = [];
-  assert.throws(() => planFixture(fixture, missing), /exactly one/);
+  assert.equal(planFixture(fixture, missing).actorId, expectedActor);
   const ambiguous = emptyState(fixture);
   ambiguous.users.push({ id: "00000000-0000-4000-8000-000000000003", email: "second@development.invalid", name: "Second", email_verified_at: "2026-09-18T00:00:00.000Z", closed_at: null, avatar: null });
   ambiguous.officer_positions.push({ id: "x", user_id: ambiguous.users[1].id, academic_year_id: ambiguous.academic_years[0].id, title: "Officer" });
-  assert.throws(() => planFixture(fixture, ambiguous), /exactly one/);
+  assert.equal(planFixture(fixture, ambiguous).actorId, expectedActor);
+});
+
+test("planner fails closed when the deterministic synthetic actor identity conflicts", () => {
+  const fixture = buildFixture();
+  const state = emptyState(fixture);
+  const actorId = fixture.officers.find((officer) => officer.academic_year === "114").user_id;
+  const actor = fixture.users.find((user) => user.id === actorId);
+  state.users.push({ ...actor, name: "unexpected", profile: undefined });
+  assert.throws(() => planFixture(fixture, state), /Conflicting users fixture identity/);
 });
 
 test("plan output contains aggregates only and no sensitive fields", () => {

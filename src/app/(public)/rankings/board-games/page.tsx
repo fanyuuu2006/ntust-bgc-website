@@ -7,6 +7,7 @@ import { RankingInfoDialog } from "@/components/(public)/rankings/RankingInfoDia
 import { BoardGameRankingGuide } from "@/components/(public)/rankings/BoardGameRankingGuide";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { PageHeader } from "@/components/PageHeader";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { createPublicMetadata } from "@/libs/seo";
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { boardGamesService } from "@/services/board-games/board-games.service";
@@ -37,7 +38,7 @@ async function BoardGameRankingsPage({ searchParams }: RankingsPageProps) {
   return (
     <section className="container py-8">
       <div className="flex items-start justify-between gap-3">
-        <PageHeader eyebrow="排行榜" title="桌遊排行榜" description={ranking.description} />
+        <PageHeader breadcrumb={<Breadcrumbs items={[{ href: "/", label: "首頁" }, { href: "/rankings", label: "排行榜" }, { label: "桌遊排行榜" }]} />} eyebrow="排行榜" title="桌遊排行榜" description={ranking.description} />
         <RankingInfoDialog iconOnly><BoardGameRankingGuide /></RankingInfoDialog>
       </div>
       <div className="mt-6"><RankingNavigation active={ranking.key} search={search} pageSize={pageSize} /></div>

@@ -5,6 +5,7 @@ import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
 import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { OfficerActions } from "@/components/(admin)/admin/officers/OfficerActions";
 import { OfficerRecords } from "@/components/(admin)/admin/officers/OfficerRecords";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
@@ -61,6 +62,7 @@ async function OfficersPage({
     <>
       <HeadingSection
         collection
+        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { label: "幹部管理" }]} />}
         title="幹部管理"
         description="管理各學年度的幹部紀錄。"
         actions={<><AdminExportMenu domain="officers" query={{ search: params.search, academicYearId: params.academicYearId }} /><OfficerActions years={years} /></>}

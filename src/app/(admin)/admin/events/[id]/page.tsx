@@ -4,6 +4,7 @@ import { withServerErrorReference } from "@/libs/observability/server-render";
 import { getAdminReturnPath } from "@/utils/admin-return";
 import { notFound } from "next/navigation";
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
@@ -12,7 +13,7 @@ import { AttendanceActions } from "@/components/(admin)/admin/events/AttendanceA
 import { AttendanceRecords } from "@/components/(admin)/admin/events/AttendanceRecords";
 import { EventStatusBadge } from "@/components/(admin)/admin/events/EventStatusBadge";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
-import { Button, ButtonLink } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { eventsService } from "@/services/events/events.service";
 import {
   normalizePageSizeOption,
@@ -65,6 +66,7 @@ async function AdminEventDetailPage({
   return (
     <>
       <HeadingSection
+        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { href: returnTo, label: "活動管理" }, { label: event.name }]} />}
         title={event.name}
         description={`${formatDateTime(event.start_time)} 至 ${formatDateTime(event.end_time)}`}
         actions={<><AdminExportMenu domain="event-attendance" query={{ eventId: event.id, search: query.search, orderDirection }} /><AttendanceActions eventId={event.id} /></>}
@@ -75,7 +77,6 @@ async function AdminEventDetailPage({
             <h2 className="text-lg font-semibold">簽到管理</h2>
             <EventStatusBadge event={event} />
           </div>
-          <ButtonLink href={returnTo} size="sm" variant="outline">返回活動管理</ButtonLink>
         </div>
         {event.description || event.rich_description ? <RichTextRenderer {...storedDescription(event)} /> : null}
         <AdminToolbar className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">

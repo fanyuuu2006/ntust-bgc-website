@@ -1,4 +1,5 @@
 import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
+import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
 import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
 import { PurchaseSuggestionList } from "@/components/(admin)/admin/purchase-suggestions/PurchaseSuggestionList";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
@@ -17,8 +18,41 @@ async function AdminPurchaseSuggestionsPage({ searchParams }: {
   const result = await purchaseSuggestionsService.listAdmin(query);
   const clearSearchHref = buildOwnedQueryHref({ basePath: BASE_PATH, appliedQuery: query, ownedKeys: ["search"], changes: { search: undefined } });
   return <>
-    <HeadingSection collection title="桌遊購入建議" description="管理桌遊購入推薦，並更新處理狀態。" />
+    <HeadingSection collection breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { href: "/admin/board-games", label: "桌遊管理" }, { label: "桌遊購入建議" }]} />} title="桌遊購入建議" description="管理桌遊購入推薦，並更新處理狀態。" />
     <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
+      <AdminToolbar aria-label="桌遊購入建議搜尋與篩選">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <form
+            className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
+            action={BASE_PATH}
+            method="get"
+            aria-label="搜尋桌遊推薦"
+          >
+            <ClearableSearchInput
+              name="search"
+              initialValue={query.search}
+              clearHref={clearSearchHref}
+              placeholder="搜尋桌遊名稱"
+              aria-label="桌遊名稱"
+            />
+            <input type="hidden" name="status" value={query.status} />
+            <input type="hidden" name="pageSize" value={query.pageSize} />
+            <Button type="submit" variant="primary" className="hidden w-auto sm:inline-flex">搜尋</Button>
+          </form>
+          <ImmediateQuerySelect
+            basePath={BASE_PATH}
+            appliedQuery={query}
+            queryKey="status"
+            value={query.status}
+            aria-label="處理狀態"
+          >
+            <option value="pending">待評估</option>
+            <option value="purchased">已購入</option>
+            <option value="rejected">不採納</option>
+            <option value="all">全部狀態</option>
+          </ImmediateQuerySelect>
+        </div>
+      </AdminToolbar>
       <PaginatedCollection
         {...result}
         basePath={BASE_PATH}
@@ -27,51 +61,7 @@ async function AdminPurchaseSuggestionsPage({ searchParams }: {
         itemLabel="筆推薦"
         paginationClassName="p-4"
       >
-        <div className="space-y-4">
-          <AdminToolbar aria-label="桌遊購入建議搜尋與篩選">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-              <form
-                className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
-                action={BASE_PATH}
-                method="get"
-                aria-label="搜尋桌遊推薦"
-              >
-                <ClearableSearchInput
-                  name="search"
-                  initialValue={query.search}
-                  clearHref={clearSearchHref}
-                  placeholder="搜尋桌遊名稱"
-                  aria-label="桌遊名稱"
-                />
-                <input
-                  type="hidden"
-                  name="status"
-                  value={query.status}
-                />
-                <input
-                  type="hidden"
-                  name="pageSize"
-                  value={query.pageSize}
-                />
-                <Button
-                  type="submit"
-                  variant="primary"
-                  className="hidden w-auto sm:inline-flex"
-                >搜尋</Button>
-              </form>
-              <ImmediateQuerySelect
-                basePath={BASE_PATH}
-                appliedQuery={query}
-                queryKey="status"
-                value={query.status}
-                aria-label="處理狀態"
-              >
-                <option value="pending">待評估</option><option value="purchased">已購入</option><option value="rejected">不採納</option><option value="all">全部狀態</option>
-              </ImmediateQuerySelect>
-            </div>
-          </AdminToolbar>
-          <PurchaseSuggestionList key={JSON.stringify(query)} items={result.data} hasQuery={Boolean(query.search || query.status !== "all" || query.page > 1)} />
-        </div>
+        <PurchaseSuggestionList key={JSON.stringify(query)} items={result.data} hasQuery={Boolean(query.search || query.status !== "all" || query.page > 1)} />
       </PaginatedCollection>
     </section>
   </>;

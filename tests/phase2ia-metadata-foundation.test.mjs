@@ -5,7 +5,7 @@ import test from "node:test";
 const root = new URL("../", import.meta.url);
 const readSource = (path) => readFile(new URL(path, root), "utf8");
 
-test("root metadata derives the canonical identity from the shared site configuration", async () => {
+test("root metadata derives canonical identity from validated site settings with code fallbacks", async () => {
   const [environment, metadata, siteConfigs] = await Promise.all([
     readSource("src/libs/env.tsx"),
     readSource("src/libs/metadata.tsx"),
@@ -19,13 +19,11 @@ test("root metadata derives the canonical identity from the shared site configur
   assert.match(siteConfigs, /description:\s*"臺科大桌遊社官方網站暨社團管理平台/);
   assert.match(siteConfigs, /整合社團公告、桌遊查詢與借用、社員資格、活動簽到及後台管理等功能。/);
   assert.match(metadata, /metadataBase:\s*new URL\(siteConfigs\.url\)/);
-  assert.match(
-    metadata,
-    /default:\s*`\$\{siteConfigs\.name\}｜\$\{siteConfigs\.fullName\}`/,
-  );
-  assert.match(metadata, /template:\s*`%s｜\$\{siteConfigs\.name\}`/);
-  assert.match(metadata, /description:\s*siteConfigs\.description/);
-  assert.match(metadata, /url:\s*siteConfigs\.icon/);
+  assert.match(metadata, /createRootMetadata\(settings: SiteSettings\)/);
+  assert.match(metadata, /default:\s*site\.seoTitle/);
+  assert.match(metadata, /template:\s*`%s｜\$\{site\.siteName\}`/);
+  assert.match(metadata, /description:\s*site\.seoDescription/);
+  assert.match(metadata, /url:\s*site\.faviconUrl/);
   assert.doesNotMatch(
     environment + metadata + siteConfigs,
     /https:\/\/ntust-bgc\.vercel\.app/,

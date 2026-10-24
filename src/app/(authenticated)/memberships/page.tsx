@@ -11,6 +11,7 @@ import {
 } from "@/components/(authenticated)/memberships/MembershipRecordsResults";
 import { MembershipRecordsToolbar } from "@/components/(authenticated)/memberships/MembershipRecordsToolbar";
 import { PageHeader } from "@/components/PageHeader";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Card } from "@/components/ui/Card";
 import { getCurrentUser } from "@/libs/auth";
 import {
@@ -92,7 +93,7 @@ async function MembershipsPage({
 
   return (
     <section className="container max-w-5xl space-y-8 py-8">
-      <PageHeader
+      <PageHeader breadcrumb={<Breadcrumbs items={[{ href: "/dashboard", label: "儀表板" }, { label: "社員資格" }]} />}
         eyebrow="社員"
         title="社員資格"
         description="查看本學年度的社員資格與完整社員紀錄。"
