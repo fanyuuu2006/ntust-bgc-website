@@ -1,0 +1,71 @@
+import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { readFile } from "node:fs/promises";
+import test from "node:test";
+
+const source = () => readFile(new URL("../src/components/(admin)/admin/events/EventCalendarPoc.tsx", import.meta.url), "utf8");
+
+test("Calendar PoC keeps its mock data and interactions local", async () => {
+  const text = await source();
+  assert.match(text, /MOCK_EVENTS/);
+  assert.match(text, /selectDate/);
+  assert.match(text, /setSelectedEvent/);
+  assert.match(text, /未呼叫正式 API/);
+  assert.doesNotMatch(text, /apiClient\(/);
+});
+
+test("Calendar PoC includes month, list, and cancelled-state presentation", async () => {
+  const text = await source();
+  assert.match(text, /getPocMonthDays/);
+  assert.match(text, /view === \"month\"/);
+  assert.match(text, /poc-list-event/);
+  assert.match(text, /poc-list-event-cancelled/);
+});
+
+test("Calendar presentation keeps mobile events textual and date states distinct", async () => {
+  const text = await source();
+  const css = await readFile(new URL("../src/components/(admin)/admin/events/event-calendar-poc.css", import.meta.url), "utf8");
+  assert.match(text, /aria-current=\{isToday \? "date"/);
+  assert.match(text, /poc-month-cell-selected/);
+  assert.match(css, /poc-month-grid/);
+  assert.match(css, /poc-month-event-indicator/);
+  assert.doesNotMatch(css, /fc-daygrid/);
+});
+
+test("FullCalendar PoC uses an external toolbar and selected-day presentation", async () => {
+  const text = await source();
+  assert.match(text, /navigateMonth\(-1\)/);
+  assert.match(text, /navigateMonth\(1\)/);
+  assert.match(text, /poc-calendar-layout/);
+  assert.match(text, /getEventsForDate/);
+  assert.match(text, /aria-pressed/);
+  assert.match(text, /<Modal open=\{selectedEvent !== null\}/);
+  assert.match(text, /活動詳情/);
+});
+
+test("Calendar PoC uses the shared admin page header contract", async () => {
+  const page = await readFile(new URL("../src/app/(admin)/admin/events/calendar-poc/page.tsx", import.meta.url), "utf8");
+  assert.match(page, /HeadingSection/);
+  assert.match(page, /AdminBreadcrumbs/);
+  assert.match(page, /活動行事曆/);
+  assert.match(page, /管理與查看社團活動行程/);
+});
+
+test("selected-date formatting is deterministic and timezone-independent", async () => {
+  const moduleUrl = new URL("../src/components/(admin)/admin/events/calendar-poc-utils.ts", import.meta.url).href;
+  const output = execFileSync(process.execPath, ["--experimental-strip-types", "--input-type=module", "-e", `const m = await import(${JSON.stringify(moduleUrl)}); console.log(m.formatPocSelectedDate("2026-10-25"));`], { encoding: "utf8" }).trim();
+  assert.equal(output.split("\n").at(-1), "10 月 25 日・週日");
+  assert.doesNotMatch(await readFile(new URL("../src/components/(admin)/admin/events/calendar-poc-utils.ts", import.meta.url), "utf8"), /toLocaleDateString|Intl\.DateTimeFormat/);
+});
+
+test("date filtering uses Taipei half-open day overlap semantics", async () => {
+  const moduleUrl = new URL("../src/components/(admin)/admin/events/calendar-poc-utils.ts", import.meta.url).href;
+  const events = [
+    { id: "a", title: "same day", start: "2026-10-27T10:00:00+08:00", end: "2026-10-27T12:00:00+08:00" },
+    { id: "b", title: "overnight", start: "2026-10-30T19:00:00+08:00", end: "2026-11-01T00:30:00+08:00" },
+    { id: "c", title: "midnight end", start: "2026-11-02T22:00:00+08:00", end: "2026-11-03T00:00:00+08:00" },
+  ];
+  const script = `const m = await import(${JSON.stringify(moduleUrl)}); const events = ${JSON.stringify(events)}; console.log(JSON.stringify([m.getEventsForDate(events, "2026-10-27").map(e=>e.id), m.getEventsForDate(events, "2026-10-31").map(e=>e.id), m.getEventsForDate(events, "2026-11-03").map(e=>e.id)]));`;
+  const output = execFileSync(process.execPath, ["--experimental-strip-types", "--input-type=module", "-e", script], { encoding: "utf8" }).trim();
+  assert.deepEqual(JSON.parse(output.split("\n").at(-1)), [["a"], ["b"], []]);
+});
