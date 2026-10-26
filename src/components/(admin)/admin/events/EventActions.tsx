@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -44,9 +44,11 @@ export function EventActions() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [values, setValues] = useState<EventFormValues>(emptyFormValues);
+  const [submitMode, setSubmitMode] = useState<"published" | "draft">("published");
 
   const openCreateDialog = () => {
     setValues(emptyFormValues());
+    setSubmitMode("published");
     setError(null);
     setOpen(true);
   };
@@ -72,6 +74,7 @@ export function EventActions() {
           rich_description: values.description,
           start_time: parseTaipeiDateTimeLocal(values.start_time),
           end_time: parseTaipeiDateTimeLocal(values.end_time),
+          publication_status: submitMode,
           check_in_opens_at: values.selfCheckInEnabled
             ? parseTaipeiDateTimeLocal(values.check_in_opens_at)
             : null,
@@ -197,8 +200,11 @@ export function EventActions() {
             <Button type="button" variant="outline" disabled={busy} onClick={closeCreateDialog}>
               取消
             </Button>
-            <Button type="submit" isLoading={busy}>
-              {busy ? "新增中…" : "新增"}
+            <Button type="submit" variant="outline" disabled={busy} onClick={() => setSubmitMode("draft")} isLoading={busy && submitMode === "draft"}>
+              儲存草稿
+            </Button>
+            <Button type="submit" disabled={busy} onClick={() => setSubmitMode("published")} isLoading={busy && submitMode === "published"}>
+              建立並發布
             </Button>
           </div>
         </form>

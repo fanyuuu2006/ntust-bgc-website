@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import { buildAdminReturnHref } from "@/utils/admin-return";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import Link from "next/link";
 import { useState } from "react";
+import { useToast } from "@/contexts/ToastContext";
 import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
@@ -27,6 +28,7 @@ import {
   parseTaipeiDateTimeLocal,
 } from "@/utils/date";
 import { EventStatusBadge } from "./EventStatusBadge";
+import { EventMoreMenu } from "./EventMoreMenu";
 
 // Editor runtime 僅供管理端編輯，不帶入伺服器渲染的閱讀頁面。
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor").then((module) => module.RichTextEditor), { ssr: false });
@@ -43,6 +45,7 @@ type EventFormValues = {
 
 export function EventRecords({ events, hasQuery = false, returnTo = "/admin/events" }: { events: Event[]; hasQuery?: boolean; returnTo?: string }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [selectedEvent, setSelectedEvent] = useState<{ event: Event; action: "edit" | "delete" } | null>(null);
   const [values, setValues] = useState<EventFormValues>({
     name: "",
@@ -150,6 +153,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
       setIsDeleting(false);
     }
   };
+
 
   if (!events.length) {
     return hasQuery ? (
@@ -358,15 +362,13 @@ function EventRowActions({
 }) {
   return (
     <div className="flex shrink-0 flex-wrap gap-2">
-      <ButtonLink href={buildAdminReturnHref(`/admin/events/${event.id}`, returnTo, "/admin/events")} size="sm" variant="outline">
+      <ButtonLink href={buildAdminReturnHref(`/admin/events/${event.id}`, returnTo, "/admin/events")} size="sm" variant="primary">
         簽到管理
       </ButtonLink>
       <Button type="button" size="sm" variant="outline" onClick={() => onEdit(event)}>
         編輯
       </Button>
-      <Button type="button" size="sm" variant="danger" onClick={() => onDelete(event)}>
-        刪除
-      </Button>
+      <EventMoreMenu event={event} onDelete={onDelete} />
     </div>
   );
 }

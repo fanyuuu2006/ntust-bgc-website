@@ -12,6 +12,7 @@ import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { AttendanceActions } from "@/components/(admin)/admin/events/AttendanceActions";
 import { AttendanceRecords } from "@/components/(admin)/admin/events/AttendanceRecords";
 import { EventStatusBadge } from "@/components/(admin)/admin/events/EventStatusBadge";
+import { EventLifecycleActions } from "@/components/(admin)/admin/events/EventLifecycleActions";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Button } from "@/components/ui/Button";
 import { eventsService } from "@/services/events/events.service";
@@ -69,7 +70,7 @@ async function AdminEventDetailPage({
         breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { href: returnTo, label: "活動管理" }, { label: event.name }]} />}
         title={event.name}
         description={`${formatDateTime(event.start_time)} 至 ${formatDateTime(event.end_time)}`}
-        actions={<><AdminExportMenu domain="event-attendance" query={{ eventId: event.id, search: query.search, orderDirection }} /><AttendanceActions eventId={event.id} /></>}
+        actions={<><EventLifecycleActions event={event} /><AdminExportMenu domain="event-attendance" query={{ eventId: event.id, search: query.search, orderDirection }} /><AttendanceActions eventId={event.id} /></>}
       />
       <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-(--border-default) pb-4">
