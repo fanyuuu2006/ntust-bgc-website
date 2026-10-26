@@ -6,6 +6,6 @@ export type CreateEventInput = z.infer<typeof createEventSchema>;
 export type UpdateEventInput = z.infer<typeof updateEventSchema>;
 
 export type SelfCheckInEvent = {
-  event: Pick<Event, "id" | "name" | "start_time" | "end_time">;
+  event: Pick<Event, "id" | "name" | "start_time" | "end_time" | "publication_status" | "cancelled_at">;
   attendance: Pick<EventAttendance, "event_id"> | null;
 };

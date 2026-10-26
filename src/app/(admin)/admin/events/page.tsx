@@ -60,6 +60,7 @@ async function AdminEventsPage({
     search: params.search?.trim() || undefined,
     status,
   });
+  const attendedCounts = await eventsService.getAttendedCountsByEventIds(result.data.map((event) => event.id));
   const pageSize = normalizePageSizeOption(params.pageSize, [10, 20, 50, 100], 20);
   const clearSearchParams = new URLSearchParams();
   if (params.status) clearSearchParams.set("status", params.status);
@@ -101,6 +102,7 @@ async function AdminEventsPage({
         <PaginatedCollection page={page} pageSize={pageSize} total={result.total} totalPages={result.totalPages} basePath="/admin/events" pageSizeOptions={[10, 20, 50, 100]} query={{ search: params.search, status, orderBy, orderDirection }}>
         <EventRecords
           events={result.data}
+          attendedCounts={attendedCounts}
           returnTo={buildAdminListHref("/admin/events", { search: params.search, status, orderBy, orderDirection, page, pageSize })}
           hasQuery={Boolean(params.search || status || Number(params.page) > 1)}
         />

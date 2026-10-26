@@ -177,6 +177,14 @@ export const eventsService = {
     return eventAttendancesRepository.countByUserId(userId, COUNTED_STATUSES);
   },
 
+  getAttendedCountByEventId: async (eventId: string): Promise<number> => {
+    return eventAttendancesRepository.countByEventId(eventId, COUNTED_STATUSES);
+  },
+
+  getAttendedCountsByEventIds: async (eventIds: string[]): Promise<Record<string, number>> => {
+    return eventAttendancesRepository.countByEventIds(eventIds, COUNTED_STATUSES);
+  },
+
   getAttendedCountByAcademicYear: async (
     userId: string,
     academicYearId: string,
@@ -230,7 +238,7 @@ export const eventsService = {
       membershipService.isCurrentActiveMember(userId),
     ]);
 
-    if (!event) throw new EventNotFoundError();
+    if (!event || event.publication_status !== "published") throw new EventNotFoundError();
     if (event.cancelled_at) throw new EventCancelledError();
     if (!isCurrentMember) throw new SelfCheckInMembershipRequiredError();
 

@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
+import { useToast } from "@/contexts/ToastContext";
 import type { EventAttendanceId, User, UserProfile } from "@/types/database";
 import { formatDateTime, formatTaipeiDateTimeLocal, parseTaipeiDateTimeLocal } from "@/utils/date";
 import { useCurrentPageSelection } from "@/hooks/useCurrentPageSelection";
@@ -48,14 +49,17 @@ export function AttendanceRecords({
   records,
   hasQuery = false,
   returnTo = "/admin/events",
+  returnPath = `/admin/events/${eventId}`,
 }: {
   eventId: string;
   eventName: string;
   records: AttendanceRecord[];
   hasQuery?: boolean;
   returnTo?: string;
+  returnPath?: string;
 }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [selectedAttendance, setSelectedAttendance] = useState<{ record: AttendanceRecord; action: "edit" | "delete" } | null>(null);
   const [values, setValues] = useState<AttendanceFormValues>({ status: "present", attended_at: "" });
   const [isSaving, setIsSaving] = useState(false);
@@ -130,6 +134,7 @@ export function AttendanceRecords({
         },
       });
       setSelectedAttendance(null);
+      showToast("success", "出席紀錄已更新");
       router.refresh();
     } catch (caught) {
       setEditError(caught instanceof Error ? caught.message : "更新簽到紀錄失敗，請稍後再試。");
@@ -146,6 +151,7 @@ export function AttendanceRecords({
     try {
       await apiClient(`/api/admin/events/${eventId}/attendances/${deletingAttendance.id}`, { method: "DELETE" });
       setSelectedAttendance(null);
+      showToast("success", "出席紀錄已刪除");
       router.refresh();
     } catch (caught) {
       setDeleteError(caught instanceof Error ? caught.message : "刪除簽到紀錄失敗，請稍後再試。");
@@ -204,7 +210,7 @@ export function AttendanceRecords({
     return hasQuery ? (
       <QueryEmptyState
         title="找不到符合條件的簽到紀錄"
-        clearHref={buildAdminReturnHref(`/admin/events/${eventId}`, returnTo, "/admin/events")}
+        clearHref={buildAdminReturnHref(returnPath, returnTo, "/admin/events")}
       />
     ) : (
       <EmptyState title="目前還沒有簽到紀錄" description="可由上方按鈕手動新增簽到紀錄。" />
@@ -341,15 +347,16 @@ export function AttendanceRecords({
                     label={`選取 ${record.user.name} 的簽到紀錄`}
                   />
                 </TableCell>
-                <TableCell className="min-w-32 font-medium">
+                <TableCell className="min-w-32 max-w-52 font-medium">
                   <Link
                     href={`/admin/users/${record.user.id}`}
-                    className="wrap-anywhere text-(--interactive-primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+                    className="line-clamp-2 wrap-anywhere text-(--interactive-primary) hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+                    title={record.user.name}
                   >
                     {record.user.name}
                   </Link>
                 </TableCell>
-                <TableCell className="min-w-32">{emptyValue(record.profile?.real_name)}</TableCell>
+                <TableCell className="min-w-32 max-w-48 wrap-anywhere">{emptyValue(record.profile?.real_name)}</TableCell>
                 <TableCell className="min-w-52 break-all">{record.user.email}</TableCell>
                 <TableCell className="min-w-28">{emptyValue(record.profile?.student_id)}</TableCell>
                 <TableCell className="whitespace-nowrap"><AttendanceStatusBadge status={record.status} /></TableCell>

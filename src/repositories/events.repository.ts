@@ -129,10 +129,11 @@ export const eventsRepository = {
     return data ?? [];
   },
 
-  findOpenForSelfCheckIn: async (now: string): Promise<Pick<Event, "id" | "name" | "start_time" | "end_time">[]> => {
+  findOpenForSelfCheckIn: async (now: string): Promise<Pick<Event, "id" | "name" | "start_time" | "end_time" | "publication_status" | "cancelled_at">[]> => {
     const { data, error } = await supabase
       .from("events")
-      .select("id,name,start_time,end_time")
+      .select("id,name,start_time,end_time,publication_status,cancelled_at")
+      .eq("publication_status", "published")
       .not("check_in_opens_at", "is", null)
       .not("check_in_closes_at", "is", null)
       .lte("check_in_opens_at", now)

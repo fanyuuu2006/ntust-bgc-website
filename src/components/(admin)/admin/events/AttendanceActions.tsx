@@ -11,6 +11,7 @@ import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { apiClient } from "@/libs/api/client";
+import { useToast } from "@/contexts/ToastContext";
 import type { AdminUserPickerItem } from "@/services/users/users.types";
 import { parseTaipeiDateTimeLocal } from "@/utils/date";
 import { ATTENDANCE_STATUS_LABEL } from "./AttendanceStatusBadge";
@@ -18,6 +19,7 @@ import type { AttendanceRecord } from "./AttendanceRecords";
 
 export function AttendanceActions({ eventId }: { eventId: string }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,6 +68,7 @@ export function AttendanceActions({ eventId }: { eventId: string }) {
         },
       });
       setOpen(false);
+      showToast("success", "出席紀錄已新增");
       router.refresh();
     } catch (caught) {
       setError(

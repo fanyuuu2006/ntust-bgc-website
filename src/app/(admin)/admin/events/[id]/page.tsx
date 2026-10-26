@@ -1,109 +1,22 @@
-import { RichTextRenderer } from "@/components/RichTextRenderer";
-import { storedDescription } from "@/libs/rich-content/description";
-import { withServerErrorReference } from "@/libs/observability/server-render";
-import { getAdminReturnPath } from "@/utils/admin-return";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { HeadingSection } from "@/components/(admin)/admin/HeadingSection";
-import { AdminBreadcrumbs } from "@/components/(admin)/admin/AdminBreadcrumbs";
-import { AdminToolbar } from "@/components/(admin)/admin/AdminToolbar";
-import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
-import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
-import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
-import { AttendanceActions } from "@/components/(admin)/admin/events/AttendanceActions";
-import { AttendanceRecords } from "@/components/(admin)/admin/events/AttendanceRecords";
-import { EventStatusBadge } from "@/components/(admin)/admin/events/EventStatusBadge";
-import { EventLifecycleActions } from "@/components/(admin)/admin/events/EventLifecycleActions";
-import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
+import { withServerErrorReference } from "@/libs/observability/server-render";
+import { EventDetailHeader } from "@/components/(admin)/admin/events/EventDetailHeader";
+import { EventOverview } from "@/components/(admin)/admin/events/EventOverview";
 import { Button } from "@/components/ui/Button";
 import { eventsService } from "@/services/events/events.service";
-import {
-  normalizePageSizeOption,
-  readSingleQueryValue,
-  type QueryParamValue,
-} from "@/libs/query-params";
-import { formatDateTime } from "@/utils/date";
-import { parsePage } from "@/utils/pagination";
-import { AdminExportMenu } from "@/components/(admin)/admin/exports/AdminExportMenu";
+import { getAdminReturnPath } from "@/utils/admin-return";
+import { type QueryParamValue } from "@/libs/query-params";
 
-async function AdminEventDetailPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ returnTo?: QueryParamValue; search?: QueryParamValue; orderDirection?: QueryParamValue; page?: QueryParamValue; pageSize?: QueryParamValue }>;
-}) {
+async function AdminEventDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ returnTo?: QueryParamValue }> }) {
   const [{ id }, rawQuery] = await Promise.all([params, searchParams]);
   const returnTo = getAdminReturnPath(rawQuery.returnTo, "/admin/events");
-  const query = {
-    returnTo,
-    search: readSingleQueryValue(rawQuery.search),
-    orderDirection: readSingleQueryValue(rawQuery.orderDirection),
-    page: readSingleQueryValue(rawQuery.page),
-    pageSize: readSingleQueryValue(rawQuery.pageSize),
-  };
-
-  const page = parsePage(query.page);
-  const pageSize = normalizePageSizeOption(query.pageSize, [10, 20, 50], 20);
-  const orderDirection = query.orderDirection === "asc" ? "asc" : "desc";
-  const [event, records] = await Promise.all([
-    eventsService.getEventById(id),
-    eventsService.listAttendancesForAdmin(id, {
-      page,
-      pageSize,
-      orderDirection,
-      search: query.search?.trim() || undefined,
-    }),
-  ]);
-
+  const event = await eventsService.getEventById(id);
   if (!event) notFound();
-
-  const clearSearchParams = new URLSearchParams({ returnTo });
-  if (query.orderDirection) clearSearchParams.set("orderDirection", query.orderDirection);
-  if (query.pageSize) clearSearchParams.set("pageSize", query.pageSize);
-  const clearSearchHref = clearSearchParams.size
-    ? `/admin/events/${event.id}?${clearSearchParams}`
-    : `/admin/events/${event.id}`;
-
-  return (
-    <>
-      <HeadingSection
-        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { href: returnTo, label: "活動管理" }, { label: event.name }]} />}
-        title={event.name}
-        description={`${formatDateTime(event.start_time)} 至 ${formatDateTime(event.end_time)}`}
-        actions={<><EventLifecycleActions event={event} /><AdminExportMenu domain="event-attendance" query={{ eventId: event.id, search: query.search, orderDirection }} /><AttendanceActions eventId={event.id} /></>}
-      />
-      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-(--border-default) pb-4">
-          <div className="flex min-w-0 items-center gap-2">
-            <h2 className="text-lg font-semibold">簽到管理</h2>
-            <EventStatusBadge event={event} />
-          </div>
-        </div>
-        {event.description || event.rich_description ? <RichTextRenderer {...storedDescription(event)} /> : null}
-        <AdminToolbar className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-          <form className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-2" aria-label="搜尋簽到名單">
-            <PreservedQueryFields query={{ returnTo, search: query.search, orderDirection, pageSize }} ownedKeys={["search"]} />
-            <ClearableSearchInput initialValue={query.search} clearHref={clearSearchHref} name="search" placeholder="搜尋使用者名稱、姓名、Email 或學號" aria-label="搜尋簽到名單" />
-            <Button type="submit" variant="primary" className="w-auto">搜尋</Button>
-          </form>
-            <ImmediateQuerySelect appliedQuery={{ returnTo, search: query.search, orderDirection, pageSize }} basePath={`/admin/events/${event.id}`} queryKey="orderDirection" value={orderDirection} aria-label="簽到時間排序" className="w-full sm:w-auto">
-              <option value="desc">最新簽到</option>
-              <option value="asc">最早簽到</option>
-            </ImmediateQuerySelect>
-        </AdminToolbar>
-        <PaginatedCollection className="space-y-3" page={page} pageSize={pageSize} total={records.total} totalPages={records.totalPages} basePath={`/admin/events/${event.id}`} pageSizeOptions={[10, 20, 50]} query={{ returnTo, search: query.search, orderDirection }}>
-        <AttendanceRecords
-          key={JSON.stringify({ search: query.search, orderDirection, page, pageSize })}
-          returnTo={returnTo}
-          eventId={event.id}
-          eventName={event.name}
-          records={records.data}
-          hasQuery={Boolean(query.search || page > 1)}
-        />
-        </PaginatedCollection>
-      </section>
-    </>
-  );
+  return <>
+    <EventDetailHeader event={event} returnTo={returnTo} active="overview" actions={<Link href={`/admin/events/${event.id}/edit?returnTo=${encodeURIComponent(returnTo)}`}><Button type="button" variant="primary">編輯活動</Button></Link>} />
+    <section className="space-y-4 px-4 pb-6 sm:px-6 lg:px-8"><EventOverview event={event} /></section>
+  </>;
 }
 
 export default withServerErrorReference(AdminEventDetailPage, "/admin/events/[id]");

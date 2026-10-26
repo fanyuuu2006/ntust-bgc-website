@@ -4,7 +4,6 @@ import { buildAdminReturnHref } from "@/utils/admin-return";
 import { AdminListSection } from "@/components/(admin)/admin/AdminListSection";
 import Link from "next/link";
 import { useState } from "react";
-import { useToast } from "@/contexts/ToastContext";
 import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FormFeedback } from "@/components/FormFeedback";
@@ -24,7 +23,6 @@ import { apiClient } from "@/libs/api/client";
 import type { Event } from "@/types/database";
 import {
   formatAdminDateTime,
-  formatTaipeiDateTimeLocal,
   parseTaipeiDateTimeLocal,
 } from "@/utils/date";
 import { EventStatusBadge } from "./EventStatusBadge";
@@ -43,9 +41,8 @@ type EventFormValues = {
   check_in_closes_at: string;
 };
 
-export function EventRecords({ events, hasQuery = false, returnTo = "/admin/events" }: { events: Event[]; hasQuery?: boolean; returnTo?: string }) {
+export function EventRecords({ events, attendedCounts, hasQuery = false, returnTo = "/admin/events" }: { events: Event[]; attendedCounts: Record<string, number>; hasQuery?: boolean; returnTo?: string }) {
   const router = useRouter();
-  const { showToast } = useToast();
   const [selectedEvent, setSelectedEvent] = useState<{ event: Event; action: "edit" | "delete" } | null>(null);
   const [values, setValues] = useState<EventFormValues>({
     name: "",
@@ -64,25 +61,6 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
   const editingEvent = selectedEvent?.action === "edit" ? selectedEvent.event : null;
   const unsupportedDescription = !!editingEvent?.description_format && editingEvent.description_format !== "plain_text" && !readRichContent(storedDescription(editingEvent));
   const deletingEvent = selectedEvent?.action === "delete" ? selectedEvent.event : null;
-
-  const openEditDialog = (event: Event) => {
-    setSelectedEvent({ event, action: "edit" });
-    setValues({
-      name: event.name,
-      description: editableRichContent(storedDescription(event)),
-      start_time: formatTaipeiDateTimeLocal(new Date(event.start_time)),
-      end_time: formatTaipeiDateTimeLocal(new Date(event.end_time)),
-      selfCheckInEnabled:
-        event.check_in_opens_at !== null && event.check_in_closes_at !== null,
-      check_in_opens_at: event.check_in_opens_at
-        ? formatTaipeiDateTimeLocal(new Date(event.check_in_opens_at))
-        : "",
-      check_in_closes_at: event.check_in_closes_at
-        ? formatTaipeiDateTimeLocal(new Date(event.check_in_closes_at))
-        : "",
-    });
-    setEditError(null);
-  };
 
   const closeEditDialog = () => {
     if (isSaving) return;
@@ -177,6 +155,7 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
               <TableHead>開始時間</TableHead>
               <TableHead>結束時間</TableHead>
               <TableHead>狀態</TableHead>
+              <TableHead>簽到數</TableHead>
               <TableHead>操作</TableHead>
             </TableRow>
           </TableHeader>
@@ -193,8 +172,9 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
                 <TableCell className="whitespace-nowrap">
                   <EventStatusBadge event={event} />
                 </TableCell>
-                <TableCell className="whitespace-nowrap">
-                  <EventRowActions event={event} onEdit={openEditDialog} onDelete={openDeleteDialog} returnTo={returnTo} />
+                <TableCell className="whitespace-nowrap">{attendedCounts[event.id] ?? 0}</TableCell>
+              <TableCell className="whitespace-nowrap">
+                  <EventRowActions event={event} onDelete={openDeleteDialog} returnTo={returnTo} />
                 </TableCell>
               </TableRow>
             ))}
@@ -218,8 +198,9 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
                 <EventStatusBadge event={event} />
               </span>
             </div>
+            <p className="mt-2 text-sm text-(--muted)">簽到數：{attendedCounts[event.id] ?? 0}</p>
             <div className="mt-3 flex gap-2">
-              <EventRowActions event={event} onEdit={openEditDialog} onDelete={openDeleteDialog} returnTo={returnTo} />
+              <EventRowActions event={event} onDelete={openDeleteDialog} returnTo={returnTo} />
             </div>
           </Card>
         ))}
@@ -351,23 +332,19 @@ export function EventRecords({ events, hasQuery = false, returnTo = "/admin/even
 
 function EventRowActions({
   event,
-  onEdit,
   onDelete,
   returnTo,
 }: {
   event: Event;
-  onEdit: (event: Event) => void;
   onDelete: (event: Event) => void;
   returnTo: string;
 }) {
   return (
     <div className="flex shrink-0 flex-wrap gap-2">
-      <ButtonLink href={buildAdminReturnHref(`/admin/events/${event.id}`, returnTo, "/admin/events")} size="sm" variant="primary">
+      <ButtonLink href={buildAdminReturnHref(`/admin/events/${event.id}/attendances`, returnTo, "/admin/events")} size="sm" variant="primary">
         簽到管理
       </ButtonLink>
-      <Button type="button" size="sm" variant="outline" onClick={() => onEdit(event)}>
-        編輯
-      </Button>
+      <ButtonLink href={buildAdminReturnHref(`/admin/events/${event.id}/edit`, returnTo, "/admin/events")} size="sm" variant="outline">編輯</ButtonLink>
       <EventMoreMenu event={event} onDelete={onDelete} />
     </div>
   );

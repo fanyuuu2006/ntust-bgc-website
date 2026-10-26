@@ -55,14 +55,26 @@ const EVENT_ATTENDANCE_WITH_EVENT_SELECT =
   "*, event:events(id, name, start_time)";
 
 export const eventAttendancesRepository = {
-  countByEventId: async (eventId: string): Promise<number> => {
-    const { count, error } = await supabase
+  countByEventId: async (eventId: string, statuses?: AttendanceStatus[]): Promise<number> => {
+    let query = supabase
       .from("event_attendances")
       .select("*", { count: "exact", head: true })
       .eq("event_id", eventId);
+    if (statuses && statuses.length > 0) query = query.in("status", statuses);
+    const { count, error } = await query;
 
     if (error) throwRepositoryError("統計活動簽到紀錄失敗", error);
     return count ?? 0;
+  },
+
+  countByEventIds: async (eventIds: string[], statuses: AttendanceStatus[] = ["present", "late"]): Promise<Record<string, number>> => {
+    if (!eventIds.length) return {};
+    const { data, error } = await supabase.from("event_attendances").select("event_id, status").in("event_id", eventIds).in("status", statuses);
+    if (error) throwRepositoryError("批次取得活動簽到數失敗", error);
+    return (data ?? []).reduce<Record<string, number>>((counts, row) => {
+      counts[row.event_id] = (counts[row.event_id] ?? 0) + 1;
+      return counts;
+    }, {});
   },
 
   /**
