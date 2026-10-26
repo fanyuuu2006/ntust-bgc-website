@@ -1,9 +1,15 @@
-export type PocCalendarEvent = {
+﻿export type PocCalendarEvent = {
   id: string;
   title: string;
   start: string;
   end?: string;
   cancelled?: boolean;
+  color?: "blue" | "violet" | "green" | "orange" | "red" | "cyan" | "black";
+  description?: string;
+  checkInOpensAt?: string;
+  checkInClosesAt?: string;
+  descriptionFormat?: "plain_text" | "rich_text_v1";
+  richDescription?: unknown;
 };
 
 export function getEventsForDate(events: PocCalendarEvent[], date: string) {
@@ -20,15 +26,15 @@ export function getEventsForDate(events: PocCalendarEvent[], date: string) {
 export function formatPocTimeRange(event: PocCalendarEvent) {
   const start = event.start.slice(11, 16);
   const end = event.end?.slice(11, 16);
-  return end ? `${start}–${end}` : start;
+  return end ? `${start}\u2013${end}` : start;
 }
 
-const WEEKDAYS = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"] as const;
+const WEEKDAYS = ["\u9031\u65e5", "\u9031\u4e00", "\u9031\u4e8c", "\u9031\u4e09", "\u9031\u56db", "\u9031\u4e94", "\u9031\u516d"] as const;
 
 export function formatPocSelectedDate(date: string) {
   const [year, month, day] = date.split("-").map(Number);
   const weekday = WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()];
-  return `${month} 月 ${day} 日・${weekday}`;
+  return `${month} \u6708 ${day} \u65e5\u30fb${weekday}`;
 }
 
 export function formatPocDateInput(date: Date) {

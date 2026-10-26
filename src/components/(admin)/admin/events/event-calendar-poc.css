@@ -12,27 +12,45 @@
 .poc-month-cell:nth-child(7n+1) { border-left:0; }
 .poc-month-cell:hover { background:var(--interactive-muted); }
 .poc-month-cell:focus-visible { position:relative; z-index:1; outline:2px solid var(--focus-ring); outline-offset:-2px; }
-.poc-month-cell-selected { box-shadow:inset 0 0 0 2px var(--interactive-primary); background:var(--interactive-muted); }
+.poc-month-cell-selected { box-shadow:inset 0 0 0 2px var(--interactive-primary); }
 .poc-month-cell-outside { color:var(--text-muted); opacity:.65; }
 .poc-month-day-number { display:inline-flex; min-width:2rem; min-height:2rem; align-items:center; justify-content:center; border-radius:999px; font-size:.8125rem; font-weight:700; }
 .poc-month-cell-today .poc-month-day-number { background:var(--interactive-primary); color:var(--surface-default); }
-.poc-month-events { display:flex; min-height:1.25rem; align-items:center; }
-.poc-month-event-indicator { display:inline-flex; min-width:.5rem; min-height:.5rem; align-items:center; justify-content:center; border-radius:999px; background:var(--interactive-primary); color:var(--surface-default); font-size:.625rem; font-weight:800; }
-.poc-month-event-indicator:not(:empty) { min-width:1.25rem; min-height:1.25rem; }
 .poc-selected-day { padding:1rem; }
 .poc-agenda-toolbar { border-bottom:1px solid var(--border-default); padding-bottom:.75rem; }
 .poc-agenda-toolbar h2 { color:var(--text-primary); font-size:1.125rem; font-weight:800; }
 .poc-agenda-toolbar span { color:var(--text-secondary); font-size:.8125rem; }
 .poc-selected-events,.poc-agenda-list { display:grid; gap:.625rem; padding-top:.75rem; }
 .poc-selected-event { display:flex; min-width:0; align-items:flex-start; justify-content:space-between; gap:.625rem; border:1px solid var(--border-default); border-left:4px solid var(--interactive-primary); border-radius:.75rem; background:var(--surface-subtle); padding:.75rem; }
-.poc-selected-event:hover { border-color:var(--interactive-primary); box-shadow:var(--shadow-hover); }
+.poc-selected-event-violet { border-left-color:var(--game-blue); }
+.poc-selected-event-green { border-left-color:var(--game-green); }
+.poc-selected-event-orange { border-left-color:var(--game-yellow); }
+.poc-selected-event-red { border-left-color:var(--game-red); }
+.poc-selected-event-cyan { border-left-color:var(--primary-light); }
+.poc-selected-event-black { border-left-color:var(--text-secondary); }
+.poc-selected-event:hover { border-color:var(--border-default); box-shadow:var(--shadow-hover); }
+.poc-selected-event-blue:hover { border-left-color:var(--interactive-primary); }
+.poc-selected-event-violet:hover { border-left-color:var(--game-blue); }
+.poc-selected-event-green:hover { border-left-color:var(--game-green); }
+.poc-selected-event-orange:hover { border-left-color:var(--game-yellow); }
+.poc-selected-event-red:hover { border-left-color:var(--game-red); }
+.poc-selected-event-cyan:hover { border-left-color:var(--primary-light); }
+.poc-selected-event-black:hover { border-left-color:var(--text-secondary); }
 .poc-selected-event-title { overflow-wrap:anywhere; color:var(--text-primary); font-size:.875rem; font-weight:700; }
 .poc-selected-event-time { margin-top:.25rem; color:var(--text-secondary); font-size:.75rem; }
 .poc-selected-event-cancelled { border-left-color:var(--border-default); }
 .poc-selected-event-cancelled .poc-selected-event-title,.poc-list-event-cancelled strong { text-decoration:line-through; }
-.poc-empty-day { margin-top:.75rem; border:1px dashed var(--border-default); border-radius:.75rem; background:var(--surface-subtle); padding:1rem; color:var(--text-primary); }
-.poc-empty-day span { display:block; margin-top:.25rem; color:var(--text-secondary); font-size:.75rem; }
-.poc-list-event { display:flex; min-width:0; gap:1rem; border-bottom:1px solid var(--border-default); padding:.875rem .5rem; text-align:left; }
+.poc-empty-day { display:grid; justify-items:center; gap:.35rem; margin-top:.75rem; border:1px solid var(--border-default); border-radius:.75rem; background:var(--surface-subtle); padding:1rem; color:var(--text-primary); text-align:center; }
+.poc-empty-day-icon { color:var(--text-muted); }
+.poc-empty-day p { font-weight:700; }
+.poc-empty-day span { display:block; color:var(--text-secondary); font-size:.75rem; }
+.poc-list-event { display:flex; min-width:0; gap:1rem; border-bottom:1px solid var(--border-default); border-left:3px solid var(--interactive-primary); padding:.875rem .5rem; text-align:left; }
+.poc-list-event-violet { border-left-color:var(--game-blue); }
+.poc-list-event-green { border-left-color:var(--game-green); }
+.poc-list-event-orange { border-left-color:var(--game-yellow); }
+.poc-list-event-red { border-left-color:var(--game-red); }
+.poc-list-event-cyan { border-left-color:var(--primary-light); }
+.poc-list-event-black { border-left-color:var(--text-secondary); }
 .poc-list-event:hover { background:var(--surface-subtle); }
 .poc-list-event:focus-visible { outline:2px solid var(--focus-ring); outline-offset:-2px; }
 .poc-list-event-date { width:9rem; flex:none; color:var(--text-secondary); font-size:.8125rem; }
@@ -49,7 +67,47 @@
  .poc-month-cell { min-height:3.75rem; padding:.25rem; align-items:center; }
  .poc-weekday { padding:.5rem .125rem; font-size:.6875rem; }
  .poc-month-day-number { min-width:1.875rem; min-height:1.875rem; font-size:.75rem; }
- .poc-month-events { min-height:.75rem; } .poc-month-event-indicator:not(:empty) { min-width:1rem; min-height:1rem; }
  .poc-selected-day { padding:.75rem; } .poc-list-event { gap:.5rem; padding:.75rem .25rem; } .poc-list-event-date { width:6.5rem; font-size:.75rem; }
 }
 @media (prefers-reduced-motion:reduce) { .poc-month-cell { transition:none; } }
+.poc-month-event-list { display:grid; min-width:0; width:100%; gap:.25rem; margin-top:.25rem; }
+.poc-event-chip { display:block; min-width:0; overflow:hidden; border:1px solid transparent; border-radius:.375rem; padding:.2rem .35rem; font-size:.6875rem; font-weight:700; line-height:1.2; text-overflow:ellipsis; white-space:nowrap; }
+.poc-event-chip-blue { background:color-mix(in srgb,var(--interactive-primary) 16%,var(--surface-default)); border-color:color-mix(in srgb,var(--interactive-primary) 58%,var(--surface-default)); color:var(--interactive-primary); }
+.poc-event-chip-violet { background:color-mix(in srgb,var(--game-blue) 18%,var(--surface-default)); border-color:color-mix(in srgb,var(--game-blue) 58%,var(--surface-default)); color:var(--game-blue); }
+.poc-event-chip-green { background:color-mix(in srgb,var(--game-green) 18%,var(--surface-default)); border-color:color-mix(in srgb,var(--game-green) 58%,var(--surface-default)); color:var(--game-green); }
+.poc-event-chip-orange { background:color-mix(in srgb,var(--game-yellow) 24%,var(--surface-default)); border-color:color-mix(in srgb,var(--game-yellow) 62%,var(--surface-default)); color:var(--text-primary); }
+.poc-event-chip-red { background:color-mix(in srgb,var(--game-red) 16%,var(--surface-default)); border-color:color-mix(in srgb,var(--game-red) 58%,var(--surface-default)); color:var(--game-red); }
+.poc-event-chip-cyan { background:color-mix(in srgb,var(--primary-light) 18%,var(--surface-default)); border-color:color-mix(in srgb,var(--primary-light) 58%,var(--surface-default)); color:var(--primary-dark); }
+.poc-event-chip-black { background:color-mix(in srgb,var(--foreground) 86%,var(--surface-default)); color:var(--background); border:1px solid var(--foreground); }
+.poc-event-chip-cancelled { background:var(--surface-subtle); color:var(--text-secondary); text-decoration:line-through; }
+.poc-event-more { display:inline-flex; max-width:100%; align-items:center; overflow:hidden; border-radius:.375rem; background:var(--surface-subtle); color:var(--text-secondary); padding:.15rem .35rem; font-size:.6875rem; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
+.poc-event-count { display:none; }
+@media (max-width:639px) {
+  .poc-month-event-list { display:flex; min-height:.75rem; width:auto; align-items:center; gap:.25rem; }
+  .poc-event-chip { display:none; }
+  .poc-month-event-indicator,.poc-event-indicator { display:block; box-sizing:border-box; width:.5rem; height:.5rem; flex:none; border:1px solid transparent; border-radius:999px; }
+  .poc-event-indicator-blue { background:var(--interactive-primary); border-color:color-mix(in srgb,var(--interactive-primary) 62%,var(--foreground)); }
+  .poc-event-indicator-violet { background:var(--game-blue); border-color:color-mix(in srgb,var(--game-blue) 62%,var(--foreground)); }
+  .poc-event-indicator-green { background:var(--game-green); border-color:color-mix(in srgb,var(--game-green) 62%,var(--foreground)); }
+  .poc-event-indicator-orange { background:var(--game-yellow); border-color:color-mix(in srgb,var(--game-yellow) 62%,var(--foreground)); }
+  .poc-event-indicator-red { background:var(--game-red); border-color:color-mix(in srgb,var(--game-red) 62%,var(--foreground)); }
+  .poc-event-indicator-cyan { background:var(--primary-light); border-color:color-mix(in srgb,var(--primary-light) 62%,var(--foreground)); }
+  .poc-event-indicator-black { background:var(--foreground); border-color:var(--foreground); }
+  .poc-event-more { display:none; }
+  .poc-event-count { display:inline-flex; box-sizing:border-box; min-width:1.125rem; min-height:1.125rem; align-items:center; justify-content:center; border:1px solid var(--border-strong); border-radius:999px; background:var(--surface-subtle); color:var(--text-secondary); font-size:.625rem; font-weight:700; line-height:1; }
+}
+
+.poc-month-title { justify-self:center; color:var(--text-primary); font-size:1.125rem; font-weight:800; }
+.poc-month-title:hover { color:var(--interactive-primary); }
+.poc-month-title:focus-visible { outline:2px solid var(--focus-ring); outline-offset:4px; border-radius:.25rem; }
+.poc-month-input-native { min-height:2.25rem; border:1px solid var(--border-default); border-radius:.625rem; background:var(--surface-default); color:var(--text-primary); padding:.35rem .5rem; font-size:.875rem; }
+.poc-month-input-native:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
+.poc-month-input-native-hidden { display:none; }
+.poc-modal-color { display:inline-block; width:.625rem; height:.625rem; flex:none; margin-top:.35rem; border-radius:999px; background:var(--interactive-primary); }
+.poc-modal-color-violet { background:var(--game-blue); }
+.poc-modal-color-green { background:var(--game-green); }
+.poc-modal-color-orange { background:var(--game-yellow); }
+.poc-modal-color-red { background:var(--game-red); }
+.poc-modal-color-cyan { background:var(--primary-light); }
+.poc-modal-color-black { background:var(--foreground); }
+@media (max-width:639px) { .poc-month-title { justify-self:start; font-size:1rem; } }

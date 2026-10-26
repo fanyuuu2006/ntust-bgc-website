@@ -1,4 +1,4 @@
-import assert from "node:assert/strict";
+﻿import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -20,6 +20,17 @@ test("Calendar PoC includes month, list, and cancelled-state presentation", asyn
   assert.match(text, /view === \"month\"/);
   assert.match(text, /poc-list-event/);
   assert.match(text, /poc-list-event-cancelled/);
+});
+
+test("Calendar details use schema-aligned optional fields and neutral black presentation", async () => {
+  const text = await source();
+  const css = await readFile(new URL("../src/components/(admin)/admin/events/event-calendar-poc.css", import.meta.url), "utf8");
+  assert.match(text, /color: "black"/);
+  assert.match(text, /活動介紹/);
+  assert.match(text, /checkInOpensAt/);
+  assert.doesNotMatch(text, /location:/);
+  assert.match(css, /poc-event-chip-black/);
+  assert.match(css, /poc-event-indicator-black/);
 });
 
 test("Calendar presentation keeps mobile events textual and date states distinct", async () => {
