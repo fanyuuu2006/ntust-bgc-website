@@ -3,15 +3,21 @@ import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const source = () => readFile(new URL("../src/components/(admin)/admin/events/EventCalendarPoc.tsx", import.meta.url), "utf8");
+const source = () => readFile(new URL("../src/components/calendar/EventCalendar.tsx", import.meta.url), "utf8");
 
-test("Calendar PoC keeps its mock data and interactions local", async () => {
+test("shared Calendar keeps its interactions local", async () => {
   const text = await source();
   assert.match(text, /MOCK_EVENTS/);
   assert.match(text, /selectDate/);
   assert.match(text, /setSelectedEvent/);
-  assert.match(text, /未呼叫正式 API/);
   assert.doesNotMatch(text, /apiClient\(/);
+});
+
+test("Calendar PoC is a thin mock-data adapter", async () => {
+  const text = await readFile(new URL("../src/components/(admin)/admin/events/EventCalendarPoc.tsx", import.meta.url), "utf8");
+  assert.match(text, /EventCalendar/);
+  assert.match(text, /MOCK_EVENTS/);
+  assert.doesNotMatch(text, /fetch\(/);
 });
 
 test("Calendar PoC includes month, list, and cancelled-state presentation", async () => {

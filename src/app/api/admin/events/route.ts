@@ -5,6 +5,30 @@ import { eventsService } from "@/services/events/events.service";
 import { EventCheckInWindowError } from "@/services/events/events.errors";
 import { unexpectedErrorResponse } from "@/libs/api/server-response";
 
+export async function GET(request: Request) {
+  const authorization = await authorizeAdminRequest("沒有管理權限");
+  if (authorization.response) return authorization.response;
+  const url = new URL(request.url);
+  const from = url.searchParams.get("from");
+  const to = url.searchParams.get("to");
+  if (!from || !to || new Date(from) >= new Date(to)) {
+    return NextResponse.json({ message: "日期區間不正確" }, { status: 400 });
+  }
+  try {
+    const result = await eventsService.getEvents({
+      page: 1,
+      pageSize: 100,
+      startsAfter: from,
+      startsBefore: to,
+      orderBy: "start_time",
+      orderDirection: "asc",
+    });
+    return NextResponse.json({ data: result.data, total: result.total });
+  } catch (error) {
+    return unexpectedErrorResponse("[GET /api/admin/events]", error, "活動資料載入失敗");
+  }
+}
+
 
 export async function POST(request: Request) {
   try {

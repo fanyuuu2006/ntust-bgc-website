@@ -7,6 +7,7 @@ import { ClearableSearchInput } from "@/components/query/ClearableSearchInput";
 import { ImmediateQuerySelect } from "@/components/query/ImmediateQuerySelect";
 import { PreservedQueryFields } from "@/components/query/PreservedQueryFields";
 import { EventActions } from "@/components/(admin)/admin/events/EventActions";
+import { AdminEventCalendar } from "@/components/(admin)/admin/events/AdminEventCalendar";
 import { EventRecords } from "@/components/(admin)/admin/events/EventRecords";
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { Button } from "@/components/ui/Button";
@@ -17,6 +18,7 @@ import {
   type QueryParamValue,
 } from "@/libs/query-params";
 import { parsePage } from "@/utils/pagination";
+import Link from "next/link";
 const ORDER_FIELDS = ["name", "start_time", "end_time", "created_at"] as const;
 type Status = "upcoming" | "ongoing" | "ended";
 async function AdminEventsPage({
@@ -27,6 +29,7 @@ async function AdminEventsPage({
     orderDirection?: QueryParamValue;
     page?: QueryParamValue;
     pageSize?: QueryParamValue;
+    view?: QueryParamValue;
     search?: QueryParamValue;
     status?: QueryParamValue;
   }>;
@@ -61,6 +64,7 @@ async function AdminEventsPage({
     status,
   });
   const attendedCounts = await eventsService.getAttendedCountsByEventIds(result.data.map((event) => event.id));
+  const calendarView = readSingleQueryValue(rawParams.view) === "calendar";
   const pageSize = normalizePageSizeOption(params.pageSize, [10, 20, 50, 100], 20);
   const clearSearchParams = new URLSearchParams();
   if (params.status) clearSearchParams.set("status", params.status);
@@ -77,9 +81,10 @@ async function AdminEventsPage({
         breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { label: "活動管理" }]} />}
         title="活動管理"
         description="建立、編輯與管理社團活動，可進入活動詳情管理簽到。"
-        actions={<EventActions />}
+        actions={<div className="flex flex-wrap items-center gap-2"><Link className="btn outline" href="/admin/events">列表</Link><Link className="btn outline" href="/admin/events?view=calendar">行事曆</Link><EventActions /></div>}
       />
-      <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
+      {calendarView ? <section className="px-4 pb-6 sm:px-6 lg:px-8"><AdminEventCalendar /></section> : null}
+      {calendarView ? null : <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_10rem_10rem] md:items-center">
           <form className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]" aria-label="搜尋活動">
             <PreservedQueryFields query={{ search: params.search, status, orderBy, orderDirection, pageSize }} ownedKeys={["search"]} />
@@ -107,7 +112,7 @@ async function AdminEventsPage({
           hasQuery={Boolean(params.search || status || Number(params.page) > 1)}
         />
         </PaginatedCollection>
-      </section>
+      </section>}
     </>
   );
 }

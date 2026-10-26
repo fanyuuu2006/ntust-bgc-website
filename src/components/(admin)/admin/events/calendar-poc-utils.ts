@@ -66,6 +66,12 @@ export function addPocMonths(month: string, offset: number) {
   return date.getUTCFullYear() + "-" + String(date.getUTCMonth() + 1).padStart(2, "0") + "-01";
 }
 
+export function getPocMonthRange(month: string) {
+  const normalized = `${month.slice(0, 7)}-01`;
+  const next = addPocMonths(normalized, 1);
+  return { from: `${normalized}T00:00:00+08:00`, to: `${next}T00:00:00+08:00` };
+}
+
 export function getPocMonthDays(month: string) {
   const [year, monthNumber] = month.split("-").map(Number);
   const first = new Date(Date.UTC(year, monthNumber - 1, 1));

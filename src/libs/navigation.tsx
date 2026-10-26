@@ -8,7 +8,8 @@ export const publicNavigation = [
   { label: "首頁", href: "/" },
   { label: "公告", href: "/announcements" },
   { label: "桌遊", href: "/board-games" },
-  { label: "排行", href: "/rankings" },
+  { label: "行事曆", href: "/schedule" },
+  { label: "排行榜", href: "/rankings" },
 ] as const satisfies readonly NavigationItem[];
 
 export const memberMenuNavigation = [
