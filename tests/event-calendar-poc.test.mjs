@@ -18,8 +18,8 @@ test("Calendar PoC includes month, list, and cancelled-state presentation", asyn
   const text = await source();
   assert.match(text, /getPocMonthDays/);
   assert.match(text, /view === \"month\"/);
-  assert.match(text, /poc-list-event/);
-  assert.match(text, /poc-list-event-cancelled/);
+  assert.match(text, /PocEventCard/);
+  assert.match(text, /poc-event-card-cancelled/);
 });
 
 test("Calendar details use schema-aligned optional fields and neutral black presentation", async () => {
@@ -52,6 +52,15 @@ test("FullCalendar PoC uses an external toolbar and selected-day presentation", 
   assert.match(text, /aria-pressed/);
   assert.match(text, /<Modal open=\{selectedEvent !== null\}/);
   assert.match(text, /活動詳情/);
+});
+
+test("List and selected-day agenda share one keyboard-accessible event card", async () => {
+  const text = await source();
+  const cardUsages = text.match(/<PocEventCard/g) ?? [];
+  assert.match(text, /function PocEventCard/);
+  assert.equal(cardUsages.length, 2);
+  assert.match(text, /poc-event-card-title/);
+  assert.doesNotMatch(text, /function EventSummary/);
 });
 
 test("Calendar PoC uses the shared admin page header contract", async () => {

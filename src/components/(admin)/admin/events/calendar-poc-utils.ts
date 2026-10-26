@@ -23,9 +23,28 @@ export function getEventsForDate(events: PocCalendarEvent[], date: string) {
   });
 }
 
+/** 依目前月份篩選並以開始時間排序，供 List View 與未來 API Adapter 共用。 */
+export function getEventsForMonth(events: PocCalendarEvent[], month: string) {
+  const [year, monthNumber] = month.split("-").map(Number);
+  const monthStart = new Date(Date.UTC(year, monthNumber - 1, 1, -8));
+  const nextMonthStart = new Date(Date.UTC(year, monthNumber, 1, -8));
+  return events
+    .filter((event) => {
+      const start = new Date(event.start);
+      const end = event.end ? new Date(event.end) : new Date(start.getTime() + 1);
+      return start < nextMonthStart && end > monthStart;
+    })
+    .sort((a, b) => a.start.localeCompare(b.start));
+}
+
 export function formatPocTimeRange(event: PocCalendarEvent) {
+  const startDate = event.start.slice(0, 10);
   const start = event.start.slice(11, 16);
+  const endDate = event.end?.slice(0, 10);
   const end = event.end?.slice(11, 16);
+  if (endDate && endDate !== startDate) {
+    return `${startDate.slice(5).replace("-", "/")} ${start} → ${endDate.slice(5).replace("-", "/")} ${end}`;
+  }
   return end ? `${start}\u2013${end}` : start;
 }
 
