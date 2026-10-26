@@ -5,13 +5,16 @@ import {
   eventsRepository,
   FindManyEventsOptions,
 } from "@/repositories/events.repository";
-import { attendanceInputSchema, attendanceUpdateSchema, bulkAttendanceUpdateSchema, createEventSchema, updateEventSchema } from "./events.schema";
+import { attendanceInputSchema, attendanceUpdateSchema, bulkAttendanceUpdateSchema, createEventSchema, publicEventsQuerySchema, updateEventSchema } from "./events.schema";
 import { usersRepository } from "@/repositories/users.repository";
 import { userProfilesRepository } from "@/repositories/user-profiles.repository";
 import {
   EventNotFoundError,
   EventHasAttendanceRecordsError,
   EventCheckInWindowError,
+  EventCancelledError,
+  EventAlreadyCancelledError,
+  EventNotCancelledError,
   AttendanceAlreadyExistsError,
   AttendanceBatchConflictError,
   AttendanceNotFoundError,
@@ -72,6 +75,21 @@ export const eventsService = {
     return eventsRepository.findById(id);
   },
 
+  getPublicEvents: async (query: unknown) => {
+    const data = publicEventsQuerySchema.parse(query);
+    const events = await eventsRepository.findPublishedInRange(data.from, data.to);
+    return events.map((event) => ({
+      id: event.id,
+      name: event.name,
+      description: event.description,
+      description_format: event.description_format,
+      rich_description: event.rich_description,
+      start_time: event.start_time,
+      end_time: event.end_time,
+      is_cancelled: event.cancelled_at !== null,
+    }));
+  },
+
   createEvent: async (payload: unknown) => {
     const data = createEventSchema.parse(payload);
     return eventsRepository.create({
@@ -80,6 +98,7 @@ export const eventsService = {
         data.check_in_opens_at ?? null,
         data.check_in_closes_at ?? null,
       ),
+      publication_status: data.publication_status ?? "published",
     });
   },
 
@@ -114,6 +133,30 @@ export const eventsService = {
     }
 
     return updated;
+  },
+
+  cancelEvent: async (id: string) => {
+    const current = await eventsRepository.findById(id);
+    if (!current) throw new EventNotFoundError();
+    if (current.cancelled_at) throw new EventAlreadyCancelledError();
+    const updated = await eventsRepository.cancelById(id, new Date().toISOString());
+    if (updated) return updated;
+    const latest = await eventsRepository.findById(id);
+    if (!latest) throw new EventNotFoundError();
+    if (latest.cancelled_at) throw new EventAlreadyCancelledError();
+    throw new Error("取消活動更新未完成");
+  },
+
+  restoreEvent: async (id: string) => {
+    const current = await eventsRepository.findById(id);
+    if (!current) throw new EventNotFoundError();
+    if (!current.cancelled_at) throw new EventNotCancelledError();
+    const updated = await eventsRepository.restoreById(id);
+    if (updated) return updated;
+    const latest = await eventsRepository.findById(id);
+    if (!latest) throw new EventNotFoundError();
+    if (!latest.cancelled_at) throw new EventNotCancelledError();
+    throw new Error("恢復活動更新未完成");
   },
 
   deleteEvent: async (id: string) => {
@@ -188,6 +231,7 @@ export const eventsService = {
     ]);
 
     if (!event) throw new EventNotFoundError();
+    if (event.cancelled_at) throw new EventCancelledError();
     if (!isCurrentMember) throw new SelfCheckInMembershipRequiredError();
 
     const now = new Date();

@@ -14,7 +14,7 @@ export type CreateEventInput = Pick<
   Event,
   "name" | "start_time" | "end_time" | "check_in_opens_at" | "check_in_closes_at"
 > &
-  Partial<Pick<Event, "description" | "description_format" | "rich_description">>;
+  Partial<Pick<Event, "description" | "description_format" | "rich_description" | "publication_status">>;
 
 export type UpdateEventInput = Partial<
   Pick<
@@ -25,6 +25,8 @@ export type UpdateEventInput = Partial<
     | "end_time"
     | "check_in_opens_at"
     | "check_in_closes_at"
+    | "publication_status"
+    | "cancelled_at"
   >
 >;
 
@@ -38,7 +40,21 @@ export type FindManyEventsOptions = PaginationQuery &
     startsBefore?: string;
   };
 
+export type PublicEvent = Pick<Event, "id" | "name" | "description" | "description_format" | "rich_description" | "start_time" | "end_time" | "cancelled_at">;
+
 export const eventsRepository = {
+  findPublishedInRange: async (from: string, to: string): Promise<PublicEvent[]> => {
+    const { data, error } = await supabase
+      .from("events")
+      .select("id,name,description,description_format,rich_description,start_time,end_time,cancelled_at")
+      .eq("publication_status", "published")
+      .lt("start_time", to)
+      .gt("end_time", from)
+      .order("start_time", { ascending: true })
+      .order("id", { ascending: true });
+    if (error) throwRepositoryError("查詢公開活動失敗", error);
+    return data ?? [];
+  },
   findMany: async (options: FindManyEventsOptions = {}) => {
     const { page, pageSize, from, to } = normalizePaginationOptions({
       page: options.page,
@@ -152,6 +168,30 @@ export const eventsRepository = {
       .select()
       .maybeSingle();
     if (error) throwRepositoryError("更新活動失敗", error);
+    return data;
+  },
+
+  cancelById: async (id: string, cancelledAt: string): Promise<Event | null> => {
+    const { data, error } = await supabase
+      .from("events")
+      .update({ cancelled_at: cancelledAt })
+      .eq("id", id)
+      .is("cancelled_at", null)
+      .select()
+      .maybeSingle();
+    if (error) throwRepositoryError("取消活動失敗", error);
+    return data;
+  },
+
+  restoreById: async (id: string): Promise<Event | null> => {
+    const { data, error } = await supabase
+      .from("events")
+      .update({ cancelled_at: null })
+      .eq("id", id)
+      .not("cancelled_at", "is", null)
+      .select()
+      .maybeSingle();
+    if (error) throwRepositoryError("恢復活動失敗", error);
     return data;
   },
 

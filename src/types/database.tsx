@@ -349,6 +349,8 @@ export type Event = {
   end_time: Timestamp;
   check_in_opens_at: Timestamp | null;
   check_in_closes_at: Timestamp | null;
+  publication_status: "draft" | "published";
+  cancelled_at: Timestamp | null;
   created_at: Timestamp;
 };
 

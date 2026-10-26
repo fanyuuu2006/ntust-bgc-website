@@ -19,6 +19,27 @@ export class EventCheckInWindowError extends Error {
   }
 }
 
+export class EventCancelledError extends Error {
+  constructor() {
+    super("活動已取消，無法新增簽到");
+    this.name = "EventCancelledError";
+  }
+}
+
+export class EventAlreadyCancelledError extends Error {
+  constructor() {
+    super("活動已經取消");
+    this.name = "EventAlreadyCancelledError";
+  }
+}
+
+export class EventNotCancelledError extends Error {
+  constructor() {
+    super("活動目前不是取消狀態");
+    this.name = "EventNotCancelledError";
+  }
+}
+
 export class AttendanceNotFoundError extends Error {
   constructor() {
     super("找不到簽到紀錄");

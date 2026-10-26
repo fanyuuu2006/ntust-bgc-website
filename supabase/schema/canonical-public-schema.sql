@@ -135,6 +135,9 @@ create table public.events (
   ),
   check_in_opens_at timestamptz,
   check_in_closes_at timestamptz,
+  publication_status text not null default 'draft',
+  cancelled_at timestamptz,
+  constraint events_publication_status_check check (publication_status in ('draft', 'published')),
   constraint events_check_in_window_check check (
     (check_in_opens_at is null and check_in_closes_at is null)
     or (

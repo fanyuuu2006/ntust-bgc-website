@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { authorizeVerifiedRequest } from "@/libs/api/verified-authorization";
 import {
   EventNotFoundError,
+  EventCancelledError,
   SelfCheckInAlreadyCompletedError,
   SelfCheckInClosedError,
   SelfCheckInMembershipRequiredError,
@@ -34,7 +35,8 @@ export async function POST(
 
     if (
       error instanceof SelfCheckInClosedError ||
-      error instanceof SelfCheckInAlreadyCompletedError
+      error instanceof SelfCheckInAlreadyCompletedError ||
+      error instanceof EventCancelledError
     ) {
       return NextResponse.json({ message: error.message }, { status: 409 });
     }

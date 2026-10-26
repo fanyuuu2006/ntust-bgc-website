@@ -11,6 +11,7 @@ export const createEventSchema = z
     end_time: z.iso.datetime({ message: "活動結束時間格式不正確" }),
     check_in_opens_at: checkInTimeSchema,
     check_in_closes_at: checkInTimeSchema,
+    publication_status: z.enum(["draft", "published"]).optional(),
   })
   .refine((data) => new Date(data.end_time) > new Date(data.start_time), {
     message: "活動結束時間必須晚於開始時間",
@@ -25,6 +26,8 @@ export const updateEventSchema = z
     end_time: z.iso.datetime({ message: "活動結束時間格式不正確" }),
     check_in_opens_at: checkInTimeSchema,
     check_in_closes_at: checkInTimeSchema,
+    publication_status: z.enum(["draft", "published"]).optional(),
+    cancelled_at: z.never().optional(),
   })
   .partial()
   .refine(
@@ -34,6 +37,21 @@ export const updateEventSchema = z
       new Date(data.end_time) > new Date(data.start_time),
     { message: "活動結束時間必須晚於開始時間", path: ["end_time"] },
   ).superRefine(validateDescription).transform(canonicalizeDescription);
+
+export const eventActionSchema = z
+  .object({ action: z.enum(["cancel", "restore"]) })
+  .strict();
+
+export const publicEventsQuerySchema = z.object({
+  from: z.iso.datetime({ offset: true, message: "開始時間格式不正確" }),
+  to: z.iso.datetime({ offset: true, message: "結束時間格式不正確" }),
+}).refine((data) => new Date(data.from) < new Date(data.to), {
+  message: "查詢開始時間必須早於結束時間",
+  path: ["to"],
+}).refine((data) => new Date(data.to).getTime() - new Date(data.from).getTime() <= 366 * 24 * 60 * 60 * 1000, {
+  message: "查詢區間不可超過 366 天",
+  path: ["to"],
+});
 
 export const attendanceInputSchema = z.object({
   user_id: z.uuid(),
