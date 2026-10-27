@@ -9,6 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --experimental-strip-types --test",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "openapi:lint": "redocly lint docs/api/openapi.yaml",
     "test:openapi": "node --test tests/openapi-documentation.test.mjs",
     "db:start": "npx supabase@2.117.0 start",
@@ -38,6 +40,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@redocly/cli": "^2.67.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
