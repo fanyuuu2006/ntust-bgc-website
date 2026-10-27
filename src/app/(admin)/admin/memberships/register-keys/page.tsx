@@ -43,7 +43,7 @@ async function MembershipRegisterKeysPage({ searchParams }: Props) {
         actions={
           <>
             <ButtonLink href="/admin/memberships" variant="outline" aria-label="返回資格管理">
-              返回社員資格管理
+              返回資格管理
             </ButtonLink>
             <RegisterKeyGenerateForm
               academicYears={academicYears}
