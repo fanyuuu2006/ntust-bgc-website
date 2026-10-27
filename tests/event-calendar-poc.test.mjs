@@ -52,7 +52,7 @@ test("Calendar presentation keeps mobile events textual and date states distinct
   assert.match(css, /event-calendar-month-event-indicator/);
   assert.doesNotMatch(css, /fc-daygrid/);
   assert.match(sharedCss, /event-calendar-event-chip \{ display:none; \}/);
-  assert.match(sharedCss, /event-calendar-month-event-list \{ display:flex;[^}]*max-height:\.75rem/);
+  assert.doesNotMatch(sharedCss, /event-calendar-month-event-list \{ display:flex;[^}]*max-height/);
 });
 
 test("FullCalendar PoC uses an external toolbar and selected-day presentation", async () => {
@@ -106,7 +106,7 @@ test("calendar API range follows the visible grid and keeps list semantics separ
   const moduleUrl = new URL("../src/components/calendar/calendar-utils.ts", import.meta.url).href;
   const output = execFileSync(process.execPath, ["--experimental-strip-types", "--input-type=module", "-e", `const m = await import(${JSON.stringify(moduleUrl)}); console.log(JSON.stringify([m.getPocCalendarViewRange("2026-10-01"), m.getPocCalendarViewRange("2026-02-01"), m.getPocCalendarViewRange("2027-01-01")]));`], { encoding: "utf8" }).trim();
   const [october, february, january] = JSON.parse(output.split("\n").at(-1));
-  assert.deepEqual(october, { from: "2026-09-27T00:00:00+08:00", to: "2026-11-08T00:00:00+08:00" });
+  assert.deepEqual(october, { from: "2026-09-27T00:00:00+08:00", to: "2026-11-01T00:00:00+08:00" });
   assert.deepEqual(february, { from: "2026-02-01T00:00:00+08:00", to: "2026-03-01T00:00:00+08:00" });
   assert.deepEqual(january, { from: "2026-12-27T00:00:00+08:00", to: "2027-02-07T00:00:00+08:00" });
 });
