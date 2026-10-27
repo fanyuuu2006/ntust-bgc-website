@@ -1,18 +1,17 @@
 ﻿"use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import {
   Calendar,
   CalendarDays,
-  Clock3,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/Modal";
-import { RichTextRenderer } from "@/components/RichTextRenderer";
 import { CalendarSurface } from "@/components/calendar/CalendarSurface";
+import { EventDetailsContent } from "./EventDetailsContent";
 import {
   addPocMonths,
   formatPocDateInput,
@@ -21,8 +20,12 @@ import {
   getEventsForDate,
   getEventsForMonth,
   getPocMonthDays,
+  isPocSunday,
+  isPocSaturday,
   type PocCalendarEvent,
 } from "./calendar-utils";
+import { getTaiwanHoliday, type CalendarHoliday } from "./calendar-holidays";
+import { isCalendarColor } from "@/utils/calendar-color";
 import "./calendar.css";
 // CalendarSurface supplies the shared poc-calendar-layout shell used by PublicEventCalendar.
 
@@ -153,10 +156,16 @@ function eventTone(event: PocCalendarEvent) {
   return event.color ?? "blue";
 }
 
-function formatPocDateLabel(date: string) {
-  const [year, month, day] = date.split("-").map(Number);
-  return `${year} 年 ${month} 月 ${day} 日・${formatPocSelectedDate(date).split("・")[1]}`;
+function eventStyle(event: PocCalendarEvent): CSSProperties | undefined {
+  return isCalendarColor(event.calendarColor)
+    ? ({ "--event-color": event.calendarColor } as CSSProperties)
+    : undefined;
 }
+
+function eventColorClass(event: PocCalendarEvent, prefix: string) {
+  return isCalendarColor(event.calendarColor) ? `${prefix}-custom` : `${prefix}-${eventTone(event)}`;
+}
+
 function PocEventCard({
   event,
   onOpen,
@@ -167,7 +176,8 @@ function PocEventCard({
   return (
     <button
       type="button"
-      className={`poc-event-card poc-event-card-${eventTone(event)}${event.cancelled ? " poc-event-card-cancelled" : ""}`}
+      className={`poc-event-card ${eventColorClass(event, "poc-event-card")}${event.cancelled ? " poc-event-card-cancelled" : ""}`}
+      style={eventStyle(event)}
       aria-label={`${event.title}，${formatPocTimeRange(event)}${event.cancelled ? "，已取消" : ""}${event.publicationStatus === "draft" ? "，草稿" : ""}，查看詳情`}
       onClick={() => onOpen(event)}
     >
@@ -190,10 +200,12 @@ export function EventCalendar({
   events: providedEvents = MOCK_EVENTS,
   onMonthChange,
   renderEventActions,
+  holidays,
 }: {
   events?: PocCalendarEvent[];
   onMonthChange?: (month: string) => void;
   renderEventActions?: (event: PocCalendarEvent) => ReactNode;
+  holidays?: CalendarHoliday[];
 }) {
   const [view, setView] = useState<"month" | "list">("month");
   const [month, setMonth] = useState(INITIAL_MONTH);
@@ -375,13 +387,16 @@ export function EventCalendar({
         >
           {view === "month" ? (
             <div className="poc-month-grid" role="grid" aria-label={monthTitle}>
-              {["一", "二", "三", "四", "五", "六", "日"].map((day) => (
-                <div className="poc-weekday" role="columnheader" key={day}>
+              {["日", "一", "二", "三", "四", "五", "六"].map((day) => (
+                <div className={`poc-weekday${day === "日" ? " poc-weekday-sunday" : day === "六" ? " poc-weekday-saturday" : ""}`} role="columnheader" key={day}>
                   {day}
                 </div>
               ))}
               {monthDays.map(({ date, day, outsideMonth }) => {
                 const dayEvents = getEventsForDate(events, date);
+                const holiday = holidays ? holidays.find((item) => item.date === date) : getTaiwanHoliday(date);
+                const isSunday = isPocSunday(date);
+                const isSaturday = isPocSaturday(date);
                 const isSelected = date === selectedDate;
                 const isToday = date === formatPocDateInput(new Date());
                 const mobileIndicators =
@@ -391,7 +406,8 @@ export function EventCalendar({
                       .map((event) => (
                         <span
                           key={`indicator-${event.id}`}
-                          className={`poc-month-event-indicator poc-event-indicator poc-event-indicator-${eventTone(event)}`}
+                          className={`poc-month-event-indicator poc-event-indicator ${eventColorClass(event, "poc-event-indicator")}`}
+                          style={eventStyle(event)}
                         />
                       ))
                   ) : (
@@ -406,28 +422,37 @@ export function EventCalendar({
                       "poc-month-cell" +
                       (outsideMonth ? " poc-month-cell-outside" : "") +
                       (isSelected ? " poc-month-cell-selected" : "") +
-                      (isToday ? " poc-month-cell-today" : "")
+                      (isToday ? " poc-month-cell-today" : "") +
+                      (isSunday ? " poc-month-cell-sunday" : "") +
+                      (isSaturday ? " poc-month-cell-saturday" : "") +
+                      (holiday?.kind === "holiday" ? " poc-month-cell-holiday" : "") +
+                      (holiday?.kind === "makeup_workday" ? " poc-month-cell-makeup-workday" : "")
                     }
                     aria-label={
                       "選取" +
                       formatPocSelectedDate(date) +
                       "，" +
                       dayEvents.length +
-                      " 個活動"
+                      " 個活動" + (holiday ? `，${holiday.name}` : "")
                     }
                     aria-current={isToday ? "date" : undefined}
                     onClick={() => selectDate(date)}
                   >
                     <span className="poc-month-day-number">{day}</span>
+                    {holiday ? (
+                      <span className="poc-holiday-label" title={holiday.name}>
+                        {holiday.shortName ?? holiday.name}
+                      </span>
+                    ) : null}
                     {dayEvents.length > 0 ? (
                       <span className="poc-month-event-list" aria-hidden="true">
                         {dayEvents.slice(0, 2).map((event) => (
                           <span
                             key={event.id}
                             className={
-                              "poc-event-chip poc-event-chip-" +
-                              eventTone(event)
+                              "poc-event-chip " + eventColorClass(event, "poc-event-chip")
                             }
+                            style={eventStyle(event)}
                           >
                             {event.cancelled ? "已取消" : event.title}
                           </span>
@@ -450,9 +475,10 @@ export function EventCalendar({
                 Array.from(listGroups, ([date, dateEvents]) => (
                   <section className="poc-list-group" key={date}>
                     <div className="poc-list-group-heading">
-                      <h3 className="poc-list-group-title">
-                        {formatPocSelectedDate(date)}
-                      </h3>
+                      <div>
+                        <h3 className="poc-list-group-title">{formatPocSelectedDate(date)}</h3>
+                        {getTaiwanHoliday(date) ? <p className="poc-list-holiday">{getTaiwanHoliday(date)?.name}</p> : null}
+                      </div>
                       <span>{dateEvents.length} 個活動</span>
                     </div>
                     {dateEvents.map((event) => (
@@ -482,6 +508,7 @@ export function EventCalendar({
               <h2 id="poc-selected-day-title">
                 {formatPocSelectedDate(selectedDate)}
               </h2>
+              {getTaiwanHoliday(selectedDate) ? <p className="poc-selected-holiday">{getTaiwanHoliday(selectedDate)?.name}</p> : null}
               <span>{selectedEvents.length} 個活動</span>
             </div>
             {selectedEvents.length ? (
@@ -513,67 +540,7 @@ export function EventCalendar({
         title="活動詳情"
         size="md"
       >
-        {selectedEvent ? (
-          <div className="poc-event-details">
-            <div className="poc-event-details-header">
-                <span
-                  className={`poc-modal-color poc-modal-color-${eventTone(selectedEvent)}`}
-                  aria-hidden="true"
-                />
-              <h3 className="poc-event-details-title">{selectedEvent.title}</h3>
-              {selectedEvent.publicationStatus === "draft" ? (
-                <span className="poc-event-details-status">草稿</span>
-              ) : null}
-              {selectedEvent.cancelled ? (
-                <span className="poc-event-details-status">已取消</span>
-              ) : null}
-            </div>
-            <dl className="poc-event-details-meta">
-              <div>
-                <dd className="poc-event-date-line"><Calendar aria-hidden="true" className="poc-event-meta-icon" />{formatPocDateLabel(selectedEvent.start.slice(0, 10))}</dd>
-                <dd className="poc-event-time-line"><Clock3 aria-hidden="true" className="poc-event-meta-icon" />{formatPocTimeRange(selectedEvent)}</dd>
-              </div>
-              {selectedEvent.checkInOpensAt && selectedEvent.checkInClosesAt ? (
-                <div>
-                  <dt>簽到時間</dt>
-                  <dd>
-                    {selectedEvent.checkInOpensAt.slice(11, 16)}–
-                    {selectedEvent.checkInClosesAt.slice(11, 16)}
-                  </dd>
-                </div>
-              ) : null}
-            </dl>
-            {selectedEvent.cancelled ? (
-              <p className="poc-event-details-notice">
-                此活動已取消，請留意後續公告。
-              </p>
-            ) : null}
-            <section
-              className="poc-event-description"
-              aria-labelledby="poc-event-description-title"
-            >
-              <h4 id="poc-event-description-title">活動介紹</h4>
-              {selectedEvent.description ? (
-                selectedEvent.descriptionFormat === "rich_text_v1" &&
-                selectedEvent.richDescription ? (
-                  <RichTextRenderer
-                    content={selectedEvent.description}
-                    content_format="rich_text_v1"
-                    rich_content={selectedEvent.richDescription}
-                  />
-                ) : (
-                  <p className="poc-event-description-plain">
-                    {selectedEvent.description}
-                  </p>
-                )
-              ) : (
-                <p className="poc-event-description-empty">
-                  目前沒有活動介紹。
-                </p>
-              )}
-            </section>
-          </div>
-        ) : null}
+        {selectedEvent ? <EventDetailsContent event={selectedEvent} /> : null}
         {selectedEvent && renderEventActions ? (
           <div className="poc-event-modal-footer">
             <div className="poc-event-modal-actions">

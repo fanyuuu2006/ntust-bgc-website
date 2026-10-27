@@ -6,6 +6,7 @@
   cancelled?: boolean;
   publicationStatus?: "draft" | "published";
   color?: "blue" | "violet" | "green" | "orange" | "red" | "cyan" | "black";
+  calendarColor?: string | null;
   description?: string;
   checkInOpensAt?: string;
   checkInClosesAt?: string;
@@ -76,7 +77,7 @@ export function getPocMonthRange(month: string) {
 export function getPocMonthDays(month: string) {
   const [year, monthNumber] = month.split("-").map(Number);
   const first = new Date(Date.UTC(year, monthNumber - 1, 1));
-  const startOffset = (first.getUTCDay() + 6) % 7;
+  const startOffset = first.getUTCDay();
   const daysInMonth = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
   const total = Math.ceil((startOffset + daysInMonth) / 7) * 7;
   return Array.from({ length: total }, (_, index) => {
@@ -84,4 +85,14 @@ export function getPocMonthDays(month: string) {
     const dateString = date.toISOString().slice(0, 10);
     return { date: dateString, day: date.getUTCDate(), outsideMonth: date.getUTCMonth() !== monthNumber - 1 };
   });
+}
+
+export function isPocSunday(date: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDay() === 0;
+}
+
+export function isPocSaturday(date: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDay() === 6;
 }

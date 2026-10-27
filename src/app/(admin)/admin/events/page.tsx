@@ -19,6 +19,7 @@ import {
 } from "@/libs/query-params";
 import { parsePage } from "@/utils/pagination";
 import Link from "next/link";
+import { getTaiwanHolidays } from "@/components/calendar/calendar-holidays";
 const ORDER_FIELDS = ["name", "start_time", "end_time", "created_at"] as const;
 type Status = "upcoming" | "ongoing" | "ended";
 async function AdminEventsPage({
@@ -65,6 +66,7 @@ async function AdminEventsPage({
   });
   const attendedCounts = await eventsService.getAttendedCountsByEventIds(result.data.map((event) => event.id));
   const calendarView = readSingleQueryValue(rawParams.view) === "calendar";
+  const calendarHolidays = [...getTaiwanHolidays(2026), ...getTaiwanHolidays(2027)];
   const pageSize = normalizePageSizeOption(params.pageSize, [10, 20, 50, 100], 20);
   const clearSearchParams = new URLSearchParams();
   if (params.status) clearSearchParams.set("status", params.status);
@@ -83,7 +85,7 @@ async function AdminEventsPage({
         description="建立、編輯與管理社團活動，可進入活動詳情管理簽到。"
         actions={<div className="flex flex-wrap items-center gap-3"><nav className="inline-flex gap-0.5 rounded-md border border-(--border-default) bg-(--surface-subtle) p-0.5" aria-label="活動檢視"><Link className={`btn rounded-sm px-2.5 py-1.5 text-xs ${!calendarView ? "primary" : "ghost"}`} href="/admin/events" aria-current={!calendarView ? "page" : undefined}>列表</Link><Link className={`btn rounded-sm px-2.5 py-1.5 text-xs ${calendarView ? "primary" : "ghost"}`} href="/admin/events?view=calendar" aria-current={calendarView ? "page" : undefined}>日曆</Link></nav><EventActions /></div>}
       />
-      {calendarView ? <section className="px-4 pb-6 sm:px-6 lg:px-8"><AdminEventCalendar /></section> : null}
+      {calendarView ? <section className="px-4 pb-6 sm:px-6 lg:px-8"><AdminEventCalendar holidays={calendarHolidays} /></section> : null}
       {calendarView ? null : <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_10rem_10rem] md:items-center">
           <form className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]" aria-label="搜尋活動">

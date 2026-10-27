@@ -13,6 +13,10 @@ import { editableRichContent } from "@/libs/rich-content/content";
 import { apiClient } from "@/libs/api/client";
 import { parseTaipeiDateTimeLocal } from "@/utils/date";
 import { useToast } from "@/contexts/ToastContext";
+import { DEFAULT_CALENDAR_COLOR } from "@/utils/calendar-color";
+import { EventColorPicker } from "./EventColorPicker";
+import { EventPreviewModal } from "./EventPreviewModal";
+import { Eye } from "lucide-react";
 
 // Editor runtime 僅供管理端編輯，不帶入伺服器渲染的閱讀頁面。
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor").then((module) => module.RichTextEditor), { ssr: false });
@@ -25,6 +29,7 @@ type EventFormValues = {
   selfCheckInEnabled: boolean;
   check_in_opens_at: string;
   check_in_closes_at: string;
+  calendar_color: string;
 };
 
 const emptyFormValues = (): EventFormValues => ({
@@ -35,6 +40,7 @@ const emptyFormValues = (): EventFormValues => ({
   selfCheckInEnabled: false,
   check_in_opens_at: "",
   check_in_closes_at: "",
+  calendar_color: DEFAULT_CALENDAR_COLOR,
 });
 
 export function EventActions() {
@@ -45,6 +51,7 @@ export function EventActions() {
   const [error, setError] = useState<string | null>(null);
   const [values, setValues] = useState<EventFormValues>(emptyFormValues);
   const [submitMode, setSubmitMode] = useState<"published" | "draft">("published");
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const openCreateDialog = () => {
     setValues(emptyFormValues());
@@ -75,6 +82,7 @@ export function EventActions() {
           start_time: parseTaipeiDateTimeLocal(values.start_time),
           end_time: parseTaipeiDateTimeLocal(values.end_time),
           publication_status: submitMode,
+          calendar_color: values.calendar_color,
           check_in_opens_at: values.selfCheckInEnabled
             ? parseTaipeiDateTimeLocal(values.check_in_opens_at)
             : null,
@@ -99,7 +107,7 @@ export function EventActions() {
         新增活動
       </Button>
 
-      <Modal size="lg" open={open} onClose={closeCreateDialog} title="新增活動">
+      <Modal size="lg" open={open} onClose={closeCreateDialog} title="新增活動" headerActions={<Button type="button" variant="outline" size="sm" className="shrink-0" aria-label="活動預覽" disabled={busy} onClick={() => setPreviewOpen(true)}><Eye aria-hidden="true" className="size-4" />活動預覽</Button>}>
         <form onSubmit={createEvent} className="space-y-4">
           <Field label="活動名稱" htmlFor="event-name" required>
             <Input
@@ -114,6 +122,9 @@ export function EventActions() {
           <Field label="活動說明" htmlFor="event-description" action={<RichContentPreview value={values.description} title={values.name} label="活動說明預覽" />}>
             {open ? <RichTextEditor id="event-description" label="活動說明" initialContent={editableRichContent()} onChange={(description) => setValues((current) => ({ ...current, description }))} disabled={busy} /> : null}
             <p className="text-xs text-(--text-muted)">可留空；格式化內容最多 20,000 字元。</p>
+          </Field>
+          <Field label="行事曆顏色" htmlFor="event-calendar-color">
+            <EventColorPicker id="event-calendar-color" value={values.calendar_color} onChange={(calendar_color) => setValues((current) => ({ ...current, calendar_color: calendar_color ?? DEFAULT_CALENDAR_COLOR }))} disabled={busy} />
           </Field>
           <Field label="開始時間" htmlFor="event-start-time" required>
             <Input
@@ -196,7 +207,7 @@ export function EventActions() {
             ) : null}
           </div>
           <FormFeedback error={error} />
-          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:items-center sm:justify-end">
             <Button type="button" variant="outline" disabled={busy} onClick={closeCreateDialog}>
               取消
             </Button>
@@ -209,6 +220,7 @@ export function EventActions() {
           </div>
         </form>
       </Modal>
+      <EventPreviewModal open={previewOpen} onClose={() => setPreviewOpen(false)} name={values.name} start={values.start_time} end={values.end_time} color={values.calendar_color} description={values.description} />
     </>
   );
 }

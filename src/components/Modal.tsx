@@ -19,6 +19,7 @@ type ModalProps = {
   contentClassName?: string;
   closeLabel?: string;
   closeDisabled?: boolean;
+  headerActions?: React.ReactNode;
 };
 
 const sizeClassNames: Record<ModalSize, string> = {
@@ -74,6 +75,7 @@ export function Modal({
   contentClassName,
   closeLabel = "關閉對話框",
   closeDisabled = false,
+  headerActions,
 }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const hasBodyScrollLock = useRef(false);
@@ -149,17 +151,12 @@ export function Modal({
             </p>
           ) : null}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          iconOnly
-          onClick={onClose}
-          disabled={closeDisabled}
-          aria-label={closeLabel}
-          className="shrink-0"
-        >
-          <X aria-hidden="true" className="size-4" />
-        </Button>
+        <div className="flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
+          {headerActions}
+          <Button variant="ghost" size="sm" iconOnly onClick={onClose} disabled={closeDisabled} aria-label={closeLabel} className="shrink-0">
+            <X aria-hidden="true" className="size-4" />
+          </Button>
+        </div>
       </div>
       <div className={cn("min-w-0 max-w-full max-h-[75dvh] overflow-y-auto p-5", contentClassName)}>
         {children}

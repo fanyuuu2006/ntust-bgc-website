@@ -56,7 +56,7 @@ test("FullCalendar PoC uses an external toolbar and selected-day presentation", 
   assert.match(text, /poc-calendar-layout/);
   assert.match(text, /getEventsForDate/);
   assert.match(text, /aria-pressed/);
-  assert.match(text, /<Modal open=\{selectedEvent !== null\}/);
+  assert.match(text, /<Modal\s+open=\{selectedEvent !== null\}/);
   assert.match(text, /活動詳情/);
 });
 
