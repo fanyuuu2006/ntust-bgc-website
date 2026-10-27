@@ -6,9 +6,12 @@ test("register-key generation and cross-page navigation remain directly visible"
   const page = await source("src/app/(admin)/admin/memberships/register-keys/page.tsx");
   const form = await source("src/components/(admin)/admin/memberships/RegisterKeyGenerateForm.tsx");
   assert.match(page, /<RegisterKeyGenerateForm/);
-  assert.match(page, /actions=\{[\s\S]*?<ButtonLink[\s\S]*?返回社員資格管理/);
+  assert.match(page, /href="\/admin\/memberships"[\s\S]*?返回資格管理/);
   assert.match(form, /generatedKeys\.length/);
   assert.match(form, /aria-live="polite"/);
+  assert.match(form, /產生序號/);
+  assert.match(form, /產生註冊序號/);
+  assert.match(form, /選擇學年度與數量，產生一次性註冊序號。/);
 });
 test("discovery cards keep metadata independently constrained", async () => {
   const card = await source("src/components/(public)/board-games/BoardGameCard.tsx");
