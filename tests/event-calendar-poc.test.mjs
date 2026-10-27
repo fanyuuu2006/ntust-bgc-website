@@ -98,3 +98,12 @@ test("date filtering uses Taipei half-open day overlap semantics", async () => {
   const output = execFileSync(process.execPath, ["--experimental-strip-types", "--input-type=module", "-e", script], { encoding: "utf8" }).trim();
   assert.deepEqual(JSON.parse(output.split("\n").at(-1)), [["a"], ["b"], []]);
 });
+
+test("calendar API range follows the visible grid and keeps list semantics separate", async () => {
+  const moduleUrl = new URL("../src/components/calendar/calendar-utils.ts", import.meta.url).href;
+  const output = execFileSync(process.execPath, ["--experimental-strip-types", "--input-type=module", "-e", `const m = await import(${JSON.stringify(moduleUrl)}); console.log(JSON.stringify([m.getPocCalendarViewRange("2026-10-01"), m.getPocCalendarViewRange("2026-02-01"), m.getPocCalendarViewRange("2027-01-01")]));`], { encoding: "utf8" }).trim();
+  const [october, february, january] = JSON.parse(output.split("\n").at(-1));
+  assert.deepEqual(october, { from: "2026-09-27T00:00:00+08:00", to: "2026-11-08T00:00:00+08:00" });
+  assert.deepEqual(february, { from: "2026-02-01T00:00:00+08:00", to: "2026-03-01T00:00:00+08:00" });
+  assert.deepEqual(january, { from: "2026-12-27T00:00:00+08:00", to: "2027-02-07T00:00:00+08:00" });
+});

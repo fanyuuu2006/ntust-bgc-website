@@ -74,6 +74,20 @@ export function getPocMonthRange(month: string) {
   return { from: `${normalized}T00:00:00+08:00`, to: `${next}T00:00:00+08:00` };
 }
 
+/** API 查詢範圍與月曆實際渲染的完整週區間一致，包含前後月份的可見日期。 */
+export function getPocCalendarViewRange(month: string) {
+  const days = getPocMonthDays(month);
+  const first = days[0]?.date;
+  const last = days.at(-1)?.date;
+  if (!first || !last) return getPocMonthRange(month);
+  const nextDay = new Date(`${last}T00:00:00+08:00`);
+  nextDay.setTime(nextDay.getTime() + 24 * 60 * 60 * 1000);
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(nextDay);
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  const to = `${values.year}-${values.month}-${values.day}`;
+  return { from: `${first}T00:00:00+08:00`, to: `${to}T00:00:00+08:00` };
+}
+
 export function getPocMonthDays(month: string) {
   const [year, monthNumber] = month.split("-").map(Number);
   const first = new Date(Date.UTC(year, monthNumber - 1, 1));
