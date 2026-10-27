@@ -44,6 +44,7 @@ async function withTable(
 ) {
   const dom = new JSDOM('<div id="app"></div>', { url: "https://example.test" });
   const writes = [];
+  const toasts = [];
   const requests = [];
   const refreshes = [];
   Object.defineProperty(dom.window.navigator, "clipboard", {
@@ -107,6 +108,9 @@ async function withTable(
               )
             : null,
       },
+      "@/contexts/ToastContext": {
+        useToast: () => ({ showToast: (...toast) => toasts.push(toast) }),
+      },
     },
   );
 
@@ -118,6 +122,7 @@ async function withTable(
       writes,
       requests,
       refreshes,
+      toasts,
       RegisterKeyTable,
     });
   } finally {
@@ -135,7 +140,7 @@ async function withTable(
 const click = (element) => act(async () => element.click());
 
 test("current-page selection exposes mixed state and copies unique keys in visible order", async () => {
-  await withTable(async ({ host, root, writes, RegisterKeyTable }) => {
+  await withTable(async ({ host, root, writes, toasts, RegisterKeyTable }) => {
     await act(async () =>
       root.render(createElement(RegisterKeyTable, { registerKeys })),
     );
@@ -172,7 +177,7 @@ test("current-page selection exposes mixed state and copies unique keys in visib
 
     await click(copyButton);
     assert.deepEqual(writes, ["KEY-ALPHA\nKEY-BETA"]);
-    assert.match(host.textContent, /已複製 2 組社員註冊序號/);
+    assert.deepEqual(toasts, [["success", "已複製 2 組社員註冊序號"]]);
 
     await click(clearButton);
     assert.doesNotMatch(host.textContent, /已選取 0 筆/);
@@ -283,7 +288,7 @@ test("clipboard failure keeps the selection and reports a recoverable error", as
 
 test("bulk revoke accepts only an all-available selection and preserves visible order", async () => {
   await withTable(
-    async ({ host, root, requests, refreshes, RegisterKeyTable }) => {
+    async ({ host, root, requests, refreshes, toasts, RegisterKeyTable }) => {
       await act(async () =>
         root.render(createElement(RegisterKeyTable, { registerKeys })),
       );
@@ -313,7 +318,7 @@ test("bulk revoke accepts only an all-available selection and preserves visible 
         action: "revoke",
         ids: ["key-1", "key-2"],
       });
-      assert.match(host.textContent, /已撤銷 2 組社員註冊序號/);
+      assert.deepEqual(toasts, [["success", "已撤銷 2 組社員註冊序號"]]);
       assert.doesNotMatch(host.textContent, /已選取 0 筆/);
       assert.equal(refreshes.length, 1);
     },

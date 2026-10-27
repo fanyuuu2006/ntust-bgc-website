@@ -31,20 +31,16 @@ async function MembershipRegisterKeysPage({ searchParams }: Props) {
         breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { href: "/admin/memberships", label: "社員資格管理" }, { label: "社員註冊序號管理" }]} />}
         title="社員註冊序號管理"
         description="產生序號，供已完成入社流程的使用者建立社員資格。"
-        actions={
-          <>
-            <div className="flex items-center">
-              <RegisterKeyGenerateForm
-                academicYears={academicYears}
-                defaultAcademicYearId={
-                  academicYears.find((year) => year.is_current)?.id
-                }
-              />
-            </div>
-          </>
-        }
       />
       <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
+        <div className="flex justify-end">
+          <RegisterKeyGenerateForm
+            academicYears={academicYears}
+            defaultAcademicYearId={
+              academicYears.find((year) => year.is_current)?.id
+            }
+          />
+        </div>
         <RegisterKeyFilterBar academicYears={academicYears} query={query} />
         <PaginatedCollection className="space-y-3" page={page} pageSize={pageSize} total={registerKeys.total} totalPages={registerKeys.totalPages} basePath="/admin/memberships/register-keys" pageSizeOptions={[10, 20, 50, 100]} query={{ ...query, page }} paginationClassName="p-4">
         <RegisterKeyTable
