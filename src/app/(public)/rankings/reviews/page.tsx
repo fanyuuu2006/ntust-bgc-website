@@ -29,7 +29,7 @@ async function ReviewRankingsPage({ searchParams }: ReviewsRankingsPageProps) {
 
   return (
     <section className="container py-8">
-      <PageHeader breadcrumb={<Breadcrumbs items={[{ href: "/", label: "首頁" }, { href: "/rankings", label: "排行榜" }, { label: "熱門評論" }]} />} eyebrow="排行榜" title="熱門評論" description="看看哪些桌遊心得最受歡迎！" />
+      <PageHeader breadcrumb={<Breadcrumbs items={[{ href: "/", label: "首頁" }, { href: "/rankings", label: "排行榜" }, { label: "熱門評論" }]} />} title="熱門評論" description="看看哪些桌遊心得最受歡迎！" />
       <ReviewRankingSearchForm search={search} total={result.total} pageSize={pageSize} />
       <PaginatedCollection
         className="mt-5"

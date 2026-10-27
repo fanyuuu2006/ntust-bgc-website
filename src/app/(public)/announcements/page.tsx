@@ -64,9 +64,8 @@ async function AnnouncementsPage({ searchParams }: Props) {
   return (
     <section>
       <div className="container py-8">
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto">
           <PageHeader
-            eyebrow="最新消息"
             title="社團公告"
             description="社團最新消息與活動公告。"
           />

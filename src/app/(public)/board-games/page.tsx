@@ -98,7 +98,6 @@ async function BoardGamesPage({
     <section>
       <div className="container py-8">
         <PageHeader
-          eyebrow="桌遊探索"
           title="桌遊"
           description="探索社團桌遊，找到下一款想玩的遊戲。"
           actions={

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { createRootMetadata } from "@/libs/metadata";
 import { getPublicSiteSettings } from "@/libs/site-settings/public";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastProvider } from "@/contexts/ToastContext";
@@ -36,10 +37,11 @@ function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INITIALIZATION_SCRIPT }} />
-      </head>
+      <head />
       <body>
+        <Script id="theme-initialization" strategy="beforeInteractive">
+          {THEME_INITIALIZATION_SCRIPT}
+        </Script>
         <ThemeProvider><ToastProvider>{children}</ToastProvider></ThemeProvider>
       </body>
       {isProductionDeployment() ? (
