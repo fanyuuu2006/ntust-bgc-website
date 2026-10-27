@@ -68,7 +68,7 @@ test("event edit initializes Taiwan wall time and round-trips all event instants
   const h = formHarness(
     "src/components/(admin)/admin/events/EventRecords.tsx",
     "EventRecords",
-    { events: [event] },
+    { events: [event], attendedCounts: { event: 0 } },
   );
   h.find(h.tree(), (element) => typeof element.props?.onEdit === "function").props.onEdit(event);
   const tree = h.tree();

@@ -78,7 +78,10 @@ export function serverDiagnostic(error: unknown, depth = 0): object {
     if (value === null) return [[key, null]];
     const cleaned = diagnosticText(value);
     return cleaned ? [[key, cleaned]] : [];
-  })) : {};
+  })) : postgrest && code === "PGRST303" ? (() => {
+    const message = diagnosticText(rawMessage);
+    return message ? { message } : {};
+  })() : {};
   return {
     type: fetchFailure ? "FetchError" : type,
     classification: classifyError(error),

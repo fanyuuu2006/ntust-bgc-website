@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test",
+    "test": "node --experimental-strip-types --test",
     "openapi:lint": "redocly lint docs/api/openapi.yaml",
     "test:openapi": "node --test tests/openapi-documentation.test.mjs",
     "db:start": "npx supabase@2.117.0 start",

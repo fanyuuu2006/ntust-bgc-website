@@ -4,6 +4,11 @@ import {createRequire} from "node:module";
 import ts from "typescript";
 const root=resolve(import.meta.dirname,"../..");
 const require=createRequire(import.meta.url);
+// Source modules may initialise the server Supabase client at import time. Tests
+// that load modules in isolation must provide a harmless URL/key without ever
+// reading or using the developer's real credentials.
+process.env.SUPABASE_URL ??= "https://test-project.supabase.co";
+process.env.SUPABASE_SECRET_KEY ??= "test-secret-key";
 export function load(path, mocks = {}) {
   const filename = resolve(root, path);
   const loadedModule = { exports: {} };

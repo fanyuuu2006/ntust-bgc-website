@@ -22,7 +22,11 @@ for (const [announcementsFail, gamesFail] of [[true, false], [false, true], [tru
     const mocks = {
       "@/libs/observability/report": { reportUnexpectedError: (_, context) => incidents.push(context.context) },
       "@/libs/observability/server-render": { withServerErrorReference: (fn) => fn },
+      // Next 的 unstable_cache 需要 request incrementalCache；此單元測試只驗證
+      // 首頁降級與錯誤隔離，使用等價的直通快取替身避免依賴 Next runtime。
+      "@/libs/cache/public-data": { cachePublicData: (_key, loader) => loader },
       "@/libs/public-viewer": { resolvePublicViewer: async () => ({ status: "unavailable", user: null, isAdmin: false }) },
+      "@/libs/site-settings/public": { getPublicSiteSettings: async () => ({}) },
       "@/components/layouts/WebsiteShell": { WebsiteShell: (props) => {
         shellProps = props;
         return React.createElement("div", {}, React.createElement("header", {}, "public header"), props.children);

@@ -9,7 +9,8 @@ const require = createRequire(import.meta.url);
 const errors = load('src/services/events/events.errors.ts');
 const repositoryErrors = load('src/repositories/shared/errors.ts');
 const userId = '00000000-0000-4000-8000-000000000001';
-const event = { id: '1', check_in_opens_at: '2020-01-01', check_in_closes_at: '2030-01-01' };
+const eventId = '00000000-0000-4000-8000-000000000002';
+const event = { id: eventId, check_in_opens_at: '2020-01-01', check_in_closes_at: '2030-01-01', publication_status: 'published', cancelled_at: null };
 
 function checkInFixture({ member = true, currentEvent = event, failure } = {}) {
   let inserts = 0;
@@ -42,7 +43,7 @@ function checkInFixture({ member = true, currentEvent = event, failure } = {}) {
     '@/libs/api/verified-authorization': { authorizeVerifiedRequest: async () => ({ user: { id: userId } }) },
     '@/libs/api/server-response': { unexpectedErrorResponse: () => Response.json({ message: 'unavailable' }, { status: 503 }) },
   });
-  return { run: () => route.POST(new Request('https://fixture.invalid', { method: 'POST' }), { params: Promise.resolve({ id: '1' }) }), rows, inserts: () => inserts };
+  return { run: () => route.POST(new Request('https://fixture.invalid', { method: 'POST' }), { params: Promise.resolve({ id: eventId }) }), rows, inserts: () => inserts };
 }
 
 test('concurrent and repeated check-in yields one row, 201/409, never a raw database error', async () => {

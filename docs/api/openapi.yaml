@@ -446,8 +446,19 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "500": { $ref: "#/components/responses/ServerError" }
   '/api/admin/events':
+    get:
+      operationId: get-30
+      tags: [Admin]
+      summary: GET /api/admin/events
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/ServerError" }
     post:
-      operationId: post-30
+      operationId: post-31
       tags: [Admin]
       summary: POST /api/admin/events
       security:
@@ -1164,9 +1175,42 @@ paths:
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "500": { $ref: "#/components/responses/ServerError" }
+  '/api/events':
+    get:
+      operationId: get-75
+      tags: [Public]
+      summary: GET /api/events
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          required: true
+          schema: { type: string, format: date-time }
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "500": { $ref: "#/components/responses/ServerError" }
+  '/api/events/{id}':
+    get:
+      operationId: get-76
+      tags: [Public]
+      summary: GET /api/events/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/ServerError" }
   '/api/events/{id}/check-in':
     post:
-      operationId: post-75
+      operationId: post-77
       tags: [User]
       summary: POST /api/events/{id}/check-in
       parameters:
@@ -1184,7 +1228,7 @@ paths:
         "500": { $ref: "#/components/responses/ServerError" }
   '/api/health':
     get:
-      operationId: get-76
+      operationId: get-78
       tags: [Public]
       summary: GET /api/health
       security:
@@ -1196,7 +1240,7 @@ paths:
         "500": { $ref: "#/components/responses/ServerError" }
   '/api/memberships/activate':
     post:
-      operationId: post-77
+      operationId: post-79
       tags: [Public]
       summary: POST /api/memberships/activate
       security:
