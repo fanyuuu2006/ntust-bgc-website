@@ -151,7 +151,6 @@ export const MOCK_EVENTS: PocCalendarEvent[] = [
     },
   },
 ];
-const INITIAL_MONTH = "2026-10-01";
 function eventTone(event: PocCalendarEvent) {
   return event.color ?? "blue";
 }
@@ -197,18 +196,18 @@ function PocEventCard({
   );
 }
 export function EventCalendar({
-  events: providedEvents = MOCK_EVENTS,
+  events: providedEvents,
   onMonthChange,
   renderEventActions,
   holidays,
 }: {
-  events?: PocCalendarEvent[];
+  events: PocCalendarEvent[];
   onMonthChange?: (month: string) => void;
   renderEventActions?: (event: PocCalendarEvent) => ReactNode;
   holidays?: CalendarHoliday[];
 }) {
   const [view, setView] = useState<"month" | "list">("month");
-  const [month, setMonth] = useState(INITIAL_MONTH);
+  const [month, setMonth] = useState("2026-10-01");
   const [selectedDate, setSelectedDate] = useState("2026-10-25");
   const [selectedEvent, setSelectedEvent] = useState<PocCalendarEvent | null>(
     null,
@@ -219,6 +218,10 @@ export function EventCalendar({
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
+      // Client mount 後才讀取目前日期，避免 Server／Client 初始 render 因時區或跨日產生 hydration mismatch。
+      const today = formatPocDateInput(new Date());
+      setMonth(`${today.slice(0, 7)}-01`);
+      setSelectedDate(today);
       setSupportsShowPicker(
         typeof HTMLInputElement !== "undefined" &&
           "showPicker" in HTMLInputElement.prototype,
@@ -227,7 +230,6 @@ export function EventCalendar({
     return () => window.clearTimeout(timer);
   }, []);
 
-  // The default adapter remains the PoC MOCK_EVENTS; PublicEventCalendar supplies API data via props.
   const events = useMemo(() => providedEvents, [providedEvents]);
   const monthDays = useMemo(() => getPocMonthDays(month), [month]);
   const selectedEvents = getEventsForDate(events, selectedDate);
@@ -255,7 +257,7 @@ export function EventCalendar({
     month.slice(0, 4) + " 年 " + Number(month.slice(5, 7)) + " 月";
   const selectDate = (date: string) => {
     setSelectedDate(date);
-    setNotice("Mock：選取日期 " + date + "（未呼叫正式 API）");
+    setNotice("已選取日期：" + date);
   };
   const navigateMonth = (offset: number) => {
     const next = addPocMonths(month, offset);
@@ -383,7 +385,7 @@ export function EventCalendar({
       <CalendarSurface>
         <section
           className="poc-calendar-surface"
-          aria-label="固定 Mock 活動行事曆"
+          aria-label="活動行事曆"
         >
           {view === "month" ? (
             <div className="poc-month-grid" role="grid" aria-label={monthTitle}>

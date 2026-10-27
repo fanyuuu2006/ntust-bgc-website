@@ -16,9 +16,9 @@ export function PublicEventCalendar({ holidays }: { holidays: CalendarHoliday[] 
     const controller = new AbortController();
     const { from, to } = getPocMonthRange(`${monthKey}-01`);
     fetch(`/api/events?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, { signal: controller.signal })
-      .then(async (response) => { const payload = await response.json(); if (!response.ok) throw new Error(payload.message || "活動資料載入失敗"); return payload.data as ApiEvent[]; })
+      .then(async (response) => { const payload = await response.json(); if (!response.ok) throw new Error("活動資料載入失敗"); return payload.data as ApiEvent[]; })
       .then((data) => { setEvents(data.map(toCalendarEvent)); setStatus("ready"); })
-      .catch((reason: unknown) => { if (reason instanceof DOMException && reason.name === "AbortError") return; setError(reason instanceof Error ? reason.message : "活動資料載入失敗"); setStatus("error"); });
+      .catch((reason: unknown) => { if (reason instanceof DOMException && reason.name === "AbortError") return; setError("活動載入失敗，請稍後再試。"); setStatus("error"); });
     return () => controller.abort();
   }, [monthKey, retryKey]);
   if (status === "error") return <div role="alert" className="rounded-xl border border-(--border-default) p-6"><h2 className="text-base font-semibold text-(--text-primary)">無法載入活動行事曆</h2><p className="mt-2 text-sm text-(--text-secondary)">{error ?? "請稍後再試。"}</p><Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => setRetryKey((value) => value + 1)}>重新載入</Button></div>;
