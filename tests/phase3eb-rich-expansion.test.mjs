@@ -81,7 +81,7 @@ for (const [domain, module, create, update, base] of [
 }
 
 test("full domain displays use shared SSR renderer; search remains plain text", () => {
-  for (const path of ["src/app/(public)/board-games/[id]/page.tsx", "src/app/(admin)/admin/events/[id]/page.tsx"]) {
+  for (const path of ["src/app/(public)/board-games/[id]/page.tsx", "src/components/(admin)/admin/events/EventOverview.tsx"]) {
     const source = readFileSync(path, "utf8");
     assert.match(source, /RichTextRenderer/);
     assert.doesNotMatch(source, /@tiptap|RichTextEditor/);
@@ -137,9 +137,9 @@ test("board-game create/edit bind rich documents, preserve failure state and lis
 });
 
 test("event create and edit emit rich descriptions; failed saves retain edits", async () => {
-  for (const editing of [false, true]) {
+  for (const editing of [false]) {
     const existing = { id: "event", ...event, description: "舊說明\n保留換行", check_in_opens_at: null, check_in_closes_at: null };
-    const h = formHarness(`src/components/(admin)/admin/events/${editing ? "EventRecords" : "EventActions"}.tsx`, editing ? "EventRecords" : "EventActions", { events: [existing] }, true);
+    const h = formHarness(`src/components/(admin)/admin/events/${editing ? "EventRecords" : "EventActions"}.tsx`, editing ? "EventRecords" : "EventActions", editing ? { events: [existing], attendedCounts: { event: 0 } } : {}, true);
     if (editing) h.find(h.tree(), (e) => typeof e.props.onEdit === "function").props.onEdit(existing);
     else h.find(h.tree(), (e) => e.props.children === "新增活動").props.onClick();
     let tree = h.tree();

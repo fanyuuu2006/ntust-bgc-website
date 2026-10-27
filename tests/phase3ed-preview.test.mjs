@@ -44,7 +44,7 @@ test('renderer exception is isolated inside preview',async(t)=>{
 for(const [name,path,exportName,props,titleSelector,openLabel,previewLabel] of [
  ['announcement','src/components/(admin)/admin/announcements/AnnouncementEditor.tsx','AnnouncementEditor',{},'#announcement-title',null,'公告預覽'],
  ['board game','src/components/(admin)/admin/board-games/BoardGameForm.tsx','BoardGameForm',{mode:'create',categories:[],locations:[]},'#name',null,'桌遊介紹預覽'],
- ['event edit','src/components/(admin)/admin/events/EventRecords.tsx','EventRecords',{events:[{id:1,name:'活動',description:'舊說明',start_time:'2026-10-01T10:00:00Z',end_time:'2026-10-01T12:00:00Z',check_in_opens_at:null,check_in_closes_at:null}]},'#event-name','編輯','活動說明預覽'],
+ ['event edit','src/components/(admin)/admin/events/EventEditForm.tsx','EventEditForm',{event:{id:1,name:'活動',description:'舊說明',description_format:'plain_text',rich_description:null,start_time:'2026-10-01T10:00:00Z',end_time:'2026-10-01T12:00:00Z',check_in_opens_at:null,check_in_closes_at:null,publication_status:'published',cancelled_at:null,calendar_color:null}},'#event-edit-name',null,'活動說明預覽'],
  ['event','src/components/(admin)/admin/events/EventActions.tsx','EventActions',{},'#event-name','新增活動','活動說明預覽'],
 ])test(`${name} form preview binds current unsaved name and content without API calls`,async(t)=>{
  let requests=0;
