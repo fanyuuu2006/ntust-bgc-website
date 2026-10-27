@@ -17,6 +17,10 @@
     "db:verify:replay": "npx supabase@2.117.0 db reset && npm run db:verify"
   },
   "dependencies": {
+    "@fullcalendar/daygrid": "^6.1.22",
+    "@fullcalendar/interaction": "^6.1.22",
+    "@fullcalendar/list": "^6.1.22",
+    "@fullcalendar/react": "^6.1.22",
     "@marsidev/react-turnstile": "^1.5.4",
     "@next/third-parties": "16.3.4",
     "@supabase/supabase-js": "^2.110.8",
@@ -42,6 +46,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.11",
     "jsdom": "27.4.0",
+    "supabase": "^2.122.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
