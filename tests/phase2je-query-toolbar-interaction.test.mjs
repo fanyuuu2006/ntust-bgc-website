@@ -271,7 +271,6 @@ test("Admin standalone scalar controls navigate immediately without joining the 
     ["src/app/(admin)/admin/announcements/page.tsx", ["status", "orderBy"]],
     ["src/app/(admin)/admin/events/page.tsx", ["status", "orderBy"]],
     ["src/app/(admin)/admin/officers/page.tsx", ["academicYearId"]],
-    ["src/app/(admin)/admin/events/[id]/page.tsx", ["orderDirection"]],
   ];
 
   for (const [path, keys] of cases) {

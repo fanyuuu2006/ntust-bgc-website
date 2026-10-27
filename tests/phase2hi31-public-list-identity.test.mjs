@@ -46,7 +46,7 @@ test("board games use shared page flow and flat discovery controls", async () =>
 
   assert.match(page, /className="container[^\"]*py-8/);
   assert.doesNotMatch(page, /border-b border-\(--border-muted\) bg-\(--surface-subtle\)/);
-  assert.match(page, /<PageHeader[\s\S]*?eyebrow="桌遊探索"/);
+  assert.match(page, /<PageHeader[\s\S]*?title="桌遊"/);
   assert.match(form, /<div className="space-y-2"/);
   assert.doesNotMatch(
     form,

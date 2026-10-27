@@ -215,7 +215,6 @@ test("manual list routes normalize raw scalar search params before use", async (
     "src/app/(admin)/admin/academic-years/page.tsx",
     "src/app/(admin)/admin/announcements/page.tsx",
     "src/app/(admin)/admin/events/page.tsx",
-    "src/app/(admin)/admin/events/[id]/page.tsx",
     "src/app/(admin)/admin/officers/page.tsx",
     "src/app/(admin)/admin/board-games/categories/page.tsx",
     "src/app/(admin)/admin/board-games/locations/page.tsx",

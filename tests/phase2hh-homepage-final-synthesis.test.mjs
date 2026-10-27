@@ -25,7 +25,7 @@ test("homepage hero uses native section anchors with stable sticky-header target
   assert.match(popular, /id="popular-board-games"/);
   assert.match(announcements, /scroll-mt-/);
   assert.match(popular, /scroll-mt-/);
-  assert.match(page, /<HomeHero\s*\/>/);
+  assert.match(page, /<HomeHero\s+settings=\{settings\}\s*\/>/);
 });
 
 test("latest announcements preview is a published-only top-three semantic list", async () => {

@@ -154,7 +154,7 @@ test("all five bulk collections reset their client selection at query scope boun
       read("src/app/(admin)/admin/board-games/page.tsx"),
       read("src/app/(admin)/admin/memberships/page.tsx"),
       read("src/app/(admin)/admin/memberships/register-keys/page.tsx"),
-      read("src/app/(admin)/admin/events/[id]/page.tsx"),
+      read("src/app/(admin)/admin/events/[id]/attendances/page.tsx"),
       read("src/app/(admin)/admin/board-games/suggests/page.tsx"),
     ]);
 

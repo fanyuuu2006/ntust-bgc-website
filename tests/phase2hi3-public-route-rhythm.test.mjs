@@ -12,10 +12,10 @@ test("public index routes share PageHeader while keeping contextual route identi
   ]);
 
   assert.match(announcementsPage, /<PageHeader/);
-  assert.match(announcementsPage, /eyebrow="最新消息"/);
+  assert.match(announcementsPage, /title="社團公告"/);
   assert.match(boardGamesPage, /import \{ PageHeader \}/);
   assert.match(boardGamesPage, /<PageHeader/);
-  assert.match(boardGamesPage, /eyebrow="桌遊探索"/);
+  assert.match(boardGamesPage, /title="桌遊"/);
   assert.doesNotMatch(boardGamesPage, /<header\b|<h1\b/);
 
   for (const source of [announcementsPage, boardGamesPage]) {

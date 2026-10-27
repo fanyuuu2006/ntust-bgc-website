@@ -183,7 +183,6 @@ test("Admin query forms preserve page size and explicitly reset page", async () 
     readSource("src/app/(admin)/admin/users/page.tsx"),
     readSource("src/app/(admin)/admin/officers/page.tsx"),
     readSource("src/app/(admin)/admin/events/page.tsx"),
-    readSource("src/app/(admin)/admin/events/[id]/page.tsx"),
     readSource("src/app/(admin)/admin/announcements/page.tsx"),
   ]);
   for (const source of convergedNativeForms) {

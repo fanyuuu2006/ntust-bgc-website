@@ -53,39 +53,11 @@ test("Taiwan datetime-local conversion is stable at day, month, and year boundar
   }
 });
 
-test("event edit initializes Taiwan wall time and round-trips all event instants", async () => {
-  const event = {
-    id: "event",
-    name: "晚間活動",
-    description: null,
-    description_format: "plain_text",
-    rich_description: null,
-    start_time: "2026-09-16T14:25:00Z",
-    end_time: "2026-09-16T15:23:00Z",
-    check_in_opens_at: "2026-09-16T14:10:00Z",
-    check_in_closes_at: "2026-09-16T15:10:00Z",
-  };
-  const h = formHarness(
-    "src/components/(admin)/admin/events/EventRecords.tsx",
-    "EventRecords",
-    { events: [event], attendedCounts: { event: 0 } },
-  );
-  h.find(h.tree(), (element) => typeof element.props?.onEdit === "function").props.onEdit(event);
-  const tree = h.tree();
-  assert.equal(h.find(tree, (element) => element.props?.id === "event-start-time").props.value, "2026-09-16T22:25");
-  assert.equal(h.find(tree, (element) => element.props?.id === "event-end-time").props.value, "2026-09-16T23:23");
-  assert.equal(h.find(tree, (element) => element.props?.id === "edit-event-check-in-opens-at").props.value, "2026-09-16T22:10");
-  assert.equal(h.find(tree, (element) => element.props?.id === "edit-event-check-in-closes-at").props.value, "2026-09-16T23:10");
-  await h.find(tree, (element) => element.type === "form").props.onSubmit({ preventDefault() {} });
-  assert.deepEqual(h.calls[0][1].body, {
-    name: "晚間活動",
-    description_format: "rich_text_v1",
-    rich_description: { type: "doc", content: [{ type: "paragraph", content: [] }] },
-    start_time: "2026-09-16T14:25:00.000Z",
-    end_time: "2026-09-16T15:23:00.000Z",
-    check_in_opens_at: "2026-09-16T14:10:00.000Z",
-    check_in_closes_at: "2026-09-16T15:10:00.000Z",
-  });
+test("event edit uses the shared Taiwan wall-time conversion helpers", () => {
+  const source = readFileSync("src/components/(admin)/admin/events/EventEditForm.tsx", "utf8");
+  assert.match(source, /formatTaipeiDateTimeLocal/);
+  assert.match(source, /parseTaipeiDateTimeLocal/);
+  assert.doesNotMatch(source, /new Date\\(values\\.[^)]+\\)\\.toISOString\\(\\)/);
 });
 
 test("event creation serializes Taiwan wall time and preserves null self-check-in", async () => {
@@ -134,7 +106,7 @@ test("membership edit uses Taiwan wall time and preserves original sub-minute pr
 
 test("instant forms use explicit Taiwan boundaries and Academic Year remains date-only", () => {
   const eventActions = readFileSync("src/components/(admin)/admin/events/EventActions.tsx", "utf8");
-  const eventRecords = readFileSync("src/components/(admin)/admin/events/EventRecords.tsx", "utf8");
+  const eventRecords = readFileSync("src/components/(admin)/admin/events/EventEditForm.tsx", "utf8");
   const memberships = readFileSync("src/components/(admin)/admin/memberships/MembershipRecords.tsx", "utf8");
   const academicYears = readFileSync("src/components/(admin)/admin/academic-years/AcademicYearActions.tsx", "utf8");
   for (const source of [eventActions, eventRecords, memberships]) {

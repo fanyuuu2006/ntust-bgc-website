@@ -12,7 +12,7 @@ test("event records expose an explicit attendance-management action instead of t
 });
 
 test("event attendance detail uses URL-authoritative search and pagination without loading a client-side user list", async () => {
-  const page = await readSource("src/app/(admin)/admin/events/[id]/page.tsx");
+  const page = await readSource("src/app/(admin)/admin/events/[id]/attendances/page.tsx");
 
   assert.match(page, /ClearableSearchInput/);
   assert.match(page, /<Button type="submit" variant="primary"/);

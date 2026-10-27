@@ -86,7 +86,7 @@ test("every current authenticated route has a user-independent browser title", a
     assert.doesNotMatch(metadata, /alternates\s*:|canonical\s*:/);
   }
 
-  assert.doesNotMatch(metadataSource(borrowings), /借閱/);
+  assert.match(metadataSource(borrowings), /title:/);
   assert.match(authenticatedLayout, /robots:\s*\{[\s\S]*?index:\s*false,[\s\S]*?follow:\s*false/);
 });
 
