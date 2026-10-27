@@ -25,6 +25,35 @@ test("public calendar renders and supports month/list controls", async ({ page }
   if (["mobile-390", "desktop-1280"].includes(test.info().project.name)) await page.screenshot({ path: `artifacts/calendar-${test.info().project.name}.png`, fullPage: true });
 });
 
+test("public calendar supports navigation, selected-day details, and dialog escape", async ({ page }) => {
+  await page.goto("/schedule", { waitUntil: "domcontentloaded" });
+  const grid = page.getByRole("grid");
+  await expect(grid).toBeVisible();
+  const monthLabel = await grid.getAttribute("aria-label");
+  await page.getByRole("button", { name: "下一個月" }).click();
+  await expect(grid).not.toHaveAttribute("aria-label", monthLabel ?? "");
+  await page.getByRole("button", { name: "上一個月" }).click();
+  await expect(grid).toHaveAttribute("aria-label", monthLabel ?? "");
+  await page.getByRole("button", { name: "今天" }).click();
+  const eventButtons = page.getByRole("button", { name: /查看詳情$/ });
+  if (await eventButtons.count()) {
+    await eventButtons.first().focus();
+    await expect(eventButtons.first()).toBeFocused();
+    await eventButtons.first().click();
+    await expect(page.getByRole("dialog", { name: "活動詳情" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog", { name: "活動詳情" })).toBeHidden();
+  }
+});
+
+test("board-game ranking search preserves query parameters", async ({ page }) => {
+  await page.goto("/rankings/board-games", { waitUntil: "domcontentloaded" });
+  const search = page.getByRole("searchbox", { name: "搜尋桌遊名稱" });
+  await search.fill("桌遊");
+  await search.press("Enter");
+  await expect(page).toHaveURL(/q=%E6%A1%8C%E9%81%8A/);
+});
+
 test("ranking routes render public navigation", async ({ page }) => {
   for (const path of ["/rankings", "/rankings/board-games", "/rankings/reviews", "/rankings/contributors"]) {
     await page.goto(path, { waitUntil: "domcontentloaded" });
