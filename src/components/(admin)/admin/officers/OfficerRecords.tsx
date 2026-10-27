@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
+import { useToast } from "@/contexts/ToastContext";
 import type { AcademicYear } from "@/types/database";
 import { AdminUserLink } from "@/components/(admin)/admin/users/AdminUserLink";
 import type { AdminOfficerPosition } from "@/services/officer-positions/officer-positions.types";
@@ -36,6 +37,7 @@ export function OfficerRecords({
   hasQuery?: boolean;
 }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [selectedOfficer, setSelectedOfficer] = useState<
     { officer: Officer; action: "edit" | "delete" } | null
   >(null);
@@ -89,6 +91,7 @@ export function OfficerRecords({
         body: values,
       });
       setSelectedOfficer(null);
+      showToast("success", "幹部資料已更新");
       router.refresh();
     } catch (caught) {
       setEditError(caught instanceof Error ? caught.message : "更新幹部職位失敗，請稍後再試。");
@@ -106,6 +109,7 @@ export function OfficerRecords({
     try {
       await apiClient(`/api/admin/officers/${deletingOfficer.id}`, { method: "DELETE" });
       setSelectedOfficer(null);
+      showToast("success", "幹部已刪除");
       router.refresh();
     } catch (caught) {
       setDeleteError(caught instanceof Error ? caught.message : "刪除幹部職位失敗，請稍後再試。");

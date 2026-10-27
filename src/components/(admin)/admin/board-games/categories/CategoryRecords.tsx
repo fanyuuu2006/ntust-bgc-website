@@ -15,12 +15,14 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
+import { useToast } from "@/contexts/ToastContext";
 import type { BoardGameCategory } from "@/types/database";
 
 type CategoryRecord = BoardGameCategory & { count: number };
 
 export function CategoryRecords({ items, hasQuery = false }: { items: CategoryRecord[]; hasQuery?: boolean }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [editing, setEditing] = useState<CategoryRecord | null>(null);
   const [deleting, setDeleting] = useState<CategoryRecord | null>(null);
   const [name, setName] = useState("");
@@ -63,6 +65,7 @@ export function CategoryRecords({ items, hasQuery = false }: { items: CategoryRe
       });
       setEditing(null);
       router.refresh();
+      showToast("success", "桌遊種類已更新");
     } catch (reason) {
       setMessage(reason instanceof Error ? reason.message : "更新桌遊分類失敗，請稍後再試。");
     } finally {
@@ -81,6 +84,7 @@ export function CategoryRecords({ items, hasQuery = false }: { items: CategoryRe
       });
       setDeleting(null);
       router.refresh();
+      showToast("success", "桌遊種類已刪除");
     } catch (reason) {
       setMessage(reason instanceof Error ? reason.message : "刪除桌遊分類失敗，請稍後再試。");
     } finally {

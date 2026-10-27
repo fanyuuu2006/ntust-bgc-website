@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
+import { useToast } from "@/contexts/ToastContext";
 import type { AdminMembership } from "@/services/memberships/memberships.types";
 import type { AcademicYear, MembershipStatus } from "@/types/database";
 import { canTransitionMembershipStatus } from "@/utils/membership-status";
@@ -57,6 +58,7 @@ export function MembershipRecords({
   query: Query;
 }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [selectedMembership, setSelectedMembership] = useState<
     { membership: AdminMembership; action: "edit" | "delete" } | null
   >(null);
@@ -172,6 +174,7 @@ export function MembershipRecords({
         },
       });
       setSelectedMembership(null);
+      showToast("success", "社員資格已更新");
       router.refresh();
     } catch (caught) {
       setEditError(caught instanceof Error ? caught.message : "更新社員資格失敗，請稍後再試。");
@@ -189,6 +192,7 @@ export function MembershipRecords({
     try {
       await apiClient(`/api/admin/memberships/${deletingMembership.id}`, { method: "DELETE" });
       setSelectedMembership(null);
+      showToast("success", "社員資格已刪除");
       router.refresh();
     } catch (caught) {
       setDeleteError(caught instanceof Error ? caught.message : "刪除社員資格失敗，請稍後再試。");
@@ -225,6 +229,7 @@ export function MembershipRecords({
         tone: "success",
         message: `已更新 ${response.data.updatedCount} 筆社員資格`,
       });
+      showToast("success", `已更新 \${response.data.updatedCount} 筆社員資格`);
       router.refresh();
     } catch (caught) {
       setIsBulkDialogOpen(false);

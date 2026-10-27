@@ -20,6 +20,7 @@ import type { AdminReview } from "@/services/reviews/admin-reviews.types";
 import type { ReviewSort } from "@/services/reviews/reviews.types";
 import { formatDateTime } from "@/utils/date";
 import { wasReviewMeaningfullyEdited } from "@/utils/review-presentation";
+import { useToast } from "@/contexts/ToastContext";
 
 const EMPTY_CONTENT = "未填寫文字評價";
 
@@ -33,6 +34,7 @@ export function AdminReviewRecords({
   query: Record<string, string | number | undefined> & { sort: ReviewSort };
 }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [viewing, setViewing] = useState<AdminReview | null>(null);
   const [deleting, setDeleting] = useState<AdminReview | null>(null);
   const [busy, setBusy] = useState(false);
@@ -45,6 +47,7 @@ export function AdminReviewRecords({
     try {
       await apiClient(`/api/admin/reviews/${deleting.id}`, { method: "DELETE" });
       setDeleting(null);
+      showToast("success", "評論已刪除");
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "刪除評價失敗");

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Modal } from "@/components/Modal";
 import { apiClient } from "@/libs/api/client";
+import { useToast } from "@/contexts/ToastContext";
 import type { UserProfile } from "@/types/database";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -38,6 +39,7 @@ export function UserProfileEditButton({
   profile: UserProfile | null;
 }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<Values>(() => valuesFromProfile(profile));
   const [busy, setBusy] = useState(false);
@@ -58,6 +60,7 @@ export function UserProfileEditButton({
       });
       setOpen(false);
       router.refresh();
+      showToast("success", "個人資料已更新");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "更新使用者資料失敗");
     } finally {

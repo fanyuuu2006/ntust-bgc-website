@@ -16,11 +16,13 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
 import type { BoardGameLocation } from "@/types/database";
+import { useToast } from "@/contexts/ToastContext";
 
 type LocationRecord = BoardGameLocation & { count: number };
 
 export function LocationRecords({ items, hasQuery = false }: { items: LocationRecord[]; hasQuery?: boolean }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [editing, setEditing] = useState<LocationRecord | null>(null);
   const [deleting, setDeleting] = useState<LocationRecord | null>(null);
   const [name, setName] = useState("");
@@ -62,6 +64,7 @@ export function LocationRecords({ items, hasQuery = false }: { items: LocationRe
         body: { name, description: description || null },
       });
       setEditing(null);
+      showToast("success", "桌遊位置已更新");
       router.refresh();
     } catch (reason) {
       setMessage(reason instanceof Error ? reason.message : "更新桌遊位置失敗，請稍後再試。");
@@ -80,6 +83,7 @@ export function LocationRecords({ items, hasQuery = false }: { items: LocationRe
         method: "DELETE",
       });
       setDeleting(null);
+      showToast("success", "桌遊位置已刪除");
       router.refresh();
     } catch (reason) {
       setMessage(reason instanceof Error ? reason.message : "刪除桌遊位置失敗，請稍後再試。");

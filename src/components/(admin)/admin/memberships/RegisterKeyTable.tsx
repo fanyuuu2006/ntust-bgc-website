@@ -24,6 +24,7 @@ import type { MembershipRegisterKeyWithAcademicYear } from "@/services/membershi
 import { formatAdminDateTime } from "@/utils/date";
 import { useCurrentPageSelection } from "@/hooks/useCurrentPageSelection";
 import { RegisterKeyStatusBadge } from "./RegisterKeyStatusBadge";
+import { useToast } from "@/contexts/ToastContext";
 
 type RegisterKeyTableProps = {
   registerKeys: MembershipRegisterKeyWithAcademicYear[];
@@ -35,6 +36,7 @@ export function RegisterKeyTable({
   hasFilters = false,
 }: RegisterKeyTableProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [feedback, setFeedback] = useState<string | null>(null);
   const [pendingRevocation, setPendingRevocation] =
     useState<MembershipRegisterKeyWithAcademicYear | null>(null);
@@ -74,7 +76,7 @@ export function RegisterKeyTable({
 
     try {
       await navigator.clipboard.writeText(values.join("\n"));
-      setFeedback(`已複製 ${values.length} 組社員註冊序號。`);
+      showToast("success", `已複製 ${values.length} 組社員註冊序號`);
     } catch {
       setFeedback("無法複製已選取的社員註冊序號，請稍後再試。");
     }
@@ -83,7 +85,7 @@ export function RegisterKeyTable({
   async function copyRegisterKey(registerKey: string) {
     try {
       await navigator.clipboard.writeText(registerKey);
-      setFeedback("社員註冊序號已複製。");
+      showToast("success", "已複製社員註冊序號");
     } catch {
       setFeedback("無法複製社員註冊序號，請手動複製。");
     }
@@ -106,7 +108,7 @@ export function RegisterKeyTable({
         throw new Error(body.message ?? "撤銷社員註冊序號失敗，請稍後再試。");
       }
 
-      setFeedback("社員註冊序號已撤銷。");
+      showToast("success", "社員註冊序號已撤銷");
       setRegisterKeySelected(pendingRevocation.id, false);
       setPendingRevocation(null);
       router.refresh();
@@ -140,7 +142,7 @@ export function RegisterKeyTable({
       );
       clearSelection();
       setIsBulkRevokeDialogOpen(false);
-      setFeedback(`已撤銷 ${response.data.revokedCount} 組社員註冊序號。`);
+      showToast("success", `已撤銷 ${response.data.revokedCount} 組社員註冊序號`);
       router.refresh();
     } catch (error) {
       setIsBulkRevokeDialogOpen(false);

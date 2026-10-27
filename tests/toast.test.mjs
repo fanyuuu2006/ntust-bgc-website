@@ -57,3 +57,40 @@ test("admin board-game and announcement mutations use operation-specific success
   assert.match(files[1], /公告已刪除/);
   assert.match(files[1], /公告已發布/);
 });
+
+test("admin location, academic-year, and register-key mutations notify after success", async () => {
+  const files = await Promise.all([
+    "../src/components/(admin)/admin/board-games/locations/LocationCreateAction.tsx",
+    "../src/components/(admin)/admin/board-games/locations/LocationRecords.tsx",
+    "../src/components/(admin)/admin/academic-years/AcademicYearActions.tsx",
+    "../src/components/(admin)/admin/memberships/RegisterKeyGenerateForm.tsx",
+  ].map((path) => readFile(new URL(path, import.meta.url), "utf8")));
+
+  for (const text of files.slice(0, 3)) {
+    assert.match(text, /useToast/);
+    assert.match(text, /showToast\("success"/);
+  }
+  assert.match(files[0], /await apiClient[\s\S]*showToast\("success"/);
+  assert.match(files[1], /await apiClient[\s\S]*showToast\("success"/);
+  assert.match(files[2], /await apiClient[\s\S]*showToast\("success"/);
+  assert.match(files[3], /await apiClient[\s\S]*setView\("results"\)/);
+  assert.doesNotMatch(files[3], /已產生 .*社員註冊序號/);
+  assert.match(files[3], /copied|已複製/);
+});
+
+test("admin review deletion and event mutations notify only after successful APIs", async () => {
+  const files = await Promise.all([
+    "../src/components/(admin)/admin/reviews/AdminReviewRecords.tsx",
+    "../src/components/(admin)/admin/events/EventRecords.tsx",
+  ].map((path) => readFile(new URL(path, import.meta.url), "utf8")));
+
+  for (const text of files) {
+    assert.match(text, /useToast/);
+    assert.match(text, /showToast\("success"/);
+    assert.match(text, /ConfirmDialog/);
+    assert.match(text, /router\.refresh\(\)/);
+  }
+  assert.match(files[0], /await apiClient[\s\S]*setDeleting\(null\)[\s\S]*showToast\("success", "評論已刪除"\)/);
+  assert.match(files[1], /await apiClient[\s\S]*setSelectedEvent\(null\)[\s\S]*showToast\("success", "活動已更新"\)/);
+  assert.match(files[1], /showToast\("success", "活動已刪除"\)/);
+});

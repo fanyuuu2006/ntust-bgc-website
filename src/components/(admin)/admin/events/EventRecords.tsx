@@ -27,6 +27,7 @@ import {
 } from "@/utils/date";
 import { EventStatusBadge } from "./EventStatusBadge";
 import { EventMoreMenu } from "./EventMoreMenu";
+import { useToast } from "@/contexts/ToastContext";
 
 // Editor runtime 僅供管理端編輯，不帶入伺服器渲染的閱讀頁面。
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor").then((module) => module.RichTextEditor), { ssr: false });
@@ -43,6 +44,7 @@ type EventFormValues = {
 
 export function EventRecords({ events, attendedCounts, hasQuery = false, returnTo = "/admin/events" }: { events: Event[]; attendedCounts: Record<string, number>; hasQuery?: boolean; returnTo?: string }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [selectedEvent, setSelectedEvent] = useState<{ event: Event; action: "edit" | "delete" } | null>(null);
   const [values, setValues] = useState<EventFormValues>({
     name: "",
@@ -107,6 +109,7 @@ export function EventRecords({ events, attendedCounts, hasQuery = false, returnT
         },
       });
       setSelectedEvent(null);
+      showToast("success", "活動已更新");
       router.refresh();
     } catch (caught) {
       setEditError(caught instanceof Error ? caught.message : "更新活動失敗，請稍後再試。");
@@ -124,6 +127,7 @@ export function EventRecords({ events, attendedCounts, hasQuery = false, returnT
     try {
       await apiClient(`/api/admin/events/${deletingEvent.id}`, { method: "DELETE" });
       setSelectedEvent(null);
+      showToast("success", "活動已刪除");
       router.refresh();
     } catch (caught) {
       setDeleteError(caught instanceof Error ? caught.message : "刪除活動失敗，請稍後再試。");

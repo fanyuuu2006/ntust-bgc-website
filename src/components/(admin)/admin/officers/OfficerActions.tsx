@@ -10,10 +10,12 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { AdminUserPicker } from "@/components/(admin)/admin/users/AdminUserPicker";
 import { apiClient } from "@/libs/api/client";
+import { useToast } from "@/contexts/ToastContext";
 import type { AcademicYear } from "@/types/database";
 
 export function OfficerActions({ years }: { years: AcademicYear[] }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +42,7 @@ export function OfficerActions({ years }: { years: AcademicYear[] }) {
     try {
       await apiClient("/api/admin/officers", { method: "POST", body: values });
       setOpen(false);
+      showToast("success", "幹部已新增");
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "新增幹部職位失敗，請稍後再試。");

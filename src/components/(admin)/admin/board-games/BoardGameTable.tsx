@@ -29,6 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/Table";
 import { apiClient } from "@/libs/api/client";
+import { useToast } from "@/contexts/ToastContext";
 import type { BoardGameWithCategoryAndLocation } from "@/services/board-games/board-games.types";
 import type { BoardGameCategory, BoardGameLocation } from "@/types/database";
 import { formatDateTime } from "@/utils/date";
@@ -52,6 +53,7 @@ export function BoardGameTable({
   ...props
 }: Props) {
   const router = useRouter();
+  const { showToast } = useToast();
   const returnTo = buildAdminListHref(BASE_PATH, query);
   const [selectedBoardGame, setSelectedBoardGame] =
     useState<BoardGameWithCategoryAndLocation | null>(null);
@@ -92,6 +94,7 @@ export function BoardGameTable({
       clearSelection(); setIsBulkDialogOpen(false);
       setBulkFeedback({ tone: "success", message: `已更新 ${response.data.updatedCount} 筆桌遊` });
       router.refresh();
+      showToast("success", `已更新 ${response.data.updatedCount} 款桌遊`);
     } catch (error) {
       setIsBulkDialogOpen(false);
       setBulkFeedback({ tone: "error", message: error instanceof Error ? error.message : "批次更新桌遊失敗，請稍後再試" });
@@ -122,6 +125,7 @@ export function BoardGameTable({
       });
       setSelectedBoardGame(null);
       router.refresh();
+      showToast("success", "桌遊已刪除");
     } catch (caught) {
       setDeleteError(
         caught instanceof Error ? caught.message : "刪除桌遊失敗，請稍後再試。",

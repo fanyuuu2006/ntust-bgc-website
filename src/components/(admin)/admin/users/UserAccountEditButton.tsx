@@ -8,12 +8,14 @@ import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import { FormFeedback } from "@/components/FormFeedback";
 import { apiClient } from "@/libs/api/client";
+import { useToast } from "@/contexts/ToastContext";
 import { updateUserAccountSchema } from "@/services/users/users.schema";
 import type { User } from "@/types/database";
 
 /** 僅管理帳號外觀欄位；Email、驗證與生命週期不屬於此表單的寫入範圍。 */
 export function UserAccountEditButton({ user }: { user: Pick<User, "id" | "name" | "avatar" | "closed_at"> }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(user.name);
   const [busy, setBusy] = useState(false);
@@ -32,7 +34,7 @@ export function UserAccountEditButton({ user }: { user: Pick<User, "id" | "name"
     setFields({}); setError(null); setBusy(true);
     try {
       await apiClient(`/api/admin/users/${user.id}/account`, { method: "PATCH", body: parsed.data });
-      setOpen(false); router.refresh();
+      setOpen(false); showToast("success", "帳號資料已更新"); router.refresh();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "更新帳號資料失敗");
     } finally { setBusy(false); }

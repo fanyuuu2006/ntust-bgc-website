@@ -12,11 +12,13 @@ import { Input } from "@/components/ui/Input";
 import { apiClient } from "@/libs/api/client";
 import { ApiError } from "@/libs/api/errors";
 import type { AcademicYear } from "@/types/database";
+import { useToast } from "@/contexts/ToastContext";
 
 type Workflow = "current" | "delete";
 
 export function AcademicYearActions({ year }: { year?: AcademicYear }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [formOpen, setFormOpen] = useState(false);
   const [workflow, setWorkflow] = useState<Workflow | null>(null);
   const [formBusy, setFormBusy] = useState(false);
@@ -42,6 +44,7 @@ export function AcademicYearActions({ year }: { year?: AcademicYear }) {
         body: values,
       });
       setFormOpen(false);
+      showToast("success", year ? "學年度已更新" : "學年度已新增");
       router.refresh();
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "儲存學年度失敗，請稍後再試");
@@ -60,6 +63,7 @@ export function AcademicYearActions({ year }: { year?: AcademicYear }) {
         ...(workflow === "current" ? { body: { action: "set-current" } } : {}),
       });
       setWorkflow(null);
+      showToast("success", workflow === "delete" ? "學年度已刪除" : "已設定目前學年度");
       router.refresh();
     } catch (error) {
       setWorkflowError(
