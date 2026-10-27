@@ -71,7 +71,6 @@ test("collection pages converge while Review collections supply their specialize
     "src/app/(admin)/admin/board-games/categories/page.tsx",
     "src/app/(admin)/admin/board-games/locations/page.tsx",
     "src/app/(admin)/admin/events/page.tsx",
-    "src/app/(admin)/admin/events/[id]/page.tsx",
     "src/app/(admin)/admin/announcements/page.tsx",
     "src/app/(admin)/admin/reviews/page.tsx",
     "src/app/(admin)/admin/academic-years/page.tsx",

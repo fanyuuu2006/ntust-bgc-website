@@ -165,7 +165,7 @@ test("all first-wave Admin surfaces expose the shared export menu", async () => 
     ["src/app/(admin)/admin/officers/page.tsx", "officers"],
     ["src/app/(admin)/admin/board-games/page.tsx", "board-games"],
     ["src/app/(admin)/admin/board-games/borrowings/page.tsx", "borrowings"],
-    ["src/app/(admin)/admin/events/[id]/page.tsx", "event-attendance"],
+    ["src/app/(admin)/admin/events/[id]/attendances/page.tsx", "event-attendance"],
   ];
   for (const [path, domain] of pages) {
     const source = await readSource(path);

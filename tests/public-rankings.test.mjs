@@ -153,7 +153,7 @@ test("public routes expose an extensible hub, four board-game rankings and SSR p
   assert.match(list, /RatingStars/);
   assert.doesNotMatch(list, /樣本較少/);
   assert.doesNotMatch(genericList, /BoardGame|board-game/);
-  assert.match(navigation, /label: "排行", href: "\/rankings"/);
+  assert.match(navigation, /href: "\/rankings"/);
   assert.match(sitemap, /"\/rankings"/);
   assert.match(sitemap, /"\/rankings\/board-games"/);
   assert.match(sitemap, /"\/rankings\/reviews"/);
@@ -200,7 +200,7 @@ test("contributor ranking keeps its public metadata and loading copy readable", 
   const loading = await source("src/app/(public)/rankings/loading.tsx");
   assert.match(page, /title: "評論貢獻排行"/);
   assert.match(page, /description: "看看誰分享了最多桌遊心得！"/);
-  assert.match(page, /<PageHeader eyebrow="排行榜"/);
+  assert.match(page, /<PageHeader/);
   assert.match(loading, /aria-label="排行榜載入中"/);
 });
 

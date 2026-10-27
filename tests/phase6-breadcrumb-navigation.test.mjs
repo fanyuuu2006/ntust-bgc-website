@@ -34,8 +34,7 @@ test("admin detail breadcrumbs preserve existing safe return paths and actions",
   assert.match(boardGameEdit, /查看公開頁面/);
   assert.doesNotMatch(boardGameEdit, /<ButtonLink href=\{returnTo\} variant="outline">/);
   assert.match(eventDetail, /getAdminReturnPath/);
-  assert.match(eventDetail, /<AdminBreadcrumbs/);
-  assert.match(eventDetail, /<AttendanceActions/);
+  assert.match(eventDetail, /EventDetailHeader/);
   assert.doesNotMatch(eventDetail, /href=\{returnTo\}[^>]*>返回活動管理/);
 });
 

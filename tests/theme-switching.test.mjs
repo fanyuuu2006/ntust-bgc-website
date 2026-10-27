@@ -27,12 +27,9 @@ test("theme helpers validate all three preferences and resolve system safely", (
 test("initialization script runs before body content and applies a validated resolved theme", async () => {
   const { THEME_INITIALIZATION_SCRIPT } = load("src/libs/theme.ts");
   const layout = await readSource("src/app/layout.tsx");
-  const headIndex = layout.indexOf("<head>");
-  const bodyIndex = layout.indexOf("<body>");
-
-  assert.ok(headIndex >= 0 && headIndex < bodyIndex);
+  assert.match(layout, /strategy="beforeInteractive"/);
   assert.match(layout, /suppressHydrationWarning/);
-  assert.match(layout, /dangerouslySetInnerHTML=\{\{ __html: THEME_INITIALIZATION_SCRIPT \}\}/);
+  assert.match(layout, /THEME_INITIALIZATION_SCRIPT/);
 
   const dom = new JSDOM("<!doctype html><html><head></head><body></body></html>", {
     url: "https://example.test",

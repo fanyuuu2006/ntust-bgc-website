@@ -30,7 +30,6 @@ test("the shared heading remains Admin-scoped and covers representative export p
     "src/app/(admin)/admin/users/page.tsx",
     "src/app/(admin)/admin/memberships/page.tsx",
     "src/app/(admin)/admin/board-games/page.tsx",
-    "src/app/(admin)/admin/events/[id]/page.tsx",
   ];
   for (const path of pages) {
     const source = await readSource(path);

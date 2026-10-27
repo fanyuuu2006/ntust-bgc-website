@@ -78,11 +78,12 @@ test("review ranking query keeps valid URL search state and rejects overlong val
   const { normalizeReviewRankingQuery } = load("src/app/(public)/rankings/reviews/query.ts");
 
   assert.deepEqual(normalizeReviewRankingQuery({ page: "2", q: "  50%_推薦  " }), {
-    page: 2,
+    page: 2, pageSize: 20,
     search: "50%_推薦",
   });
   assert.deepEqual(normalizeReviewRankingQuery({ page: "invalid", q: "x".repeat(101) }), {
     page: 1,
+    pageSize: 20,
     search: undefined,
   });
 });
@@ -148,8 +149,8 @@ test("review ranking route is searchable, SSR paginated and discoverable without
   assert.match(page, /reviewsService\.listPopularRankings/);
   assert.match(page, /PaginatedCollection/);
   assert.match(page, /basePath="\/rankings\/reviews"/);
-  assert.match(page, /listPopularRankings\(\{ page, pageSize: PAGE_SIZE, search \}\)/);
-  assert.match(page, /query=\{\{ q: search \}\}/);
+  assert.match(page, /listPopularRankings\(\{ page, pageSize, search \}\)/);
+  assert.match(page, /query=\{\{ q: search, pageSize/);
   assert.match(page, /robots: \{ index: false, follow: true \}/);
   assert.match(query, /REVIEW_RANKING_SEARCH_MAX_LENGTH = 100/);
   assert.match(searchForm, /搜尋評論內容/);

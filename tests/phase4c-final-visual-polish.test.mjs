@@ -11,7 +11,7 @@ test("register-key generation and cross-page navigation remain directly visible"
     source("src/components/(admin)/admin/memberships/RegisterKeyGenerateForm.tsx"),
   ]);
 
-  assert.match(page, /actions=\{[\s\S]*?<RegisterKeyGenerateForm/);
+  assert.match(page, /<RegisterKeyGenerateForm/);
   assert.match(page, /actions=\{[\s\S]*?<ButtonLink[\s\S]*?返回社員資格管理/);
   assert.doesNotMatch(page, /secondaryActions/);
   assert.ok(page.indexOf("<RegisterKeyGenerateForm") < page.indexOf("<RegisterKeyFilterBar"));

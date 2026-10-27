@@ -39,6 +39,7 @@ const row = {
   last_accessed_at: new Date().toISOString(), title: "fixture",
   completed_borrow_count: 1, password_hash: "fixture", inventory_number: 1,
   check_in_opens_at: "2020-01-01", check_in_closes_at: "2030-01-01",
+  publication_status: "published", cancelled_at: null,
 };
 const { createSupabaseFetch } = load("src/libs/supabase/fetch.ts");
 async function dataApiFixture(input, init) {
@@ -154,7 +155,7 @@ test('B3 personal borrowings retain count, search/filter/pagination; events omit
   assert.equal(q.get('order'), 'created_at.desc');
   assert.ok(requests[1].headers.some(([key, value]) => key === 'prefer' && value.includes('count=exact')));
   await measure(() => e.getSelfCheckInEventsForUser(id));
-  assert.deepEqual(requests.map(r => new URLSearchParams(r.query).get('select')), ['id,name,start_time,end_time', 'event_id']);
+  assert.deepEqual(requests.map(r => new URLSearchParams(r.query).get('select')), ['id,name,start_time,end_time,publication_status,cancelled_at', 'event_id']);
 });
 
 test('B1 reduced cold request budgets', async () => {

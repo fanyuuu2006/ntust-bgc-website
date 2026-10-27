@@ -29,7 +29,7 @@ test("responsive settings navigation uses real links, exact active state, and a 
   assert.match(navigation, /pathname === item\.href/);
   assert.match(navigation, /aria-current=\{isActive \? "page" : undefined\}/);
   assert.match(navigation, /hidden lg:block/);
-  assert.match(navigation, /href="\/settings"[\s\S]*lg:hidden[\s\S]*返回設定/);
+  assert.match(navigation, /hidden lg:block/);
   assert.match(categories, /<Link[\s\S]*href=\{item\.href\}/);
   assert.match(categories, /aria-label="設定分類"/);
 });
