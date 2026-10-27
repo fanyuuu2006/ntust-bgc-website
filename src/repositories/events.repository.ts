@@ -43,6 +43,36 @@ export type FindManyEventsOptions = PaginationQuery &
 
 export type PublicEvent = Pick<Event, "id" | "name" | "description" | "description_format" | "rich_description" | "start_time" | "end_time" | "cancelled_at" | "calendar_color">;
 
+const PUBLIC_EVENTS_PAGE_SIZE = 500;
+const PUBLIC_EVENTS_MAX_PAGES = 20;
+
+async function findPublishedEventsInRange(from: string, to: string): Promise<PublicEvent[]> {
+  const events: PublicEvent[] = [];
+  const seenIds = new Set<string>();
+  for (let page = 0; page < PUBLIC_EVENTS_MAX_PAGES; page += 1) {
+    const fromRow = page * PUBLIC_EVENTS_PAGE_SIZE;
+    const toRow = fromRow + PUBLIC_EVENTS_PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from("events")
+      .select("id,name,description,description_format,rich_description,start_time,end_time,cancelled_at,calendar_color")
+      .eq("publication_status", "published")
+      .lt("start_time", to)
+      .gt("end_time", from)
+      .order("start_time", { ascending: true })
+      .order("id", { ascending: true })
+      .range(fromRow, toRow);
+    if (error) throwRepositoryError("公開活動查詢失敗", error);
+    for (const event of data ?? []) {
+      if (!seenIds.has(event.id)) {
+        seenIds.add(event.id);
+        events.push(event);
+      }
+    }
+    if (!data || data.length < PUBLIC_EVENTS_PAGE_SIZE) return events;
+  }
+  throw new Error("公開活動資料超過單次查詢可安全處理的上限");
+}
+
 export const eventsRepository = {
   findPublishedById: async (id: string): Promise<PublicEvent | null> => {
     const { data, error } = await supabase
@@ -55,16 +85,7 @@ export const eventsRepository = {
     return data;
   },
   findPublishedInRange: async (from: string, to: string): Promise<PublicEvent[]> => {
-    const { data, error } = await supabase
-      .from("events")
-      .select("id,name,description,description_format,rich_description,start_time,end_time,cancelled_at,calendar_color")
-      .eq("publication_status", "published")
-      .lt("start_time", to)
-      .gt("end_time", from)
-      .order("start_time", { ascending: true })
-      .order("id", { ascending: true });
-    if (error) throwRepositoryError("查詢公開活動失敗", error);
-    return data ?? [];
+    return findPublishedEventsInRange(from, to);
   },
   findMany: async (options: FindManyEventsOptions = {}) => {
     const { page, pageSize, from, to } = normalizePaginationOptions({
