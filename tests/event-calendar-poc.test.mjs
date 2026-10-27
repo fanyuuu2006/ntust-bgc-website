@@ -45,11 +45,14 @@ test("Calendar details use schema-aligned optional fields and neutral black pres
 test("Calendar presentation keeps mobile events textual and date states distinct", async () => {
   const text = await source();
   const css = await readFile(new URL("../src/components/(admin)/admin/events/event-calendar-poc.css", import.meta.url), "utf8");
+  const sharedCss = await readFile(new URL("../src/components/calendar/calendar.css", import.meta.url), "utf8");
   assert.match(text, /aria-current=\{isToday \? "date"/);
   assert.match(text, /event-calendar-month-cell-selected/);
   assert.match(css, /event-calendar-month-grid/);
   assert.match(css, /event-calendar-month-event-indicator/);
   assert.doesNotMatch(css, /fc-daygrid/);
+  assert.match(sharedCss, /event-calendar-event-chip \{ display:none; \}/);
+  assert.match(sharedCss, /event-calendar-month-event-list \{ display:flex;[^}]*max-height:\.75rem/);
 });
 
 test("FullCalendar PoC uses an external toolbar and selected-day presentation", async () => {
