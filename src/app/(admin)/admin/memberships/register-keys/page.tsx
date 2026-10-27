@@ -7,6 +7,7 @@ import { RegisterKeyTable } from "@/components/(admin)/admin/memberships/Registe
 import { PaginatedCollection } from "@/components/Pagination/PaginatedCollection";
 import { listMembershipRegisterKeysQuerySchema } from "@/services/memberships/memberships.schema";
 import { membershipService } from "@/services/memberships/memberships.service";
+import { ButtonLink } from "@/components/ui/Button";
 
 type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -31,6 +32,7 @@ async function MembershipRegisterKeysPage({ searchParams }: Props) {
         breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { href: "/admin/memberships", label: "社員資格管理" }, { label: "社員註冊序號管理" }]} />}
         title="社員註冊序號管理"
         description="產生序號，供已完成入社流程的使用者建立社員資格。"
+        actions={<ButtonLink href="/admin/memberships" variant="outline">返回社員資格管理</ButtonLink>}
       />
       <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <div className="flex justify-end">
