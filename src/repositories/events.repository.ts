@@ -14,7 +14,7 @@ export type CreateEventInput = Pick<
   Event,
   "name" | "start_time" | "end_time" | "check_in_opens_at" | "check_in_closes_at"
 > &
-  Partial<Pick<Event, "description" | "description_format" | "rich_description" | "publication_status">>;
+  Partial<Pick<Event, "description" | "description_format" | "rich_description" | "publication_status" | "calendar_color">>;
 
 export type UpdateEventInput = Partial<
   Pick<
@@ -27,6 +27,7 @@ export type UpdateEventInput = Partial<
     | "check_in_closes_at"
     | "publication_status"
     | "cancelled_at"
+    | "calendar_color"
   >
 >;
 
@@ -40,13 +41,23 @@ export type FindManyEventsOptions = PaginationQuery &
     startsBefore?: string;
   };
 
-export type PublicEvent = Pick<Event, "id" | "name" | "description" | "description_format" | "rich_description" | "start_time" | "end_time" | "cancelled_at">;
+export type PublicEvent = Pick<Event, "id" | "name" | "description" | "description_format" | "rich_description" | "start_time" | "end_time" | "cancelled_at" | "calendar_color">;
 
 export const eventsRepository = {
+  findPublishedById: async (id: string): Promise<PublicEvent | null> => {
+    const { data, error } = await supabase
+      .from("events")
+      .select("id,name,description,description_format,rich_description,start_time,end_time,cancelled_at,calendar_color")
+      .eq("id", id)
+      .eq("publication_status", "published")
+      .maybeSingle();
+    if (error) throwRepositoryError("取得公開活動失敗", error);
+    return data;
+  },
   findPublishedInRange: async (from: string, to: string): Promise<PublicEvent[]> => {
     const { data, error } = await supabase
       .from("events")
-      .select("id,name,description,description_format,rich_description,start_time,end_time,cancelled_at")
+      .select("id,name,description,description_format,rich_description,start_time,end_time,cancelled_at,calendar_color")
       .eq("publication_status", "published")
       .lt("start_time", to)
       .gt("end_time", from)

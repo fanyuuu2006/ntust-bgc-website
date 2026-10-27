@@ -222,7 +222,7 @@ test("attendance RPC enforces same-event locks, stale-state checks, and atomic r
 test("attendance UI shares selection across desktop and mobile and retains single-record actions", async () => {
   const [recordsSource, page, singleRoute, bulkBar] = await Promise.all([
     readSource("src/components/(admin)/admin/events/AttendanceRecords.tsx"),
-    readSource("src/app/(admin)/admin/events/[id]/page.tsx"),
+    readSource("src/app/(admin)/admin/events/[id]/attendances/page.tsx"),
     readSource(
       "src/app/api/admin/events/[id]/attendances/[attendanceId]/route.ts",
     ),
@@ -249,7 +249,7 @@ test("attendance UI shares selection across desktop and mobile and retains singl
   assert.match(recordsSource, /AttendanceRowActions/);
   assert.match(recordsSource, /openEditDialog/);
   assert.match(recordsSource, /openDeleteDialog/);
-  assert.match(page, /key=\{JSON\.stringify\(\{ search: query\.search, orderDirection, page, pageSize \}\)\}/);
+  assert.match(page, /key=\{JSON\.stringify\(\{ search, orderDirection, page, pageSize \}\)\}/);
   assert.match(singleRoute, /updateAttendanceForAdmin/);
   assert.match(singleRoute, /deleteAttendanceForAdmin/);
 });

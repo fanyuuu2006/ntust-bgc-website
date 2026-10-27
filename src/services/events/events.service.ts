@@ -5,7 +5,7 @@ import {
   eventsRepository,
   FindManyEventsOptions,
 } from "@/repositories/events.repository";
-import { attendanceInputSchema, attendanceUpdateSchema, bulkAttendanceUpdateSchema, createEventSchema, publicEventsQuerySchema, updateEventSchema } from "./events.schema";
+import { attendanceInputSchema, attendanceUpdateSchema, bulkAttendanceUpdateSchema, createEventSchema, publicEventIdSchema, publicEventsQuerySchema, updateEventSchema } from "./events.schema";
 import { usersRepository } from "@/repositories/users.repository";
 import { userProfilesRepository } from "@/repositories/user-profiles.repository";
 import {
@@ -87,7 +87,24 @@ export const eventsService = {
       start_time: event.start_time,
       end_time: event.end_time,
       is_cancelled: event.cancelled_at !== null,
+      calendar_color: event.calendar_color,
     }));
+  },
+
+  getPublicEventById: async (id: string) => {
+    const event = await eventsRepository.findPublishedById(publicEventIdSchema.parse(id));
+    if (!event) return null;
+    return {
+      id: event.id,
+      name: event.name,
+      description: event.description,
+      description_format: event.description_format,
+      rich_description: event.rich_description,
+      start_time: event.start_time,
+      end_time: event.end_time,
+      is_cancelled: event.cancelled_at !== null,
+      calendar_color: event.calendar_color,
+    };
   },
 
   createEvent: async (payload: unknown) => {

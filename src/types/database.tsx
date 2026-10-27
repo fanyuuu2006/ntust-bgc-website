@@ -345,6 +345,7 @@ export type Event = {
   description: string | null;
   description_format: "plain_text" | "rich_text_v1";
   rich_description: unknown | null;
+  calendar_color: string | null;
   start_time: Timestamp;
   end_time: Timestamp;
   check_in_opens_at: Timestamp | null;

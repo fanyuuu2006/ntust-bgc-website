@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { descriptionFields, validateDescription, canonicalizeDescription } from "@/libs/rich-content/description";
+import { CALENDAR_COLOR_PATTERN } from "@/utils/calendar-color";
 
 const checkInTimeSchema = z.iso.datetime().nullable().optional();
+const calendarColorSchema = z.string().regex(CALENDAR_COLOR_PATTERN, "請輸入有效的六位十六進位色碼").nullable().optional();
 
 export const createEventSchema = z
   .object({
@@ -12,6 +14,7 @@ export const createEventSchema = z
     check_in_opens_at: checkInTimeSchema,
     check_in_closes_at: checkInTimeSchema,
     publication_status: z.enum(["draft", "published"]).optional(),
+    calendar_color: calendarColorSchema,
   })
   .refine((data) => new Date(data.end_time) > new Date(data.start_time), {
     message: "活動結束時間必須晚於開始時間",
@@ -28,6 +31,7 @@ export const updateEventSchema = z
     check_in_closes_at: checkInTimeSchema,
     publication_status: z.enum(["draft", "published"]).optional(),
     cancelled_at: z.never().optional(),
+    calendar_color: calendarColorSchema,
   })
   .partial()
   .refine(
@@ -52,6 +56,8 @@ export const publicEventsQuerySchema = z.object({
   message: "查詢區間不可超過 366 天",
   path: ["to"],
 });
+
+export const publicEventIdSchema = z.uuid();
 
 export const attendanceInputSchema = z.object({
   user_id: z.uuid(),
