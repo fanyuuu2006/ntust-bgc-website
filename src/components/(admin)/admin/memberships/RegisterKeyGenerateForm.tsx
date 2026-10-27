@@ -119,7 +119,7 @@ export function RegisterKeyGenerateForm({ academicYears, defaultAcademicYearId }
               <p className="text-sm font-semibold">共 {generatedKeys.length} 組序號</p>
               <Button type="button" variant="outline" size="sm" onClick={copyGeneratedKeys} disabled={!generatedKeys.length}>{copied ? `已複製 ${generatedKeys.length} 組` : "複製全部"}</Button>
             </div>
-                <p aria-live="polite" className="sr-only">{copied ? `已複製 ${generatedKeys.length} 組社員註冊序號` : `已產生 ${generatedKeys.length} 組社員註冊序號`}</p>
+                <p aria-live="polite" className="sr-only">{copied ? `已複製 ${generatedKeys.length} 組社員註冊序號` : ""}</p>
             {copyError ? <p role="alert" className="text-sm text-(--status-danger)">{copyError}</p> : null}
             <pre className="max-h-[45dvh] overflow-auto whitespace-pre-wrap break-all rounded-lg border border-(--border-default) bg-(--surface-subtle) p-3 font-mono text-xs leading-6">{generatedKeys.join("\n")}</pre>
           </div>
