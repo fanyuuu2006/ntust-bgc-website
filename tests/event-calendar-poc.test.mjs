@@ -1,4 +1,4 @@
-﻿import assert from "node:assert/strict";
+import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -7,7 +7,7 @@ const source = () => readFile(new URL("../src/components/calendar/EventCalendar.
 
 test("shared Calendar keeps its interactions local", async () => {
   const text = await source();
-  assert.match(text, /MOCK_EVENTS/);
+  assert.doesNotMatch(text, /MOCK_EVENTS/);
   assert.match(text, /selectDate/);
   assert.match(text, /setSelectedEvent/);
   assert.doesNotMatch(text, /apiClient\(/);
@@ -18,6 +18,8 @@ test("Calendar PoC is a thin mock-data adapter", async () => {
   assert.match(text, /EventCalendar/);
   assert.match(text, /MOCK_EVENTS/);
   assert.doesNotMatch(text, /fetch\(/);
+  const fixture = await readFile(new URL("../src/components/(admin)/admin/events/calendar-poc-fixtures.ts", import.meta.url), "utf8");
+  assert.match(fixture, /MOCK_EVENTS/);
 });
 
 test("Calendar PoC includes month, list, and cancelled-state presentation", async () => {
@@ -25,27 +27,28 @@ test("Calendar PoC includes month, list, and cancelled-state presentation", asyn
   assert.match(text, /getPocMonthDays/);
   assert.match(text, /view === \"month\"/);
   assert.match(text, /PocEventCard/);
-  assert.match(text, /poc-event-card-cancelled/);
+  assert.match(text, /event-calendar-event-card-cancelled/);
 });
 
 test("Calendar details use schema-aligned optional fields and neutral black presentation", async () => {
   const text = await source();
+  const fixture = await readFile(new URL("../src/components/(admin)/admin/events/calendar-poc-fixtures.ts", import.meta.url), "utf8");
   const css = await readFile(new URL("../src/components/(admin)/admin/events/event-calendar-poc.css", import.meta.url), "utf8");
-  assert.match(text, /color: "black"/);
-  assert.match(text, /活動介紹/);
-  assert.match(text, /checkInOpensAt/);
+  assert.match(fixture, /color: "black"/);
+  assert.match(text, /EventDetailsContent/);
+  assert.match(fixture, /checkInOpensAt/);
   assert.doesNotMatch(text, /location:/);
-  assert.match(css, /poc-event-chip-black/);
-  assert.match(css, /poc-event-indicator-black/);
+  assert.match(css, /event-calendar-event-chip-black/);
+  assert.match(css, /event-calendar-event-indicator-black/);
 });
 
 test("Calendar presentation keeps mobile events textual and date states distinct", async () => {
   const text = await source();
   const css = await readFile(new URL("../src/components/(admin)/admin/events/event-calendar-poc.css", import.meta.url), "utf8");
   assert.match(text, /aria-current=\{isToday \? "date"/);
-  assert.match(text, /poc-month-cell-selected/);
-  assert.match(css, /poc-month-grid/);
-  assert.match(css, /poc-month-event-indicator/);
+  assert.match(text, /event-calendar-month-cell-selected/);
+  assert.match(css, /event-calendar-month-grid/);
+  assert.match(css, /event-calendar-month-event-indicator/);
   assert.doesNotMatch(css, /fc-daygrid/);
 });
 
@@ -53,7 +56,7 @@ test("FullCalendar PoC uses an external toolbar and selected-day presentation", 
   const text = await source();
   assert.match(text, /navigateMonth\(-1\)/);
   assert.match(text, /navigateMonth\(1\)/);
-  assert.match(text, /poc-calendar-layout/);
+  assert.match(text, /event-calendar-layout/);
   assert.match(text, /getEventsForDate/);
   assert.match(text, /aria-pressed/);
   assert.match(text, /<Modal\s+open=\{selectedEvent !== null\}/);
@@ -65,7 +68,7 @@ test("List and selected-day agenda share one keyboard-accessible event card", as
   const cardUsages = text.match(/<PocEventCard/g) ?? [];
   assert.match(text, /function PocEventCard/);
   assert.equal(cardUsages.length, 2);
-  assert.match(text, /poc-event-card-title/);
+  assert.match(text, /event-calendar-event-card-title/);
   assert.doesNotMatch(text, /function EventSummary/);
 });
 
