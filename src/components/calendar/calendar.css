@@ -106,12 +106,20 @@
 .poc-event-details-header { display:flex; min-width:0; align-items:flex-start; gap:.5rem; }
 .poc-event-details-title { min-width:0; margin:0; overflow-wrap:anywhere; font-size:1.0625rem; font-weight:700; line-height:1.45; }
 .poc-event-details-status { flex:none; border:1px solid var(--border-default); border-radius:999px; color:var(--text-secondary); padding:.125rem .45rem; font-size:.6875rem; font-weight:700; line-height:1.2; }
-.poc-event-details-meta { display:grid; gap:.75rem; border-bottom:1px solid var(--border-default); padding-bottom:1rem; }
+.poc-event-details-meta { display:grid; gap:.5rem; padding:0; }
 .poc-event-details-meta dt { color:var(--text-muted); font-size:.75rem; }
 .poc-event-details-meta dd { margin-top:.2rem; overflow-wrap:anywhere; color:var(--text-primary); line-height:1.5; }
 .poc-event-details-notice { color:var(--text-secondary); font-size:.8125rem; font-weight:600; }
-.poc-event-description { display:grid; min-width:0; gap:.5rem; }
+.poc-event-description { display:grid; min-width:0; gap:.625rem; margin-top:.5rem; }
 .poc-event-description h4 { color:var(--text-primary); font-size:.875rem; font-weight:700; }
 .poc-event-description-plain,.poc-event-description-empty { min-width:0; overflow-wrap:anywhere; white-space:pre-wrap; color:var(--text-secondary); line-height:1.65; }
 .poc-event-description-empty { color:var(--text-muted); }
+.poc-event-modal-footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:.75rem; margin-top:1.25rem; border-top:1px solid var(--border-default); padding-top:1rem; }
+.poc-event-modal-actions { display:flex; flex-wrap:wrap; gap:.5rem; min-width:0; }
+.poc-event-date-line,.poc-event-time-line { display:flex; align-items:flex-start; gap:.5rem; overflow-wrap:anywhere; color:var(--text-primary); line-height:1.5; }
+.poc-event-time-line { margin-top:.35rem; color:var(--text-secondary); }
+.poc-event-meta-icon { flex:none; width:1rem; height:1rem; margin-top:.15rem; color:var(--text-muted); stroke-width:1.8; }
+.poc-event-details-header { position:relative; padding:0 0 .25rem 1rem; }
+.poc-modal-color { position:absolute; inset:0 auto 0 0; width:.25rem; height:auto; margin:0; border-radius:999px; }
+@media (max-width: 30rem) { .poc-event-modal-footer { align-items:stretch; } .poc-event-modal-footer > .btn { width:100%; } }
 @media (max-width:639px) { .poc-month-title { justify-self:start; padding:.25rem .375rem; font-size:1rem; } }

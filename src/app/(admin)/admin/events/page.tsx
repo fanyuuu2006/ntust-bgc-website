@@ -81,7 +81,7 @@ async function AdminEventsPage({
         breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { label: "活動管理" }]} />}
         title="活動管理"
         description="建立、編輯與管理社團活動，可進入活動詳情管理簽到。"
-        actions={<div className="flex flex-wrap items-center gap-2"><Link className="btn outline" href="/admin/events">列表</Link><Link className="btn outline" href="/admin/events?view=calendar">行事曆</Link><EventActions /></div>}
+        actions={<div className="flex flex-wrap items-center gap-3"><nav className="inline-flex gap-0.5 rounded-md border border-(--border-default) bg-(--surface-subtle) p-0.5" aria-label="活動檢視"><Link className={`btn rounded-sm px-2.5 py-1.5 text-xs ${!calendarView ? "primary" : "ghost"}`} href="/admin/events" aria-current={!calendarView ? "page" : undefined}>列表</Link><Link className={`btn rounded-sm px-2.5 py-1.5 text-xs ${calendarView ? "primary" : "ghost"}`} href="/admin/events?view=calendar" aria-current={calendarView ? "page" : undefined}>日曆</Link></nav><EventActions /></div>}
       />
       {calendarView ? <section className="px-4 pb-6 sm:px-6 lg:px-8"><AdminEventCalendar /></section> : null}
       {calendarView ? null : <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
