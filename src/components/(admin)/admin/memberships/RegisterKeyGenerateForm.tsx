@@ -87,11 +87,11 @@ export function RegisterKeyGenerateForm({ academicYears, defaultAcademicYearId }
           setView("generate");
           setOpen(true);
         }}>
-          產生社員註冊序號
+          產生序號
         </Button>
       </div>
 
-      <Modal open={open} onClose={close} title="社員註冊序號" description={view === "generate" ? "選擇學年度與數量後，系統會產生僅能使用一次的社員註冊序號。" : undefined} size="sm" contentClassName="max-h-[68dvh] overflow-y-auto">
+      <Modal open={open} onClose={close} title="產生註冊序號" description={view === "generate" ? "選擇學年度與數量，產生一次性註冊序號。" : undefined} size="sm" contentClassName="max-h-[68dvh] overflow-y-auto">
         <div className="mb-3 flex gap-1 rounded-lg bg-(--surface-subtle) p-1" role="group" aria-label="社員註冊序號視圖">
           <button type="button" aria-pressed={view === "generate"} className={cn("min-h-10 flex-1 rounded-lg border px-3 py-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)", view === "generate" ? "border-(--border-default) bg-(--surface-default) font-semibold text-(--text-primary)" : "border-transparent font-medium text-(--text-secondary) hover:bg-(--surface-default) hover:text-(--text-primary)")} onClick={() => setView("generate")}>產生序號</button>
           <button type="button" aria-pressed={view === "results"} disabled={!generatedKeys.length} className={cn("min-h-10 flex-1 rounded-lg border px-3 py-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring)", view === "results" ? "border-(--border-default) bg-(--surface-default) font-semibold text-(--text-primary)" : "border-transparent font-medium text-(--text-secondary) hover:bg-(--surface-default) hover:text-(--text-primary)", "disabled:cursor-not-allowed disabled:opacity-50")} onClick={() => setView("results")}>上一批結果</button>
