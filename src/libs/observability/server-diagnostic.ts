@@ -19,6 +19,8 @@ function diagnosticText(value: unknown): string | undefined {
     .replace(/(?:[\w-]*(?:cookie|authorization|password|passwd|secret|token|api[_-]?key)[\w-]*|request\s*body)["']?\s*[=:].*/gi, "[REDACTED]")
     .replace(/(?:https?|postgres(?:ql)?):\/\/\S+/gi, "[URL REDACTED]")
     .replace(/Bearer\s+\S+|eyJ[\w-]+\.[\w-]+\.[\w-]+|(?:sb_secret_|xkeysib-|sk-)[\w-]+/g, "[REDACTED]")
+    // JWT/infra diagnostics may contain a sensitive hint as ordinary text.
+    .replace(/\b(?:secret|token|password|passwd|authorization)\b/gi, "[REDACTED]")
     .replace(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi, "[EMAIL REDACTED]")
     .replace(/\b[a-f0-9]{32,}\b/gi, "[TOKEN REDACTED]")
     .replace(/\([^)]*\)/g, "[VALUES REDACTED]")

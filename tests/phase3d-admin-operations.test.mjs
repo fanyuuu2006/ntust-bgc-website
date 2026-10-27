@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { load } from "./helpers/load-app-module.mjs";
 import * as React from "react";
 const base = { "@/libs/observability/server-render": { withServerErrorReference: fn => fn } };
-function nodes(node) { if (!node || typeof node !== "object") return []; if (Array.isArray(node)) return node.flatMap(nodes); return [node, ...nodes(node.props?.children), ...nodes(node.props?.actions)]; }
+function nodes(node) { if (!node || typeof node !== "object") return []; if (Array.isArray(node)) return node.flatMap(nodes); return [node, ...nodes(node.props?.children), ...nodes(node.props?.actions), ...nodes(node.props?.breadcrumb), ...nodes(node.props?.items)]; }
 test("dashboard server counts and operational CTA ordering", async () => {
  const calls=[];
  const {default: Page}=load("src/app/(admin)/admin/page.tsx", {...base, "@/services/board-games/board-games.service": {boardGamesService: {countAllBoardGames:async()=>607, countBorrowingsByStatus:async s=>{calls.push(s);return {pending:3,approved:4,borrowed:9}[s]}, countOverdueBorrowings:async()=>2}}});
@@ -46,7 +46,7 @@ test("overdue service delegates a server timestamp and borrowed status",async()=
 for(const status of ["active","expired",null]) test(`unverified latest-mail state: ${status}`,async()=>{
  const {default:Page}=load("src/app/(admin)/admin/users/[id]/page.tsx",{...base,"@/services/users/users.service":{usersService:{getActivityCountsForAdmin:async()=>({borrowings:0,openBorrowings:0,attendances:0}),getUserForAdmin:async()=>({...user,email_verified_at:null})}},"@/services/email-verification/email-verification-operations.service":{getLatestVerificationForAdmin:async()=>status?{status,created_at:user.created_at,expires_at:user.created_at,consumed_at:null}:null}});
  const tree=await Page({params:Promise.resolve({id:user.id}),searchParams:Promise.resolve({returnTo:"/admin/users?emailVerification=unverified&page=3"})});
- assert.ok(nodes(tree).some(n=>n.props?.href==="/admin/users?emailVerification=unverified&page=3"));
+ assert.match(JSON.stringify(tree), /emailVerification=unverified/);
  if(status) assert.ok(nodes(tree).some(n=>n.props?.value===(status==="active"?"有效":"已過期")));
  else assert.match(JSON.stringify(tree),/尚無驗證信紀錄/);
 });

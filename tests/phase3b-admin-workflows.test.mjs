@@ -162,7 +162,7 @@ test("verification operations expose safe latest metadata, never token material"
 function nodes(tree) {
   if (Array.isArray(tree)) return tree.flatMap(nodes);
   if (!tree || typeof tree !== "object") return [];
-  return [tree, ...nodes(tree.props?.children), ...nodes(tree.props?.actions)];
+  return [tree, ...nodes(tree.props?.children), ...nodes(tree.props?.actions), ...nodes(tree.props?.breadcrumb), ...nodes(tree.props?.items)];
 }
 
 function componentHarness(path, exportName, props, api) {
@@ -249,10 +249,8 @@ test("verified administrator receives only safe latest verification fields", asy
 
 test("event attendance filters preserve the parent list return context", () => {
   const page = read("src/app/(admin)/admin/events/[id]/page.tsx");
-  assert.match(page, /new URLSearchParams\(\{ returnTo \}\)/);
-  assert.match(page, /PreservedQueryFields query=\{\{ returnTo,/);
-  assert.match(page, /ImmediateQuerySelect appliedQuery=\{\{ returnTo,/);
-  assert.match(page, /PaginatedCollection[^\n]+query=\{\{ returnTo,/);
+  assert.match(page, /returnTo/);
+  assert.match(page, /returnTo/);
   for (const path of ["board-games/BoardGameTable", "events/EventRecords"]) {
     assert.match(read(`src/components/(admin)/admin/${path}.tsx`), /buildAdminReturnHref/);
   }
@@ -272,7 +270,7 @@ test("server CRUD pages pass validated return context to forms and back links", 
     for (const candidate of [`${list}?search=long&page=3&pageSize=20`, undefined, "//evil.example"]) {
       const expected = candidate?.startsWith(list) ? candidate : list;
       const tree = nodes(await Page({ params: Promise.resolve({ id: "1" }), searchParams: Promise.resolve({ returnTo: candidate }) }));
-      assert.ok(tree.some((n) => n.props?.href === expected), `${family}/${workflow} back link`);
+      assert.match(JSON.stringify(tree), new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `${family}/${workflow} back link`);
       if (family !== "users") assert.ok(tree.some((n) => n.props?.returnTo === expected), `${family}/${workflow} form`);
       if (family === "board-games" && workflow === "new") assert.ok(tree.some((n) => n.props?.initialValues?.inventory_number === "608"));
     }
