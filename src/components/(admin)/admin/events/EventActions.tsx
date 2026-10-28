@@ -10,6 +10,7 @@ import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import dynamic from "next/dynamic";
 import { editableRichContent } from "@/libs/rich-content/content";
+import { storedDescription } from "@/libs/rich-content/description";
 import { apiClient } from "@/libs/api/client";
 import { parseTaipeiDateTimeLocal } from "@/utils/date";
 import { useToast } from "@/contexts/ToastContext";
@@ -33,7 +34,7 @@ type EventFormValues = {
   calendar_color: string;
 };
 type EventTemplateOption = { id: string; name: string; description: string | null; description_format: "plain_text" | "rich_text_v1"; rich_description: unknown; calendar_color: string | null };
-type DuplicateEventInput = Pick<EventFormValues, "name" | "description"> & { calendar_color: string | null };
+type DuplicateEventInput = { name: string; description: string | null; rich_description: unknown; calendar_color: string | null };
 
 const emptyFormValues = (): EventFormValues => ({
   name: "",
@@ -56,10 +57,14 @@ export function EventActions({ templates: initialTemplates = [], initialTemplate
   const [submitMode, setSubmitMode] = useState<"published" | "draft">("published");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [templates, setTemplates] = useState<EventTemplateOption[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [editorVersion, setEditorVersion] = useState(0);
 
   const openCreateDialog = () => {
     const selected = initialTemplates.find((template) => template.id === initialTemplateId);
-    setValues(duplicateEvent ? { ...emptyFormValues(), name: `${duplicateEvent.name}（複製）`, description: duplicateEvent.description, calendar_color: duplicateEvent.calendar_color ?? DEFAULT_CALENDAR_COLOR } : selected ? { ...emptyFormValues(), description: selected.rich_description ?? selected.description ?? "", calendar_color: selected.calendar_color ?? DEFAULT_CALENDAR_COLOR } : emptyFormValues());
+    setSelectedTemplateId(initialTemplateId ?? "");
+    setValues(duplicateEvent ? { ...emptyFormValues(), name: `${duplicateEvent.name}（複製）`, description: duplicateEvent.rich_description ?? editableRichContent(storedDescription(duplicateEvent)), calendar_color: duplicateEvent.calendar_color ?? DEFAULT_CALENDAR_COLOR } : selected ? { ...emptyFormValues(), name: selected.name, description: selected.rich_description ?? editableRichContent(storedDescription(selected)), calendar_color: selected.calendar_color ?? DEFAULT_CALENDAR_COLOR } : emptyFormValues());
+    setEditorVersion((value) => value + 1);
     setSubmitMode(duplicateEvent ? "draft" : "published");
     setError(null);
     setOpen(true);
@@ -116,7 +121,7 @@ export function EventActions({ templates: initialTemplates = [], initialTemplate
 
       <Modal size="lg" open={open} onClose={closeCreateDialog} title="新增活動" headerActions={<Button type="button" variant="outline" size="sm" className="shrink-0" aria-label="活動預覽" disabled={busy} onClick={() => setPreviewOpen(true)}><Eye aria-hidden="true" className="size-4" />活動預覽</Button>}>
         <form onSubmit={createEvent} className="space-y-4">
-          {templates.length ? <Field label="套用活動範本" htmlFor="event-template"><select id="event-template" className="w-full rounded-lg border border-(--border-default) bg-(--surface-default) p-2" defaultValue="" onChange={(event) => { const template = templates.find((item) => item.id === event.target.value); if (template) setValues((current) => ({ ...current, description: template.rich_description ?? template.description ?? "", calendar_color: template.calendar_color ?? current.calendar_color })); }} disabled={busy}><option value="">建立空白活動</option>{templates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}</select></Field> : null}
+          {templates.length ? <Field label="套用活動範本" htmlFor="event-template"><select id="event-template" className="w-full rounded-lg border border-(--border-default) bg-(--surface-default) p-2" value={selectedTemplateId} onChange={(event) => { const template = templates.find((item) => item.id === event.target.value); setSelectedTemplateId(event.target.value); setEditorVersion((value) => value + 1); setValues((current) => template ? ({ ...current, name: template.name, description: template.rich_description ?? editableRichContent(storedDescription(template)), calendar_color: template.calendar_color ?? DEFAULT_CALENDAR_COLOR }) : ({ ...current, name: "", description: editableRichContent(), calendar_color: DEFAULT_CALENDAR_COLOR })); }} disabled={busy}><option value="">建立空白活動</option>{templates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}</select></Field> : null}
           <Field label="活動名稱" htmlFor="event-name" required>
             <Input
               id="event-name"
@@ -128,7 +133,7 @@ export function EventActions({ templates: initialTemplates = [], initialTemplate
             />
           </Field>
           <Field label="活動說明" htmlFor="event-description" action={<RichContentPreview value={values.description} title={values.name} label="活動說明預覽" />}>
-            {open ? <RichTextEditor id="event-description" label="活動說明" initialContent={editableRichContent()} onChange={(description) => setValues((current) => ({ ...current, description }))} disabled={busy} /> : null}
+            {open ? <RichTextEditor key={`event-description-${editorVersion}`} id="event-description" label="活動說明" initialContent={editableRichContent(storedDescription({ description: typeof values.description === "string" ? values.description : "", description_format: "rich_text_v1", rich_description: values.description }))} onChange={(description) => setValues((current) => ({ ...current, description }))} disabled={busy} /> : null}
             <p className="text-xs text-(--text-muted)">可留空；格式化內容最多 20,000 字元。</p>
           </Field>
           <Field label="行事曆顏色" htmlFor="event-calendar-color">

@@ -133,7 +133,7 @@ async function AdminEventsPage({
             <EventActions
               templates={templates}
               initialTemplateId={params.template}
-              duplicateEvent={duplicateEvent ? { name: duplicateEvent.name, description: duplicateEvent.rich_description ?? duplicateEvent.description ?? "", calendar_color: duplicateEvent.calendar_color } : null}
+              duplicateEvent={duplicateEvent ? { name: duplicateEvent.name, description: duplicateEvent.description, rich_description: duplicateEvent.rich_description, calendar_color: duplicateEvent.calendar_color } : null}
             />
           </div>
         }
