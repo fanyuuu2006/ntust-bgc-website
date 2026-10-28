@@ -7,10 +7,12 @@ test("event duplication reuses content but leaves lifecycle fields and dates to 
   const actions = readFileSync("src/components/(admin)/admin/events/EventActions.tsx", "utf8");
   assert.match(page, /duplicate/);
   assert.match(page, /getEventById/);
+  assert.match(page, /key=\{`\$\{params\.template/);
   assert.match(actions, /duplicateEvent/);
   assert.match(actions, /setSubmitMode\(duplicateEvent \? "draft"/);
   assert.match(actions, /start_time: ""/);
   assert.match(actions, /end_time: ""/);
+  assert.match(actions, /useState<"published" \| "draft">\(duplicateEvent \? "draft"/);
 });
 
 test("event actions expose duplication and save-as-template through the existing menu", () => {

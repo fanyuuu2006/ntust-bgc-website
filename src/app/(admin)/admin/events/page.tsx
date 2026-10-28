@@ -131,6 +131,7 @@ async function AdminEventsPage({
               </Link>
             </nav>
             <EventActions
+              key={`${params.template ?? ""}:${params.duplicate ?? ""}`}
               templates={templates}
               initialTemplateId={params.template}
               autoOpen={Boolean(params.template || params.duplicate)}
