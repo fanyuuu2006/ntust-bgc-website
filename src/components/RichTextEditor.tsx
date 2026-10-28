@@ -999,6 +999,20 @@ export function RichTextEditor({
           {imageError ? (
             <p id={id + "-image-error"} role="alert" className="text-sm text-(--status-danger)">{imageError}</p>
           ) : null}
+          {imageError && imageFile && !imageTarget?.existing ? (
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-(--status-danger)/30 bg-(--status-danger)/5 px-3 py-2">
+              <span className="text-xs text-(--text-muted)">檔案仍保留，可重新嘗試上傳。</span>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={imagePending}
+                onClick={() => void uploadAndInsert(imageFile, imageTarget?.position ?? 0)}
+              >
+                重試上傳
+              </Button>
+            </div>
+          ) : null}
           <div className="flex flex-wrap justify-end gap-2">
             <Button size="sm" variant="outline" disabled={imagePending} onClick={closeImage}>
               取消
