@@ -34,6 +34,7 @@ export type UpdateEventInput = Partial<
 export type FindManyEventsOptions = PaginationQuery &
   OrderOptions<"start_time" | "end_time" | "created_at" | "name"> & {
     search?: string;
+    publicationStatus?: "draft" | "published";
     status?: "upcoming" | "ongoing" | "ended";
     /** 只取開始時間在此之後的活動，例如「即將舉行」列表 */
     startsAfter?: string;
@@ -87,6 +88,18 @@ export const eventsRepository = {
   findPublishedInRange: async (from: string, to: string): Promise<PublicEvent[]> => {
     return findPublishedEventsInRange(from, to);
   },
+  findUpcomingPublished: async (limit = 3): Promise<PublicEvent[]> => {
+    const { data, error } = await supabase
+      .from("events")
+      .select("id,name,description,description_format,rich_description,start_time,end_time,cancelled_at,calendar_color")
+      .eq("publication_status", "published")
+      .gte("start_time", new Date().toISOString())
+      .order("start_time", { ascending: true })
+      .order("id", { ascending: true })
+      .limit(limit);
+    if (error) throwRepositoryError("取得公開近期活動失敗", error);
+    return data ?? [];
+  },
   findMany: async (options: FindManyEventsOptions = {}) => {
     const { page, pageSize, from, to } = normalizePaginationOptions({
       page: options.page,
@@ -100,6 +113,10 @@ export const eventsRepository = {
     const keyword = options.search?.trim();
     if (keyword) {
       query = query.or(buildIlikeSearch(["name", "description"], keyword));
+    }
+
+    if (options.publicationStatus) {
+      query = query.eq("publication_status", options.publicationStatus);
     }
 
     if (options.startsAfter) {

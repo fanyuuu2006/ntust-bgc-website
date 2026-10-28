@@ -40,6 +40,7 @@ for (const [announcementsFail, gamesFail] of [[true, false], [false, true], [tru
         if (gamesFail) throw Error("fixture unavailable");
         return [{ id: "fixture", name: "Visible game", image: null, status: "available", category: null, location: null }];
       } } },
+      "@/services/events/events.service": { eventsService: { getPublicUpcomingEvents: async () => [] } },
     };
     const page = load("src/app/(public)/page.tsx", mocks).default;
     const layout = load("src/app/(public)/layout.tsx", mocks).default;

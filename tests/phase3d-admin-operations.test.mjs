@@ -98,8 +98,8 @@ for (const overdue of [0, 2]) test("Admin composition separates lifecycle from o
  const stages=nodes(tree).filter(n=>n.type?.name==="BorrowingStage");
  assert.equal(stages.length,3);
  for(const stage of stages) assert.equal(stage.type(stage.props).type.name,"Card");
- assert.equal(nodes(tree).filter(n=>n.type?.name==="Card").length,0);
  const html=renderToStaticMarkup(tree);
+ assert.match(html,/待處理事項/);
  assert.match(html,/管理總覽/); assert.doesNotMatch(html,/幹部工作台/);
  assert.doesNotMatch(html,/借用流程/); assert.match(html,/逾期借用|借用已逾期/); assert.match(html,/桌遊社產/);
  assert.equal((html.match(/<h3/g)||[]).length,3);

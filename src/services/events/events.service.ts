@@ -91,6 +91,19 @@ export const eventsService = {
     }));
   },
 
+  getPublicUpcomingEvents: async (limit = 3) => {
+    const events = await eventsRepository.findUpcomingPublished(limit);
+    return events.map((event) => ({
+      id: event.id,
+      name: event.name,
+      description: event.description,
+      start_time: event.start_time,
+      end_time: event.end_time,
+      is_cancelled: event.cancelled_at !== null,
+      calendar_color: event.calendar_color,
+    }));
+  },
+
   getPublicEventById: async (id: string) => {
     const event = await eventsRepository.findPublishedById(publicEventIdSchema.parse(id));
     if (!event) return null;

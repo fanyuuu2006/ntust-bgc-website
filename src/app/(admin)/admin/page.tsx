@@ -7,15 +7,33 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { boardGamesService } from "@/services/board-games/board-games.service";
 import { cn } from "@/utils/className";
+import { eventsService } from "@/services/events/events.service";
+import { AdminAttentionQueue, AdminQuickLinks } from "@/components/(admin)/admin/AdminAttentionQueue";
+
+async function getAdminEventSnapshot() {
+  try {
+    const [upcoming, recent] = await Promise.all([
+      eventsService.getEvents({ page: 1, pageSize: 3, status: "upcoming", orderBy: "start_time", orderDirection: "asc" }),
+      eventsService.getEvents({ page: 1, pageSize: 1, publicationStatus: "draft", orderBy: "created_at", orderDirection: "desc" }),
+    ]);
+    return { upcoming, draftCount: recent.total };
+  } catch (error) {
+    // 活動摘要是管理首頁的輔助區塊；查詢失敗時保留其他營運統計可用。
+    void error;
+    return { upcoming: { data: [] }, draftCount: 0 };
+  }
+}
 
 async function AdminPage() {
-  const [totalGames, pendingBorrowings, approvedBorrowings, borrowedGames, overdueBorrowings] = await Promise.all([
+  const [totalGames, pendingBorrowings, approvedBorrowings, borrowedGames, overdueBorrowings, eventSnapshot] = await Promise.all([
     boardGamesService.countAllBoardGames(),
     boardGamesService.countBorrowingsByStatus("pending"),
     boardGamesService.countBorrowingsByStatus("approved"),
     boardGamesService.countBorrowingsByStatus("borrowed"),
     boardGamesService.countOverdueBorrowings(),
+    getAdminEventSnapshot(),
   ]);
+  const upcomingEvents = eventSnapshot.upcoming;
 
   return (
     <section className="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -23,6 +41,11 @@ async function AdminPage() {
         title="管理總覽"
         description="查看目前需要處理的借用與社團狀況。"
       />
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
+        <AdminAttentionQueue pendingBorrowings={pendingBorrowings} overdueBorrowings={overdueBorrowings} draftEvents={eventSnapshot.draftCount} />
+        <Card className="p-4"><section aria-labelledby="admin-upcoming-events-title"><div className="flex items-center justify-between gap-3"><h2 id="admin-upcoming-events-title" className="font-semibold text-(--text-primary)">近期活動</h2><Link href="/admin/events" className="text-sm font-medium text-(--interactive-primary) hover:underline">查看全部</Link></div>{upcomingEvents.data.length ? <ul className="mt-3 divide-y divide-(--border-muted)">{upcomingEvents.data.map((event) => <li key={event.id} className="py-3 first:pt-0 last:pb-0"><p className="wrap-break-word text-sm font-medium text-(--text-primary)">{event.name}</p><p className="mt-1 text-xs text-(--text-muted)">{new Date(event.start_time).toLocaleString("zh-TW", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Taipei" })}</p></li>)}</ul> : <p className="mt-3 text-sm text-(--text-muted)">目前沒有近期活動。</p>}</section></Card>
+      </div>
+      <AdminQuickLinks />
       <section aria-labelledby="borrowing-title">
         <h2 id="borrowing-title" className="text-base font-semibold">桌遊借用</h2>
         <p className="mt-1 mb-3 text-xs text-(--text-muted)">查看目前的借用申請、領取與歸還狀況。</p>

@@ -1,6 +1,7 @@
 import { HomeHero } from "@/components/(public)/home/HomeHero";
 import { LatestAnnouncementsSection } from "@/components/(public)/home/LatestAnnouncementsSection";
 import { PopularBoardGamesSection } from "@/components/(public)/home/PopularBoardGamesSection";
+import { PublicUpcomingEventsPreview } from "@/components/(public)/home/PublicUpcomingEventsPreview";
 import type { Metadata } from "next";
 import { StructuredData } from "@/components/StructuredData";
 import { createPublicMetadata } from "@/libs/seo";
@@ -39,6 +40,9 @@ export default async function HomePage() {
         ]}
       />
       <HomeHero settings={settings} />
+      <section className="container py-8 sm:py-12">
+        <PublicUpcomingEventsPreview />
+      </section>
       <LatestAnnouncementsSection />
       <PopularBoardGamesSection />
     </>

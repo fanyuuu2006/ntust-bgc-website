@@ -6,6 +6,7 @@ import { DashboardBorrowingSummary } from "@/components/(authenticated)/dashboar
 import { DashboardMembershipSummary } from "@/components/(authenticated)/dashboard/DashboardMembershipSummary";
 import { DashboardSectionHeader } from "@/components/(authenticated)/dashboard/DashboardSectionHeader";
 import { SelfCheckInEvents } from "@/components/(authenticated)/dashboard/SelfCheckInEvents";
+import { DashboardAttentionSummary } from "@/components/(authenticated)/dashboard/DashboardAttentionSummary";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { getCurrentUser } from "@/libs/auth";
@@ -48,6 +49,7 @@ async function DashboardPage() {
     <section className="container py-8">
       <div className="space-y-5 lg:space-y-6">
         <PageHeader title={`歡迎回來，${user.name}`} />
+        <DashboardAttentionSummary membership={currentYearMembership} selfCheckInEvents={selfCheckInEvents} borrowings={openBorrowings} />
 
         <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-5">
           <div
