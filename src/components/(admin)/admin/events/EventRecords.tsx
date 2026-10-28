@@ -148,6 +148,11 @@ export function EventRecords({ events, attendedCounts, hasQuery = false, returnT
     } catch (caught) { showToast("error", caught instanceof Error ? caught.message : "建立活動範本失敗"); } finally { setIsSavingTemplate(false); }
   };
 
+  const openSaveAsTemplate = (event: Event) => {
+    setTemplateEvent(event);
+    setTemplateName(event.name);
+  };
+
 
   if (!events.length) {
     return hasQuery ? (
@@ -190,7 +195,7 @@ export function EventRecords({ events, attendedCounts, hasQuery = false, returnT
                 </TableCell>
                 <TableCell className="whitespace-nowrap">{attendedCounts[event.id] ?? 0}</TableCell>
               <TableCell className="whitespace-nowrap">
-                  <EventRowActions event={event} onDelete={openDeleteDialog} onSaveAsTemplate={setTemplateEvent} returnTo={returnTo} />
+                  <EventRowActions event={event} onDelete={openDeleteDialog} onSaveAsTemplate={openSaveAsTemplate} returnTo={returnTo} />
                 </TableCell>
               </TableRow>
             ))}
@@ -216,7 +221,7 @@ export function EventRecords({ events, attendedCounts, hasQuery = false, returnT
             </div>
             <p className="mt-2 text-sm text-(--muted)">簽到數：{attendedCounts[event.id] ?? 0}</p>
             <div className="mt-3 flex gap-2">
-              <EventRowActions event={event} onDelete={openDeleteDialog} onSaveAsTemplate={setTemplateEvent} returnTo={returnTo} />
+              <EventRowActions event={event} onDelete={openDeleteDialog} onSaveAsTemplate={openSaveAsTemplate} returnTo={returnTo} />
             </div>
           </Card>
         ))}

@@ -1,5 +1,6 @@
 "use client";
 
+import { MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/libs/api/client";
@@ -11,34 +12,22 @@ import { useToast } from "@/contexts/ToastContext";
 
 export type EventTemplateRecord = { id: string; name: string; description: string | null; description_format: "plain_text" | "rich_text_v1"; rich_description: unknown; calendar_color: string | null };
 
-export function EventTemplateManager({ templates }: { templates: EventTemplateRecord[] }) {
-  const router = useRouter();
-  const { showToast } = useToast();
-  const [name, setName] = useState("");
-  const [editing, setEditing] = useState<EventTemplateRecord | null>(null);
-  const [deleting, setDeleting] = useState<EventTemplateRecord | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
+function TemplateMoreMenu({ onEdit, onDuplicate, onDelete }: { onEdit: () => void; onDuplicate: () => void; onDelete: () => void }) {
+  const [open, setOpen] = useState(false);
+  return <div className="relative"><Button type="button" variant="outline" size="sm" iconOnly aria-label="更多範本操作" aria-expanded={open} onClick={() => setOpen((value) => !value)}><MoreHorizontal aria-hidden="true" className="size-4" /></Button>{open ? <div role="menu" className="absolute right-0 z-20 mt-2 min-w-40 space-y-1 rounded-lg border border-(--border-default) bg-(--surface-default) p-2 shadow-(--shadow-card)"><Button type="button" variant="outline" size="sm" className="w-full justify-start" role="menuitem" onClick={() => { setOpen(false); onEdit(); }}>編輯</Button><Button type="button" variant="outline" size="sm" className="w-full justify-start" role="menuitem" onClick={() => { setOpen(false); onDuplicate(); }}>複製範本</Button><Button type="button" variant="danger" size="sm" className="w-full justify-start" role="menuitem" onClick={() => { setOpen(false); onDelete(); }}>刪除</Button></div> : null}</div>;
+}
 
-  async function createTemplate(payload: EventTemplateRecord | { name: string }) {
-    setBusy(true);
-    try {
-      await apiClient("/api/admin/event-templates", { method: "POST", body: "id" in payload ? { name: payload.name, description: payload.description, description_format: payload.description_format, rich_description: payload.rich_description, calendar_color: payload.calendar_color } : { name: payload.name, description: "", description_format: "plain_text", rich_description: null, calendar_color: null } });
-      showToast("success", "活動範本已建立");
-      router.refresh();
-    } catch (error) { showToast("error", error instanceof Error ? error.message : "建立活動範本失敗"); }
-    finally { setBusy(false); }
-  }
-
+export function EventTemplateManager({ templates, initialCreate = false }: { templates: EventTemplateRecord[]; initialCreate?: boolean }) {
+  const router = useRouter(); const { showToast } = useToast();
+  const [name, setName] = useState(""); const [editing, setEditing] = useState<EventTemplateRecord | null>(null); const [deleting, setDeleting] = useState<EventTemplateRecord | null>(null); const [busy, setBusy] = useState(false); const [createOpen, setCreateOpen] = useState(initialCreate);
+  async function createTemplate(payload: EventTemplateRecord | { name: string }) { setBusy(true); try { await apiClient("/api/admin/event-templates", { method: "POST", body: "id" in payload ? { name: payload.name, description: payload.description, description_format: payload.description_format, rich_description: payload.rich_description, calendar_color: payload.calendar_color } : { name: payload.name, description: "", description_format: "plain_text", rich_description: null, calendar_color: null } }); showToast("success", "活動範本已建立"); router.refresh(); } catch (error) { showToast("error", error instanceof Error ? error.message : "建立活動範本失敗"); } finally { setBusy(false); } }
   async function create() { if (!name.trim()) return; await createTemplate({ name: name.trim() }); setName(""); }
   async function duplicate(template: EventTemplateRecord) { await createTemplate({ ...template, name: `${template.name}（複製）` }); }
   async function saveEdit() { if (!editing?.name.trim()) return; setBusy(true); try { await apiClient(`/api/admin/event-templates/${editing.id}`, { method: "PATCH", body: { name: editing.name, description: editing.description, description_format: editing.description_format, rich_description: editing.rich_description, calendar_color: editing.calendar_color } }); setEditing(null); showToast("success", "活動範本已更新"); router.refresh(); } catch (error) { showToast("error", error instanceof Error ? error.message : "更新活動範本失敗"); } finally { setBusy(false); } }
   async function remove() { if (!deleting) return; setBusy(true); try { await apiClient(`/api/admin/event-templates/${deleting.id}`, { method: "DELETE" }); setDeleting(null); showToast("success", "活動範本已刪除"); router.refresh(); } catch (error) { showToast("error", error instanceof Error ? error.message : "刪除活動範本失敗"); } finally { setBusy(false); } }
-
   return <section className="space-y-3">
-    <div className="flex justify-end"><Button type="button" onClick={() => setCreateOpen(true)}>新增範本</Button></div>
-    {templates.length ? <ul className="divide-y rounded-xl border">{templates.map((template) => <li key={template.id} className="flex flex-wrap items-center justify-between gap-3 p-3"><div className="min-w-0"><p className="font-medium">{template.name}</p><p className="truncate text-sm text-(--text-muted)">{template.description || "尚未填寫活動說明"}</p></div><div className="flex flex-wrap gap-2"><Button type="button" variant="outline" size="sm" onClick={() => router.push(`/admin/events?template=${template.id}`)}>使用範本</Button><Button type="button" variant="outline" size="sm" onClick={() => setEditing(template)}>編輯</Button><Button type="button" variant="outline" size="sm" onClick={() => duplicate(template)} disabled={busy}>複製範本</Button><Button type="button" variant="danger" size="sm" onClick={() => setDeleting(template)}>刪除</Button></div></li>)}</ul> : <p className="text-sm text-(--text-muted)">目前沒有活動範本。</p>}
-    <Modal open={createOpen} onClose={() => { if (!busy) setCreateOpen(false); }} title="新增活動範本"><form className="space-y-4" onSubmit={(event) => { event.preventDefault(); void create().then(() => setCreateOpen(false)); }}><label className="block text-sm font-medium">範本名稱<Input className="mt-1 w-full" value={name} onChange={(event) => setName(event.target.value)} placeholder="例如：週末桌遊聚會" disabled={busy} /></label><div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setCreateOpen(false)} disabled={busy}>取消</Button><Button type="submit" disabled={busy || !name.trim()}>新增</Button></div></form></Modal>
+    {templates.length ? <ul className="divide-y rounded-xl border">{templates.map((template) => <li key={template.id} className="flex flex-wrap items-center justify-between gap-3 p-3"><div className="min-w-0"><p className="font-medium">{template.name}</p><p className="truncate text-sm text-(--text-muted)">{template.description || "尚未填寫活動說明"}</p></div><div className="flex items-center gap-2"><Button type="button" variant="outline" size="sm" onClick={() => router.push(`/admin/events?template=${template.id}`)}>使用範本</Button><TemplateMoreMenu onEdit={() => setEditing(template)} onDuplicate={() => void duplicate(template)} onDelete={() => setDeleting(template)} /></div></li>)}</ul> : <p className="text-sm text-(--text-muted)">目前沒有活動範本。</p>}
+    <Modal open={createOpen} onClose={() => { if (!busy) setCreateOpen(false); }} title="新增活動範本"><form className="space-y-4" onSubmit={(event) => { event.preventDefault(); void create().then(() => setCreateOpen(false)); }}><label className="block text-sm font-medium">範本名稱<Input className="mt-1 w-full" value={name} onChange={(event) => setName(event.target.value)} disabled={busy} /></label><div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setCreateOpen(false)} disabled={busy}>取消</Button><Button type="submit" disabled={busy || !name.trim()}>新增</Button></div></form></Modal>
     <Modal open={editing !== null} onClose={() => { if (!busy) setEditing(null); }} title="編輯活動範本"><div className="space-y-4">{editing ? <><label className="block text-sm font-medium">範本名稱<Input className="mt-1 w-full" value={editing.name} onChange={(event) => setEditing({ ...editing, name: event.target.value })} /></label><label className="block text-sm font-medium">活動說明<textarea className="mt-1 min-h-32 w-full rounded-lg border border-(--border-default) p-2" value={editing.description ?? ""} onChange={(event) => setEditing({ ...editing, description: event.target.value, description_format: "plain_text", rich_description: null })} /></label><div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setEditing(null)} disabled={busy}>取消</Button><Button type="button" onClick={saveEdit} disabled={busy}>儲存</Button></div></> : null}</div></Modal>
     <ConfirmDialog open={deleting !== null} onClose={() => setDeleting(null)} onConfirm={remove} isSubmitting={busy} title="刪除活動範本" description={deleting ? `確定要刪除「${deleting.name}」嗎？` : ""} />
   </section>;
