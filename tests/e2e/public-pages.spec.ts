@@ -12,6 +12,20 @@ test("homepage renders accessible shell without horizontal overflow", async ({ p
   if (["mobile-390", "desktop-1280"].includes(test.info().project.name)) await page.screenshot({ path: `artifacts/home-${test.info().project.name}.png`, fullPage: true });
 });
 
+test("homepage upcoming event row opens styled shared preview when data is available", async ({ page }) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const rows = page.locator("#upcoming-events button");
+  if (await rows.count() === 0) return;
+  await rows.first().click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator(".event-calendar-event-details-title")).toBeVisible();
+  await expect(dialog.locator(".event-calendar-event-date-line")).toHaveCSS("display", "flex");
+  await expect(dialog.locator(".event-calendar-event-meta-icon").first()).toHaveCSS("flex-shrink", "0");
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+});
+
 test("public calendar renders and supports month/list controls", async ({ page }) => {
   await page.goto("/schedule", { waitUntil: "domcontentloaded" });
   await expect(page).toHaveTitle(/行事曆/);
