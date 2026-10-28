@@ -17,6 +17,7 @@ import { DEFAULT_CALENDAR_COLOR } from "@/utils/calendar-color";
 import { EventColorPicker } from "./EventColorPicker";
 import { EventPreviewModal } from "./EventPreviewModal";
 import { Eye } from "lucide-react";
+import { ButtonLink } from "@/components/ui/Button";
 
 // Editor runtime 僅供管理端編輯，不帶入伺服器渲染的閱讀頁面。
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor").then((module) => module.RichTextEditor), { ssr: false });
@@ -44,7 +45,7 @@ const emptyFormValues = (): EventFormValues => ({
   calendar_color: DEFAULT_CALENDAR_COLOR,
 });
 
-export function EventActions({ templates: initialTemplates = [] }: { templates?: EventTemplateOption[] }) {
+export function EventActions({ templates: initialTemplates = [], initialTemplateId }: { templates?: EventTemplateOption[]; initialTemplateId?: string }) {
   const router = useRouter();
   const { showToast } = useToast();
   const [open, setOpen] = useState(false);
@@ -56,7 +57,8 @@ export function EventActions({ templates: initialTemplates = [] }: { templates?:
   const [templates, setTemplates] = useState<EventTemplateOption[]>([]);
 
   const openCreateDialog = () => {
-    setValues(emptyFormValues());
+    const selected = initialTemplates.find((template) => template.id === initialTemplateId);
+    setValues(selected ? { ...emptyFormValues(), description: selected.rich_description ?? selected.description ?? "", calendar_color: selected.calendar_color ?? DEFAULT_CALENDAR_COLOR } : emptyFormValues());
     setSubmitMode("published");
     setError(null);
     setOpen(true);
@@ -106,9 +108,10 @@ export function EventActions({ templates: initialTemplates = [] }: { templates?:
 
   return (
     <>
-      <Button type="button" onClick={openCreateDialog}>
-        新增活動
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" onClick={openCreateDialog}>新增活動</Button>
+        <ButtonLink href="/admin/events/templates" variant="outline">活動範本</ButtonLink>
+      </div>
 
       <Modal size="lg" open={open} onClose={closeCreateDialog} title="新增活動" headerActions={<Button type="button" variant="outline" size="sm" className="shrink-0" aria-label="活動預覽" disabled={busy} onClick={() => setPreviewOpen(true)}><Eye aria-hidden="true" className="size-4" />活動預覽</Button>}>
         <form onSubmit={createEvent} className="space-y-4">

@@ -59,6 +59,9 @@ export function EventRecords({ events, attendedCounts, hasQuery = false, returnT
   const [isDeleting, setIsDeleting] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [templateEvent, setTemplateEvent] = useState<Event | null>(null);
+  const [templateName, setTemplateName] = useState("");
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
 
   const editingEvent = selectedEvent?.action === "edit" ? selectedEvent.event : null;
   const unsupportedDescription = !!editingEvent?.description_format && editingEvent.description_format !== "plain_text" && !readRichContent(storedDescription(editingEvent));
@@ -136,6 +139,15 @@ export function EventRecords({ events, attendedCounts, hasQuery = false, returnT
     }
   };
 
+  const saveAsTemplate = async () => {
+    if (!templateEvent || !templateName.trim()) return;
+    setIsSavingTemplate(true);
+    try {
+      await apiClient("/api/admin/event-templates", { method: "POST", body: { name: templateName.trim(), description: templateEvent.description, description_format: templateEvent.description_format, rich_description: templateEvent.rich_description, calendar_color: templateEvent.calendar_color } });
+      setTemplateEvent(null); setTemplateName(""); showToast("success", "活動範本已建立");
+    } catch (caught) { showToast("error", caught instanceof Error ? caught.message : "建立活動範本失敗"); } finally { setIsSavingTemplate(false); }
+  };
+
 
   if (!events.length) {
     return hasQuery ? (
@@ -178,7 +190,7 @@ export function EventRecords({ events, attendedCounts, hasQuery = false, returnT
                 </TableCell>
                 <TableCell className="whitespace-nowrap">{attendedCounts[event.id] ?? 0}</TableCell>
               <TableCell className="whitespace-nowrap">
-                  <EventRowActions event={event} onDelete={openDeleteDialog} returnTo={returnTo} />
+                  <EventRowActions event={event} onDelete={openDeleteDialog} onSaveAsTemplate={setTemplateEvent} returnTo={returnTo} />
                 </TableCell>
               </TableRow>
             ))}
@@ -204,7 +216,7 @@ export function EventRecords({ events, attendedCounts, hasQuery = false, returnT
             </div>
             <p className="mt-2 text-sm text-(--muted)">簽到數：{attendedCounts[event.id] ?? 0}</p>
             <div className="mt-3 flex gap-2">
-              <EventRowActions event={event} onDelete={openDeleteDialog} returnTo={returnTo} />
+              <EventRowActions event={event} onDelete={openDeleteDialog} onSaveAsTemplate={setTemplateEvent} returnTo={returnTo} />
             </div>
           </Card>
         ))}
@@ -330,6 +342,13 @@ export function EventRecords({ events, attendedCounts, hasQuery = false, returnT
             : ""
         }
       />
+      <Modal open={templateEvent !== null} onClose={() => { if (!isSavingTemplate) setTemplateEvent(null); }} title="儲存為範本">
+        <div className="space-y-4">
+          <p className="text-sm text-(--text-secondary)">保留活動內容與行事曆顏色，不會複製日期、狀態或簽到資料。</p>
+          <Field label="範本名稱" htmlFor="event-template-name" required><Input id="event-template-name" value={templateName} onChange={(event) => setTemplateName(event.target.value)} disabled={isSavingTemplate} /></Field>
+          <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setTemplateEvent(null)} disabled={isSavingTemplate}>取消</Button><Button type="button" onClick={saveAsTemplate} disabled={isSavingTemplate || !templateName.trim()} isLoading={isSavingTemplate}>儲存</Button></div>
+        </div>
+      </Modal>
     </>
   );
 }
@@ -337,10 +356,12 @@ export function EventRecords({ events, attendedCounts, hasQuery = false, returnT
 function EventRowActions({
   event,
   onDelete,
+  onSaveAsTemplate,
   returnTo,
 }: {
   event: Event;
   onDelete: (event: Event) => void;
+  onSaveAsTemplate: (event: Event) => void;
   returnTo: string;
 }) {
   return (
@@ -349,7 +370,7 @@ function EventRowActions({
         簽到管理
       </ButtonLink>
       <ButtonLink href={buildAdminReturnHref(`/admin/events/${event.id}/edit`, returnTo, "/admin/events")} size="sm" variant="outline">編輯</ButtonLink>
-      <EventMoreMenu event={event} onDelete={onDelete} />
+      <EventMoreMenu event={event} onDelete={onDelete} onSaveAsTemplate={onSaveAsTemplate} />
     </div>
   );
 }

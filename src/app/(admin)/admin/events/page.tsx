@@ -34,6 +34,7 @@ async function AdminEventsPage({
     view?: QueryParamValue;
     search?: QueryParamValue;
     status?: QueryParamValue;
+    template?: QueryParamValue;
   }>;
 }) {
   const rawParams = await searchParams;
@@ -44,6 +45,7 @@ async function AdminEventsPage({
     pageSize: readSingleQueryValue(rawParams.pageSize),
     search: readSingleQueryValue(rawParams.search),
     status: readSingleQueryValue(rawParams.status),
+    template: readSingleQueryValue(rawParams.template),
   };
   const orderBy = ORDER_FIELDS.includes(
     params.orderBy as (typeof ORDER_FIELDS)[number],
@@ -66,14 +68,24 @@ async function AdminEventsPage({
     status,
   });
   const templates = await eventTemplatesService.list();
-  const attendedCounts = await eventsService.getAttendedCountsByEventIds(result.data.map((event) => event.id));
+  const attendedCounts = await eventsService.getAttendedCountsByEventIds(
+    result.data.map((event) => event.id),
+  );
   const calendarView = readSingleQueryValue(rawParams.view) === "calendar";
-  const calendarHolidays = [...getTaiwanHolidays(2026), ...getTaiwanHolidays(2027)];
-  const pageSize = normalizePageSizeOption(params.pageSize, [10, 20, 50, 100], 20);
+  const calendarHolidays = [
+    ...getTaiwanHolidays(2026),
+    ...getTaiwanHolidays(2027),
+  ];
+  const pageSize = normalizePageSizeOption(
+    params.pageSize,
+    [10, 20, 50, 100],
+    20,
+  );
   const clearSearchParams = new URLSearchParams();
   if (params.status) clearSearchParams.set("status", params.status);
   if (params.orderBy) clearSearchParams.set("orderBy", params.orderBy);
-  if (params.orderDirection) clearSearchParams.set("orderDirection", params.orderDirection);
+  if (params.orderDirection)
+    clearSearchParams.set("orderDirection", params.orderDirection);
   if (params.pageSize) clearSearchParams.set("pageSize", params.pageSize);
   const clearSearchHref = clearSearchParams.size
     ? `/admin/events?${clearSearchParams.toString()}`
@@ -82,42 +94,144 @@ async function AdminEventsPage({
     <>
       <HeadingSection
         collection
-        breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { label: "活動管理" }]} />}
+        breadcrumb={
+          <AdminBreadcrumbs
+            items={[
+              { href: "/admin", label: "管理總覽" },
+              { label: "活動管理" },
+            ]}
+          />
+        }
         title="活動管理"
         description="建立、編輯與管理社團活動，可進入活動詳情管理簽到。"
-        actions={<div className="flex flex-wrap items-center gap-3"><nav className="inline-flex gap-0.5 rounded-md border border-(--border-default) bg-(--surface-subtle) p-0.5" aria-label="活動檢視"><Link className={`btn rounded-sm px-2.5 py-1.5 text-xs ${!calendarView ? "primary" : "ghost"}`} href="/admin/events" aria-current={!calendarView ? "page" : undefined}>列表</Link><Link className={`btn rounded-sm px-2.5 py-1.5 text-xs ${calendarView ? "primary" : "ghost"}`} href="/admin/events?view=calendar" aria-current={calendarView ? "page" : undefined}>日曆</Link></nav><EventActions templates={templates} /></div>}
+        actions={
+          <div className="flex flex-wrap items-center gap-3">
+            <nav
+              className="inline-flex gap-0.5 rounded-md border border-(--border-default) bg-(--surface-subtle) p-0.5"
+              aria-label="活動檢視"
+            >
+              <Link
+                className={`btn rounded-sm px-2.5 py-1.5 text-xs ${!calendarView ? "primary" : "ghost"}`}
+                href="/admin/events"
+                aria-current={!calendarView ? "page" : undefined}
+              >
+                列表
+              </Link>
+              <Link
+                className={`btn rounded-sm px-2.5 py-1.5 text-xs ${calendarView ? "primary" : "ghost"}`}
+                href="/admin/events?view=calendar"
+                aria-current={calendarView ? "page" : undefined}
+              >
+                日曆
+              </Link>
+            </nav>
+            <EventActions templates={templates} initialTemplateId={params.template} />
+          </div>
+        }
       />
-      <div className="container px-4 pb-3 sm:px-6 lg:px-8"><Link className="text-sm font-semibold text-(--interactive-primary) hover:underline" href="/admin/events/templates">管理活動範本</Link></div>
-      {calendarView ? <section className="px-4 pb-6 sm:px-6 lg:px-8"><AdminEventCalendar holidays={calendarHolidays} /></section> : null}
-      {calendarView ? null : <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
-        <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_10rem_10rem] md:items-center">
-          <form className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]" aria-label="搜尋活動">
-            <PreservedQueryFields query={{ search: params.search, status, orderBy, orderDirection, pageSize }} ownedKeys={["search"]} />
-            <ClearableSearchInput initialValue={params.search} clearHref={clearSearchHref} name="search" placeholder="搜尋活動名稱或說明" className="w-full" />
-            <Button type="submit" variant="primary" className="w-full sm:w-auto">搜尋</Button>
-          </form>
-            <ImmediateQuerySelect appliedQuery={{ search: params.search, status, orderBy, orderDirection, pageSize }} basePath="/admin/events" queryKey="status" value={status ?? ""} aria-label="活動狀態" className="w-full">
+      {calendarView ? (
+        <section className="px-4 pb-6 sm:px-6 lg:px-8">
+          <AdminEventCalendar holidays={calendarHolidays} />
+        </section>
+      ) : null}
+      {calendarView ? null : (
+        <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
+          <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_10rem_10rem] md:items-center">
+            <form
+              className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
+              aria-label="搜尋活動"
+            >
+              <PreservedQueryFields
+                query={{
+                  search: params.search,
+                  status,
+                  orderBy,
+                  orderDirection,
+                  pageSize,
+                }}
+                ownedKeys={["search"]}
+              />
+              <ClearableSearchInput
+                initialValue={params.search}
+                clearHref={clearSearchHref}
+                name="search"
+                placeholder="搜尋活動名稱或說明"
+                className="w-full"
+              />
+              <Button
+                type="submit"
+                variant="primary"
+                className="w-full sm:w-auto"
+              >
+                搜尋
+              </Button>
+            </form>
+            <ImmediateQuerySelect
+              appliedQuery={{
+                search: params.search,
+                status,
+                orderBy,
+                orderDirection,
+                pageSize,
+              }}
+              basePath="/admin/events"
+              queryKey="status"
+              value={status ?? ""}
+              aria-label="活動狀態"
+              className="w-full"
+            >
               <option value="">全部狀態</option>
               <option value="upcoming">即將開始</option>
               <option value="ongoing">進行中</option>
               <option value="ended">已結束</option>
             </ImmediateQuerySelect>
-            <ImmediateQuerySelect appliedQuery={{ search: params.search, status, orderBy, orderDirection, pageSize }} basePath="/admin/events" queryKey="orderBy" value={orderBy} aria-label="活動排序" className="w-full">
+            <ImmediateQuerySelect
+              appliedQuery={{
+                search: params.search,
+                status,
+                orderBy,
+                orderDirection,
+                pageSize,
+              }}
+              basePath="/admin/events"
+              queryKey="orderBy"
+              value={orderBy}
+              aria-label="活動排序"
+              className="w-full"
+            >
               <option value="start_time">開始時間</option>
               <option value="end_time">結束時間</option>
               <option value="name">活動名稱</option>
               <option value="created_at">建立時間</option>
             </ImmediateQuerySelect>
-        </AdminToolbar>
-        <PaginatedCollection page={page} pageSize={pageSize} total={result.total} totalPages={result.totalPages} basePath="/admin/events" pageSizeOptions={[10, 20, 50, 100]} query={{ search: params.search, status, orderBy, orderDirection }}>
-        <EventRecords
-          events={result.data}
-          attendedCounts={attendedCounts}
-          returnTo={buildAdminListHref("/admin/events", { search: params.search, status, orderBy, orderDirection, page, pageSize })}
-          hasQuery={Boolean(params.search || status || Number(params.page) > 1)}
-        />
-        </PaginatedCollection>
-      </section>}
+          </AdminToolbar>
+          <PaginatedCollection
+            page={page}
+            pageSize={pageSize}
+            total={result.total}
+            totalPages={result.totalPages}
+            basePath="/admin/events"
+            pageSizeOptions={[10, 20, 50, 100]}
+            query={{ search: params.search, status, orderBy, orderDirection }}
+          >
+            <EventRecords
+              events={result.data}
+              attendedCounts={attendedCounts}
+              returnTo={buildAdminListHref("/admin/events", {
+                search: params.search,
+                status,
+                orderBy,
+                orderDirection,
+                page,
+                pageSize,
+              })}
+              hasQuery={Boolean(
+                params.search || status || Number(params.page) > 1,
+              )}
+            />
+          </PaginatedCollection>
+        </section>
+      )}
     </>
   );
 }
