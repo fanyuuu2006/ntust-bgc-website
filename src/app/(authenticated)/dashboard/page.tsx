@@ -16,8 +16,6 @@ import { eventsService } from "@/services/events/events.service";
 import { membershipService } from "@/services/memberships/memberships.service";
 import { formatDate } from "@/utils/date";
 import { getCurrentAcademicYear } from "@/services/academic-years/current-academic-year";
-import { getDashboardBorrowingPriority } from "@/services/board-games/dashboard-borrowing-priority";
-import { cn } from "@/utils/className";
 
 async function DashboardPage() {
   const user = await getCurrentUser();
@@ -39,43 +37,20 @@ async function DashboardPage() {
     currentYearMembership?.status === "active"
       ? await eventsService.getSelfCheckInEventsForUser(user.id)
       : [];
-  const hasAttention =
-    selfCheckInEvents.some(({ attendance }) => !attendance) ||
-    openBorrowings.some(
-      (borrowing) => getDashboardBorrowingPriority(borrowing) <= 2,
-    );
-
   return (
     <section className="container py-8">
       <div className="space-y-5 lg:space-y-6">
         <PageHeader title={`歡迎回來，${user.name}`} />
-        <DashboardAttentionSummary membership={currentYearMembership} selfCheckInEvents={selfCheckInEvents} borrowings={openBorrowings} />
+        <DashboardAttentionSummary membership={currentYearMembership} selfCheckInEvents={selfCheckInEvents} />
 
-        <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-5">
-          <div
-            className={cn(
-              "min-w-0 space-y-4 lg:order-0 lg:space-y-5",
-              hasAttention ? "order-1" : "order-2",
-            )}
-          >
+        <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-5">
+          <div className="min-w-0 space-y-4 lg:space-y-5">
             <SelfCheckInEvents events={selfCheckInEvents} />
             <DashboardBorrowingSummary borrowings={openBorrowings} />
           </div>
-
-          <div className="contents lg:block lg:min-w-0 lg:space-y-5">
-            <div
-              className={cn(
-                "min-w-0 lg:order-0",
-                hasAttention ? "order-2" : "order-1",
-              )}
-            >
-              <DashboardMembershipSummary
-                membership={currentYearMembership}
-                academicYearLabel={currentAcademicYear?.year}
-              />
-            </div>
-
-            <div className="order-3 min-w-0 lg:order-0">
+          <div className="min-w-0 space-y-4 lg:space-y-5">
+            <DashboardMembershipSummary membership={currentYearMembership} academicYearLabel={currentAcademicYear?.year} />
+            <div>
               <Card
                 surface={announcements.data.length ? "default" : "subtle"}
                 className="p-4"

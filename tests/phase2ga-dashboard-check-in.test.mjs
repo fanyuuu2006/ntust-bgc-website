@@ -65,8 +65,8 @@ test("dashboard current-record surfaces stay compact, responsive, and domain-spe
   ]);
 
   assert.match(page, /lg:grid-cols-\[minmax\(0,3fr\)_minmax\(0,2fr\)\]/);
-  assert.match(page, /hasAttention \? "order-1" : "order-2"/);
-  assert.match(page, /hasAttention \? "order-2" : "order-1"/);
+  assert.doesNotMatch(page, /hasAttention \? "order-1" : "order-2"/);
+  assert.doesNotMatch(page, /contents lg:block/);
   assert.match(checkIn, /hasAvailableCheckIn/);
   assert.match(checkIn, /wrap-anywhere/);
   assert.match(borrowings, /目前沒有進行中的借用/);
@@ -87,7 +87,7 @@ test("dashboard uses an asymmetric operational and context composition without d
   ]);
 
   assert.match(page, /<SelfCheckInEvents[\s\S]*?<DashboardBorrowingSummary[\s\S]*?<DashboardMembershipSummary[\s\S]*?dashboard-announcements-title/);
-  assert.match(page, /contents lg:block lg:min-w-0 lg:space-y-5/);
+  assert.match(page, /grid min-w-0 gap-4 lg:grid-cols-\[minmax\(0,3fr\)_minmax\(0,2fr\)\]/);
   assert.match(header, /DashboardSectionHeader/);
   assert.match(header, /flex-wrap/);
   assert.match(checkIn, /<DashboardSectionHeader/);

@@ -97,6 +97,8 @@ export const eventsService = {
       id: event.id,
       name: event.name,
       description: event.description,
+      description_format: event.description_format,
+      rich_description: event.rich_description,
       start_time: event.start_time,
       end_time: event.end_time,
       is_cancelled: event.cancelled_at !== null,

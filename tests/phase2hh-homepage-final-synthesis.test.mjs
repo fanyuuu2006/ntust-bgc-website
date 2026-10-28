@@ -23,8 +23,9 @@ test("homepage hero uses native section anchors with stable sticky-header target
   assert.doesNotMatch(hero, /href="\/announcements"[^>]*>\s*最新公告/);
   assert.match(announcements, /id="latest-announcements"/);
   assert.match(popular, /id="popular-board-games"/);
-  assert.match(announcements, /scroll-mt-/);
-  assert.match(popular, /scroll-mt-/);
+  assert.match(announcements, /HomeSection/);
+  assert.match(popular, /HomeSection/);
+  assert.match(await readSource("src/components/(public)/home/HomeSection.tsx"), /scroll-mt-/);
   assert.match(page, /<HomeHero\s+settings=\{settings\}\s*\/>/);
 });
 
@@ -42,7 +43,7 @@ test("latest announcements preview is a published-only top-three semantic list",
   assert.match(section, /<AnnouncementRow/);
   assert.match(row, /<article/);
   assert.match(row, /<time/);
-  assert.match(section, /href="\/announcements"/);
+  assert.match(section, /href: "\/announcements"/);
   assert.match(section, /目前沒有最新公告/);
   assert.doesNotMatch(section, /ClearableSearchInput|BoardGameSearchForm|Pagination/);
 });
@@ -57,12 +58,13 @@ test("popular games preview consumes the reusable top-six service contract", asy
 
   assert.match(
     section,
-    /boardGamesService\.listPopularBoardGames\(\{[\s\S]*?limit:\s*6,[\s\S]*?\}\)/,
+    /boardGamesService\.listPopularBoardGames/,
   );
+  assert.match(section, /limit:\s*6/);
   assert.match(section, /grid-cols-2/);
   assert.match(section, /sm:grid-cols-3/);
   assert.match(section, /xl:grid-cols-6/);
-  assert.match(section, /href="\/board-games"/);
+  assert.match(section, /href: "\/board-games"/);
   assert.match(section, /目前尚無桌遊資料/);
   assert.match(preview, /BoardGameImage/);
   assert.match(preview, /BoardGameStatusBadge/);
@@ -96,16 +98,15 @@ test("homepage keeps hero immediate and streams isolated server sections", async
 });
 
 test("homepage section headers stack their full-route links on narrow screens", async () => {
-  const [announcements, popular] = await Promise.all([
+  const [, , shared] = await Promise.all([
     readSource(
       "src/components/(public)/home/LatestAnnouncementsSection.tsx",
     ),
-    readSource(
-      "src/components/(public)/home/PopularBoardGamesSection.tsx",
-    ),
+    readSource("src/components/(public)/home/PopularBoardGamesSection.tsx"),
+    readSource("src/components/(public)/home/HomeSection.tsx"),
   ]);
 
-  for (const section of [announcements, popular]) {
+  for (const section of [shared]) {
     assert.match(section, /flex flex-col items-start/);
     assert.match(section, /sm:flex-row/);
   }

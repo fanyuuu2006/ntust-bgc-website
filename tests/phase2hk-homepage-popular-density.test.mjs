@@ -36,7 +36,7 @@ test("homepage popular cards remain compact visual teasers without ranking stati
   ]);
 
   assert.match(section, /listPopularBoardGames\(\{\s*limit:\s*6/);
-  assert.match(section, /href="\/board-games"/);
+  assert.match(section, /href: "\/board-games"/);
   assert.equal((preview.match(/<Link\b/g) ?? []).length, 1);
   assert.match(preview, /BoardGameImage/);
   assert.match(preview, /BoardGameStatusBadge/);

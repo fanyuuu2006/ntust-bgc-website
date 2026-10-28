@@ -8,6 +8,7 @@ import { createPublicMetadata } from "@/libs/seo";
 import { siteConfigs } from "@/libs/siteConfigs";
 import { getPublicSiteSettings } from "@/libs/site-settings/public";
 import { resolveSitePresentation } from "@/libs/site-settings/presentation";
+import { HomeSection } from "@/components/(public)/home/HomeSection";
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = resolveSitePresentation(await getPublicSiteSettings());
@@ -40,9 +41,9 @@ export default async function HomePage() {
         ]}
       />
       <HomeHero settings={settings} />
-      <section className="container py-8 sm:py-12">
+      <HomeSection id="upcoming-events" title="近期活動" description="找一場喜歡的活動，一起來玩桌遊。" action={{ label: "查看全部", href: "/schedule" }} className="bg-(--surface-subtle)">
         <PublicUpcomingEventsPreview />
-      </section>
+      </HomeSection>
       <LatestAnnouncementsSection />
       <PopularBoardGamesSection />
     </>

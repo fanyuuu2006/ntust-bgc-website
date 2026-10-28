@@ -1,144 +1,47 @@
 import Link from "next/link";
-import { ArrowRight, ClipboardCheck, ClockAlert, Handshake, PackageOpen } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { ArrowRight, BarChart3, CalendarDays, ClipboardCheck, PackageOpen } from "lucide-react";
 import { withServerErrorReference } from "@/libs/observability/server-render";
 import { PageHeader } from "@/components/PageHeader";
-import { ButtonLink } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { boardGamesService } from "@/services/board-games/board-games.service";
-import { cn } from "@/utils/className";
 import { eventsService } from "@/services/events/events.service";
 import { AdminAttentionQueue, AdminQuickLinks } from "@/components/(admin)/admin/AdminAttentionQueue";
 
 async function getAdminEventSnapshot() {
   try {
-    const [upcoming, recent] = await Promise.all([
+    const [upcoming, draft] = await Promise.all([
       eventsService.getEvents({ page: 1, pageSize: 3, status: "upcoming", orderBy: "start_time", orderDirection: "asc" }),
       eventsService.getEvents({ page: 1, pageSize: 1, publicationStatus: "draft", orderBy: "created_at", orderDirection: "desc" }),
     ]);
-    return { upcoming, draftCount: recent.total };
-  } catch (error) {
-    // 活動摘要是管理首頁的輔助區塊；查詢失敗時保留其他營運統計可用。
-    void error;
+    return { upcoming, draftCount: draft.total };
+  } catch {
     return { upcoming: { data: [] }, draftCount: 0 };
   }
 }
 
 async function AdminPage() {
   const [totalGames, pendingBorrowings, approvedBorrowings, borrowedGames, overdueBorrowings, eventSnapshot] = await Promise.all([
-    boardGamesService.countAllBoardGames(),
-    boardGamesService.countBorrowingsByStatus("pending"),
-    boardGamesService.countBorrowingsByStatus("approved"),
-    boardGamesService.countBorrowingsByStatus("borrowed"),
-    boardGamesService.countOverdueBorrowings(),
-    getAdminEventSnapshot(),
+    boardGamesService.countAllBoardGames(), boardGamesService.countBorrowingsByStatus("pending"), boardGamesService.countBorrowingsByStatus("approved"), boardGamesService.countBorrowingsByStatus("borrowed"), boardGamesService.countOverdueBorrowings(), getAdminEventSnapshot(),
   ]);
-  const upcomingEvents = eventSnapshot.upcoming;
 
-  return (
-    <section className="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-      <PageHeader
-        title="管理總覽"
-        description="查看目前需要處理的借用與社團狀況。"
-      />
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
-        <AdminAttentionQueue pendingBorrowings={pendingBorrowings} overdueBorrowings={overdueBorrowings} draftEvents={eventSnapshot.draftCount} />
-        <Card className="p-4"><section aria-labelledby="admin-upcoming-events-title"><div className="flex items-center justify-between gap-3"><h2 id="admin-upcoming-events-title" className="font-semibold text-(--text-primary)">近期活動</h2><Link href="/admin/events" className="text-sm font-medium text-(--interactive-primary) hover:underline">查看全部</Link></div>{upcomingEvents.data.length ? <ul className="mt-3 divide-y divide-(--border-muted)">{upcomingEvents.data.map((event) => <li key={event.id} className="py-3 first:pt-0 last:pb-0"><p className="wrap-break-word text-sm font-medium text-(--text-primary)">{event.name}</p><p className="mt-1 text-xs text-(--text-muted)">{new Date(event.start_time).toLocaleString("zh-TW", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Taipei" })}</p></li>)}</ul> : <p className="mt-3 text-sm text-(--text-muted)">目前沒有近期活動。</p>}</section></Card>
-      </div>
-      <AdminQuickLinks />
-      <section aria-labelledby="borrowing-title">
-        <h2 id="borrowing-title" className="text-base font-semibold">桌遊借用</h2>
-        <p className="mt-1 mb-3 text-xs text-(--text-muted)">查看目前的借用申請、領取與歸還狀況。</p>
-        <div className="grid gap-3 sm:grid-cols-3">
-            <BorrowingStage
-              icon={ClipboardCheck}
-              accent="var(--status-warning)"
-              label="待審核借用"
-              description="新的桌遊借用申請"
-              value={pendingBorrowings}
-              href="/admin/board-games/borrowings?page=1&status=pending&orderBy=created_at&orderDirection=asc"
-              action="查看申請"
-            />
-            <BorrowingStage
-              icon={Handshake}
-              accent="var(--interactive-primary)"
-              label="等待領取"
-              description="已核准，等待領取桌遊"
-              value={approvedBorrowings}
-              href="/admin/board-games/borrowings?page=1&status=approved&orderBy=created_at&orderDirection=asc"
-              action="確認借出"
-            />
-            <BorrowingStage
-              icon={PackageOpen}
-              accent="var(--status-info)"
-              label="借出中"
-              description="目前尚未歸還的桌遊"
-              value={borrowedGames}
-              href="/admin/board-games/borrowings?page=1&status=borrowed&orderBy=due_at&orderDirection=asc"
-              action="查看借用"
-            />
-          </div>
-          <OverdueNotice
-            value={overdueBorrowings}
-            href="/admin/board-games/borrowings?page=1&status=borrowed&overdue=true&orderBy=due_at&orderDirection=asc"
-          />
+  return <section className="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+    <PageHeader title="管理總覽" description="先處理需要行動的工作，再查看近期營運狀態。" />
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
+      <AdminAttentionQueue pendingBorrowings={pendingBorrowings} overdueBorrowings={overdueBorrowings} draftEvents={eventSnapshot.draftCount} />
+      <section aria-labelledby="admin-upcoming-events-title" className="min-w-0">
+        <div className="flex items-center justify-between gap-3"><h2 id="admin-upcoming-events-title" className="text-base font-semibold text-(--text-primary)">近期活動</h2><Link href="/admin/events" className="text-sm font-medium text-(--interactive-primary) hover:underline">查看全部</Link></div>
+        <div className="mt-3 divide-y divide-(--border-muted) border-y border-(--border-muted)">{eventSnapshot.upcoming.data.length ? eventSnapshot.upcoming.data.map((event) => <Link key={event.id} href={`/admin/events/${event.id}`} className="block py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"><p className="wrap-break-word text-sm font-medium text-(--text-primary)">{event.name}</p><p className="mt-1 text-xs text-(--text-muted)">{new Date(event.start_time).toLocaleString("zh-TW", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Taipei" })}</p></Link>) : <p className="py-4 text-sm text-(--text-muted)">目前沒有近期活動。</p>}</div>
       </section>
-      <section aria-labelledby="club-overview-title" className="space-y-2">
-        <h2 id="club-overview-title" className="text-base font-semibold text-(--text-primary)">桌遊社產</h2>
-        <div className="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-1 text-sm">
-          <p className="text-(--text-secondary)">目前共登錄 <strong className="mx-1 text-lg font-semibold tabular-nums text-(--text-primary)">{totalGames}</strong> 筆桌遊社產</p>
-          <ButtonLink href="/admin/board-games" variant="text" size="sm">
-            管理桌遊<ArrowRight aria-hidden="true" className="ml-1 size-3.5" />
-          </ButtonLink>
-        </div>
-      </section>
-    </section>
-  );
-}
-
-function BorrowingStage({ label, description, value, href, action, icon: Icon, accent }: {
-  label: string;
-  description: string;
-  value: number;
-  href: string;
-  action: string;
-  icon: LucideIcon;
-  accent: string;
-}) {
-  return (
-    <Card className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-3">
-      <div className="min-w-0">
-        <h3 className="flex items-center gap-2 text-xs font-medium text-(--text-secondary)">
-          <Icon aria-hidden="true" className="size-4 shrink-0" style={{ color: accent }} />{label}
-        </h3>
-        <p className="mt-1 text-lg font-bold tabular-nums text-(--text-primary) sm:text-xl">
-          {value}<span className="ml-1 text-xs font-medium text-(--text-secondary)">筆</span>
-        </p>
-      </div>
-      <Link href={href} className="inline-flex min-h-10 items-center gap-1 rounded text-sm font-medium text-(--action) hover:text-(--action-hover) hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--interactive-primary)">
-        {action}<ArrowRight aria-hidden="true" className="size-3.5 shrink-0" />
-      </Link>
-      <p className="w-full text-xs leading-5 text-(--text-muted)">{description}</p>
-    </Card>
-  );
-}
-
-function OverdueNotice({ value, href }: { value: number; href: string }) {
-  return (
-    <div className={cn("mt-4 flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 px-1", value > 0 && "text-(--status-warning)")}>
-      <div className="min-w-0">
-        <p className={cn("flex items-center gap-2 text-sm", value > 0 ? "font-semibold" : "text-(--text-muted)")}>
-          <ClockAlert aria-hidden="true" className="size-4 shrink-0" /><span className="tabular-nums">{value > 0 ? `${value} 筆借用已逾期` : "目前沒有逾期借用"}</span>
-        </p>
-        <p className="mt-1 text-xs leading-5 text-(--text-muted)">
-          {value > 0 ? "已有桌遊超過預計歸還時間。" : null}
-        </p>
-      </div>
-      <ButtonLink href={href} variant="text" size="sm">
-        查看逾期借用<ArrowRight aria-hidden="true" className="ml-1 size-3.5" />
-      </ButtonLink>
     </div>
-  );
+    <AdminQuickLinks />
+    <section aria-labelledby="admin-status-title" className="space-y-3">
+      <div className="flex items-center gap-2"><BarChart3 aria-hidden="true" className="size-5 text-(--text-muted)" /><h2 id="admin-status-title" className="text-base font-semibold text-(--text-primary)">營運概況</h2></div>
+      <div className="grid grid-cols-2 gap-x-5 gap-y-3 border-y border-(--border-muted) py-3 text-sm sm:grid-cols-4"><StatusItem label="桌遊總數" value={totalGames} href="/admin/board-games" icon={PackageOpen} /><StatusItem label="等待領取" value={approvedBorrowings} href="/admin/board-games/borrowings?page=1&status=approved" icon={ClipboardCheck} /><StatusItem label="借出中" value={borrowedGames} href="/admin/board-games/borrowings?page=1&status=borrowed" icon={PackageOpen} /><StatusItem label="活動草稿" value={eventSnapshot.draftCount} href="/admin/events?publication_status=draft" icon={CalendarDays} /></div>
+    </section>
+  </section>;
+}
+
+function StatusItem({ label, value, href, icon: Icon }: { label: string; value: number; href: string; icon: typeof PackageOpen }) {
+  return <Link href={href} className="group flex min-w-0 items-center gap-2 rounded-lg py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"><Icon aria-hidden="true" className="size-4 shrink-0 text-(--text-muted) group-hover:text-(--interactive-primary)" /><span className="min-w-0"><span className="block text-xs text-(--text-muted)">{label}</span><strong className="tabular-nums text-(--text-primary)">{value}</strong></span><ArrowRight aria-hidden="true" className="ml-auto size-3.5 text-(--text-muted)" /></Link>;
 }
 
 export default withServerErrorReference(AdminPage, "/admin");

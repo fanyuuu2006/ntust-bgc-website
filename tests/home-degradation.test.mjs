@@ -41,6 +41,8 @@ for (const [announcementsFail, gamesFail] of [[true, false], [false, true], [tru
         return [{ id: "fixture", name: "Visible game", image: null, status: "available", category: null, location: null }];
       } } },
       "@/services/events/events.service": { eventsService: { getPublicUpcomingEvents: async () => [] } },
+      "@/components/(public)/home/PublicUpcomingEventsList": { PublicUpcomingEventsList: () => React.createElement("section", {}, "upcoming events") },
+      "./PublicUpcomingEventsList": { PublicUpcomingEventsList: () => React.createElement("section", {}, "upcoming events") },
     };
     const page = load("src/app/(public)/page.tsx", mocks).default;
     const layout = load("src/app/(public)/layout.tsx", mocks).default;

@@ -116,6 +116,7 @@
 .event-calendar-event-details-title { min-width:0; margin:0; overflow-wrap:anywhere; font-size:1.0625rem; font-weight:700; line-height:1.45; }
 .event-calendar-event-details-status { flex:none; border:1px solid var(--border-default); border-radius:999px; color:var(--text-secondary); padding:.125rem .45rem; font-size:.6875rem; font-weight:700; line-height:1.2; }
 .event-calendar-event-details-meta { display:grid; gap:.5rem; padding:0; }
+.event-calendar-event-details-meta > div { min-width:0; }
 .event-calendar-event-details-meta dt { color:var(--text-muted); font-size:.75rem; }
 .event-calendar-event-details-meta dd { margin-top:.2rem; overflow-wrap:anywhere; color:var(--text-primary); line-height:1.5; }
 .event-calendar-event-details-notice { color:var(--text-secondary); font-size:.8125rem; font-weight:600; }
@@ -123,6 +124,11 @@
 .event-calendar-event-description h4 { color:var(--text-primary); font-size:.875rem; font-weight:700; }
 .event-calendar-event-description-plain,.event-calendar-event-description-empty { min-width:0; overflow-wrap:anywhere; white-space:pre-wrap; color:var(--text-secondary); line-height:1.65; }
 .event-calendar-event-description-empty { color:var(--text-muted); }
+.event-calendar-event-description :is(p,ul,ol) { margin:0; }
+.event-calendar-event-description :is(ul,ol) { padding-left:1.25rem; }
+.event-calendar-event-description li + li { margin-top:.35rem; }
+.event-calendar-event-description a { color:var(--interactive-primary); text-decoration:underline; text-underline-offset:2px; overflow-wrap:anywhere; }
+.event-calendar-event-description img { max-width:100%; height:auto; border-radius:.75rem; }
 .event-calendar-event-modal-footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:.75rem; margin-top:1.25rem; border-top:1px solid var(--border-default); padding-top:1rem; }
 .event-calendar-event-modal-actions { display:flex; flex-wrap:wrap; gap:.5rem; min-width:0; }
 .event-calendar-event-date-line,.event-calendar-event-time-line { display:flex; align-items:flex-start; gap:.5rem; overflow-wrap:anywhere; color:var(--text-primary); line-height:1.5; }
