@@ -33,6 +33,7 @@ type EventFormValues = {
   calendar_color: string;
 };
 type EventTemplateOption = { id: string; name: string; description: string | null; description_format: "plain_text" | "rich_text_v1"; rich_description: unknown; calendar_color: string | null };
+type DuplicateEventInput = Pick<EventFormValues, "name" | "description"> & { calendar_color: string | null };
 
 const emptyFormValues = (): EventFormValues => ({
   name: "",
@@ -45,7 +46,7 @@ const emptyFormValues = (): EventFormValues => ({
   calendar_color: DEFAULT_CALENDAR_COLOR,
 });
 
-export function EventActions({ templates: initialTemplates = [], initialTemplateId }: { templates?: EventTemplateOption[]; initialTemplateId?: string }) {
+export function EventActions({ templates: initialTemplates = [], initialTemplateId, duplicateEvent }: { templates?: EventTemplateOption[]; initialTemplateId?: string; duplicateEvent?: DuplicateEventInput | null }) {
   const router = useRouter();
   const { showToast } = useToast();
   const [open, setOpen] = useState(false);
@@ -58,8 +59,8 @@ export function EventActions({ templates: initialTemplates = [], initialTemplate
 
   const openCreateDialog = () => {
     const selected = initialTemplates.find((template) => template.id === initialTemplateId);
-    setValues(selected ? { ...emptyFormValues(), description: selected.rich_description ?? selected.description ?? "", calendar_color: selected.calendar_color ?? DEFAULT_CALENDAR_COLOR } : emptyFormValues());
-    setSubmitMode("published");
+    setValues(duplicateEvent ? { ...emptyFormValues(), name: `${duplicateEvent.name}（複製）`, description: duplicateEvent.description, calendar_color: duplicateEvent.calendar_color ?? DEFAULT_CALENDAR_COLOR } : selected ? { ...emptyFormValues(), description: selected.rich_description ?? selected.description ?? "", calendar_color: selected.calendar_color ?? DEFAULT_CALENDAR_COLOR } : emptyFormValues());
+    setSubmitMode(duplicateEvent ? "draft" : "published");
     setError(null);
     setOpen(true);
     setTemplates(initialTemplates);

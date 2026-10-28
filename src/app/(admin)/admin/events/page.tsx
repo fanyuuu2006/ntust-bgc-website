@@ -35,6 +35,7 @@ async function AdminEventsPage({
     search?: QueryParamValue;
     status?: QueryParamValue;
     template?: QueryParamValue;
+    duplicate?: QueryParamValue;
   }>;
 }) {
   const rawParams = await searchParams;
@@ -46,6 +47,7 @@ async function AdminEventsPage({
     search: readSingleQueryValue(rawParams.search),
     status: readSingleQueryValue(rawParams.status),
     template: readSingleQueryValue(rawParams.template),
+    duplicate: readSingleQueryValue(rawParams.duplicate),
   };
   const orderBy = ORDER_FIELDS.includes(
     params.orderBy as (typeof ORDER_FIELDS)[number],
@@ -68,6 +70,9 @@ async function AdminEventsPage({
     status,
   });
   const templates = await eventTemplatesService.list();
+  const duplicateEvent = params.duplicate
+    ? await eventsService.getEventById(params.duplicate)
+    : null;
   const attendedCounts = await eventsService.getAttendedCountsByEventIds(
     result.data.map((event) => event.id),
   );
@@ -125,7 +130,11 @@ async function AdminEventsPage({
                 日曆
               </Link>
             </nav>
-            <EventActions templates={templates} initialTemplateId={params.template} />
+            <EventActions
+              templates={templates}
+              initialTemplateId={params.template}
+              duplicateEvent={duplicateEvent ? { name: duplicateEvent.name, description: duplicateEvent.rich_description ?? duplicateEvent.description ?? "", calendar_color: duplicateEvent.calendar_color } : null}
+            />
           </div>
         }
       />
