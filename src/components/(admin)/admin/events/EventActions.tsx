@@ -47,17 +47,19 @@ const emptyFormValues = (): EventFormValues => ({
   calendar_color: DEFAULT_CALENDAR_COLOR,
 });
 
-export function EventActions({ templates: initialTemplates = [], initialTemplateId, duplicateEvent }: { templates?: EventTemplateOption[]; initialTemplateId?: string; duplicateEvent?: DuplicateEventInput | null }) {
+export function EventActions({ templates: initialTemplates = [], initialTemplateId, duplicateEvent, autoOpen = false }: { templates?: EventTemplateOption[]; initialTemplateId?: string; duplicateEvent?: DuplicateEventInput | null; autoOpen?: boolean }) {
   const router = useRouter();
   const { showToast } = useToast();
-  const [open, setOpen] = useState(false);
+  const selectedInitialTemplate = initialTemplates.find((template) => template.id === initialTemplateId);
+  const initialValues = duplicateEvent ? { ...emptyFormValues(), name: `${duplicateEvent.name}（複製）`, description: duplicateEvent.rich_description ?? editableRichContent(storedDescription(duplicateEvent)), calendar_color: duplicateEvent.calendar_color ?? DEFAULT_CALENDAR_COLOR } : selectedInitialTemplate ? { ...emptyFormValues(), name: selectedInitialTemplate.name, description: selectedInitialTemplate.rich_description ?? editableRichContent(storedDescription(selectedInitialTemplate)), calendar_color: selectedInitialTemplate.calendar_color ?? DEFAULT_CALENDAR_COLOR } : emptyFormValues();
+  const [open, setOpen] = useState(autoOpen);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [values, setValues] = useState<EventFormValues>(emptyFormValues);
+  const [values, setValues] = useState<EventFormValues>(initialValues);
   const [submitMode, setSubmitMode] = useState<"published" | "draft">("published");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [templates, setTemplates] = useState<EventTemplateOption[]>([]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState(initialTemplateId ?? "");
   const [editorVersion, setEditorVersion] = useState(0);
 
   const openCreateDialog = () => {
@@ -76,7 +78,9 @@ export function EventActions({ templates: initialTemplates = [], initialTemplate
 
     setError(null);
     setOpen(false);
+    if (autoOpen) router.replace("/admin/events");
   };
+
 
   const createEvent = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
