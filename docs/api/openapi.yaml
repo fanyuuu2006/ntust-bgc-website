@@ -445,6 +445,55 @@ paths:
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/event-templates':
+    get:
+      operationId: get-event-templates
+      tags: [Admin]
+      summary: GET /api/admin/event-templates
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      operationId: post-event-template
+      tags: [Admin]
+      summary: POST /api/admin/event-templates
+      security:
+        - cookieSession: []
+      responses:
+        "201": { description: Created }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  '/api/admin/event-templates/{id}':
+    get:
+      operationId: get-event-template
+      tags: [Admin]
+      summary: GET /api/admin/event-templates/{id}
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    patch:
+      operationId: patch-event-template
+      tags: [Admin]
+      summary: PATCH /api/admin/event-templates/{id}
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    delete:
+      operationId: delete-event-template
+      tags: [Admin]
+      summary: DELETE /api/admin/event-templates/{id}
+      security:
+        - cookieSession: []
+      responses:
+        "200": { description: Successful response }
+        "401": { $ref: "#/components/responses/Unauthorized" }
   '/api/admin/events':
     get:
       operationId: get-30

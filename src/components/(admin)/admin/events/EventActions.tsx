@@ -31,6 +31,7 @@ type EventFormValues = {
   check_in_closes_at: string;
   calendar_color: string;
 };
+type EventTemplateOption = { id: string; name: string; description: string | null; description_format: "plain_text" | "rich_text_v1"; rich_description: unknown; calendar_color: string | null };
 
 const emptyFormValues = (): EventFormValues => ({
   name: "",
@@ -43,7 +44,7 @@ const emptyFormValues = (): EventFormValues => ({
   calendar_color: DEFAULT_CALENDAR_COLOR,
 });
 
-export function EventActions() {
+export function EventActions({ templates: initialTemplates = [] }: { templates?: EventTemplateOption[] }) {
   const router = useRouter();
   const { showToast } = useToast();
   const [open, setOpen] = useState(false);
@@ -52,12 +53,14 @@ export function EventActions() {
   const [values, setValues] = useState<EventFormValues>(emptyFormValues);
   const [submitMode, setSubmitMode] = useState<"published" | "draft">("published");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [templates, setTemplates] = useState<EventTemplateOption[]>([]);
 
   const openCreateDialog = () => {
     setValues(emptyFormValues());
     setSubmitMode("published");
     setError(null);
     setOpen(true);
+    setTemplates(initialTemplates);
   };
 
   const closeCreateDialog = () => {
@@ -109,6 +112,7 @@ export function EventActions() {
 
       <Modal size="lg" open={open} onClose={closeCreateDialog} title="新增活動" headerActions={<Button type="button" variant="outline" size="sm" className="shrink-0" aria-label="活動預覽" disabled={busy} onClick={() => setPreviewOpen(true)}><Eye aria-hidden="true" className="size-4" />活動預覽</Button>}>
         <form onSubmit={createEvent} className="space-y-4">
+          {templates.length ? <Field label="套用活動範本" htmlFor="event-template"><select id="event-template" className="w-full rounded-lg border border-(--border-default) bg-(--surface-default) p-2" defaultValue="" onChange={(event) => { const template = templates.find((item) => item.id === event.target.value); if (template) setValues((current) => ({ ...current, description: template.rich_description ?? template.description ?? "", calendar_color: template.calendar_color ?? current.calendar_color })); }} disabled={busy}><option value="">建立空白活動</option>{templates.map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}</select></Field> : null}
           <Field label="活動名稱" htmlFor="event-name" required>
             <Input
               id="event-name"

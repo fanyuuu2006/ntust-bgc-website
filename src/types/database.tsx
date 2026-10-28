@@ -355,6 +355,17 @@ export type Event = {
   created_at: Timestamp;
 };
 
+export type EventTemplate = {
+  id: UUID;
+  name: string;
+  description: string | null;
+  description_format: "plain_text" | "rich_text_v1";
+  rich_description: unknown | null;
+  calendar_color: string | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
 /* =========================================================
  * Event Attendances
  * ========================================================= */

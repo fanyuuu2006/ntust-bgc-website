@@ -20,6 +20,7 @@ import {
 import { parsePage } from "@/utils/pagination";
 import Link from "next/link";
 import { getTaiwanHolidays } from "@/components/calendar/calendar-holidays";
+import { eventTemplatesService } from "@/services/events/event-templates.service";
 const ORDER_FIELDS = ["name", "start_time", "end_time", "created_at"] as const;
 type Status = "upcoming" | "ongoing" | "ended";
 async function AdminEventsPage({
@@ -64,6 +65,7 @@ async function AdminEventsPage({
     search: params.search?.trim() || undefined,
     status,
   });
+  const templates = await eventTemplatesService.list();
   const attendedCounts = await eventsService.getAttendedCountsByEventIds(result.data.map((event) => event.id));
   const calendarView = readSingleQueryValue(rawParams.view) === "calendar";
   const calendarHolidays = [...getTaiwanHolidays(2026), ...getTaiwanHolidays(2027)];
@@ -83,8 +85,9 @@ async function AdminEventsPage({
         breadcrumb={<AdminBreadcrumbs items={[{ href: "/admin", label: "管理總覽" }, { label: "活動管理" }]} />}
         title="活動管理"
         description="建立、編輯與管理社團活動，可進入活動詳情管理簽到。"
-        actions={<div className="flex flex-wrap items-center gap-3"><nav className="inline-flex gap-0.5 rounded-md border border-(--border-default) bg-(--surface-subtle) p-0.5" aria-label="活動檢視"><Link className={`btn rounded-sm px-2.5 py-1.5 text-xs ${!calendarView ? "primary" : "ghost"}`} href="/admin/events" aria-current={!calendarView ? "page" : undefined}>列表</Link><Link className={`btn rounded-sm px-2.5 py-1.5 text-xs ${calendarView ? "primary" : "ghost"}`} href="/admin/events?view=calendar" aria-current={calendarView ? "page" : undefined}>日曆</Link></nav><EventActions /></div>}
+        actions={<div className="flex flex-wrap items-center gap-3"><nav className="inline-flex gap-0.5 rounded-md border border-(--border-default) bg-(--surface-subtle) p-0.5" aria-label="活動檢視"><Link className={`btn rounded-sm px-2.5 py-1.5 text-xs ${!calendarView ? "primary" : "ghost"}`} href="/admin/events" aria-current={!calendarView ? "page" : undefined}>列表</Link><Link className={`btn rounded-sm px-2.5 py-1.5 text-xs ${calendarView ? "primary" : "ghost"}`} href="/admin/events?view=calendar" aria-current={calendarView ? "page" : undefined}>日曆</Link></nav><EventActions templates={templates} /></div>}
       />
+      <div className="container px-4 pb-3 sm:px-6 lg:px-8"><Link className="text-sm font-semibold text-(--interactive-primary) hover:underline" href="/admin/events/templates">管理活動範本</Link></div>
       {calendarView ? <section className="px-4 pb-6 sm:px-6 lg:px-8"><AdminEventCalendar holidays={calendarHolidays} /></section> : null}
       {calendarView ? null : <section className="space-y-3 px-4 pb-6 sm:px-6 lg:px-8">
         <AdminToolbar className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_10rem_10rem] md:items-center">
