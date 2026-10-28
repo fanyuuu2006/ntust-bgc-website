@@ -92,8 +92,22 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
       const response = await apiClient<{ data: SiteSettings }>("/api/admin/site-settings");
       const baseline = toEditable(response.data);
       const storedDraft = sessionStorage.getItem(DRAFT_KEY);
+      let draft: Partial<EditableSiteSettings> | null = null;
+      if (storedDraft) {
+        try {
+          const parsed: unknown = JSON.parse(storedDraft);
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+            draft = parsed as Partial<EditableSiteSettings>;
+          } else {
+            sessionStorage.removeItem(DRAFT_KEY);
+          }
+        } catch {
+          // 損壞的舊草稿不應阻塞設定頁載入，清除後回到最新伺服器資料。
+          sessionStorage.removeItem(DRAFT_KEY);
+        }
+      }
       setSaved(baseline);
-      setValues(storedDraft ? { ...baseline, ...(JSON.parse(storedDraft) as Partial<EditableSiteSettings>) } : baseline);
+      setValues(draft ? { ...baseline, ...draft } : baseline);
       setPendingImages({});
     } catch (error) {
       setLoadError(error instanceof ApiError ? error.message : "讀取網站設定失敗，請稍後再試。");

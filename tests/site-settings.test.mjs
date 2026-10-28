@@ -158,6 +158,14 @@ test("settings UI uses nested routes, shared draft state and purpose-specific pr
   assert.match(contact, /官方社群連結/);
 });
 
+test("settings reload recovers from malformed saved drafts", async () => {
+  const provider = await source("src/components/(admin)/admin/site-settings/SiteSettingsProvider.tsx");
+  assert.match(provider, /const parsed: unknown = JSON\.parse\(storedDraft\)/);
+  assert.match(provider, /sessionStorage\.removeItem\(DRAFT_KEY\)/);
+  assert.match(provider, /catch \{/);
+  assert.match(provider, /setValues\(draft \? \{ \.\.\.baseline, \.\.\.draft \} : baseline\)/);
+});
+
 test("site settings image service validates upload input and returns an owned media URL", async () => {
   const uploads = [];
   const { siteSettingsImageService } = await loadCommonJs("src/services/site-settings/site-settings-image.service.ts", {
