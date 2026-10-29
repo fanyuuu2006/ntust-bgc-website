@@ -1464,6 +1464,28 @@ paths:
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "500": { $ref: "#/components/responses/ServerError" }
+  '/api/admin/event-series':
+    post:
+      summary: POST /api/admin/event-series
+      security: [{ cookieSession: [] }]
+      responses:
+        '201': { description: Series and occurrences created }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Admin access required }
+  '/api/admin/event-series/{id}':
+    get:
+      summary: GET /api/admin/event-series/{id}
+      security: [{ cookieSession: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Series summary and occurrences }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Admin access required }
+        '404': { description: Series not found }
+
 components:
   securitySchemes:
     cookieSession:

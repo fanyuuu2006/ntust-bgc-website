@@ -12,8 +12,9 @@ function canonicalize(value: unknown): string {
 }
 
 function requestHash(data: CreateEventSeriesInput): string {
-  const payload = { ...data };
-  delete payload.idempotencyKey;
+  const payload = Object.fromEntries(
+    Object.entries(data).filter(([key]) => key !== "idempotencyKey"),
+  );
   return createHash("sha256").update(canonicalize(payload)).digest("hex");
 }
 
