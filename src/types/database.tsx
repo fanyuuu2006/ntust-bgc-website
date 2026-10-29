@@ -353,6 +353,22 @@ export type Event = {
   publication_status: "draft" | "published";
   cancelled_at: Timestamp | null;
   created_at: Timestamp;
+  series_id: UUID | null;
+  recurrence_instance_key: string | null;
+  original_start_time: Timestamp | null;
+};
+
+export type EventSeries = {
+  id: UUID;
+  name: string;
+  timezone: string;
+  recurrence_rule: unknown;
+  starts_at: Timestamp;
+  ends_at: Timestamp | null;
+  occurrence_count: number | null;
+  created_by: UUID;
+  created_at: Timestamp;
+  updated_at: Timestamp;
 };
 
 export type EventTemplate = {
